@@ -25,7 +25,7 @@ import readwritelock.deadlock.LockedThreadInfo;
 
 /**
  * 对象锁持有者
- * @author frank
+ * @author jake
  */
 @SuppressWarnings("rawtypes")
 public class ObjectLockHolder {

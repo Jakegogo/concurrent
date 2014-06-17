@@ -17,7 +17,7 @@ import org.slf4j.LoggerFactory;
  * 5.<code>排序依据</code>对于非实体而言，为<code>System.identityHashCode(instance)</code>
  * 6.<code>排序依据</code>对于实体而言，为{@link ILockEntity#getIdentity()}
  * </pre>
- * @author frank
+ * @author jake
  */
 @SuppressWarnings({"rawtypes", "unchecked", "unused"})
 public class ObjectLock extends ReentrantReadWriteLock implements Comparable<ObjectLock> {
