@@ -3,6 +3,7 @@
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="src" path="src-readwritelock"/>
 	<classpathentry kind="src" path="src-testrule"/>
+	<classpathentry kind="src" path="src-dbcache"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.6"/>
 	<classpathentry kind="lib" path="lib/concurrentlinkedhashmap-lru-1.2.jar"/>
 	<classpathentry kind="lib" path="lib/dom4j-1.6.1.jar"/>
