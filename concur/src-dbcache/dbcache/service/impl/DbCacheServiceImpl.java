@@ -27,7 +27,7 @@ import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextClosedEvent;
 import org.springframework.stereotype.Component;
 
-import com.my9yu.common.util.ThreadUtils;
+
 
 import dbcache.model.BaseModel;
 import dbcache.model.CacheObject;
@@ -41,6 +41,7 @@ import dbcache.service.DbAccessService;
 import dbcache.service.DbCacheService;
 import dbcache.service.DbRuleService;
 import dbcache.utils.JsonUtils;
+import dbcache.utils.ThreadUtils;
 
 
 /**
@@ -99,7 +100,6 @@ public class DbCacheServiceImpl implements DbCacheService, ApplicationListener<C
 	/**
 	 * dbCache 初始化
 	 */
-	@SuppressWarnings("unused")
 	@PostConstruct
 	private void init() {
 		
