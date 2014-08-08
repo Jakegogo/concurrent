@@ -52,7 +52,7 @@ public class Test {
 		
 		for(int i = 0;i < 100000000;i++) {
 			entity.increseId();
-			this.cacheService.submitUpdated2Queue(1, Entity.class, FlushMode.DELAY);
+			this.cacheService.submitUpdated2Queue(1, Entity.class, FlushMode.INTIME);
 			if(i%10000000 == 0) {
 				System.out.println(ThreadUtils.dumpThreadPool("入库线程池", this.cacheService.getThreadPool()));
 			}
