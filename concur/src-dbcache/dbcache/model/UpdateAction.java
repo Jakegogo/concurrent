@@ -33,6 +33,12 @@ public class UpdateAction {
 	private long createTime;
 	
 	/**
+	 * 保持实体引用直到任务被处理,防止任务处理前被回收
+	 */
+	private Object entity;
+	
+	
+	/**
 	 * 构造方法
 	 * @param cacheObject 实体
 	 * @param updateType 更新类型
@@ -44,6 +50,7 @@ public class UpdateAction {
 		this.editVersion = editVersion;
 		this.dbVersion = dbVersion;
 		this.createTime = System.currentTimeMillis();
+		this.entity = cacheObject.getEntity();
 	}
 	
 	/**
@@ -80,6 +87,10 @@ public class UpdateAction {
 
 	public long getCreateTime() {
 		return createTime;
+	}
+
+	public Object getEntity() {
+		return entity;
 	}
 
 }
