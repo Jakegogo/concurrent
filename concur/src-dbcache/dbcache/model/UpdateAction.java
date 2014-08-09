@@ -65,6 +65,7 @@ public class UpdateAction {
 		return new UpdateAction(cacheObject, updateType, editVersion, dbVersion);
 	}
 	
+	
 	public CacheObject getCacheObject() {
 		return cacheObject;
 	}
