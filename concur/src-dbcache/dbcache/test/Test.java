@@ -21,9 +21,8 @@ import dbcache.utils.ThreadUtils;
 public class Test {
 	
 	@Autowired
-	private DbCacheService cacheService;
+	private DbCacheService<Entity, Integer> cacheService;
 	
-	@Qualifier("concurrentLinkedHashMapCache")
 	@Autowired
 	private Cache cache;
 	
@@ -43,19 +42,21 @@ public class Test {
 	 * 次数:1亿次修改入库
 	 * 耗时:40s
 	 * 发送sql数量:530条
+	 * @throws InterruptedException 
 	 */
 	@org.junit.Test
-	public void t1() {
-		Entity entity = new Entity();
+	public void t1() throws InterruptedException {
 		
-		cache.put(getEntityIdKey(1, Entity.class), new CacheObject(entity, 1, Entity.class));
 		
 		for(int i = 0;i < 100000000;i++) {
+			Entity entity = this.cacheService.get(1, Entity.class);
 			entity.increseId();
 			this.cacheService.submitUpdated2Queue(1, Entity.class, FlushMode.INTIME);
 			if(i%10000000 == 0) {
 				System.out.println(ThreadUtils.dumpThreadPool("入库线程池", this.cacheService.getThreadPool()));
 			}
+			entity = null;
+//			System.gc();
 		}
 //		System.out.println(entity.num);
 		

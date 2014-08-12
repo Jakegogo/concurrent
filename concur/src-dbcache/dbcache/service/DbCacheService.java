@@ -7,6 +7,7 @@ import java.util.concurrent.ExecutorService;
 
 import dbcache.model.BaseModel;
 import dbcache.model.FlushMode;
+import dbcache.model.IEntity;
 
 
 /**
@@ -14,7 +15,7 @@ import dbcache.model.FlushMode;
  * @author jake
  * @date 2014-7-31-下午6:06:15
  */
-public interface DbCacheService {
+public interface DbCacheService<T extends IEntity<PK>, PK extends Comparable<PK> & Serializable> {
 	
 	
 	/**
@@ -23,7 +24,7 @@ public interface DbCacheService {
 	 * @param entityClazz 实体类型
 	 * @return 实体对象
 	 */
-	<T> T get(Serializable id, Class<T> entityClazz);
+	T get(PK id, Class<T> entityClazz);
 	
 	
 	/**
@@ -32,7 +33,7 @@ public interface DbCacheService {
 	 * @param entityClazz 实体类型
 	 * @return 实体对象列表
 	 */
-	<T, PK extends Serializable> List<T> getEntityFromIdList(Collection<PK> idList, Class<T> entityClazz);
+	List<T> getEntityFromIdList(Collection<PK> idList, Class<T> entityClazz);
 	
 	
 	/**
@@ -41,7 +42,7 @@ public interface DbCacheService {
 	 * @return 返回保存的实体对象(可能与entity不是同一个实例)
 	 * @throws IllegalArgumentException 如果主键id==null
 	 */
-	<T extends BaseModel<PK>, PK extends Comparable<PK> & Serializable> T submitNew2Queue(T entity);
+	T submitNew2Queue(T entity);
 	
 	
 	/**
@@ -49,7 +50,7 @@ public interface DbCacheService {
 	 * @param id 主键id
 	 * @param entityClazz 实体类型
 	 */
-	void submitUpdated2Queue(Serializable id, Class<?> entityClazz);
+	void submitUpdated2Queue(PK id, Class<T> entityClazz);
 	
 	
 	/**
@@ -58,7 +59,7 @@ public interface DbCacheService {
 	 * @param entityClazz 实体类型
 	 * @param flushMode 刷库模式
 	 */
-	void submitUpdated2Queue(Serializable id, Class<?> entityClazz, FlushMode flushMode);
+	void submitUpdated2Queue(PK id, Class<T> entityClazz, FlushMode flushMode);
 	
 	
 	/**
@@ -66,22 +67,7 @@ public interface DbCacheService {
 	 * @param id 主键id
 	 * @param entityClazz 实体类型
 	 */
-	void submitDeleted2Queue(Serializable id, Class<?> entityClazz);
-	
-	
-	/**
-	 * 刷新所有延时入库的实体到库中
-	 * 此方法为同步执行
-	 */
-	void flushAllEntity();
-	
-	
-	/**
-	 * 提交延时入库任务
-	 * 此方法为异步执行
-	 * TODO 定时执行
-	 */
-	void submitFlushTask();
+	void submitDeleted2Queue(PK id, Class<T> entityClazz);
 	
 	
 	/**
@@ -92,9 +78,8 @@ public interface DbCacheService {
 	
 	/**
 	 * 获取入库线程池
-	 * @return
+	 * @return ExecutorService
 	 */
 	ExecutorService getThreadPool();
-	
 	
 }

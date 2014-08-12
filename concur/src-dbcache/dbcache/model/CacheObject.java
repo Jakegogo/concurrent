@@ -5,14 +5,15 @@ import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * 实体缓存辅助类
+ * 
  * @author jake
  * @date 2014-7-31-下午8:18:03
  */
-public class CacheObject {
+public class CacheObject<T extends IEntity<?>> {
 	/**
 	 * 缓存对象
 	 */
-	private final Object entity;
+	private final T entity;
 
 	/**
 	 * 主键id
@@ -22,7 +23,7 @@ public class CacheObject {
 	/**
 	 * 实体类
 	 */
-	private final Class<?> clazz;
+	private final Class<T> clazz;
 
 	/**
 	 * 修改版本号
@@ -38,68 +39,79 @@ public class CacheObject {
 	 * 实体更新状态
 	 */
 	private volatile UpdateStatus updateStatus = UpdateStatus.PERSIST;
-	
-	
+
 	/**
 	 * 构造方法
-	 * @param entity 实体
-	 * @param id 主键
-	 * @param clazz 类型
+	 * 
+	 * @param entity
+	 *            实体
+	 * @param id
+	 *            主键
+	 * @param clazz
+	 *            类型
 	 */
-	public CacheObject(Object entity, Serializable id, Class<?> clazz) {
+	public CacheObject(T entity, Serializable id, Class<T> clazz) {
 		this(entity, id, clazz, UpdateStatus.PERSIST);
 	}
-	
+
 	/**
 	 * 构造方法
-	 * @param entity 实体
-	 * @param id 主键
-	 * @param clazz 类型
-	 * @param updateStatus 更新方式
+	 * 
+	 * @param entity
+	 *            实体
+	 * @param id
+	 *            主键
+	 * @param clazz
+	 *            类型
+	 * @param updateStatus
+	 *            更新方式
 	 */
-	public CacheObject(Object entity, Serializable id, Class<?> clazz,
+	public CacheObject(T entity, Serializable id, Class<T> clazz,
 			UpdateStatus updateStatus) {
 		this.entity = entity;
 		this.id = id;
 		this.clazz = clazz;
 		this.updateStatus = updateStatus;
 	}
-	
-//	/**
-//	 * 是否同步到数据库
-//	 * 
-//	 * @return true/false
-//	 */
-//	public boolean isDbSync() {
-//		return this.dbVersion >= this.editVersion.get();
-//	}
-//
-//	/**
-//	 * 更新入库版本号
-//	 */
-//	public void updateDbVersion() {
-//		this.dbVersion = this.editVersion.get();
-//	}
-	
+
+	// /**
+	// * 是否同步到数据库
+	// *
+	// * @return true/false
+	// */
+	// public boolean isDbSync() {
+	// return this.dbVersion >= this.editVersion.get();
+	// }
+	//
+	// /**
+	// * 更新入库版本号
+	// */
+	// public void updateDbVersion() {
+	// this.dbVersion = this.editVersion.get();
+	// }
+
 	/**
 	 * 比较并更新入库版本号
-	 * @param updateAction 更新操作
+	 * 
+	 * @param updateAction
+	 *            更新操作
 	 * @return
 	 */
-	public boolean compareDbSync(UpdateAction updateAction) {
+	public boolean compareDbSync(UpdateAction<T, ?> updateAction) {
 		return this.dbVersion.get() == updateAction.getDbVersion();
 	}
-	
-	
+
 	/**
 	 * 比较并更新入库版本号
-	 * @param updateAction 更新操作
+	 * 
+	 * @param updateAction
+	 *            更新操作
 	 * @return
 	 */
-	public boolean compareAndUpdateDbSync(UpdateAction updateAction) {
-		return this.dbVersion.compareAndSet(updateAction.getDbVersion(), updateAction.getEditVersion());
+	public boolean compareAndUpdateDbSync(UpdateAction<T, ?> updateAction) {
+		return this.dbVersion.compareAndSet(updateAction.getDbVersion(),
+				updateAction.getEditVersion());
 	}
-	
 
 	/**
 	 * 更新修改版本号
@@ -117,8 +129,8 @@ public class CacheObject {
 	public void setUpdateStatus(UpdateStatus updateStatus) {
 		this.updateStatus = updateStatus;
 	}
-	
-	public Object getEntity() {
+
+	public T getEntity() {
 		return entity;
 	}
 
@@ -126,7 +138,7 @@ public class CacheObject {
 		return id;
 	}
 
-	public Class<?> getClazz() {
+	public Class<T> getClazz() {
 		return clazz;
 	}
 

@@ -57,7 +57,11 @@ public class ConcurrentWeekHashMapCache implements Cache {
 	@Override
 	public ValueWrapper get(Object key) {
 		Object value = this.store.get(key);
-		return SimpleValueWrapper.valueOf(value);
+		ValueWrapper result = SimpleValueWrapper.valueOf(value);
+		if(result == null && this.store.containsKey(key)) {
+			return NULL_HOLDER;
+		}
+		return result;
 	}
 
 	@Override

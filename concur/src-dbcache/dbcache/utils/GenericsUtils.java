@@ -2,6 +2,11 @@ package dbcache.utils;
 
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.lang.reflect.TypeVariable;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 
 /**
@@ -45,5 +50,46 @@ public class GenericsUtils {
 		return Object.class;
 	}
 	
-
+	
+	/**
+	 * 获取实际类参数的 Map
+	 * @param actual 最终类
+	 * @param generic 泛型声明类
+	 * @return
+	 * @throws ClassNotFoundException
+	 */
+	@SuppressWarnings("rawtypes")
+	private static Map<String, Type> getActualTypeParametersMap(Class<?> actual, Class<?> generic) {
+		List<String> names = new ArrayList<String>();
+		for (TypeVariable t : generic.getTypeParameters()) {
+			names.add(t.getName());
+		}
+		
+		List<Type> values = new ArrayList<Type>();
+		for (Type t : actual.getGenericInterfaces()) {
+			if (t instanceof Class<?>)
+				continue;
+			if (((ParameterizedType) t).getRawType().equals(generic)) {
+				for (Type tt : ((ParameterizedType) t).getActualTypeArguments()) {
+					values.add(tt);
+				}
+				break;
+			}
+		}
+		if (values.size() == 0) {
+			ParameterizedType type = (ParameterizedType) actual.getGenericSuperclass();
+			if (type.getRawType().equals(generic)) {
+				for (Type tt : ((ParameterizedType) type).getActualTypeArguments()) {
+					values.add(tt);
+				}
+			}
+		}
+		
+		Map<String, Type> result = new HashMap<String, Type>();
+		for (int i = 0; i < names.size(); i++) {
+			result.put(names.get(i), values.get(i));
+		}
+		return result;
+	}
+	
 }
