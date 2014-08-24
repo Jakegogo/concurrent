@@ -112,6 +112,7 @@ public class DbCacheInjectProcessor extends InstantiationAwareBeanPostProcessorA
 			
 			dbCacheServiceBeanMap.put(clz, service);
 		}
+		
 		return service;
 	}
 

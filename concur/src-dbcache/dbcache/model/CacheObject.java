@@ -34,7 +34,7 @@ public class CacheObject<T extends IEntity<?>> {
 	/**
 	 * 入库版本号
 	 */
-	private volatile AtomicLong dbVersion = new AtomicLong(editVersion.get());
+	private AtomicLong dbVersion = new AtomicLong(editVersion.get());
 
 	/**
 	 * 实体更新状态

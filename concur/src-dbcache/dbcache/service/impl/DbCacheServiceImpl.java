@@ -293,9 +293,11 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 		return this.dbPersistService.getThreadPool();
 	}
 	
+	
 	@Override
 	public Cache getCache() {
 		return cache;
 	}
+	
 	
 }

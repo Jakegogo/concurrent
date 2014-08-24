@@ -40,7 +40,13 @@ public interface Cache {
 	 * 清空缓存
 	 */
 	void clear();
-
+	
+	/**
+	 * 获取已经缓存对象的数量
+	 * @return
+	 */
+	int getCachedSize();
+	
 
 	/**
 	 * 缓存值包装接口

@@ -8,6 +8,11 @@ package dbcache.model;
 public enum UpdateStatus {
 	
 	/**
+	 * 瞬时态
+	 */
+	TRANSIENT,
+	
+	/**
 	 * 持久态
 	 */
 	PERSIST,

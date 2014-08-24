@@ -133,5 +133,11 @@ public class ConcurrentWeekHashMapCache implements Cache {
 		}
 
 	}
+	
+	
+	@Override
+	public int getCachedSize() {
+		return store.size();
+	}
 
 }

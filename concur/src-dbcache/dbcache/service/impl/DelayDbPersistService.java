@@ -63,6 +63,7 @@ public class DelayDbPersistService implements DbPersistService {
 	@Autowired
 	private DbRuleService dbRuleService;
 	
+	
 	@Autowired
 	private DbAccessService dbAccessService;
 	
@@ -83,7 +84,9 @@ public class DelayDbPersistService implements DbPersistService {
 		
 		//初始化延时入库检测线程
 		final long delayWaitTimmer = dbRuleService.getDelayWaitTimmer();//延迟入库时间(毫秒)
+		
 		final long delayCheckTimmer = TimeUnit.MILLISECONDS.toNanos(1000);//延迟入库队列检测时间间隔(毫微秒)
+		
 		DB_POOL_SERVICE.submit(new Runnable() {
 			
 			/**
@@ -94,13 +97,14 @@ public class DelayDbPersistService implements DbPersistService {
 			@Override
 			public void run() {
 				
-				UpdateAction updateAction = updateQueue.poll();
-				long timeDiff = 0l;
-				CacheObject<?> cacheObj = null;
-				
 				//循环定时检测入库,失败自动进入重试
 				while(true) {
 					try {
+						
+						UpdateAction updateAction = updateQueue.poll();
+						long timeDiff = 0l;
+						CacheObject<?> cacheObj = null;
+						
 						do {
 							
 							if(updateAction == null) {
