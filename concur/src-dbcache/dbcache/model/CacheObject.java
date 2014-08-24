@@ -10,6 +10,7 @@ import java.util.concurrent.atomic.AtomicLong;
  * @date 2014-7-31-下午8:18:03
  */
 public class CacheObject<T extends IEntity<?>> {
+	
 	/**
 	 * 缓存对象
 	 */
@@ -74,22 +75,7 @@ public class CacheObject<T extends IEntity<?>> {
 		this.updateStatus = updateStatus;
 	}
 
-	// /**
-	// * 是否同步到数据库
-	// *
-	// * @return true/false
-	// */
-	// public boolean isDbSync() {
-	// return this.dbVersion >= this.editVersion.get();
-	// }
-	//
-	// /**
-	// * 更新入库版本号
-	// */
-	// public void updateDbVersion() {
-	// this.dbVersion = this.editVersion.get();
-	// }
-
+	
 	/**
 	 * 比较并更新入库版本号
 	 * 
@@ -97,7 +83,7 @@ public class CacheObject<T extends IEntity<?>> {
 	 *            更新操作
 	 * @return
 	 */
-	public boolean compareDbSync(UpdateAction<T, ?> updateAction) {
+	public boolean compareDbSync(UpdateAction updateAction) {
 		return this.dbVersion.get() == updateAction.getDbVersion();
 	}
 
@@ -108,7 +94,7 @@ public class CacheObject<T extends IEntity<?>> {
 	 *            更新操作
 	 * @return
 	 */
-	public boolean compareAndUpdateDbSync(UpdateAction<T, ?> updateAction) {
+	public boolean compareAndUpdateDbSync(UpdateAction updateAction) {
 		return this.dbVersion.compareAndSet(updateAction.getDbVersion(),
 				updateAction.getEditVersion());
 	}

@@ -96,7 +96,7 @@ public class DelayDbPersistService implements DbPersistService {
 				
 				UpdateAction updateAction = updateQueue.poll();
 				long timeDiff = 0l;
-				CacheObject cacheObj = null;
+				CacheObject<?> cacheObj = null;
 				
 				//循环定时检测入库,失败自动进入重试
 				while(true) {
@@ -227,7 +227,7 @@ public class DelayDbPersistService implements DbPersistService {
 	@Override
 	public void logHadNotPersistEntity() {
 		UpdateAction updateAction = null;
-		CacheObject cacheObject = null;
+		CacheObject<?> cacheObject = null;
 		Object entity = null;
 		for (Iterator<UpdateAction> it = this.updateQueue.iterator(); it.hasNext();) {
 			updateAction = it.next();
@@ -250,7 +250,7 @@ public class DelayDbPersistService implements DbPersistService {
 			return;
 		}
 		
-		CacheObject cacheObj = updateAction.getCacheObject();
+		CacheObject<?> cacheObj = updateAction.getCacheObject();
 		
 		//缓存对象在提交之后被修改过
 		if(updateAction.getEditVersion() < cacheObj.getEditVersion()) {

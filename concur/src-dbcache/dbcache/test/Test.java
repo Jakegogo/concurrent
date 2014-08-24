@@ -23,6 +23,12 @@ public class Test {
 	@Autowired
 	private DbCacheService<Entity, Integer> cacheService;
 	
+	public void setCacheService(DbCacheService<Entity, Integer> cacheService) {
+		this.cacheService = cacheService;
+	}
+
+
+
 	@Autowired
 	private Cache cache;
 	
@@ -49,9 +55,9 @@ public class Test {
 		
 		
 		for(int i = 0;i < 100000000;i++) {
-			Entity entity = this.cacheService.get(1, Entity.class);
+			Entity entity = this.cacheService.get(1);
 			entity.increseId();
-			this.cacheService.submitUpdated2Queue(1, Entity.class, FlushMode.INTIME);
+			this.cacheService.submitUpdated2Queue(entity);
 			if(i%10000000 == 0) {
 				System.out.println(ThreadUtils.dumpThreadPool("入库线程池", this.cacheService.getThreadPool()));
 			}
@@ -96,7 +102,7 @@ public class Test {
 		long t1 = System.currentTimeMillis();
 		cache.put(getEntityIdKey(1, Entity.class), new CacheObject(entity, 1, Entity.class));
 		for(int i = 0;i < 100000000;i++) {
-			this.cacheService.get(1, Entity.class);
+			this.cacheService.get(1);
 		}
 		System.out.println(System.currentTimeMillis() - t1);
 	}

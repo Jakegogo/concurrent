@@ -141,7 +141,7 @@ public class InTimeDbPersistService implements DbPersistService {
 			return;
 		}
 		
-		CacheObject cacheObj = updateAction.getCacheObject();
+		CacheObject<?> cacheObj = updateAction.getCacheObject();
 		
 		//缓存对象在提交之后被修改过
 		if(updateAction.getEditVersion() < cacheObj.getEditVersion()) {

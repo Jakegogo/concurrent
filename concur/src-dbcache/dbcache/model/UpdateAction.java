@@ -1,18 +1,17 @@
 package dbcache.model;
 
-import java.io.Serializable;
 
 /**
  * 更新实体的行为
  * @author jake
  * @date 2014-7-31-下午9:56:42
  */
-public class UpdateAction<T extends IEntity<PK>, PK extends Comparable<PK> & Serializable> {
+public class UpdateAction {
 	
 	/**
 	 * 实体
 	 */
-	private CacheObject<T> cacheObject;
+	private CacheObject<?> cacheObject;
 	
 	/**
 	 * 实体更新类型
@@ -37,7 +36,7 @@ public class UpdateAction<T extends IEntity<PK>, PK extends Comparable<PK> & Ser
 	/**
 	 * 保持实体引用直到任务被处理,防止任务处理前被回收
 	 */
-	private T entity;
+	private Object entity;
 	
 	
 	/**
@@ -46,7 +45,7 @@ public class UpdateAction<T extends IEntity<PK>, PK extends Comparable<PK> & Ser
 	 * @param updateType 更新类型
 	 * @param editVersion 更改的版本号
 	 */
-	public UpdateAction(CacheObject<T> cacheObject, UpdateType updateType, long editVersion, long dbVersion) {
+	public UpdateAction(CacheObject<?> cacheObject, UpdateType updateType, long editVersion, long dbVersion) {
 		this.cacheObject = cacheObject;
 		this.updateType = updateType;
 		this.editVersion = editVersion;
@@ -63,15 +62,15 @@ public class UpdateAction<T extends IEntity<PK>, PK extends Comparable<PK> & Ser
 	 * @param dbVersion 入库的版本号
 	 * @return
 	 */
-	public static <T extends IEntity<PK>, PK extends Comparable<PK> & Serializable> UpdateAction<T, PK> valueOf(CacheObject<T> cacheObject, UpdateType updateType) {
+	public static UpdateAction valueOf(CacheObject<?> cacheObject, UpdateType updateType) {
 		//更新修改版本号
 		long editVersion = cacheObject.increseEditVersion();
 		long dbVersion = cacheObject.getDbVersion();
-		return new UpdateAction<T, PK>(cacheObject, updateType, editVersion, dbVersion);
+		return new UpdateAction(cacheObject, updateType, editVersion, dbVersion);
 	}
 	
 	
-	public CacheObject<T> getCacheObject() {
+	public CacheObject<?> getCacheObject() {
 		return cacheObject;
 	}
 	

@@ -5,8 +5,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 
-import dbcache.model.BaseModel;
-import dbcache.model.FlushMode;
 import dbcache.model.IEntity;
 
 
@@ -21,19 +19,17 @@ public interface DbCacheService<T extends IEntity<PK>, PK extends Comparable<PK>
 	/**
 	 * 根据主键id取得实体
 	 * @param id 主键id
-	 * @param entityClazz 实体类型
 	 * @return 实体对象
 	 */
-	T get(PK id, Class<T> entityClazz);
+	T get(PK id);
 	
 	
 	/**
 	 * 根据主键id列表取得实体列表
 	 * @param idList 主键id列表
-	 * @param entityClazz 实体类型
 	 * @return 实体对象列表
 	 */
-	List<T> getEntityFromIdList(Collection<PK> idList, Class<T> entityClazz);
+	List<T> getEntityFromIdList(Collection<PK> idList);
 	
 	
 	/**
@@ -47,27 +43,22 @@ public interface DbCacheService<T extends IEntity<PK>, PK extends Comparable<PK>
 	
 	/**
 	 * 提交实体修改任务到更新队列(默认即时入库)
-	 * @param id 主键id
-	 * @param entityClazz 实体类型
+	 * @param entity 实体
 	 */
-	void submitUpdated2Queue(PK id, Class<T> entityClazz);
-	
-	
-	/**
-	 * 提交实体修改任务到更新队列
-	 * @param id 主键id
-	 * @param entityClazz 实体类型
-	 * @param flushMode 刷库模式
-	 */
-	void submitUpdated2Queue(PK id, Class<T> entityClazz, FlushMode flushMode);
+	void submitUpdated2Queue(T entity);
 	
 	
 	/**
 	 * 提交实体删除任务到更新队列(即时入库)
-	 * @param id 主键id
-	 * @param entityClazz 实体类型
+	 * @param entity 实体
 	 */
-	void submitDeleted2Queue(PK id, Class<T> entityClazz);
+	void submitDeleted2Queue(T entity);
+	
+	/**
+	 * 提交实体删除任务到更新队列(即时入库)
+	 * @param id 主键id
+	 */
+	void submitDeleted2Queue(PK id);
 	
 	
 	/**
@@ -81,5 +72,13 @@ public interface DbCacheService<T extends IEntity<PK>, PK extends Comparable<PK>
 	 * @return ExecutorService
 	 */
 	ExecutorService getThreadPool();
+
+	
+	/**
+	 * 获取缓存实体
+	 * @return
+	 */
+	Cache getCache();
+
 	
 }

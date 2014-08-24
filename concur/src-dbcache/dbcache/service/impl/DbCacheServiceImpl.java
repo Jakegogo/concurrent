@@ -23,7 +23,6 @@ import org.springframework.stereotype.Component;
 import dbcache.conf.CacheRule;
 import dbcache.model.CacheObject;
 import dbcache.model.EntityInitializer;
-import dbcache.model.FlushMode;
 import dbcache.model.IEntity;
 import dbcache.model.UpdateAction;
 import dbcache.model.UpdateStatus;
@@ -49,6 +48,11 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 	 */
 	private static final Logger logger = LoggerFactory.getLogger(DbCacheServiceImpl.class);
 	
+	/**
+	 * 实体类形
+	 * 需要外部设定值
+	 */
+	private Class<T> clazz;
 	
 	/**
 	 * 等待锁map {key:lock}
@@ -99,6 +103,7 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 		
 	}
 	
+	
 	@Override
 	public void onApplicationEvent(ContextClosedEvent event) {
 		this.onCloseApplication();
@@ -117,9 +122,9 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 	
 	
 	@Override
-	public T get(PK id, Class<T> entityClazz) {
+	public T get(PK id) {
 		
-		CacheObject<T> cacheObject = this.get(entityClazz, id);
+		CacheObject<T> cacheObject = this.get(clazz, id);
 		if (cacheObject != null) {
 			return (T) cacheObject.getEntity();
 		}
@@ -190,8 +195,7 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 	
 
 	@Override
-	public List<T> getEntityFromIdList(
-			Collection<PK> idList, Class<T> entityClazz) {
+	public List<T> getEntityFromIdList(Collection<PK> idList) {
 		if (idList == null || idList.size() == 0) {
 			return null;
 		}
@@ -199,7 +203,7 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 		List<T> list = new ArrayList<T> (idList.size());
 		
 		for (PK id : idList) {
-			T entity = this.get(id, entityClazz);
+			T entity = this.get(id);
 			if (entity != null) {
 				list.add(entity);
 			}
@@ -248,38 +252,37 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 		
 		//入库
 		if (cacheObject != null) {
-			UpdateAction<T, PK> updateAction = UpdateAction.valueOf(cacheObject, UpdateType.INSERT);
+			UpdateAction updateAction = UpdateAction.valueOf(cacheObject, UpdateType.INSERT);
 			dbPersistService.handlerPersist(updateAction);
 		}
 		
-		Object obj = this.get(entity.getId(),  (Class<T>) entity.getClass());
+		Object obj = this.get(entity.getId());
 		return (T) obj;
 	}
 
 
 	@Override
-	public void submitUpdated2Queue(PK id, Class<T> entityClazz) {
-		this.submitUpdated2Queue(id, entityClazz, FlushMode.INTIME);
-	}
-
-
-	@Override
-	public void submitUpdated2Queue(PK id, Class<T> entityClazz,
-			FlushMode flushMode) {
-		CacheObject<T> cacheObject = this.get(entityClazz, id);
+	public void submitUpdated2Queue(T entity) {
+		CacheObject<T> cacheObject = this.get(clazz, entity.getId());
 		if (cacheObject != null) {
-			UpdateAction<T, PK> updateAction = UpdateAction.valueOf(cacheObject, UpdateType.UPDATE);
+			UpdateAction updateAction = UpdateAction.valueOf(cacheObject, UpdateType.UPDATE);
 			dbPersistService.handlerPersist(updateAction);
 		}
 	}
-
+	
 	
 	@Override
-	public void submitDeleted2Queue(PK id, Class<T> entityClazz) {
-		CacheObject<T> cacheObject = this.get(entityClazz, id);
+	public void submitDeleted2Queue(T entity) {
+		submitDeleted2Queue(entity.getId());
+	}
+	
+	
+	@Override
+	public void submitDeleted2Queue(PK id) {
+		CacheObject<T> cacheObject = this.get(clazz, id);
 		if (cacheObject != null) {
 			cacheObject.setUpdateStatus(UpdateStatus.DELETED);
-			UpdateAction<T, PK> updateAction = UpdateAction.valueOf(cacheObject, UpdateType.DELETE);
+			UpdateAction updateAction = UpdateAction.valueOf(cacheObject, UpdateType.DELETE);
 			dbPersistService.handlerPersist(updateAction);
 		}
 	}
@@ -290,5 +293,9 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 		return this.dbPersistService.getThreadPool();
 	}
 	
+	@Override
+	public Cache getCache() {
+		return cache;
+	}
 	
 }

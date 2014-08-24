@@ -27,7 +27,7 @@ public class ConcurrentLinkedHashMapCache implements Cache {
 	/**
 	 * 缺省实体缓存最大容量
 	 */
-	private static final int DEFAULT_MAX_CAPACITY_OF_ENTITY_CACHE = 1000000;
+	private static final int DEFAULT_MAX_CAPACITY_OF_ENTITY_CACHE = 100000;
 	
 	/**
 	 * 空值的引用
