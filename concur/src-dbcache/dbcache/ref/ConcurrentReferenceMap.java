@@ -65,8 +65,7 @@ public class ConcurrentReferenceMap<K, V> extends AbstractMap<K, V> implements C
 	/** 版本号 */
 	private static final long serialVersionUID = -6254917146703229097L;
 	
-	private static final FinalizableReferenceQueue FINALIZABLE_REFERENCE_QUEUE = new FinalizableReferenceQueue(
-			"ConcurrentReferenceMapReferenceQueue");
+	private static final FinalizableReferenceQueue FINALIZABLE_REFERENCE_QUEUE = new FinalizableReferenceQueue("ConcurrentReferenceMapReferenceQueue");
 
 	private final ReferenceKeyType keyReferenceType;
 	
@@ -239,11 +238,11 @@ public class ConcurrentReferenceMap<K, V> extends AbstractMap<K, V> implements C
 		if (object instanceof Reference<?>) {
 			// object 为引用类型，则比较引用类型中的值的引用
 			Object referenceValue = ((Reference<?>) object).get();
-			return referenceValue != null && reference.get() == referenceValue;
+			return referenceValue != null && referenceValue.equals(reference.get());
 		}
 		if (object instanceof ReferenceWrapper) {
 			// object为 引用包装类型
-			return ((ReferenceWrapper) object).getReference() == reference.get();
+			return ((ReferenceWrapper) object).getReference().equals(reference.get());
 		}
 		return false;
 	}
@@ -251,8 +250,7 @@ public class ConcurrentReferenceMap<K, V> extends AbstractMap<K, V> implements C
 	@Override
 	public V get(Object key) {
 		notNull(key);
-		Object keyReference = createKeyReferenceWrapper(key);
-		Object returnValueReference = this.map.get(keyReference);
+		Object returnValueReference = this.map.get(key);
 		return getValue(returnValueReference);
 	}
 	
@@ -475,8 +473,10 @@ public class ConcurrentReferenceMap<K, V> extends AbstractMap<K, V> implements C
 				if (v == objV) {
 					return true;
 				}
+				return false;
+			} else {
+				return v.equals(objV);
 			}
-			return v.equals(objV);
 		}
 	}
 	
@@ -562,8 +562,10 @@ public class ConcurrentReferenceMap<K, V> extends AbstractMap<K, V> implements C
 				if (v == objV) {
 					return true;
 				}
+				return false;
+			} else {
+				return v.equals(objV);
 			}
-			return v.equals(objV);
 		}
 	}
 	
@@ -654,8 +656,6 @@ public class ConcurrentReferenceMap<K, V> extends AbstractMap<K, V> implements C
 	
 	/**
 	 * 引用类型中的对象的另一个包装器，该包装器实现为引用类型中的对象保持 put 与 get 时用到的 hashCode 和 equals 方法的一致性。
-	 * @author <a href="http://www.agrael.cn">李翔</a>
-	 *
 	 */
 	protected static class ReferenceWrapper {
 		
@@ -693,8 +693,18 @@ public class ConcurrentReferenceMap<K, V> extends AbstractMap<K, V> implements C
 		 */
 		@Override
 		public boolean equals(Object obj) {
+			if(obj == this) {
+				return true;
+			}
+			if(obj == null) {
+				return false;
+			}
+			if(!(obj instanceof ReferenceWrapper)) {
+				return false;
+			}
+			ReferenceWrapper target = (ReferenceWrapper) obj;
 			// 使用包装对象的 equals
-			return obj.equals(this);
+			return target.reference.equals(this.reference);
 		}
 	}
 	

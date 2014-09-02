@@ -77,7 +77,7 @@ public class DbCacheInjectProcessor extends InstantiationAwareBeanPostProcessorA
 			clz = (Class<? extends IEntity>) types[0];
 			service = this.getDbCacheServiceBean(clz);
 		} catch (Exception e) {
-			FormattingTuple message = MessageFormatter.arrayFormat("Bean[{}]的注入属性[{}<{}, ?>]类型声明错误", new Object[]{beanName, field.getName(), clz.getSimpleName()});
+			FormattingTuple message = MessageFormatter.arrayFormat("Bean[{}]的注入属性[{}<{}, ?>]类型声明错误", new Object[]{beanName, field.getName(), clz != null ?clz.getSimpleName() : null});
 			logger.error(message.getMessage());
 			throw new IllegalStateException(message.getMessage(), e);
 		}

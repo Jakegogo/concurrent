@@ -27,7 +27,7 @@ import dbcache.utils.ThreadUtils;
  * @author Jake
  * @date 2014年8月13日上午12:27:50
  */
-@Component
+@Component("inTimeDbPersistService")
 public class InTimeDbPersistService implements DbPersistService {
 	
 	/**

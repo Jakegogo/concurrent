@@ -31,7 +31,7 @@ import dbcache.utils.NamedThreadFactory;
  * @author Jake
  * @date 2014年8月13日上午12:31:06
  */
-//@Component
+@Component("delayDbPersistService")
 public class DelayDbPersistService implements DbPersistService {
 	
 	/**

@@ -2,6 +2,8 @@ package dbcache.test;
 
 import java.io.Serializable;
 
+import javax.annotation.Resource;
+
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -29,7 +31,7 @@ public class Test {
 
 
 
-	@Autowired
+	@Resource(name = "concurrentWeekHashMapCache")
 	private Cache cache;
 	
 	

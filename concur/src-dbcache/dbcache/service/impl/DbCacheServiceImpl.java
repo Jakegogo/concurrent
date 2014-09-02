@@ -76,6 +76,7 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 	 * 默认的持久化服务
 	 */
 	@Autowired
+	@Qualifier("inTimeDbPersistService")
 	private DbPersistService dbPersistService;
 	
 	

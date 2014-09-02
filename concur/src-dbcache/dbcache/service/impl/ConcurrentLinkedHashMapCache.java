@@ -18,7 +18,7 @@ import dbcache.service.DbRuleService;
  * @author jake
  * @date 2014-7-31-下午8:24:23
  */
-//@Component("concurrentLinkedHashMapCache")
+@Component("concurrentLinkedHashMapCache")
 public class ConcurrentLinkedHashMapCache implements Cache {
 	
 	@Autowired
