@@ -4,26 +4,19 @@
 	<classpathentry kind="src" path="src-readwritelock"/>
 	<classpathentry kind="src" path="src-testrule"/>
 	<classpathentry kind="src" path="src-dbcache"/>
-	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.6"/>
-	<classpathentry kind="lib" path="lib/concurrentlinkedhashmap-lru-1.2.jar"/>
-	<classpathentry kind="lib" path="lib/dom4j-1.6.1.jar"/>
-	<classpathentry kind="lib" path="lib/ehcache-core-2.3.2.jar"/>
-	<classpathentry kind="lib" path="lib/encript-utils.jar"/>
-	<classpathentry kind="lib" path="lib/jackson-annotations-2.2.2.jar"/>
-	<classpathentry kind="lib" path="lib/jackson-core-2.2.2.jar"/>
-	<classpathentry kind="lib" path="lib/jackson-core-asl-1.9.13.jar"/>
-	<classpathentry kind="lib" path="lib/jackson-databind-2.2.0.jar"/>
-	<classpathentry kind="lib" path="lib/jackson-mapper-asl-1.9.13.jar"/>
-	<classpathentry kind="lib" path="lib/jstl-1.2.jar"/>
-	<classpathentry kind="lib" path="lib/jta-1.1.jar"/>
-	<classpathentry kind="lib" path="lib/log4j-1.2.16.jar"/>
-	<classpathentry kind="lib" path="lib/mina-core-2.0.4.jar"/>
-	<classpathentry kind="lib" path="lib/mvel2-2.0.17.jar"/>
-	<classpathentry kind="lib" path="lib/mysql-connector-java-5.1.27-bin.jar"/>
-	<classpathentry kind="lib" path="lib/paoding-rose-jade-1.0.1.jar"/>
-	<classpathentry kind="lib" path="lib/paoding-rose-scanning-1.0.1.jar"/>
-	<classpathentry kind="lib" path="lib/slf4j-api-1.7.5.jar"/>
-	<classpathentry kind="lib" path="lib/slf4j-log4j12-1.6.1.jar"/>
+	<classpathentry kind="src" path="resource"/>
+	<classpathentry kind="src" path="src-asmproxy"/>
+	<classpathentry kind="src" path="src-lock"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.6">
+		<attributes>
+			<attribute name="maven.pomderived" value="true"/>
+		</attributes>
+	</classpathentry>
 	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/4"/>
-	<classpathentry kind="output" path="bin"/>
+	<classpathentry kind="con" path="org.eclipse.m2e.MAVEN2_CLASSPATH_CONTAINER">
+		<attributes>
+			<attribute name="maven.pomderived" value="true"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="output" path="target/classes"/>
 </classpath>

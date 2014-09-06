@@ -27,10 +27,10 @@ import dbcache.utils.ThreadUtils;
 @ContextConfiguration(locations = { "classpath:applicationContext.xml" })
 @Component
 public class Test {
-	
+
 	@Autowired
 	private DbCacheService<Entity, Integer> cacheService;
-	
+
 	public void setCacheService(DbCacheService<Entity, Integer> cacheService) {
 		this.cacheService = cacheService;
 	}
@@ -39,15 +39,15 @@ public class Test {
 
 	@Resource(name = "concurrentWeekHashMapCache")
 	private Cache cache;
-	
-	
+
+
 	public static String getEntityIdKey(Serializable id, Class<?> entityClazz) {
 		return new StringBuilder().append(entityClazz.getName())
 									.append("_")
 									.append(id).toString();
 	}
-	
-	
+
+
 	/**
 	 * 测试用例
 	 * 框架:dbCacheNew
@@ -56,12 +56,12 @@ public class Test {
 	 * 次数:1亿次修改入库
 	 * 耗时:40s
 	 * 发送sql数量:530条
-	 * @throws InterruptedException 
+	 * @throws InterruptedException
 	 */
 	@org.junit.Test
 	public void t1() throws InterruptedException {
-		
-		
+
+
 		for(int i = 0;i < 100000000;i++) {
 			Entity entity = this.cacheService.get(1);
 			entity.increseId();
@@ -73,15 +73,15 @@ public class Test {
 //			System.gc();
 		}
 //		System.out.println(entity.num);
-		
+
 //		this.cacheService.flushAllEntity();
-		
+
 //		try {
 //			Thread.sleep(500);
 //		} catch (InterruptedException e) {
 //			e.printStackTrace();
 //		}
-		
+
 		while(true) {
 			try {
 				System.out.println(ThreadUtils.dumpThreadPool("入库线程池", this.cacheService.getThreadPool()));
@@ -91,11 +91,11 @@ public class Test {
 				e.printStackTrace();
 			}
 		}
-		
+
 	}
-	
-	
-	
+
+
+
 	/**
 	 * 测试用例
 	 * 框架:dbCacheNew
@@ -114,12 +114,12 @@ public class Test {
 		}
 		System.out.println(System.currentTimeMillis() - t1);
 	}
-	
-	
+
+
 	/**
 	 * 测试动态生成静态代理类
-	 * 
-	 * 
+	 *
+	 *
 	 * @throws InstantiationException
 	 * @throws IllegalAccessException
 	 * @throws NotFoundException
@@ -142,14 +142,14 @@ public class Test {
 		Object[] params = { orign };
 		Constructor<Entity> con = rsCls.getConstructor(paramTypes);
 		Entity entity = con.newInstance(params);
-		
+
 		entity.setNum(2);
-		
+
 		System.out.println(entity.getNum());
 		// System.out.println(entity.getId());
-		
+
 		System.out.println(orign.getNum());
 	}
-	
-	
+
+
 }
