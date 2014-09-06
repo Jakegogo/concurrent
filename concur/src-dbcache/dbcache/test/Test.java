@@ -1,6 +1,11 @@
 package dbcache.test;
 
 import java.io.Serializable;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+
+import javassist.CannotCompileException;
+import javassist.NotFoundException;
 
 import javax.annotation.Resource;
 
@@ -13,6 +18,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import dbcache.model.CacheObject;
 import dbcache.model.FlushMode;
+import dbcache.proxy.asm.AsmFactory;
 import dbcache.service.Cache;
 import dbcache.service.DbCacheService;
 import dbcache.utils.ThreadUtils;
@@ -107,6 +113,42 @@ public class Test {
 			this.cacheService.get(1);
 		}
 		System.out.println(System.currentTimeMillis() - t1);
+	}
+	
+	
+	/**
+	 * 测试动态生成静态代理类
+	 * 
+	 * 
+	 * @throws InstantiationException
+	 * @throws IllegalAccessException
+	 * @throws NotFoundException
+	 * @throws CannotCompileException
+	 * @throws NoSuchMethodException
+	 * @throws SecurityException
+	 * @throws IllegalArgumentException
+	 * @throws InvocationTargetException
+	 */
+	@org.junit.Test
+	public void t4() throws InstantiationException,
+			IllegalAccessException, NotFoundException, CannotCompileException,
+			NoSuchMethodException, SecurityException, IllegalArgumentException,
+			InvocationTargetException {
+
+		Class<Entity> rsCls = AsmFactory.getEnhancedClass(Entity.class);
+
+		Class<?>[] paramTypes = { Entity.class };
+		Entity orign = new Entity();
+		Object[] params = { orign };
+		Constructor<Entity> con = rsCls.getConstructor(paramTypes);
+		Entity entity = con.newInstance(params);
+		
+		entity.setNum(2);
+		
+		System.out.println(entity.getNum());
+		// System.out.println(entity.getId());
+		
+		System.out.println(orign.getNum());
 	}
 	
 	

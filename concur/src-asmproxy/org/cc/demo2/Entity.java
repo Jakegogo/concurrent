@@ -1,4 +1,4 @@
-package dbcache.test;
+package org.cc.demo2;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -7,7 +7,6 @@ import javax.persistence.Transient;
 
 import org.hibernate.annotations.Index;
 
-import dbcache.annotation.UpdateIndex;
 import dbcache.model.EntityInitializer;
 import dbcache.model.IEntity;
 
@@ -22,13 +21,13 @@ public class Entity implements EntityInitializer, IEntity<Integer> {
 	private int uid;
 	
 	
-	public volatile int num;
+	public int num;
 	
 	@Transient
 	public AtomicInteger idgenerator;
 
 	public Entity() {
-//		doAfterLoad();
+		this.getId();
 	}
 	
 	public void increseId() {
@@ -38,16 +37,11 @@ public class Entity implements EntityInitializer, IEntity<Integer> {
 	public int getNum() {
 		return num;
 	}
-	
+
 	public void setNum(int num) {
 		this.num = num;
 	}
-	
-	@UpdateIndex({ "uid_idx" })
-	public void addNum(int num) {
-		this.num += num;
-	}
-	
+
 
 	public int getUid() {
 		return uid;
@@ -59,7 +53,7 @@ public class Entity implements EntityInitializer, IEntity<Integer> {
 
 	@Override
 	public void doAfterLoad() {
-		idgenerator = new AtomicInteger(num);
+//		idgenerator = new AtomicInteger(num);
 	}
 	
 	@Override

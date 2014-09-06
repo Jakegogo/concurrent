@@ -81,6 +81,57 @@ public class PackageScanner {
 		
 	}
 	
+	
+	/**
+	 * 扫描指定包中所有的类(包括子类)
+	 * @param classLoader 指定ClassLoader
+	 * @param packageNames 包名支持权限定包名和ant风格匹配符(同spring)
+	 * @return 
+	 */
+	public static Collection<Class<?>> filterByAnnotation(ClassLoader classLoader, String... packageNames){
+		Collection<Class<?>> clazzCollection = new HashSet<Class<?>>();
+
+		for (String packageName : packageNames) {
+			
+			try {
+				// 搜索资源
+				String packageSearchPath = ResourcePatternResolver.CLASSPATH_ALL_URL_PREFIX
+						+ resolveBasePackage(packageName) + "/" + DEFAULT_RESOURCE_PATTERN;
+				Resource[] resources = resourcePatternResolver.getResources(packageSearchPath);
+				
+				for(Resource resource : resources){
+					
+					String className = "";
+					
+					try {
+						if (!resource.isReadable()) {
+							continue;
+						}
+						// 判断是否静态资源
+						MetadataReader metaReader = metadataReaderFactory.getMetadataReader(resource);
+						className = metaReader.getClassMetadata().getClassName();
+						
+						Class<?> clazz = classLoader.loadClass(className);
+						clazzCollection.add(clazz);
+						
+					} catch (ClassNotFoundException e) {
+						logger.error("类 {} 不存在!", className);
+						throw new RuntimeException(e);
+					}
+					
+				}
+				
+			} catch (IOException e) {
+				logger.error("扫描包 {} 出错!", packageName);
+				throw new RuntimeException(e);
+			}
+		}
+		
+		return clazzCollection;
+		
+	}
+	
+	
 	/**
 	 * 将包名转换成目录名(com.my9yu-->com/my9yu)
 	 * @param basePackage 包名
