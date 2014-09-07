@@ -27,6 +27,7 @@ import dbcache.model.IEntity;
 import dbcache.model.UpdateAction;
 import dbcache.model.UpdateStatus;
 import dbcache.model.UpdateType;
+import dbcache.proxy.util.ClassUtil;
 import dbcache.service.Cache;
 import dbcache.service.DbAccessService;
 import dbcache.service.DbCacheService;
@@ -40,77 +41,89 @@ import dbcache.service.DbRuleService;
  * @date 2014-7-31-下午6:07:37
  */
 @Component
-public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK> & Serializable> 
+public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK> & Serializable>
 		implements DbCacheService<T, PK>, ApplicationListener<ContextClosedEvent> {
-	
+
+	/**
+	 * 实现原则:
+	 * 1,不需要用锁的地方尽量不用到锁
+	 * 2,维护缓存原子性,数据入库采用类似异步事件驱动方式
+	 * 3,支持大批量操作数据
+	 */
+
 	/**
 	 * logger
 	 */
 	private static final Logger logger = LoggerFactory.getLogger(DbCacheServiceImpl.class);
-	
+
 	/**
 	 * 实体类形
 	 * 需要外部设定值
 	 */
 	private Class<T> clazz;
-	
+
+	/**
+	 * 实体静态代理类
+	 */
+	private Class<?> proxyClazz;
+
 	/**
 	 * 等待锁map {key:lock}
 	 */
 	private final ConcurrentMap<String, Lock> WAITING_LOCK_MAP = new ConcurrentHashMap<String, Lock>();
-	
-	
+
+
 	@Autowired
 	private DbAccessService dbAccessService;
-		
-	
+
+
 	@Autowired
 	@Qualifier("concurrentWeekHashMapCache")
 	private Cache cache;
-	
-	
+
+
 	@Autowired
 	private DbRuleService dbRuleService;
-	
+
 	/**
 	 * 默认的持久化服务
 	 */
 	@Autowired
 	@Qualifier("inTimeDbPersistService")
 	private DbPersistService dbPersistService;
-	
-	
+
+
 	/**
 	 * dbCache 初始化
 	 */
 	@PostConstruct
 	private void init() {
-		
+
 		//初始化dbCacheRule
 		dbRuleService.init();
-		
+
 		//初始化持久化服务
 		dbPersistService.init(cache);
-		
+
 		//注册jvm关闭钩子
 		Runtime.getRuntime().addShutdownHook(new Thread() {
-			
+
 			@Override
 			public void run() {
 				dbPersistService.logHadNotPersistEntity();
 			}
-			
+
 		});
-		
+
 	}
-	
-	
+
+
 	@Override
 	public void onApplicationEvent(ContextClosedEvent event) {
 		this.onCloseApplication();
 	}
-	
-	
+
+
 	/**
 	 * 关闭应用时回调
 	 */
@@ -120,20 +133,20 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 		//输出为持久化的实体日志
 		dbPersistService.logHadNotPersistEntity();
 	}
-	
-	
+
+
 	@Override
 	public T get(PK id) {
-		
+
 		CacheObject<T> cacheObject = this.get(clazz, id);
 		if (cacheObject != null) {
-			return (T) cacheObject.getEntity();
+			return (T) cacheObject.getProxyEntity();
 		}
-		
+
 		return null;
 	}
-	
-	
+
+
 	/**
 	 * 获取缓存对象
 	 * @param entityClazz 实体类型
@@ -143,34 +156,39 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 	@SuppressWarnings("unchecked")
 	private CacheObject<T> get(Class<T> entityClazz, Serializable id) {
 		String key = CacheRule.getEntityIdKey(id, entityClazz);
+
 		Cache.ValueWrapper wrapper = (Cache.ValueWrapper) cache.get(key);
 		if(wrapper != null) {	// 已经缓存
+
 			CacheObject<T> cacheObject = (CacheObject<T>) wrapper.get();
 			if(cacheObject != null && cacheObject.getUpdateStatus() != UpdateStatus.DELETED) {
 				return cacheObject;
 			}
+
 			return null;
 		}
-		
+
 		Lock lock = new ReentrantLock();
 		Lock prevLock = WAITING_LOCK_MAP.putIfAbsent(key, lock);
 		lock = prevLock != null ? prevLock : lock;
-		
+
 		CacheObject<T> cacheObject = null;
 		lock.lock();
 		try {
-			
+
 			wrapper = (Cache.ValueWrapper) cache.get(key);
 			if (wrapper == null) {
+
 				T entity = dbAccessService.get(entityClazz, id);
-				if (entity != null) {						
+				if (entity != null) {
 					if(entity instanceof EntityInitializer){
 						EntityInitializer entityInitializer = (EntityInitializer) entity;
 						entityInitializer.doAfterLoad();
 					}
-					
-					cacheObject = new CacheObject<T>(entity, id, entityClazz);						
+
+					cacheObject = new CacheObject<T>(entity, id, entityClazz, ClassUtil.getProxyEntity(proxyClazz, entity));
 					wrapper = cache.putIfAbsent(key, cacheObject);
+
 					if (wrapper != null && wrapper.get() != null) {
 						cacheObject = (CacheObject<T>) wrapper.get();
 					}
@@ -181,82 +199,86 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 					}
 				}
 			}
-			
+
 		} finally {
 			WAITING_LOCK_MAP.remove(key);
 			lock.unlock();
 		}
-		
+
 		if (cacheObject != null && cacheObject.getUpdateStatus() != UpdateStatus.DELETED) {
 			return cacheObject;
 		}
-		
+
 		return null;
 	}
-	
+
 
 	@Override
 	public List<T> getEntityFromIdList(Collection<PK> idList) {
 		if (idList == null || idList.size() == 0) {
 			return null;
 		}
-		
+
 		List<T> list = new ArrayList<T> (idList.size());
-		
+
 		for (PK id : idList) {
 			T entity = this.get(id);
 			if (entity != null) {
 				list.add(entity);
 			}
 		}
-		
+
 		return list;
 	}
-	
-	
+
+
 	@SuppressWarnings("unchecked")
 	@Override
 	public T submitNew2Queue(T entity) {
-		
+
 		//生成主键
 		if (entity.getId() == null) {
-			
+
 			Object id = this.dbRuleService.getIdAutoGenerateValue(entity.getClass());
 			if (id == null) {
 				String msg = "提交新建实体到更新队列参数错：未能识别主键类型";
 				logger.error(msg);
 				throw new IllegalArgumentException(msg);
 			}
+
 			entity.setId( (PK) id);
 		}
-		
+
 		//存储到缓存
 		CacheObject<T> cacheObject = null;
 		String key = CacheRule.getEntityIdKey(entity.getId(), entity.getClass());
 		Cache.ValueWrapper wrapper = (Cache.ValueWrapper) cache.get(key);
-		
+
 		if (wrapper == null) {//缓存还不存在
-			cacheObject = new CacheObject<T>(entity, entity.getId(), (Class<T>) entity.getClass(), UpdateStatus.PERSIST);
+
+			cacheObject = new CacheObject<T>(entity, entity.getId(), (Class<T>) entity.getClass(), ClassUtil.getProxyEntity(proxyClazz, entity), UpdateStatus.PERSIST);
 			wrapper = cache.putIfAbsent(key, cacheObject);
-			
+
 			cacheObject = (CacheObject<T>) wrapper.get();
 		} else {
+
 			cacheObject = (CacheObject<T>) wrapper.get();
+
 			if(cacheObject.getUpdateStatus() == UpdateStatus.DELETED) {//已被删除
 				//删除再保存，实际上很少出现这种情况
 				cacheObject.setUpdateStatus(UpdateStatus.PERSIST);
 				wrapper = cache.putIfAbsent(key, cacheObject);
-				
+
 				cacheObject = (CacheObject<T>) wrapper.get();
 			}
 		}
-		
+
 		//入库
 		if (cacheObject != null) {
 			UpdateAction updateAction = UpdateAction.valueOf(cacheObject, UpdateType.INSERT);
 			dbPersistService.handlerPersist(updateAction);
 		}
-		
+
 		Object obj = this.get(entity.getId());
 		return (T) obj;
 	}
@@ -270,14 +292,14 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 			dbPersistService.handlerPersist(updateAction);
 		}
 	}
-	
-	
+
+
 	@Override
 	public void submitDeleted2Queue(T entity) {
 		submitDeleted2Queue(entity.getId());
 	}
-	
-	
+
+
 	@Override
 	public void submitDeleted2Queue(PK id) {
 		CacheObject<T> cacheObject = this.get(clazz, id);
@@ -287,18 +309,18 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 			dbPersistService.handlerPersist(updateAction);
 		}
 	}
-	
-	
+
+
 	@Override
 	public ExecutorService getThreadPool() {
 		return this.dbPersistService.getThreadPool();
 	}
-	
-	
+
+
 	@Override
 	public Cache getCache() {
 		return cache;
 	}
-	
-	
+
+
 }

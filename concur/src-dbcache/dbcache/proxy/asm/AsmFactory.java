@@ -15,21 +15,21 @@ import org.objectweb.asm.ClassWriter;
  * @date 2014年9月6日上午12:28:13
  */
 public class AsmFactory {
-	
+
 	/** 代理类类名 */
 	public static final String SUFIX = "$EnhancedByCc";
-	
+
 	/**
 	 * 字节码类加载器
 	 */
 	public static BytecodeLoader classLoader = new BytecodeLoader();
-	
+
 	/**
-	 * 
+	 *
 	 * <p>
 	 * 根据字节码加载class
 	 * </p>
-	 * 
+	 *
 	 * @author dixingxing
 	 * @date Apr 29, 2012
 	 */
@@ -38,13 +38,13 @@ public class AsmFactory {
 			return super.defineClass(className, byteCodes, 0, byteCodes.length);
 		}
 	}
-	
+
 	/**
-	 * 
+	 *
 	 * <p>
 	 * 返回代理类
 	 * </p>
-	 * 
+	 *
 	 * @param <T>
 	 * @param clazz
 	 * @return
@@ -73,13 +73,13 @@ public class AsmFactory {
 			return result;
 		}
 	}
-	
+
 	/**
-	 * 
+	 *
 	 * <p>
 	 * 把java字节码写入class文件
 	 * </p>
-	 * 
+	 *
 	 * @param <T>
 	 * @param name
 	 * @param data
@@ -88,7 +88,7 @@ public class AsmFactory {
 	 */
 	public static <T> void writeClazz(String name, byte[] data) {
 		try {
-			File file = new File("C:" + name + ".class");
+			File file = new File("C:\\" + name + ".class");
 			FileOutputStream fout = new FileOutputStream(file);
 
 			fout.write(data);
@@ -97,5 +97,5 @@ public class AsmFactory {
 			e.printStackTrace();
 		}
 	}
-	
+
 }

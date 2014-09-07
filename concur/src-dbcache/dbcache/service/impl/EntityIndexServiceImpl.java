@@ -12,21 +12,22 @@ import dbcache.model.IndexValue;
 import dbcache.service.Cache;
 import dbcache.service.EntityIndexService;
 
-
 /**
  * 实体索引服务实现类
+ *
  * @author Jake
  * @date 2014年8月30日下午12:49:40
  */
 @Component
-public class EntityIndexServiceImpl<PK extends Comparable<PK> & Serializable> implements EntityIndexService<PK> {
-	
-	
+public class EntityIndexServiceImpl<PK extends Comparable<PK> & Serializable>
+		implements EntityIndexService<PK> {
+
+
 	@Autowired
 	@Qualifier("concurrentLinkedHashMapCache")
 	private Cache cache;
-	
-	
+
+
 	@Override
 	public Collection<IndexValue<PK>> get(IndexKey<PK> indexKey) {
 		// TODO Auto-generated method stub
@@ -40,24 +41,21 @@ public class EntityIndexServiceImpl<PK extends Comparable<PK> & Serializable> im
 	}
 
 	@Override
-	public void create(IndexKey<PK> indexKey, IndexValue<PK> indexValue) {
+	public void create(IndexValue<PK> indexValue) {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override
-	public void update(IndexKey<PK> indexKey, IndexValue<PK> oldIndexValue,
-			IndexValue<PK> indexValue) {
+	public void update(IndexValue<PK> oldIndexValue, IndexValue<PK> indexValue) {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override
 	public void remove(IndexValue<PK> indexValue) {
 		// TODO Auto-generated method stub
-		
-	}
-	
-	
-}
 
+	}
+
+}

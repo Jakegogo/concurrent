@@ -108,7 +108,6 @@ public class Test {
 	public void t3() {
 		Entity entity = new Entity();
 		long t1 = System.currentTimeMillis();
-		cache.put(getEntityIdKey(1, Entity.class), new CacheObject(entity, 1, Entity.class));
 		for(int i = 0;i < 100000000;i++) {
 			this.cacheService.get(1);
 		}

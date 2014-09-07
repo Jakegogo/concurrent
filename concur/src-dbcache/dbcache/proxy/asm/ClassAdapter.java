@@ -10,19 +10,28 @@ import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 
+import dbcache.proxy.AbstractMethodAspect;
 import dbcache.proxy.util.ClassUtil;
 
 /**
  * (动态)生成静态代理类 同时继承被代理的类
- * 
+ *
  * @author Jake
  * @date 2014年9月6日上午12:06:47
  */
 public class ClassAdapter extends ClassVisitor implements Opcodes {
-	
+
 	/** 构造方法名常量 */
 	private static final String INIT = "<init>";
 
+	/**
+	 * 切面方法重写器
+	 */
+	private AbstractMethodAspect methodAspect;
+
+	/**
+	 * ClassWriter
+	 */
 	private ClassWriter classWriter;
 
 	/**
@@ -42,22 +51,33 @@ public class ClassAdapter extends ClassVisitor implements Opcodes {
 
 	/**
 	 * 构造方法
-	 * 
-	 * @param enhancedClassName
-	 *            代理类类名
-	 * @param targetClass
-	 *            被代理类
-	 * @param writer
-	 *            ClassWriter
+	 *
+	 * @param enhancedClassName 代理类类名
+	 * @param targetClass 被代理类
+	 * @param writer  ClassWriter
 	 */
 	public ClassAdapter(String enhancedClassName, Class<?> targetClass,
 			ClassWriter writer) {
+		this(enhancedClassName, targetClass, writer, new AbstractMethodAspect() {});
+	}
+
+	/**
+	 * 构造方法
+	 * @param enhancedClassName 代理类类名
+	 * @param targetClass 被代理类
+	 * @param writer ClassWriter
+	 * @param methodAspect 方法切面修改器
+	 */
+	public ClassAdapter(String enhancedClassName, Class<?> targetClass,
+			ClassWriter writer, AbstractMethodAspect methodAspect) {
 		super(Opcodes.ASM4, writer);
 		this.classWriter = writer;
 		this.originalClassName = targetClass.getName();
 		this.enhancedClassName = enhancedClassName;
 		this.originalClass = targetClass;
+		this.methodAspect = methodAspect;
 	}
+
 
 	@Override
 	public void visit(int version, int access, String name, String signature,
@@ -81,43 +101,6 @@ public class ClassAdapter extends ClassVisitor implements Opcodes {
 		return null;
 	}
 
-	/**
-	 * 
-	 * <p>
-	 * 前置方法
-	 * </p>
-	 *
-	 * @see TxHandler
-	 * @param mWriter
-	 */
-	private static void doBefore(MethodVisitor mWriter, String methodInfo) {
-		mWriter.visitFieldInsn(GETSTATIC, "java/lang/System", "out",
-				"Ljava/io/PrintStream;");
-		mWriter.visitLdcInsn("before method : " + methodInfo);
-		mWriter.visitMethodInsn(INVOKEVIRTUAL, "java/io/PrintStream",
-				"println", "(Ljava/lang/String;)V");
-		// 或者直接调用静态方法
-		// mWriter.visitLdcInsn(methodInfo);
-		// mWriter.visitMethodInsn(INVOKESTATIC,toAsmCls(TxHandler.class.getName()),"before","(Ljava/lang/String;)V");
-
-	}
-
-	/**
-	 * 
-	 * <p>
-	 * 后置方法
-	 * </p>
-	 * 
-	 * @see TxHandler
-	 * @param mWriter
-	 */
-	private static void doAfter(MethodVisitor mWriter, String methodInfo) {
-		mWriter.visitFieldInsn(GETSTATIC, "java/lang/System", "out",
-				"Ljava/io/PrintStream;");
-		mWriter.visitLdcInsn("after method : " + methodInfo);
-		mWriter.visitMethodInsn(INVOKEVIRTUAL, "java/io/PrintStream",
-				"println", "(Ljava/lang/String;)V");
-	}
 
 	@Override
 	public void visitEnd() {
@@ -184,7 +167,7 @@ public class ClassAdapter extends ClassVisitor implements Opcodes {
 					m.getName(), mt.toString(), null, null);
 
 			// insert code here (before)
-			doBefore(mWriter, methodInfo.toString());
+			this.methodAspect.doBefore(mWriter, methodInfo.toString());
 
 			// 如果不是静态方法 load this.obj对象
 			if (!Modifier.isStatic(m.getModifiers())) {
@@ -214,7 +197,7 @@ public class ClassAdapter extends ClassVisitor implements Opcodes {
 			Type rt = Type.getReturnType(m);
 			// 没有返回值
 			if (rt.toString().equals("V")) {
-				doAfter(mWriter, methodInfo.toString());
+				this.methodAspect.doAfter(mWriter, methodInfo.toString());
 				mWriter.visitInsn(RETURN);
 			}
 			// 把return xxx() 转变成 ： Object o = xxx(); return o;
@@ -224,7 +207,7 @@ public class ClassAdapter extends ClassVisitor implements Opcodes {
 				int returnCode = ClassUtil.rtCode(rt);
 
 				mWriter.visitVarInsn(storeCode, i);
-				doAfter(mWriter, methodInfo.toString());
+				this.methodAspect.doAfter(mWriter, methodInfo.toString());
 				mWriter.visitVarInsn(loadCode, i);
 				mWriter.visitInsn(returnCode);
 			}

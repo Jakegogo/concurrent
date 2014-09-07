@@ -1,6 +1,7 @@
 package dbcache.proxy.util;
 
 import java.io.IOException;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 
@@ -11,23 +12,48 @@ import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 
+import dbcache.test.Entity;
+
 /**
  * 类操作的工具集
- * 
+ *
  * @author Jake
  * @date 2014年9月6日上午12:10:37
  */
 public class ClassUtil implements Opcodes {
 
+
+	/**
+	 * 获取代理对象
+	 * @param proxyClass 代理类
+	 * @param entity 被代理实体
+	 */
+	@SuppressWarnings("unchecked")
+	public static <T> T getProxyEntity(Class<?> proxyClass, T entity) {
+		Class<?>[] paramTypes = { entity.getClass() };
+		Entity orign = new Entity();
+		Object[] params = { orign };
+		Constructor<?> con;
+		try {
+			con = proxyClass.getConstructor(paramTypes);
+			return (T) con.newInstance(params);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
+
+
 	/**
 	 * 把类名中的"."替换为"/"
-	 * 
+	 *
 	 * @param className
 	 * @return
 	 */
 	public static String toAsmCls(String className) {
 		return className.replace('.', '/');
 	}
+
 
 	/**
 	 * 判断是否需要重写方法
@@ -37,7 +63,7 @@ public class ClassUtil implements Opcodes {
 	 * <p>
 	 * "main" 方法不做重写
 	 * </p>
-	 * 
+	 *
 	 * @param m
 	 *            目标方法
 	 * @return
@@ -57,8 +83,9 @@ public class ClassUtil implements Opcodes {
 		return true;
 	}
 
+
 	/**
-	 * 
+	 *
 	 * <p>
 	 * get StoreCode(Opcodes#xStore)
 	 * </p>
@@ -107,8 +134,9 @@ public class ClassUtil implements Opcodes {
 		return sort;
 	}
 
+
 	/**
-	 * 
+	 *
 	 * <p>
 	 * get StoreCode(Opcodes#xLOAD)
 	 * </p>
@@ -155,8 +183,9 @@ public class ClassUtil implements Opcodes {
 		return sort;
 	}
 
+
 	/**
-	 * 
+	 *
 	 * <p>
 	 * get StoreCode(Opcodes#xRETURN)
 	 * </p>
@@ -202,14 +231,14 @@ public class ClassUtil implements Opcodes {
 		}
 		return sort;
 	}
-	
-	
+
+
 	/**
-	 * 
+	 *
 	 * <p>
 	 * 比较参数类型是否一致
 	 * </p>
-	 * 
+	 *
 	 * @param types
 	 *            asm的类型({@link Type})
 	 * @param clazzes
@@ -229,14 +258,14 @@ public class ClassUtil implements Opcodes {
 		}
 		return true;
 	}
-	
-	
+
+
 	/**
-	 * 
+	 *
 	 * <p>
 	 * 获取方法的参数名
 	 * </p>
-	 * 
+	 *
 	 * @param m
 	 * @return
 	 */

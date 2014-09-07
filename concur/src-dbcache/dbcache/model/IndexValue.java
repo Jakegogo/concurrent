@@ -8,22 +8,22 @@ import java.io.Serializable;
  * @date 2014年8月25日上午1:07:14
  */
 public class IndexValue<PK extends Comparable<PK> & Serializable> {
-	
+
 	/**
 	 * 索引键
 	 */
 	private volatile IndexKey<PK> indexKey;
-	
+
 	/**
 	 * 索引值对应的实体Id
 	 */
 	private final PK id;
-	
+
 	/**
 	 * 索引值更新状态
 	 */
 	private volatile UpdateStatus updateStatus = UpdateStatus.PERSIST;
-	
+
 	/**
 	 * 构造方法
 	 * @param id 实体Id
@@ -33,7 +33,7 @@ public class IndexValue<PK extends Comparable<PK> & Serializable> {
 		this.id = id;
 		this.indexKey = indexKey;
 	}
-	
+
 	/**
 	 * 获取实例
 	 * @param id 实体Id
@@ -63,5 +63,5 @@ public class IndexValue<PK extends Comparable<PK> & Serializable> {
 	public void setUpdateStatus(UpdateStatus updateStatus) {
 		this.updateStatus = updateStatus;
 	}
-	
+
 }

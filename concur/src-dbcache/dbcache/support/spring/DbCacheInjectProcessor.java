@@ -19,6 +19,7 @@ import org.springframework.util.ReflectionUtils;
 import org.springframework.util.ReflectionUtils.FieldCallback;
 
 import dbcache.model.IEntity;
+import dbcache.proxy.asm.AsmFactory;
 import dbcache.service.Cache;
 import dbcache.service.DbCacheService;
 import dbcache.service.impl.DbCacheServiceImpl;
@@ -30,21 +31,21 @@ import dbcache.service.impl.DbCacheServiceImpl;
  */
 @Component
 public class DbCacheInjectProcessor extends InstantiationAwareBeanPostProcessorAdapter {
-	
+
 	/**
 	 * logger
 	 */
 	private static final Logger logger = LoggerFactory.getLogger(DbCacheInjectProcessor.class);
-	
-	
+
+
 	@Autowired
 	private ApplicationContext applicationContext;
-	
-	
+
+
 	@SuppressWarnings("rawtypes")
 	private Map<Class<?>, DbCacheService> dbCacheServiceBeanMap = new HashMap<Class<?>, DbCacheService>();
-	
-	
+
+
 	@Override
 	public Object postProcessAfterInitialization(final Object bean, final String beanName)
 			throws BeansException {
@@ -58,8 +59,8 @@ public class DbCacheInjectProcessor extends InstantiationAwareBeanPostProcessorA
 		});
 		return super.postProcessAfterInitialization(bean, beanName);
 	}
-	
-	
+
+
 	/**
 	 * 注入DbCache
 	 * @param bean bean
@@ -90,33 +91,40 @@ public class DbCacheInjectProcessor extends InstantiationAwareBeanPostProcessorA
 		System.out.println(service);
 	}
 
-	
-	
+
+
 	@SuppressWarnings({ "rawtypes" })
 	private DbCacheService getDbCacheServiceBean(Class<? extends IEntity> clz) throws NoSuchFieldException, SecurityException {
 		DbCacheService service = this.dbCacheServiceBeanMap.get(clz);
-		
+
 		if(service == null) {
 			//创建新的bean
 			service = applicationContext.getAutowireCapableBeanFactory().createBean(DbCacheServiceImpl.class);
-			
+
 			//设置实体类
 			Field clazzField = DbCacheServiceImpl.class.getDeclaredField("clazz");
 			inject(service, clazzField, clz);
-			
+
+
+			//初始化代理类
+			Class<?> proxyClazz = AsmFactory.getEnhancedClass(clz);
+			Field proxyClazzField = DbCacheServiceImpl.class.getDeclaredField("proxyClazz");
+			inject(service, proxyClazzField, proxyClazz);
+
+
 			//初始化缓存实例
 			Field cacheField = DbCacheServiceImpl.class.getDeclaredField("cache");
 			Class<?> cacheClass = service.getCache().getClass();
 			Cache cache = (Cache) applicationContext.getAutowireCapableBeanFactory().createBean(cacheClass);
 			inject(service, cacheField, cache);
-			
+
 			dbCacheServiceBeanMap.put(clz, service);
 		}
-		
+
 		return service;
 	}
 
-	
+
 	/**
 	 * 注入属性
 	 * @param bean bean
@@ -133,7 +141,7 @@ public class DbCacheInjectProcessor extends InstantiationAwareBeanPostProcessorA
 			throw new IllegalStateException(message.getMessage(), e);
 		}
 	}
-	
-	
-	
+
+
+
 }

@@ -5,16 +5,21 @@ import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * 实体缓存辅助类
- * 
+ *
  * @author jake
  * @date 2014-7-31-下午8:18:03
  */
 public class CacheObject<T extends IEntity<?>> {
-	
+
 	/**
 	 * 缓存对象
 	 */
 	private final T entity;
+
+	/**
+	 * 代理缓存对象
+	 */
+	private final T proxyEntity;
 
 	/**
 	 * 主键id
@@ -43,7 +48,7 @@ public class CacheObject<T extends IEntity<?>> {
 
 	/**
 	 * 构造方法
-	 * 
+	 *
 	 * @param entity
 	 *            实体
 	 * @param id
@@ -51,13 +56,13 @@ public class CacheObject<T extends IEntity<?>> {
 	 * @param clazz
 	 *            类型
 	 */
-	public CacheObject(T entity, Serializable id, Class<T> clazz) {
-		this(entity, id, clazz, UpdateStatus.PERSIST);
+	public CacheObject(T entity, Serializable id, Class<T> clazz, T proxyEntity) {
+		this(entity, id, clazz, proxyEntity, UpdateStatus.PERSIST);
 	}
 
 	/**
 	 * 构造方法
-	 * 
+	 *
 	 * @param entity
 	 *            实体
 	 * @param id
@@ -67,18 +72,19 @@ public class CacheObject<T extends IEntity<?>> {
 	 * @param updateStatus
 	 *            更新方式
 	 */
-	public CacheObject(T entity, Serializable id, Class<T> clazz,
+	public CacheObject(T entity, Serializable id, Class<T> clazz, T proxyEntity,
 			UpdateStatus updateStatus) {
 		this.entity = entity;
 		this.id = id;
 		this.clazz = clazz;
+		this.proxyEntity = proxyEntity;
 		this.updateStatus = updateStatus;
 	}
 
-	
+
 	/**
 	 * 比较并更新入库版本号
-	 * 
+	 *
 	 * @param updateAction
 	 *            更新操作
 	 * @return
@@ -89,7 +95,7 @@ public class CacheObject<T extends IEntity<?>> {
 
 	/**
 	 * 比较并更新入库版本号
-	 * 
+	 *
 	 * @param updateAction
 	 *            更新操作
 	 * @return
@@ -108,7 +114,7 @@ public class CacheObject<T extends IEntity<?>> {
 
 	/**
 	 * 设置状态
-	 * 
+	 *
 	 * @param newStatus
 	 *            新状态
 	 */
@@ -118,6 +124,10 @@ public class CacheObject<T extends IEntity<?>> {
 
 	public T getEntity() {
 		return entity;
+	}
+
+	public T getProxyEntity() {
+		return proxyEntity;
 	}
 
 	public Serializable getId() {
