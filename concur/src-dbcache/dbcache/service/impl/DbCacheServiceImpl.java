@@ -12,6 +12,7 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import javax.annotation.PostConstruct;
 
+import org.apache.http.annotation.ThreadSafe;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,6 +41,7 @@ import dbcache.service.DbRuleService;
  * @author jake
  * @date 2014-7-31-下午6:07:37
  */
+@ThreadSafe
 @Component
 public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK> & Serializable>
 		implements DbCacheService<T, PK>, ApplicationListener<ContextClosedEvent> {

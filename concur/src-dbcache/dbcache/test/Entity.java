@@ -13,41 +13,41 @@ import dbcache.model.IEntity;
 
 @javax.persistence.Entity
 public class Entity implements EntityInitializer, IEntity<Integer> {
-	
+
 	@Id
 	public int id = 1;
-	
-	
-	@Index(name="uid_idx")
+
+
+
 	private int uid;
-	
-	
-	public volatile int num;
-	
+
+	@Index(name="uid_idx")
+	public int num;
+
 	@Transient
 	public AtomicInteger idgenerator;
 
 	public Entity() {
 //		doAfterLoad();
 	}
-	
-	public void increseId() {
+
+	public void increseNum() {
 		this.num = this.idgenerator.incrementAndGet();
 	}
-	
+
 	public int getNum() {
 		return num;
 	}
-	
+
 	public void setNum(int num) {
 		this.num = num;
 	}
-	
+
 	@UpdateIndex({ "uid_idx" })
 	public void addNum(int num) {
 		this.num += num;
 	}
-	
+
 
 	public int getUid() {
 		return uid;
@@ -61,7 +61,7 @@ public class Entity implements EntityInitializer, IEntity<Integer> {
 	public void doAfterLoad() {
 		idgenerator = new AtomicInteger(num);
 	}
-	
+
 	@Override
 	public void doBeforePersist() {
 		try {

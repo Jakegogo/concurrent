@@ -40,6 +40,9 @@ public class DbCacheInjectProcessor extends InstantiationAwareBeanPostProcessorA
 
 	@Autowired
 	private ApplicationContext applicationContext;
+	
+	@Autowired
+	private DefaultMethodAspect methodAspect;
 
 
 	@SuppressWarnings("rawtypes")
@@ -70,8 +73,10 @@ public class DbCacheInjectProcessor extends InstantiationAwareBeanPostProcessorA
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	protected void injectDbCacheService(Object bean, String beanName,
 			Field field) {
+		
 		Class<? extends IEntity> clz = null;
 		DbCacheService service = null;
+		
 		try {
 			Type type = field.getGenericType();
 			Type[] types = ((ParameterizedType) type).getActualTypeArguments();
@@ -87,14 +92,17 @@ public class DbCacheInjectProcessor extends InstantiationAwareBeanPostProcessorA
 			logger.debug(message.getMessage());
 			throw new IllegalStateException(message.getMessage());
 		}
+		
+		//注入DbCacheService
 		inject(bean, field, service);
-		System.out.println(service);
+		
 	}
 
 
 
 	@SuppressWarnings({ "rawtypes" })
 	private DbCacheService getDbCacheServiceBean(Class<? extends IEntity> clz) throws NoSuchFieldException, SecurityException {
+		
 		DbCacheService service = this.dbCacheServiceBeanMap.get(clz);
 
 		if(service == null) {
@@ -107,10 +115,10 @@ public class DbCacheInjectProcessor extends InstantiationAwareBeanPostProcessorA
 
 
 			//初始化代理类
-			Class<?> proxyClazz = AsmFactory.getEnhancedClass(clz);
+			Class<?> proxyClazz = AsmFactory.getEnhancedClass(clz, methodAspect);
 			Field proxyClazzField = DbCacheServiceImpl.class.getDeclaredField("proxyClazz");
 			inject(service, proxyClazzField, proxyClazz);
-
+			
 
 			//初始化缓存实例
 			Field cacheField = DbCacheServiceImpl.class.getDeclaredField("cache");
@@ -119,6 +127,7 @@ public class DbCacheInjectProcessor extends InstantiationAwareBeanPostProcessorA
 			inject(service, cacheField, cache);
 
 			dbCacheServiceBeanMap.put(clz, service);
+			
 		}
 
 		return service;
@@ -141,7 +150,6 @@ public class DbCacheInjectProcessor extends InstantiationAwareBeanPostProcessorA
 			throw new IllegalStateException(message.getMessage(), e);
 		}
 	}
-
-
-
+	
+	
 }

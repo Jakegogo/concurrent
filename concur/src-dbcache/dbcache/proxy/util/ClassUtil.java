@@ -31,8 +31,7 @@ public class ClassUtil implements Opcodes {
 	@SuppressWarnings("unchecked")
 	public static <T> T getProxyEntity(Class<?> proxyClass, T entity) {
 		Class<?>[] paramTypes = { entity.getClass() };
-		Entity orign = new Entity();
-		Object[] params = { orign };
+		Object[] params = { entity };
 		Constructor<?> con;
 		try {
 			con = proxyClass.getConstructor(paramTypes);
@@ -230,6 +229,39 @@ public class ClassUtil implements Opcodes {
 			break;
 		}
 		return sort;
+	}
+
+
+	/**
+	 * 封装成包装类型
+	 */
+	public static void withBoxingType(MethodVisitor mWriter, Type fieldType) {
+		switch (fieldType.getSort()) {
+		case Type.BOOLEAN:
+			mWriter.visitMethodInsn(INVOKESTATIC, "java/lang/Boolean", "valueOf", "(Z)Ljava/lang/Boolean;");
+			break;
+		case Type.BYTE:
+			mWriter.visitMethodInsn(INVOKESTATIC, "java/lang/Byte", "valueOf", "(B)Ljava/lang/Byte;");
+			break;
+		case Type.CHAR:
+			mWriter.visitMethodInsn(INVOKESTATIC, "java/lang/Character", "valueOf", "(C)Ljava/lang/Character;");
+			break;
+		case Type.SHORT:
+			mWriter.visitMethodInsn(INVOKESTATIC, "java/lang/Short", "valueOf", "(S)Ljava/lang/Short;");
+			break;
+		case Type.INT:
+			mWriter.visitMethodInsn(INVOKESTATIC, "java/lang/Integer", "valueOf", "(I)Ljava/lang/Integer;");
+			break;
+		case Type.FLOAT:
+			mWriter.visitMethodInsn(INVOKESTATIC, "java/lang/Float", "valueOf", "(F)Ljava/lang/Float;");
+			break;
+		case Type.LONG:
+			mWriter.visitMethodInsn(INVOKESTATIC, "java/lang/Long", "valueOf", "(J)Ljava/lang/Long;");
+			break;
+		case Type.DOUBLE:
+			mWriter.visitMethodInsn(INVOKESTATIC, "java/lang/Double", "valueOf", "(D)Ljava/lang/Double;");
+			break;
+		}
 	}
 
 

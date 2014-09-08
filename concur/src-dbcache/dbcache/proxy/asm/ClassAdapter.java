@@ -14,7 +14,8 @@ import dbcache.proxy.AbstractMethodAspect;
 import dbcache.proxy.util.ClassUtil;
 
 /**
- * (动态)生成静态代理类 同时继承被代理的类
+ * (动态)生成静态代理类
+ * <br/>继承被代理的类
  *
  * @author Jake
  * @date 2014年9月6日上午12:06:47
@@ -97,7 +98,7 @@ public class ClassAdapter extends ClassVisitor implements Opcodes {
 	@Override
 	public MethodVisitor visitMethod(int access, String name, String desc,
 			String signature, String[] exceptions) {
-		// 清除所有属性
+		// 清除所有方法
 		return null;
 	}
 
@@ -146,18 +147,6 @@ public class ClassAdapter extends ClassVisitor implements Opcodes {
 			}
 			Type mt = Type.getType(m);
 
-			StringBuilder methodInfo = new StringBuilder(originalClassName);
-			methodInfo.append(".").append(m.getName());
-			methodInfo.append("|");
-
-			Class<?>[] paramTypes = m.getParameterTypes();
-			for (Class<?> t : paramTypes) {
-				methodInfo.append(t.getName()).append(",");
-			}
-			if (paramTypes.length > 0) {
-				methodInfo.deleteCharAt(methodInfo.length() - 1);
-			}
-
 			// 方法是被哪个类定义的
 			String declaringCls = ClassUtil.toAsmCls(m.getDeclaringClass()
 					.getName());
@@ -166,8 +155,20 @@ public class ClassAdapter extends ClassVisitor implements Opcodes {
 			MethodVisitor mWriter = classWriter.visitMethod(ACC_PUBLIC,
 					m.getName(), mt.toString(), null, null);
 
+			//统计当前maxLocals
+			int i = 1;
+			// 遍历方法的所有参数
+			for (Class<?> tCls : m.getParameterTypes()) {
+				Type t = Type.getType(tCls);
+				i++;
+				// long和double 用64位表示，要后移一个位置，否则会报错
+				if (t.getSort() == Type.LONG || t.getSort() == Type.DOUBLE) {
+					i++;
+				}
+			}
+
 			// insert code here (before)
-			this.methodAspect.doBefore(mWriter, methodInfo.toString());
+			int aspectBeforeLocalNum = this.methodAspect.doBefore(mWriter, m, i);
 
 			// 如果不是静态方法 load this.obj对象
 			if (!Modifier.isStatic(m.getModifiers())) {
@@ -177,7 +178,7 @@ public class ClassAdapter extends ClassVisitor implements Opcodes {
 						Type.getDescriptor(originalClass));
 			}
 
-			int i = 1;
+			i = 1;
 			// load 出方法的所有参数
 			for (Class<?> tCls : m.getParameterTypes()) {
 				Type t = Type.getType(tCls);
@@ -193,11 +194,15 @@ public class ClassAdapter extends ClassVisitor implements Opcodes {
 					ClassUtil.toAsmCls(declaringCls), m.getName(),
 					mt.toString());
 
+			//doBefore 累加方法访问的本地变量数
+			i = aspectBeforeLocalNum;
+
+			int aspectAfterLocalNum = 0;
 			// 处理返回值类型
 			Type rt = Type.getReturnType(m);
 			// 没有返回值
 			if (rt.toString().equals("V")) {
-				this.methodAspect.doAfter(mWriter, methodInfo.toString());
+				aspectAfterLocalNum = this.methodAspect.doAfter(mWriter, m, i);
 				mWriter.visitInsn(RETURN);
 			}
 			// 把return xxx() 转变成 ： Object o = xxx(); return o;
@@ -207,10 +212,13 @@ public class ClassAdapter extends ClassVisitor implements Opcodes {
 				int returnCode = ClassUtil.rtCode(rt);
 
 				mWriter.visitVarInsn(storeCode, i);
-				this.methodAspect.doAfter(mWriter, methodInfo.toString());
+				aspectAfterLocalNum = this.methodAspect.doAfter(mWriter, m, i);
 				mWriter.visitVarInsn(loadCode, i);
 				mWriter.visitInsn(returnCode);
 			}
+
+			//doBefore 累加方法访问的本地变量数
+			i = aspectAfterLocalNum;
 
 			// 已设置了自动计算，但还是要调用一下，不然会报错
 			mWriter.visitMaxs(i, ++i);
