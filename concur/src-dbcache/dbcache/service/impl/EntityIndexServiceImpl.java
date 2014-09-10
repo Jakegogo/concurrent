@@ -14,7 +14,7 @@ import dbcache.service.EntityIndexService;
 
 /**
  * 实体索引服务实现类
- *
+ * <br/>更改实体索引值需要外部加锁
  * @author Jake
  * @date 2014年8月30日下午12:49:40
  */
@@ -62,7 +62,7 @@ public class EntityIndexServiceImpl<PK extends Comparable<PK> & Serializable>
 	public void update(Class<? extends Object> clazz, String indexName,
 			Object oldValue, Object newValue) {
 		// TODO Auto-generated method stub
-		System.out.println("called changeIndex:" + clazz.getName() + " - " + indexName + " - " + oldValue + " - " + newValue);
+//		System.out.println("called changeIndex:" + clazz.getName() + " - " + indexName + " - " + oldValue + " - " + newValue);
 	}
 
 }

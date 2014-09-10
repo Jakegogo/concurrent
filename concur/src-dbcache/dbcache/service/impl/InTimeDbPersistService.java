@@ -29,40 +29,40 @@ import dbcache.utils.ThreadUtils;
  */
 @Component("inTimeDbPersistService")
 public class InTimeDbPersistService implements DbPersistService {
-	
+
 	/**
 	 * logger
 	 */
 	private static final Logger logger = LoggerFactory.getLogger(InTimeDbPersistService.class);
-	
+
 	/**
 	 * 缺省入库线程池容量
 	 */
 	private static final int DEFAULT_DB_POOL_SIZE = Runtime.getRuntime().availableProcessors();
-	
-	
+
+
 	/**
 	 * 入库线程池
 	 */
 	private ExecutorService DB_POOL_SERVICE;
-	
-	
+
+
 	@Autowired
 	private DbRuleService dbRuleService;
-	
-	
+
+
 	@Autowired
 	private DbAccessService dbAccessService;
-	
+
 	/**
 	 * 缓存器
 	 */
 	private Cache cache;
-	
-	
+
+
 	@Override
 	public void init(Cache cache) {
-		
+
 		// 初始化入库线程
 		ThreadGroup threadGroup = new ThreadGroup("缓存模块");
 		NamedThreadFactory threadFactory = new NamedThreadFactory(threadGroup, "即时入库线程池");
@@ -71,51 +71,63 @@ public class InTimeDbPersistService implements DbPersistService {
 			dbPoolSize = DEFAULT_DB_POOL_SIZE;
 		}
 		DB_POOL_SERVICE = Executors.newFixedThreadPool(dbPoolSize, threadFactory);
-		
+
 		this.cache = cache;
 	}
-	
+
 
 	@Override
 	public void handlerPersist(UpdateAction updateAction) {
 		submitTask(updateAction);
 	}
-	
+
 	/**
 	 * 提交任务
 	 * @param cacheObj CacheObject
 	 */
 	private void submitTask(UpdateAction updateAction) {
 		Runnable task = this.createTask(updateAction);
-		
+		if(task == null) {
+			return;
+		}
+
 		try {
 			DB_POOL_SERVICE.submit(task);
 		} catch (RejectedExecutionException ex) {
 			logger.error("提交任务到更新队列产生异常", ex);
-			
+
 			this.handleTask(updateAction);
-			
+
 		} catch (Exception ex) {
 			logger.error("提交任务到更新队列产生异常", ex);
 		}
 	}
-	
-	
+
+
 	/**
 	 * 创建入库任务
 	 * @param updateAction 更新动作
 	 * @return Runnable
 	 */
 	private Runnable createTask(final UpdateAction updateAction) {
-		return new Runnable() {			
+		Runnable runnable = new Runnable() {
 			@Override
 			public void run() {
 				handleTask(updateAction);
 			}
 		};
+
+		//提交任务之前先判断缓存对象在提交之后被修改过
+		CacheObject<?> cacheObj = updateAction.getCacheObject();
+
+		if(updateAction.getEditVersion() < cacheObj.getEditVersion()) {
+			return null;
+		}
+
+		return runnable;
 	}
-	
-	
+
+
 	/**
 	 * 处理入库及回调事宜
 	 * @param cacheObj 实体缓存
@@ -124,7 +136,7 @@ public class InTimeDbPersistService implements DbPersistService {
 		//执行入库
 		doSyncDb(updateAction);
 	}
-	
+
 
 	@Override
 	public void awaitTermination() {
@@ -132,7 +144,7 @@ public class InTimeDbPersistService implements DbPersistService {
 		ThreadUtils.shundownThreadPool(DB_POOL_SERVICE, false);
 	}
 
-	
+
 	/**
 	 * 同步到db
 	 * @param cacheObj 实体缓存
@@ -141,34 +153,34 @@ public class InTimeDbPersistService implements DbPersistService {
 		if (updateAction == null || updateAction.getCacheObject() == null) {
 			return;
 		}
-		
+
 		CacheObject<?> cacheObj = updateAction.getCacheObject();
-		
+
 		//缓存对象在提交之后被修改过
 		if(updateAction.getEditVersion() < cacheObj.getEditVersion()) {
 			return;
 		}
-		
+
 		//比较并更新入库版本号
 		if (!cacheObj.compareAndUpdateDbSync(updateAction)) {
 			return;
 		}
-		
+
 		Object entity = null;
 		try {
 			entity = cacheObj.getEntity();
-			
+
 			//持久化前操作
 			if(entity instanceof EntityInitializer){
 				EntityInitializer entityInitializer = (EntityInitializer) entity;
 				entityInitializer.doBeforePersist();
 			}
-			
+
 			//缓存对象在提交之后被入库过
 			if(cacheObj.getDbVersion() > updateAction.getEditVersion()) {
 				return;
 			}
-			
+
 			//持久化
 			if (updateAction.getUpdateType() == UpdateType.DELETE) {
 				dbAccessService.delete(cacheObj.getEntity().getClass(), cacheObj.getId());
@@ -179,14 +191,14 @@ public class InTimeDbPersistService implements DbPersistService {
 			} else {
 				dbAccessService.update(cacheObj.getEntity());
 			}
-			
+
 		} catch (Exception ex) {
 			logger.error("执行入库时产生异常! 如果是主键冲突异常可忽略!" + entity.getClass().getName() + ":" + JsonUtils.object2JsonString(entity), ex);
 		}
-			
+
 	}
-	
-	
+
+
 	/**
 	 * 获取入库线程池
 	 * @return
@@ -199,8 +211,8 @@ public class InTimeDbPersistService implements DbPersistService {
 
 	@Override
 	public void logHadNotPersistEntity() {
-		
+
 	}
-	
-	
+
+
 }

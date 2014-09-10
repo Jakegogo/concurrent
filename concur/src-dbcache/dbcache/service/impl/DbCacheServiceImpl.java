@@ -38,6 +38,7 @@ import dbcache.service.DbRuleService;
 
 /**
  * 数据库缓存服务实现类
+ * <br/>更改实体属性值需要外部加锁
  * @author jake
  * @date 2014-7-31-下午6:07:37
  */

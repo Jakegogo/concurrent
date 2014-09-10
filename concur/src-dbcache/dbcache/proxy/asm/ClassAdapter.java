@@ -3,6 +3,7 @@ package dbcache.proxy.asm;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 
+import org.objectweb.asm.AnnotationVisitor;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.FieldVisitor;
@@ -79,6 +80,13 @@ public class ClassAdapter extends ClassVisitor implements Opcodes {
 		this.methodAspect = methodAspect;
 	}
 
+
+
+	@Override
+	public AnnotationVisitor visitAnnotation(String desc, boolean visible) {
+		// 清除类注解
+		return null;
+	}
 
 	@Override
 	public void visit(int version, int access, String name, String signature,

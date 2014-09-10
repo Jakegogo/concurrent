@@ -6,7 +6,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * 指定方法更新索引注解
+ * 方法更新索引注解
  * @author Jake
  * @date 2014年9月6日上午12:44:53
  */
