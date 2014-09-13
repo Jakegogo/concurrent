@@ -22,7 +22,7 @@ import org.springframework.util.ReflectionUtils.MethodCallback;
 import dbcache.proxy.AbstractMethodAspect;
 import dbcache.proxy.asm.ClassAdapter;
 import dbcache.proxy.util.ClassUtil;
-import dbcache.service.EntityIndexService;
+import dbcache.service.IndexService;
 
 /**
  * 默认方法切面处理
@@ -103,7 +103,7 @@ public class DefaultMethodAspect extends AbstractMethodAspect {
 	 * 实体索引服务
 	 */
 	@Autowired
-	private EntityIndexService<?> entityIndexService;
+	private IndexService<?> entityIndexService;
 
 	/**
 	 * 索引信息缓存
@@ -305,7 +305,7 @@ public class DefaultMethodAspect extends AbstractMethodAspect {
 
 	@Override
 	public Class<?> getAspectHandleClass() {
-		return EntityIndexService.class;
+		return IndexService.class;
 	}
 
 

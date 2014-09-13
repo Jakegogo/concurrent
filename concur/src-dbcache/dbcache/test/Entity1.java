@@ -9,15 +9,15 @@ import org.hibernate.annotations.Index;
 
 import dbcache.model.EntityInitializer;
 import dbcache.model.IEntity;
-import dbcache.service.EntityIndexService;
+import dbcache.service.IndexService;
 
 public class Entity1 extends Entity {
 
 	private Entity obj;
 
-	private EntityIndexService indexService;
+	private IndexService indexService;
 
-	public Entity1(Entity entity, EntityIndexService indexService)
+	public Entity1(Entity entity, IndexService indexService)
 	{
 		this.obj = entity;
 		this.indexService = indexService;

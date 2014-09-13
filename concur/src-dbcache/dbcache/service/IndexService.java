@@ -12,7 +12,7 @@ import dbcache.model.IndexValue;
  * @author Jake
  * @date 2014年8月30日下午12:48:30
  */
-public interface EntityIndexService<PK extends Comparable<PK> & Serializable> {
+public interface IndexService<PK extends Comparable<PK> & Serializable> {
 
 
 	/**

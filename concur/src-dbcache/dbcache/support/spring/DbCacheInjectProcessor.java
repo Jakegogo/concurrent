@@ -22,7 +22,7 @@ import dbcache.model.IEntity;
 import dbcache.proxy.asm.AsmFactory;
 import dbcache.service.Cache;
 import dbcache.service.DbCacheService;
-import dbcache.service.EntityIndexService;
+import dbcache.service.IndexService;
 import dbcache.service.impl.DbCacheServiceImpl;
 
 /**
@@ -131,7 +131,7 @@ public class DbCacheInjectProcessor extends InstantiationAwareBeanPostProcessorA
 			//修改IndexService的cache
 			Field indexServiceField = DbCacheServiceImpl.class.getDeclaredField("indexService");
 			ReflectionUtils.makeAccessible(indexServiceField);
-			EntityIndexService indexService = (EntityIndexService) indexServiceField.get(service);
+			IndexService indexService = (IndexService) indexServiceField.get(service);
 			Field cacheField1 = indexService.getClass().getDeclaredField("cache");
 			ReflectionUtils.makeAccessible(cacheField1);
 			inject(indexService, cacheField1, cache);

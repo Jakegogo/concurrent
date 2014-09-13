@@ -4,9 +4,9 @@ import java.io.Serializable;
 
 import org.springframework.stereotype.Component;
 
-import dbcache.ref.ConcurrentReferenceMap;
-import dbcache.ref.ConcurrentReferenceMap.ReferenceKeyType;
-import dbcache.ref.ConcurrentReferenceMap.ReferenceValueType;
+import dbcache.refcache.ConcurrentReferenceMap;
+import dbcache.refcache.ConcurrentReferenceMap.ReferenceKeyType;
+import dbcache.refcache.ConcurrentReferenceMap.ReferenceValueType;
 import dbcache.service.Cache;
 
 /**

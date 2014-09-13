@@ -10,7 +10,7 @@ import org.springframework.stereotype.Component;
 import dbcache.model.IndexKey;
 import dbcache.model.IndexValue;
 import dbcache.service.Cache;
-import dbcache.service.EntityIndexService;
+import dbcache.service.IndexService;
 
 /**
  * 实体索引服务实现类
@@ -19,8 +19,8 @@ import dbcache.service.EntityIndexService;
  * @date 2014年8月30日下午12:49:40
  */
 @Component
-public class EntityIndexServiceImpl<PK extends Comparable<PK> & Serializable>
-		implements EntityIndexService<PK> {
+public class IndexServiceImpl<PK extends Comparable<PK> & Serializable>
+		implements IndexService<PK> {
 
 
 	@Autowired

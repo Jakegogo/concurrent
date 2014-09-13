@@ -34,7 +34,7 @@ import dbcache.service.DbAccessService;
 import dbcache.service.DbCacheService;
 import dbcache.service.DbPersistService;
 import dbcache.service.DbRuleService;
-import dbcache.service.EntityIndexService;
+import dbcache.service.IndexService;
 
 
 /**
@@ -100,7 +100,7 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 	 * 索引服务
 	 */
 	@Autowired
-	private EntityIndexService<PK> indexService;
+	private IndexService<PK> indexService;
 
 	/**
 	 * dbCache 初始化
