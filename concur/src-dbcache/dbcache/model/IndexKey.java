@@ -8,29 +8,29 @@ import java.io.Serializable;
  * @date 2014年8月25日上午1:05:48
  */
 public class IndexKey<PK extends Comparable<PK> & Serializable> {
-	
+
 	/**
 	 * 索引名
 	 */
 	private final String name;
-	
+
 	/**
 	 * 索引值
 	 */
 	private final Object value;
-	
+
 	/**
 	 * 索引键更新状态
 	 */
 	private volatile UpdateStatus updateStatus = UpdateStatus.TRANSIENT;
-	
-	
+
+
 	/** 构造方法 */
 	private IndexKey(String name, Object value) {
 		this.name = name;
 		this.value = value;
 	}
-	
+
 	/**
 	 * 获取实例
 	 * @param name 索引名
@@ -69,7 +69,7 @@ public class IndexKey<PK extends Comparable<PK> & Serializable> {
 		result = prime * result + ((value == null) ? 0 : value.hashCode());
 		return result;
 	}
-	
+
 	@SuppressWarnings("unchecked")
 	@Override
 	public boolean equals(Object obj) {
@@ -92,5 +92,5 @@ public class IndexKey<PK extends Comparable<PK> & Serializable> {
 			return false;
 		return true;
 	}
-	
+
 }

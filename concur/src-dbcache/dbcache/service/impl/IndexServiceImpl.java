@@ -61,8 +61,15 @@ public class IndexServiceImpl<PK extends Comparable<PK> & Serializable>
 	@Override
 	public void update(Object entity, String indexName,
 			Object oldValue, Object newValue) {
-		// TODO Auto-generated method stub
+
+//		this.update(IndexKey.valueOf(indexName, oldValue));
+
 //		System.out.println("called changeIndex:" + entity.getClass().getName() + " - " + indexName + " - " + oldValue + " - " + newValue);
+	}
+
+
+	private void update(IndexKey<PK> indexKey, Object oldValue, Object newValue) {
+
 	}
 
 }

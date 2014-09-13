@@ -44,6 +44,19 @@ public class IndexValue<PK extends Comparable<PK> & Serializable> {
 		return new IndexValue<PK>(id, indexKey);
 	}
 
+
+	/**
+	 * 获取实例
+	 * @param id 实体Id
+	 * @param name 索引名
+	 * @param value 索引值
+	 * @return
+	 */
+	@SuppressWarnings("unchecked")
+	public static <PK extends Comparable<PK> & Serializable> IndexValue<PK> valueOf(PK id, String name, Object value) {
+		return new IndexValue<PK>(id, (IndexKey<PK>) IndexKey.valueOf(name, value));
+	}
+
 	public IndexKey<PK> getIndexKey() {
 		return indexKey;
 	}

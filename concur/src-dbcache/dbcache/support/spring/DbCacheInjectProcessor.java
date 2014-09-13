@@ -131,7 +131,10 @@ public class DbCacheInjectProcessor extends InstantiationAwareBeanPostProcessorA
 			//修改IndexService的cache
 			Field indexServiceField = DbCacheServiceImpl.class.getDeclaredField("indexService");
 			ReflectionUtils.makeAccessible(indexServiceField);
-			IndexService indexService = (IndexService) indexServiceField.get(service);
+			Class<?> indexServiceClass = indexServiceField.get(service).getClass();
+			IndexService indexService = (IndexService) applicationContext.getAutowireCapableBeanFactory().createBean(indexServiceClass);
+			inject(service, indexServiceField, indexService);
+
 			Field cacheField1 = indexService.getClass().getDeclaredField("cache");
 			ReflectionUtils.makeAccessible(cacheField1);
 			inject(indexService, cacheField1, cache);
