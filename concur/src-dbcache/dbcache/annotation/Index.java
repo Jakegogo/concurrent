@@ -12,8 +12,8 @@ import java.lang.annotation.Target;
  * @author Jake
  * @date 2014年9月7日下午10:50:17
  */
-@Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.FIELD)
+@Retention(RetentionPolicy.RUNTIME)
 public @interface Index {
 
 	/**
