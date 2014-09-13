@@ -59,10 +59,10 @@ public class EntityIndexServiceImpl<PK extends Comparable<PK> & Serializable>
 	}
 
 	@Override
-	public void update(Class<? extends Object> clazz, String indexName,
+	public void update(Object entity, String indexName,
 			Object oldValue, Object newValue) {
 		// TODO Auto-generated method stub
-//		System.out.println("called changeIndex:" + clazz.getName() + " - " + indexName + " - " + oldValue + " - " + newValue);
+//		System.out.println("called changeIndex:" + entity.getClass().getName() + " - " + indexName + " - " + oldValue + " - " + newValue);
 	}
 
 }

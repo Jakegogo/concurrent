@@ -14,16 +14,13 @@ import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationEvent;
-import org.springframework.context.ApplicationListener;
-import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.stereotype.Component;
 import org.springframework.util.ReflectionUtils;
 import org.springframework.util.ReflectionUtils.FieldCallback;
 import org.springframework.util.ReflectionUtils.MethodCallback;
 
 import dbcache.proxy.AbstractMethodAspect;
+import dbcache.proxy.asm.ClassAdapter;
 import dbcache.proxy.util.ClassUtil;
 import dbcache.service.EntityIndexService;
 
@@ -33,7 +30,7 @@ import dbcache.service.EntityIndexService;
  * @date 2014年9月7日下午6:51:36
  */
 @Component("defaultMethodAspect")
-public class DefaultMethodAspect extends AbstractMethodAspect implements ApplicationListener<ApplicationEvent> {
+public class DefaultMethodAspect extends AbstractMethodAspect {
 
 	/**
 	 * 类索引信息
@@ -202,7 +199,7 @@ public class DefaultMethodAspect extends AbstractMethodAspect implements Applica
 			final Field field = fieldsMap.get(methodMetaData.indexName);
 			//获取this.obj.fieldName
 			mWriter.visitVarInsn(Opcodes.ALOAD, 0);
-			mWriter.visitFieldInsn(Opcodes.GETFIELD,ClassUtil.toAsmCls(classIndexesMetaData.enhancedClassName), "obj", Type.getDescriptor(entityClass));
+			mWriter.visitFieldInsn(Opcodes.GETFIELD,ClassUtil.toAsmCls(classIndexesMetaData.enhancedClassName), ClassAdapter.REAL_OBJECT, Type.getDescriptor(entityClass));
 
 			PropertyDescriptor propertyDescriptor = null;
 			try {
@@ -255,7 +252,7 @@ public class DefaultMethodAspect extends AbstractMethodAspect implements Applica
 			final Field field = fieldsMap.get(methodMetaData.indexName);
 			//获取this.obj.getFieldName
 			mWriter.visitVarInsn(Opcodes.ALOAD, 0);
-			mWriter.visitFieldInsn(Opcodes.GETFIELD,ClassUtil.toAsmCls(classIndexesMetaData.enhancedClassName), "obj", Type.getDescriptor(entityClass));
+			mWriter.visitFieldInsn(Opcodes.GETFIELD,ClassUtil.toAsmCls(classIndexesMetaData.enhancedClassName), ClassAdapter.REAL_OBJECT, Type.getDescriptor(entityClass));
 
 			PropertyDescriptor propertyDescriptor = null;
 			try {
@@ -279,9 +276,13 @@ public class DefaultMethodAspect extends AbstractMethodAspect implements Applica
 			mWriter.visitVarInsn(Opcodes.ASTORE, locals);
 
 			//调用 changeIndex(Object entity, String indexName, Object oldValue, Object newValue)
+			//获取this.handler
+			mWriter.visitVarInsn(Opcodes.ALOAD, 0);
+			mWriter.visitFieldInsn(Opcodes.GETFIELD, ClassUtil.toAsmCls(classIndexesMetaData.enhancedClassName), ClassAdapter.HANDLER_OBJECT, Type.getDescriptor(this.getAspectHandleClass()));
+
 			//获取this.obj
 			mWriter.visitVarInsn(Opcodes.ALOAD, 0);
-			mWriter.visitFieldInsn(Opcodes.GETFIELD,ClassUtil.toAsmCls(classIndexesMetaData.enhancedClassName), "obj", Type.getDescriptor(entityClass));
+			mWriter.visitFieldInsn(Opcodes.GETFIELD,ClassUtil.toAsmCls(classIndexesMetaData.enhancedClassName), ClassAdapter.REAL_OBJECT, Type.getDescriptor(entityClass));
 
 			//load indexName
 			mWriter.visitLdcInsn(methodMetaData.indexName);
@@ -292,9 +293,8 @@ public class DefaultMethodAspect extends AbstractMethodAspect implements Applica
 			//获取属性修改后的值
 			mWriter.visitVarInsn(Opcodes.ALOAD, locals);
 
-			Class<?> _thisClass = this.getClass();
 			//调用静态方法
-			mWriter.visitMethodInsn(INVOKESTATIC, ClassUtil.toAsmCls(_thisClass.getName()), "changeIndex", "(Ljava/lang/Object;Ljava/lang/String;Ljava/lang/Object;Ljava/lang/Object;)V");
+			mWriter.visitMethodInsn(INVOKEINTERFACE, ClassUtil.toAsmCls(getAspectHandleClass().getName()), "update", "(Ljava/lang/Object;Ljava/lang/String;Ljava/lang/Object;Ljava/lang/Object;)V");
 
 		}
 
@@ -302,33 +302,10 @@ public class DefaultMethodAspect extends AbstractMethodAspect implements Applica
 	}
 
 
-	/**
-	 * 更新索引静态方法
-	 */
-	public static void changeIndex(Object entity, String indexName, Object oldValue, Object newValue) {
-		//判断值是否改变
-		if((oldValue != null && oldValue.equals(newValue)) || (newValue != null && newValue.equals(oldValue))) {
-			return;
-		}
-		//调用entityIndexService更新索引
-		indexService.update(entity.getClass(), indexName, oldValue, newValue);
-	}
-
-
-
-	/**********************************初始化****************************************/
-
-	//静态实例
-	private volatile static EntityIndexService<?> indexService;
-
 
 	@Override
-	public void onApplicationEvent(ApplicationEvent event) {
-		if (event instanceof ContextRefreshedEvent) {
-			ApplicationContext applicationContext = ((ContextRefreshedEvent) event).getApplicationContext();
-			DefaultMethodAspect defaultInstance = applicationContext.getBean("defaultMethodAspect", DefaultMethodAspect.class);
-			indexService = defaultInstance.entityIndexService;
-		}
+	public Class<?> getAspectHandleClass() {
+		return EntityIndexService.class;
 	}
 
 

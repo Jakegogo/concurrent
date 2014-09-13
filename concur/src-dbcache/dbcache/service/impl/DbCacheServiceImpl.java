@@ -34,6 +34,7 @@ import dbcache.service.DbAccessService;
 import dbcache.service.DbCacheService;
 import dbcache.service.DbPersistService;
 import dbcache.service.DbRuleService;
+import dbcache.service.EntityIndexService;
 
 
 /**
@@ -95,6 +96,11 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 	@Qualifier("inTimeDbPersistService")
 	private DbPersistService dbPersistService;
 
+	/**
+	 * 索引服务
+	 */
+	@Autowired
+	private EntityIndexService<PK> indexService;
 
 	/**
 	 * dbCache 初始化
@@ -189,7 +195,7 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 						entityInitializer.doAfterLoad();
 					}
 
-					cacheObject = new CacheObject<T>(entity, id, entityClazz, ClassUtil.getProxyEntity(proxyClazz, entity));
+					cacheObject = new CacheObject<T>(entity, id, entityClazz, ClassUtil.getProxyEntity(proxyClazz, entity, indexService));
 					wrapper = cache.putIfAbsent(key, cacheObject);
 
 					if (wrapper != null && wrapper.get() != null) {

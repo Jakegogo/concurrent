@@ -12,8 +12,6 @@ import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 
-import dbcache.test.Entity;
-
 /**
  * 类操作的工具集
  *
@@ -32,6 +30,38 @@ public class ClassUtil implements Opcodes {
 	public static <T> T getProxyEntity(Class<?> proxyClass, T entity) {
 		Class<?>[] paramTypes = { entity.getClass() };
 		Object[] params = { entity };
+		Constructor<?> con;
+		try {
+			con = proxyClass.getConstructor(paramTypes);
+			return (T) con.newInstance(params);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
+
+
+	/**
+	 * 获取代理对象
+	 * @param proxyClass 代理类
+	 * @param entity 被代理实体
+	 * @param constructParams 构造方法的参数
+	 */
+	@SuppressWarnings("unchecked")
+	public static <T> T getProxyEntity(Class<?> proxyClass, T entity, Object... constructParams) {
+
+		Class<?>[] paramTypes = new Class<?>[constructParams.length + 1];
+		paramTypes[0] = entity.getClass();
+		for(int i = 1; i < constructParams.length + 1;i ++) {
+			paramTypes[i] = constructParams[i - 1].getClass().getInterfaces()[0];
+		}
+
+		Object[] params = new Object[constructParams.length + 1];
+		params[0] = entity;
+		for(int i = 1; i < constructParams.length + 1;i ++) {
+			params[i] = constructParams[i - 1];
+		}
+
 		Constructor<?> con;
 		try {
 			con = proxyClass.getConstructor(paramTypes);

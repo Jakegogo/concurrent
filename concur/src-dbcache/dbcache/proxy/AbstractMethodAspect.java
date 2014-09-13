@@ -45,5 +45,14 @@ public abstract class AbstractMethodAspect implements Opcodes {
 		return 0;
 	}
 
+
+	/**
+	 * 获取切面处理类
+	 * @return
+	 */
+	public Class<?> getAspectHandleClass() {
+		return Object.class;
+	}
+
 }
 

@@ -45,24 +45,24 @@ public interface EntityIndexService<PK extends Comparable<PK> & Serializable> {
 	 * @param indexValue 新的索引值
 	 */
 	public void update(IndexValue<PK> oldIndexValue, IndexValue<PK> indexValue);
-	
-	
+
+
 	/**
 	 * 更新索引
-	 * @param class 实体类
+	 * @param entity 实体
 	 * @param indexName 索引名
 	 * @param oldValue 旧字段值
 	 * @param newValue 新字段值
 	 */
-	public void update(Class<? extends Object> class1, String indexName, Object oldValue, Object newValue);
-	
-	
+	public void update(Object entity, String indexName, Object oldValue, Object newValue);
+
+
 	/**
 	 * 移除索引值
 	 * @param indexValue 索引值
 	 */
 	public void remove(IndexValue<PK> indexValue);
-	
-	
-	
+
+
+
 }

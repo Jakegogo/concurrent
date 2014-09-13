@@ -165,7 +165,7 @@ public class DelayDbPersistService implements DbPersistService {
 
 	@Override
 	public void handlerPersist(UpdateAction updateAction) {
-		addToUpdateQueue(updateAction);
+		this.addToUpdateQueue(updateAction);
 	}
 
 

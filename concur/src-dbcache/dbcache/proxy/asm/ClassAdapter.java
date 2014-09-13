@@ -26,6 +26,12 @@ public class ClassAdapter extends ClassVisitor implements Opcodes {
 	/** 构造方法名常量 */
 	private static final String INIT = "<init>";
 
+	/** 真实对象的属性名 */
+	public static final String REAL_OBJECT = "obj";
+
+	/** 处理类对象的属性名 */
+	public static final String HANDLER_OBJECT = "handler";
+
 	/**
 	 * 切面方法重写器
 	 */
@@ -115,8 +121,12 @@ public class ClassAdapter extends ClassVisitor implements Opcodes {
 	public void visitEnd() {
 
 		// 增加原实体类型的属性(真实类)
-		classWriter.visitField(Opcodes.ACC_PROTECTED, "obj",
+		classWriter.visitField(Opcodes.ACC_PROTECTED, REAL_OBJECT,
 				Type.getDescriptor(originalClass), null, null);
+
+		// 增加切面处理对象
+		classWriter.visitField(Opcodes.ACC_PROTECTED, HANDLER_OBJECT,
+				Type.getDescriptor(methodAspect.getAspectHandleClass()), null, null);
 
 		// 调用originalClassName的<init>方法，否则class不能实例化
 		MethodVisitor mvInit = classWriter.visitMethod(ACC_PUBLIC, INIT, "()V",
@@ -140,12 +150,40 @@ public class ClassAdapter extends ClassVisitor implements Opcodes {
 		mvInit1.visitVarInsn(Opcodes.ALOAD, 1);
 
 		mvInit1.visitFieldInsn(Opcodes.PUTFIELD,
-				ClassUtil.toAsmCls(enhancedClassName), "obj",
+				ClassUtil.toAsmCls(enhancedClassName), REAL_OBJECT,
 				Type.getDescriptor(originalClass));
 
 		mvInit1.visitInsn(RETURN);
 		mvInit1.visitMaxs(3, 2);
 		mvInit1.visitEnd();
+
+
+		// 添加真实对象和切面处理对象构造方法,用真实类对象作为参数
+		MethodVisitor mvInit2 = classWriter.visitMethod(ACC_PUBLIC, INIT, "("
+				+ Type.getDescriptor(originalClass)
+				+ Type.getDescriptor(methodAspect.getAspectHandleClass()) + ")V", null, null);
+		mvInit2.visitVarInsn(Opcodes.ALOAD, 0);
+
+		mvInit2.visitMethodInsn(INVOKESPECIAL,
+				ClassUtil.toAsmCls(originalClassName), INIT, "()V");
+
+		mvInit2.visitVarInsn(Opcodes.ALOAD, 0);
+		mvInit2.visitVarInsn(Opcodes.ALOAD, 1);
+
+		mvInit2.visitFieldInsn(Opcodes.PUTFIELD,
+				ClassUtil.toAsmCls(enhancedClassName), REAL_OBJECT,
+				Type.getDescriptor(originalClass));
+
+		mvInit2.visitVarInsn(Opcodes.ALOAD, 0);
+		mvInit2.visitVarInsn(Opcodes.ALOAD, 2);
+
+		mvInit2.visitFieldInsn(Opcodes.PUTFIELD,
+				ClassUtil.toAsmCls(enhancedClassName), HANDLER_OBJECT,
+				Type.getDescriptor(methodAspect.getAspectHandleClass()));
+
+		mvInit2.visitInsn(RETURN);
+		mvInit2.visitMaxs(3, 2);
+		mvInit2.visitEnd();
 
 		// 获取所有方法，并重写(main方法 和 Object的方法除外)
 		Method[] methods = originalClass.getMethods();
@@ -182,7 +220,7 @@ public class ClassAdapter extends ClassVisitor implements Opcodes {
 			if (!Modifier.isStatic(m.getModifiers())) {
 				mWriter.visitVarInsn(Opcodes.ALOAD, 0);
 				mWriter.visitFieldInsn(Opcodes.GETFIELD,
-						ClassUtil.toAsmCls(enhancedClassName), "obj",
+						ClassUtil.toAsmCls(enhancedClassName), REAL_OBJECT,
 						Type.getDescriptor(originalClass));
 			}
 
