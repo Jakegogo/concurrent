@@ -1,5 +1,10 @@
 package dbcache.annotation;
 
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+
 import dbcache.conf.CacheType;
 import dbcache.conf.PersistType;
 
@@ -9,6 +14,8 @@ import dbcache.conf.PersistType;
  * @author Jake
  * @date 2014年9月13日下午1:38:22
  */
+@Target(ElementType.TYPE)
+@Retention(RetentionPolicy.RUNTIME)
 public @interface Cached {
 
 

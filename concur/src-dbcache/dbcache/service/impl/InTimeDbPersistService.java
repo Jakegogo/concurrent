@@ -192,6 +192,9 @@ public class InTimeDbPersistService implements DbPersistService {
 				dbAccessService.update(cacheObj.getEntity());
 			}
 
+			//持久化完成回调
+			updateAction.afterPersist();
+
 		} catch (Exception ex) {
 			logger.error("执行入库时产生异常! 如果是主键冲突异常可忽略!" + entity.getClass().getName() + ":" + JsonUtils.object2JsonString(entity), ex);
 		}

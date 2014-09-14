@@ -7,38 +7,38 @@ package dbcache.model;
  * @date 2014-7-31-下午9:56:42
  */
 public class UpdateAction {
-	
+
 	/**
 	 * 实体
 	 */
 	private CacheObject<?> cacheObject;
-	
+
 	/**
 	 * 实体更新类型
 	 */
 	private UpdateType updateType;
-	
+
 	/**
 	 * 当前更改的版本号
 	 */
 	private long editVersion;
-	
+
 	/**
 	 * 当前入库的版本号
 	 */
 	private long dbVersion;
-	
+
 	/**
 	 * 创建时间
 	 */
 	private long createTime;
-	
+
 	/**
 	 * 保持实体引用直到任务被处理,防止任务处理前被回收
 	 */
 	private Object entity;
-	
-	
+
+
 	/**
 	 * 构造方法
 	 * @param cacheObject 实体
@@ -53,7 +53,7 @@ public class UpdateAction {
 		this.createTime = System.currentTimeMillis();
 		this.entity = cacheObject.getEntity();
 	}
-	
+
 	/**
 	 * 获取实例
 	 * @param cacheObject 实体
@@ -63,21 +63,29 @@ public class UpdateAction {
 	 * @return
 	 */
 	public static UpdateAction valueOf(CacheObject<?> cacheObject, UpdateType updateType) {
-		//更新修改版本号
+
+		//最新修改版本号
 		long editVersion = cacheObject.increseEditVersion();
 		long dbVersion = cacheObject.getDbVersion();
+
 		return new UpdateAction(cacheObject, updateType, editVersion, dbVersion);
 	}
-	
-	
+
+	/**
+	 * 持久化完成操作
+	 */
+	public void afterPersist() {
+		//更新cacheObject的上一次UpdateAction
+	}
+
 	public CacheObject<?> getCacheObject() {
 		return cacheObject;
 	}
-	
+
 	public UpdateType getUpdateType() {
 		return updateType;
 	}
-	
+
 	public long getEditVersion() {
 		return editVersion;
 	}
@@ -97,5 +105,6 @@ public class UpdateAction {
 	public Object getEntity() {
 		return entity;
 	}
+
 
 }

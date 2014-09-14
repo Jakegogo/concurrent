@@ -40,7 +40,7 @@ public class DelayDbPersistService implements DbPersistService {
 	/**
 	 * 缺省入库线程池容量
 	 */
-	private static final int DEFAULT_DB_POOL_SIZE = 1;
+	private static final int DEFAULT_DB_POOL_SIZE = 2;
 
 	/**
 	 * 更改实体队列

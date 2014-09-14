@@ -125,12 +125,6 @@ public class ConfigFactoryImpl implements ConfigFactory, DbCacheMBean {
 			inject(service, proxyClazzField, proxyClazz);
 
 
-			//设置持久化PersistType方式的dbPersistService
-			Field dbPersistServiceField = DbCacheServiceImpl.class.getDeclaredField(dbPersistServiceProperty);
-			DbPersistService dbPersistService = (DbPersistService) applicationContext.getBean(cacheConfig.getPersistType().getDbPersistServiceClass());
-			inject(service, dbPersistServiceField, dbPersistService);
-
-
 			//初始化缓存实例
 			Field cacheField = DbCacheServiceImpl.class.getDeclaredField(cacheProperty);
 			Class<?> cacheClass = cacheConfig.getCacheType().getCacheClass();
@@ -138,6 +132,13 @@ public class ConfigFactoryImpl implements ConfigFactory, DbCacheMBean {
 			int concurrencyLevel = cacheConfig.getConcurrencyLevel() == 0? Runtime.getRuntime().availableProcessors() : cacheConfig.getConcurrencyLevel();
 			cache.init(cacheConfig.getEntitySize(), concurrencyLevel);
 			inject(service, cacheField, cache);
+
+
+			//设置持久化PersistType方式的dbPersistService
+			Field dbPersistServiceField = DbCacheServiceImpl.class.getDeclaredField(dbPersistServiceProperty);
+			DbPersistService dbPersistService = (DbPersistService) applicationContext.getBean(cacheConfig.getPersistType().getDbPersistServiceClass());
+			dbPersistService.init(cache);
+			inject(service, dbPersistServiceField, dbPersistService);
 
 
 			//修改IndexService的cache
