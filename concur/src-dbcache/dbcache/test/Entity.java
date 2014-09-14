@@ -64,12 +64,7 @@ public class Entity implements EntityInitializer, IEntity<Integer> {
 
 	@Override
 	public void doBeforePersist() {
-		try {
-			Thread.sleep(100);
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+
 	}
 
 

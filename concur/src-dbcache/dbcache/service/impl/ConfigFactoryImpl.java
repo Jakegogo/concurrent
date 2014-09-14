@@ -243,7 +243,7 @@ public class ConfigFactoryImpl implements ConfigFactory, DbCacheMBean {
 		final MBeanServer mbs = ManagementFactory.getPlatformMBeanServer();
 
 	    // Construct the ObjectName for the MBean we will register
-	    final ObjectName name = new ObjectName("dbcache.service.impl:type=DbCacheMBean");
+	    final ObjectName name = new ObjectName("dbcache.service:type=DbCacheMBean");
 
 	    final StandardMBean mbean = new StandardMBean(this, DbCacheMBean.class);
 

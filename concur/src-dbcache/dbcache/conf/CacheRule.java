@@ -16,9 +16,7 @@ public class CacheRule {
 	 * @return String key
 	 */
 	public static String getEntityIdKey(Serializable id, Class<?> entityClazz) {
-		return new StringBuilder().append(entityClazz.getName())
-									.append("_")
-									.append(id).toString();
+		return new StringBuilder(entityClazz.getName()).append("_").append(id).toString();
 	}
-	
+
 }
