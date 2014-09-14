@@ -30,7 +30,7 @@ import dbcache.service.IndexService;
  * @date 2014年9月7日下午6:51:36
  */
 @Component("defaultMethodAspect")
-public class DefaultMethodAspect extends AbstractMethodAspect {
+public class DefaultEntityMethodAspect extends AbstractMethodAspect {
 
 	/**
 	 * 类索引信息

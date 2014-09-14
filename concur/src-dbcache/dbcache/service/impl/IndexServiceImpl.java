@@ -68,6 +68,7 @@ public class IndexServiceImpl<PK extends Comparable<PK> & Serializable>
 	}
 
 
+	@SuppressWarnings("unused")
 	private void update(IndexKey<PK> indexKey, Object oldValue, Object newValue) {
 
 	}

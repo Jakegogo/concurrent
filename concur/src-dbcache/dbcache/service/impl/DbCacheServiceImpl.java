@@ -28,8 +28,8 @@ import dbcache.model.IEntity;
 import dbcache.model.UpdateAction;
 import dbcache.model.UpdateStatus;
 import dbcache.model.UpdateType;
-import dbcache.proxy.util.ClassUtil;
 import dbcache.service.Cache;
+import dbcache.service.ConfigFactory;
 import dbcache.service.DbAccessService;
 import dbcache.service.DbCacheService;
 import dbcache.service.DbPersistService;
@@ -75,6 +75,10 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 	 * 等待锁map {key:lock}
 	 */
 	private final ConcurrentMap<String, Lock> WAITING_LOCK_MAP = new ConcurrentHashMap<String, Lock>();
+
+
+	@Autowired
+	private ConfigFactory configFactory;
 
 
 	@Autowired
@@ -195,7 +199,7 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 						entityInitializer.doAfterLoad();
 					}
 
-					cacheObject = new CacheObject<T>(entity, id, entityClazz, ClassUtil.getProxyEntity(proxyClazz, entity, indexService));
+					cacheObject = new CacheObject<T>(entity, id, entityClazz, (T) configFactory.createProxyEntity(entity, proxyClazz, indexService));
 					wrapper = cache.putIfAbsent(key, cacheObject);
 
 					if (wrapper != null && wrapper.get() != null) {
@@ -265,7 +269,7 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 
 		if (wrapper == null) {//缓存还不存在
 
-			cacheObject = new CacheObject<T>(entity, entity.getId(), (Class<T>) entity.getClass(), ClassUtil.getProxyEntity(proxyClazz, entity), UpdateStatus.PERSIST);
+			cacheObject = new CacheObject<T>(entity, entity.getId(), (Class<T>) entity.getClass(), (T) configFactory.createProxyEntity(entity, proxyClazz, indexService), UpdateStatus.PERSIST);
 			wrapper = cache.putIfAbsent(key, cacheObject);
 
 			cacheObject = (CacheObject<T>) wrapper.get();

@@ -1,6 +1,5 @@
 package dbcache.test;
 
-import dbcache.support.spring.DefaultMethodAspect;
 
 
 public class ProxyEntity extends Entity {
