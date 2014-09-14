@@ -20,6 +20,6 @@ public @interface ThreadSafe {
 	 * 标注内部持有锁对象的类型
 	 * @return
 	 */
-	public Class<?>[] lockBy() default ThreadSafe.class;
+	public Class<?>[] lockBy() default void.class;
 
 }

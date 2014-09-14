@@ -1,10 +1,10 @@
 package dbcache.service.impl;
 
-import static dbcache.conf.DbCachedCfgConstant.KEY_DB_POOL_CAPACITY;
-import static dbcache.conf.DbCachedCfgConstant.KEY_SERVER_ID_SET;
-import static dbcache.conf.DbCachedCfgConstant.MAX_QUEUE_SIZE_BEFORE_PERSIST;
-import static dbcache.conf.DbCachedCfgConstant.DELAY_WAITTIMMER;
-import static dbcache.conf.DbCachedCfgConstant.SPLIT;
+import static dbcache.conf.CfgConstants.KEY_DB_POOL_CAPACITY;
+import static dbcache.conf.CfgConstants.KEY_SERVER_ID_SET;
+import static dbcache.conf.CfgConstants.MAX_QUEUE_SIZE_BEFORE_PERSIST;
+import static dbcache.conf.CfgConstants.DELAY_WAITTIMMER;
+import static dbcache.conf.CfgConstants.SPLIT;
 
 import java.io.IOException;
 import java.lang.reflect.Field;

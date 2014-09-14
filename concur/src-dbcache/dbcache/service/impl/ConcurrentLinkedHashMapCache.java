@@ -3,8 +3,6 @@ package dbcache.service.impl;
 import java.io.Serializable;
 import java.util.concurrent.ConcurrentMap;
 
-import javax.annotation.PostConstruct;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -20,36 +18,31 @@ import dbcache.service.DbRuleService;
  */
 @Component("concurrentLinkedHashMapCache")
 public class ConcurrentLinkedHashMapCache implements Cache {
-	
+
 	@Autowired
 	private DbRuleService dbRuleService;
-	
+
 	/**
 	 * 缺省实体缓存最大容量
 	 */
 	private static final int DEFAULT_MAX_CAPACITY_OF_ENTITY_CACHE = 100000;
-	
+
 	/**
 	 * 空值的引用
 	 */
 	private static final ValueWrapper NULL_HOLDER = new NullHolder();
-	
+
 	/**
 	 * 缓存容器
 	 */
 	private ConcurrentMap<Object, ValueWrapper> store;
-	
-	
-	/**
-	 * 构造方法 使用默认的cacheSize
-	 */
-	public ConcurrentLinkedHashMapCache() {
-	}
-	
+
+
+
 	/**
 	 * 初始化
 	 */
-	@PostConstruct
+//	@PostConstruct
 	public void init() {
 		int entityCacheSize = dbRuleService.getEntityCacheSize();
 		if(entityCacheSize <= 0) {
@@ -57,7 +50,26 @@ public class ConcurrentLinkedHashMapCache implements Cache {
 		}
 		this.store = new ConcurrentLinkedHashMap.Builder<Object, ValueWrapper>().maximumWeightedCapacity(entityCacheSize).build();
 	}
-	
+
+
+	/**
+	 * 初始化
+	 * @param entityCacheSize
+	 * @param concurrencyLevel
+	 */
+	public void init(int entityCacheSize, int concurrencyLevel) {
+		this.store = new ConcurrentLinkedHashMap.Builder<Object, ValueWrapper>()
+				.maximumWeightedCapacity(entityCacheSize)
+				.concurrencyLevel(concurrencyLevel).build();
+	}
+
+	/**
+	 * 构造方法 使用默认的cacheSize
+	 */
+	public ConcurrentLinkedHashMapCache() {
+	}
+
+
 	/**
 	 * 构造方法
 	 * @param cacheSize 默认最大容量
@@ -65,8 +77,8 @@ public class ConcurrentLinkedHashMapCache implements Cache {
 	public ConcurrentLinkedHashMapCache(int cacheSize) {
 		this(new ConcurrentLinkedHashMap.Builder<Object, ValueWrapper>().maximumWeightedCapacity(cacheSize).build());
 	}
-	
-	
+
+
 	/**
 	 * 构造方法
 	 * @param store Map
@@ -75,30 +87,30 @@ public class ConcurrentLinkedHashMapCache implements Cache {
 		this.store = store;
 	}
 
-	
+
 	@Override
 	public ValueWrapper get(Object key) {
 		Object value = this.store.get(key);
 		return (ValueWrapper) fromStoreValue(value);
 	}
-	
-	
+
+
 	@Override
 	public void put(Object key, Object value) {
 		this.store.put(key, toStoreValue(SimpleValueWrapper.valueOf(value)));
 	}
-	
-	
+
+
 	@Override
 	public ValueWrapper putIfAbsent(String key, Object value) {
 		return this.store.putIfAbsent(key, toStoreValue(SimpleValueWrapper.valueOf(value)));
 	}
-	
+
 	@Override
 	public void evict(Object key) {
 		this.store.remove(key);
 	}
-	
+
 	@Override
 	public void clear() {
 		this.store.clear();
@@ -140,8 +152,8 @@ public class ConcurrentLinkedHashMapCache implements Cache {
 			return null;
 		}
 	}
-	
-	
+
+
 	/**
 	 * 缓存Value简单包装
 	 * @author jake
@@ -159,7 +171,7 @@ public class ConcurrentLinkedHashMapCache implements Cache {
 		public SimpleValueWrapper(Object value) {
 			this.value = value;
 		}
-		
+
 		/**
 		 * 获取实例
 		 * @param value 值

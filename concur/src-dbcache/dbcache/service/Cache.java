@@ -10,7 +10,7 @@ public interface Cache {
 
 	/**
 	 * 获取缓存包装对象
-	 * @param key 
+	 * @param key
 	 * @return 为空表示未缓存,如果值为null,ValueWrapper.get()的值将为空
 	 */
 	ValueWrapper get(Object key);
@@ -21,7 +21,7 @@ public interface Cache {
 	 * @param value 值
 	 */
 	void put(Object key, Object value);
-	
+
 	/**
 	 * 存入缓存并返回最新的值
 	 * @param key 键
@@ -29,7 +29,7 @@ public interface Cache {
 	 * @return
 	 */
 	ValueWrapper putIfAbsent(String key, Object value);
-	
+
 	/**
 	 * 清除缓存
 	 * @param key 对应的键
@@ -40,13 +40,13 @@ public interface Cache {
 	 * 清空缓存
 	 */
 	void clear();
-	
+
 	/**
 	 * 获取已经缓存对象的数量
 	 * @return
 	 */
 	int getCachedSize();
-	
+
 
 	/**
 	 * 缓存值包装接口
@@ -59,5 +59,13 @@ public interface Cache {
 		Object get();
 	}
 
-	
+
+	/**
+	 * 初始化
+	 * @param entityCacheSize 缓存上限大小
+	 * @param concurrencyLevel 并发线程数
+	 */
+	void init(int entityCacheSize, int concurrencyLevel);
+
+
 }

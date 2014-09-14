@@ -11,7 +11,7 @@ import dbcache.service.Cache;
 
 /**
  * ConcurrentWeekHashMap缓存容器
- * 
+ *
  * @author jake
  * @date 2014-8-1-下午8:30:34
  */
@@ -21,7 +21,7 @@ public class ConcurrentWeekHashMapCache implements Cache {
 	/**
 	 * 初始容量
 	 */
-	private static final int DEFAULT_CAPACITY_OF_ENTITY_CACHE = 5000;
+	private static final int DEFAULT_CAPACITY_OF_ENTITY_CACHE = 1000;
 
 	/**
 	 * 空值的引用
@@ -31,20 +31,31 @@ public class ConcurrentWeekHashMapCache implements Cache {
 	/**
 	 * 缓存容器
 	 */
-	private final ConcurrentReferenceMap<Object, Object> store;
+	private ConcurrentReferenceMap<Object, Object> store;
+
+
+	/**
+	 * 初始化
+	 * @param entityCacheSize
+	 * @param concurrencyLevel
+	 */
+	@Override
+	public void init(int entityCacheSize, int concurrencyLevel) {
+		this.store = new ConcurrentReferenceMap<Object, Object>(
+				ReferenceKeyType.STRONG, ReferenceValueType.WEAK,
+				DEFAULT_CAPACITY_OF_ENTITY_CACHE, 0.7f, concurrencyLevel);
+	}
+
 
 	/**
 	 * 构造方法
 	 */
 	public ConcurrentWeekHashMapCache() {
-		this(new ConcurrentReferenceMap<Object, Object>(
-				ReferenceKeyType.STRONG, ReferenceValueType.WEAK,
-				DEFAULT_CAPACITY_OF_ENTITY_CACHE));
 	}
 
 	/**
 	 * 构造方法
-	 * 
+	 *
 	 * @param concurrentReferenceMap
 	 *            弱引用Map
 	 */
@@ -52,8 +63,8 @@ public class ConcurrentWeekHashMapCache implements Cache {
 			ConcurrentReferenceMap<Object, Object> concurrentReferenceMap) {
 		this.store = concurrentReferenceMap;
 	}
-	
-	
+
+
 	@Override
 	public ValueWrapper get(Object key) {
 		Object value = this.store.get(key);
@@ -83,7 +94,7 @@ public class ConcurrentWeekHashMapCache implements Cache {
 	public void clear() {
 		this.store.clear();
 	}
-	
+
 	@SuppressWarnings("serial")
 	private static class NullHolder implements ValueWrapper, Serializable {
 
@@ -95,18 +106,18 @@ public class ConcurrentWeekHashMapCache implements Cache {
 
 	/**
 	 * 缓存Value简单包装
-	 * 
+	 *
 	 * @author jake
 	 * @date 2014-7-31-下午8:29:49
 	 */
 	public static class SimpleValueWrapper implements ValueWrapper {
-		
+
 		/** 缓存的实体 */
 		private final Object value;
 
 		/**
 		 * 构造方法
-		 * 
+		 *
 		 * @param value 实体(可以为空)
 		 */
 		public SimpleValueWrapper(Object value) {
@@ -133,8 +144,8 @@ public class ConcurrentWeekHashMapCache implements Cache {
 		}
 
 	}
-	
-	
+
+
 	@Override
 	public int getCachedSize() {
 		return store.size();

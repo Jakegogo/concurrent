@@ -13,7 +13,7 @@ import java.util.Map;
  * 泛型工具类
  */
 public class GenericsUtils {
-	
+
 	/**
 	 * 获得指定类的父类的泛型参数的实际类型
 	 * @param clazz Class
@@ -25,7 +25,7 @@ public class GenericsUtils {
 		if (clazz == null) {
 			return null;
 		}
-		
+
 		Type genericType = clazz.getGenericSuperclass();
 		while (genericType != null && !(genericType instanceof ParameterizedType)) {
 			clazz = clazz.getSuperclass();
@@ -39,18 +39,18 @@ public class GenericsUtils {
 		if (!(genericType instanceof ParameterizedType)) {
 			return Object.class;
 		}
-		
+
 		Type[] params = ((ParameterizedType) genericType).getActualTypeArguments();
 		if (params != null && index >= 0 && index < params.length ) {
 			if (params[index] instanceof Class) {
 				return (Class) params[index];
 			}
 		}
-		
+
 		return Object.class;
 	}
-	
-	
+
+
 	/**
 	 * 获取实际类参数的 Map
 	 * @param actual 最终类
@@ -58,13 +58,13 @@ public class GenericsUtils {
 	 * @return
 	 * @throws ClassNotFoundException
 	 */
-	@SuppressWarnings("rawtypes")
+	@SuppressWarnings({ "rawtypes", "unused" })
 	private static Map<String, Type> getActualTypeParametersMap(Class<?> actual, Class<?> generic) {
 		List<String> names = new ArrayList<String>();
 		for (TypeVariable t : generic.getTypeParameters()) {
 			names.add(t.getName());
 		}
-		
+
 		List<Type> values = new ArrayList<Type>();
 		for (Type t : actual.getGenericInterfaces()) {
 			if (t instanceof Class<?>)
@@ -84,12 +84,12 @@ public class GenericsUtils {
 				}
 			}
 		}
-		
+
 		Map<String, Type> result = new HashMap<String, Type>();
 		for (int i = 0; i < names.size(); i++) {
 			result.put(names.get(i), values.get(i));
 		}
 		return result;
 	}
-	
+
 }
