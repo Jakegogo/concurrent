@@ -2,8 +2,6 @@ package dbcache.service;
 
 import java.util.Map;
 
-import dbcache.conf.CacheConfig;
-
 /**
  * DbCache的JMX扩展
  * @author Jake
