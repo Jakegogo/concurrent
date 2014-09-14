@@ -8,6 +8,7 @@ import java.lang.annotation.Target;
 
 /**
  * 标注是否线程安全
+ * <br/>不纳入编译
  * @author Jake
  * @date 2014年9月13日下午1:30:16
  */

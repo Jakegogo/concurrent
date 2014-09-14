@@ -3,7 +3,9 @@ package dbcache.service.impl;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutorService;
@@ -35,6 +37,7 @@ import dbcache.service.DbCacheService;
 import dbcache.service.DbPersistService;
 import dbcache.service.DbRuleService;
 import dbcache.service.IndexService;
+import dbcache.utils.JsonUtils;
 
 
 /**
@@ -333,6 +336,18 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 	@Override
 	public Cache getCache() {
 		return cache;
+	}
+
+
+	@Override
+	public String toString() {
+		Map<String, Object> toStrMap = new HashMap<String, Object>();
+		toStrMap.put("clazz", this.clazz);
+		toStrMap.put("proxyClazz", this.proxyClazz);
+		toStrMap.put("WAITING_LOCK_MAP_SIZE", this.WAITING_LOCK_MAP.size());
+		toStrMap.put("cacheUseSize", this.cache.getCachedSize());
+		toStrMap.put("indexServiceCacheUseSize", this.indexService.getCache().getCachedSize());
+		return JsonUtils.object2JsonString(toStrMap);
 	}
 
 

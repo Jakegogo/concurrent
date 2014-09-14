@@ -1,7 +1,9 @@
 package dbcache.conf;
 
 import dbcache.annotation.Cached;
+import dbcache.annotation.DisableIndex;
 import dbcache.utils.AnnotationUtils;
+import dbcache.utils.JsonUtils;
 
 /**
  * 缓存配置
@@ -28,6 +30,9 @@ public class CacheConfig {
 	/** 并发线程数 */
 	private int concurrencyLevel;
 
+	/** 禁用索引服务 默认false */
+	private boolean disableIndex = false;
+
 	/**
 	 * 获取实例
 	 * @param entityClass 实体类
@@ -36,7 +41,9 @@ public class CacheConfig {
 	public static CacheConfig valueOf(Class<?> entityClass) {
 		Cached cachedAnno = entityClass.getAnnotation(Cached.class);
 		if(cachedAnno != null) {
-			return valueOf(cachedAnno);
+			CacheConfig cacheConfig = valueOf(cachedAnno);
+			cacheConfig.setDisableIndex(entityClass.isAnnotationPresent(DisableIndex.class));
+			return cacheConfig;
 		}
 		return valueOf();
 	}
@@ -75,12 +82,13 @@ public class CacheConfig {
 		return defaultConfig = cacheConfig;
 	}
 
-	public static CacheConfig getDefaultConfig() {
-		return defaultConfig;
+	@Override
+	public String toString() {
+		return JsonUtils.object2JsonString(this);
 	}
 
-	public static void setDefaultConfig(CacheConfig defaultConfig) {
-		CacheConfig.defaultConfig = defaultConfig;
+	public static CacheConfig getDefaultConfig() {
+		return defaultConfig;
 	}
 
 	public CacheType getCacheType() {
@@ -121,6 +129,14 @@ public class CacheConfig {
 
 	public void setConcurrencyLevel(int concurrencyLevel) {
 		this.concurrencyLevel = concurrencyLevel;
+	}
+
+	public boolean isDisableIndex() {
+		return disableIndex;
+	}
+
+	public void setDisableIndex(boolean disableIndex) {
+		this.disableIndex = disableIndex;
 	}
 
 

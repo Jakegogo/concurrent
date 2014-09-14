@@ -1,14 +1,27 @@
 package dbcache.service.impl;
 
+import java.lang.management.ManagementFactory;
 import java.lang.reflect.Field;
+import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
+
+import javax.annotation.PostConstruct;
+import javax.management.InstanceAlreadyExistsException;
+import javax.management.MBeanRegistrationException;
+import javax.management.MBeanServer;
+import javax.management.MalformedObjectNameException;
+import javax.management.NotCompliantMBeanException;
+import javax.management.ObjectName;
+import javax.management.StandardMBean;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.helpers.FormattingTuple;
 import org.slf4j.helpers.MessageFormatter;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
 import org.springframework.util.ReflectionUtils;
@@ -19,10 +32,12 @@ import dbcache.proxy.asm.AsmFactory;
 import dbcache.proxy.util.ClassUtil;
 import dbcache.service.Cache;
 import dbcache.service.ConfigFactory;
+import dbcache.service.DbCacheMBean;
 import dbcache.service.DbCacheService;
 import dbcache.service.DbPersistService;
 import dbcache.service.IndexService;
-import dbcache.support.spring.DefaultEntityMethodAspect;
+import dbcache.support.asm.DefaultEntityMethodAspect;
+import dbcache.utils.ThreadUtils;
 
 /**
  * DbCached缓存模块配置服务实现
@@ -30,7 +45,7 @@ import dbcache.support.spring.DefaultEntityMethodAspect;
  * @date 2014年9月14日下午8:57:54
  */
 @Component
-public class ConfigFactoryImpl implements ConfigFactory {
+public class ConfigFactoryImpl implements ConfigFactory, DbCacheMBean {
 
 	/**
 	 * logger
@@ -55,6 +70,20 @@ public class ConfigFactoryImpl implements ConfigFactory {
 	@Autowired
 	private DefaultEntityMethodAspect methodAspect;
 
+	/**
+	 * 即时持久化服务
+	 */
+	@Autowired
+	@Qualifier("inTimeDbPersistService")
+	private DbPersistService intimeDbPersistService;
+
+	/**
+	 * 延迟持久化服务
+	 */
+	@Autowired
+	@Qualifier("delayDbPersistService")
+	private DbPersistService delayDbPersistService;
+
 
 	/**
 	 * DbCacheService实例映射
@@ -69,6 +98,7 @@ public class ConfigFactoryImpl implements ConfigFactory {
 
 
 	@SuppressWarnings({ "rawtypes" })
+	@Override
 	public DbCacheService getDbCacheServiceBean(Class<? extends IEntity> clz) {
 
 		DbCacheService service = this.dbCacheServiceBeanMap.get(clz);
@@ -76,9 +106,9 @@ public class ConfigFactoryImpl implements ConfigFactory {
 			return service;
 		}
 
-
 		try {
 
+			//获取缓存配置
 			CacheConfig cacheConfig = this.getCacheConfig(clz);
 
 			//创建新的bean
@@ -145,7 +175,8 @@ public class ConfigFactoryImpl implements ConfigFactory {
 	 * @param clz 实体类
 	 * @return
 	 */
-	private CacheConfig getCacheConfig(Class<?> clz) {
+	@Override
+	public CacheConfig getCacheConfig(Class<?> clz) {
 		CacheConfig cacheConfig = cacheConfigMap.get(clz);
 		if(cacheConfig == null) {
 			cacheConfig = CacheConfig.valueOf(clz);
@@ -178,6 +209,11 @@ public class ConfigFactoryImpl implements ConfigFactory {
 	@SuppressWarnings("rawtypes")
 	@Override
 	public IEntity<?> createProxyEntity(IEntity<?> entity, Class<?> proxyClass, IndexService indexService) {
+		CacheConfig cacheConfig = getCacheConfig(entity.getClass());
+		//判断是否禁用索引服务
+		if(cacheConfig != null && cacheConfig.isDisableIndex()) {
+			return entity;
+		}
 		return ClassUtil.getProxyEntity(proxyClass, entity, indexService);
 	}
 
@@ -188,6 +224,65 @@ public class ConfigFactoryImpl implements ConfigFactory {
 	public void registerDbCacheServiceBean(Class<? extends IEntity> clz,
 			DbCacheService dbCacheService) {
 		dbCacheServiceBeanMap.put(clz, dbCacheService);
+	}
+
+
+	//-----------------------JMX接口---------------------
+
+
+	/**
+	 * 注册JMX服务
+	 * @throws MalformedObjectNameException
+	 * @throws NotCompliantMBeanException
+	 * @throws MBeanRegistrationException
+	 * @throws InstanceAlreadyExistsException
+	 */
+	@PostConstruct
+	public void init() throws MalformedObjectNameException, InstanceAlreadyExistsException, MBeanRegistrationException, NotCompliantMBeanException {
+		// Get the Platform MBean Server
+		final MBeanServer mbs = ManagementFactory.getPlatformMBeanServer();
+
+	    // Construct the ObjectName for the MBean we will register
+	    final ObjectName name = new ObjectName("dbcache.service.impl:type=DbCacheMBean");
+
+	    final StandardMBean mbean = new StandardMBean(this, DbCacheMBean.class);
+
+	    // Register the Hello World MBean
+	    mbs.registerMBean(mbean, name);
+	}
+
+
+	@Override
+	@SuppressWarnings("rawtypes")
+	public Map<String, String> getDbCacheServiceBeanInfo() {
+		Map<String, String> infoMap = new HashMap<String, String>();
+		for(Entry<Class<?>, DbCacheService> entry : dbCacheServiceBeanMap.entrySet()) {
+			infoMap.put(entry.getKey().getName(), entry.getValue().toString());
+		}
+		return infoMap;
+	}
+
+
+	@Override
+	public Map<String, String> getCacheConfigInfo() {
+		Map<String, String> infoMap = new HashMap<String, String>();
+		for(Entry<Class<?>, CacheConfig> entry : cacheConfigMap.entrySet()) {
+			infoMap.put(entry.getKey().getName(), entry.getValue().toString());
+		}
+		return infoMap;
+	}
+
+
+	@Override
+	public Map<String, Object> getDbPersistInfo() {
+		Map<String, Object> infoMap = new HashMap<String, Object>();
+		infoMap.put("intimeDbPersistService", ThreadUtils.dumpThreadPool(
+				"intimeDbPersistServiceTheadPool",
+				this.intimeDbPersistService.getThreadPool()));
+		infoMap.put("delayDbPersistService", ThreadUtils.dumpThreadPool(
+				"delayDbPersistServiceTheadPool",
+				this.delayDbPersistService.getThreadPool()));
+		return infoMap;
 	}
 
 

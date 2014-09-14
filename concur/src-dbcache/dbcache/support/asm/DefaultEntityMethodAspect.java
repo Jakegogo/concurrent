@@ -1,4 +1,4 @@
-package dbcache.support.spring;
+package dbcache.support.asm;
 
 import java.beans.IntrospectionException;
 import java.beans.PropertyDescriptor;

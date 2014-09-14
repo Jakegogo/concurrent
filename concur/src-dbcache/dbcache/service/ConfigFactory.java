@@ -1,5 +1,6 @@
 package dbcache.service;
 
+import dbcache.conf.CacheConfig;
 import dbcache.model.IEntity;
 
 /**
@@ -32,11 +33,20 @@ public interface ConfigFactory {
 
 	/**
 	 * 注册DbCacheServiceBean
+	 * <br/> 必须在 postProcessAfterInitialization执行之前注册DbCacheServiceBean才能生效
 	 * @param clz 实体类
 	 * @param dbCacheService DbCacheServiceBean
 	 */
 	@SuppressWarnings("rawtypes")
 	public void registerDbCacheServiceBean(Class<? extends IEntity> clz, DbCacheService dbCacheService);
+
+
+	/**
+	 * 获取缓存实体类配置
+	 * @param clz 缓存实体类
+	 * @return
+	 */
+	public CacheConfig getCacheConfig(Class<?> clz);
 
 
 }

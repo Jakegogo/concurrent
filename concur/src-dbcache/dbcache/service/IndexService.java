@@ -64,5 +64,10 @@ public interface IndexService<PK extends Comparable<PK> & Serializable> {
 	public void remove(IndexValue<PK> indexValue);
 
 
+	/**
+	 * 获取缓存
+	 * @return
+	 */
+	public Cache getCache();
 
 }

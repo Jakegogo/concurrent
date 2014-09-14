@@ -76,7 +76,7 @@ public interface DbCacheService<T extends IEntity<PK>, PK extends Comparable<PK>
 
 
 	/**
-	 * 获取缓存实体
+	 * 获取缓存
 	 * @return
 	 */
 	Cache getCache();

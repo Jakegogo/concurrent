@@ -73,4 +73,10 @@ public class IndexServiceImpl<PK extends Comparable<PK> & Serializable>
 
 	}
 
+
+	@Override
+	public Cache getCache() {
+		return cache;
+	}
+
 }
