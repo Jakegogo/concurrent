@@ -102,7 +102,7 @@ public class ConcurrentLinkedHashMapCache implements Cache {
 
 
 	@Override
-	public ValueWrapper putIfAbsent(String key, Object value) {
+	public ValueWrapper putIfAbsent(Object key, Object value) {
 		return this.store.putIfAbsent(key, toStoreValue(SimpleValueWrapper.valueOf(value)));
 	}
 

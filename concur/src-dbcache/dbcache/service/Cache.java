@@ -28,7 +28,7 @@ public interface Cache {
 	 * @param value 值
 	 * @return
 	 */
-	ValueWrapper putIfAbsent(String key, Object value);
+	ValueWrapper putIfAbsent(Object key, Object value);
 
 	/**
 	 * 清除缓存

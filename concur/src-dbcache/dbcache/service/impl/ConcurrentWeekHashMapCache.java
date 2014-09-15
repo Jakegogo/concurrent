@@ -81,7 +81,7 @@ public class ConcurrentWeekHashMapCache implements Cache {
 	}
 
 	@Override
-	public ValueWrapper putIfAbsent(String key, Object value) {
+	public ValueWrapper putIfAbsent(Object key, Object value) {
 		return SimpleValueWrapper.valueOf(this.store.putIfAbsent(key, value));
 	}
 

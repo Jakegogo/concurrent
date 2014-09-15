@@ -2,7 +2,6 @@ package dbcache.test;
 
 import dbcache.model.EntityInitializer;
 import dbcache.model.IEntity;
-import dbcache.support.spring.DefaultMethodAspect;
 
 public class Entity$EnhancedByCc1
   implements EntityInitializer, IEntity<Integer>
@@ -40,7 +39,7 @@ public class Entity$EnhancedByCc1
     Integer localInteger1 = Integer.valueOf(this.obj.getNum());
     this.obj.addNum(paramInt);
     Integer localInteger2 = Integer.valueOf(this.obj.getNum());
-    DefaultMethodAspect.changeIndex(this.obj, "uid_idx", localInteger1, localInteger2);
+//    DefaultMethodAspect.changeIndex(this.obj, "uid_idx", localInteger1, localInteger2);
   }
 
   public void setNum(int paramInt)
@@ -48,7 +47,7 @@ public class Entity$EnhancedByCc1
     Integer localInteger1 = Integer.valueOf(this.obj.getNum());
     this.obj.setNum(paramInt);
     Integer localInteger2 = Integer.valueOf(this.obj.getNum());
-    DefaultMethodAspect.changeIndex(this.obj, "uid_idx", localInteger1, localInteger2);
+//    DefaultMethodAspect.changeIndex(this.obj, "uid_idx", localInteger1, localInteger2);
   }
 
   public int getNum()

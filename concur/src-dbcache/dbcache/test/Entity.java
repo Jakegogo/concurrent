@@ -1,5 +1,6 @@
 package dbcache.test;
 
+import java.lang.reflect.Method;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.persistence.Id;
@@ -79,6 +80,14 @@ public class Entity implements EntityInitializer, IEntity<Integer> {
 	@Override
 	public void setId(Integer id) {
 		this.id = id;
+	}
+
+	public static void main(String[] args) {
+
+		for(Method method : Entity.class.getDeclaredMethods() ) {
+			System.out.println(method);
+		}
+
 	}
 
 }

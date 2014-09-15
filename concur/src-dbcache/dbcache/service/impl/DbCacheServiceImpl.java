@@ -80,7 +80,7 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 	/**
 	 * 等待锁map {key:lock}
 	 */
-	private final ConcurrentMap<String, Lock> WAITING_LOCK_MAP = new ConcurrentHashMap<String, Lock>();
+	private final ConcurrentMap<Object, Lock> WAITING_LOCK_MAP = new ConcurrentHashMap<Object, Lock>();
 
 
 	@Autowired
@@ -174,7 +174,7 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 	 */
 	@SuppressWarnings("unchecked")
 	private CacheObject<T> get(Class<T> entityClazz, Serializable id) {
-		String key = CacheRule.getEntityIdKey(id, entityClazz);
+		Object key = CacheRule.getEntityIdKey(id, entityClazz);
 
 		Cache.ValueWrapper wrapper = (Cache.ValueWrapper) cache.get(key);
 		if(wrapper != null) {	// 已经缓存
@@ -270,7 +270,7 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 
 		//存储到缓存
 		CacheObject<T> cacheObject = null;
-		String key = CacheRule.getEntityIdKey(entity.getId(), entity.getClass());
+		Object key = CacheRule.getEntityIdKey(entity.getId(), entity.getClass());
 		Cache.ValueWrapper wrapper = (Cache.ValueWrapper) cache.get(key);
 
 		if (wrapper == null) {//缓存还不存在

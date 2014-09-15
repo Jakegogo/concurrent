@@ -281,7 +281,7 @@ public class DelayDbPersistService implements DbPersistService {
 			//持久化
 			if (updateAction.getUpdateType() == UpdateType.DELETE) {
 				dbAccessService.delete(cacheObj.getEntity().getClass(), cacheObj.getId());
-				String key = CacheRule.getEntityIdKey(cacheObj.getId(), cacheObj.getClass());
+				Object key = CacheRule.getEntityIdKey(cacheObj.getId(), cacheObj.getClass());
 				cache.evict(key);
 			} else if (updateAction.getUpdateType() == UpdateType.INSERT) {
 				dbAccessService.save(cacheObj.getEntity());
