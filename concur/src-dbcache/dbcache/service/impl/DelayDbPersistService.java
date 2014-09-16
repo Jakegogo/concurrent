@@ -3,8 +3,6 @@ package dbcache.service.impl;
 import java.util.Iterator;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.RejectedExecutionException;
 
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
@@ -17,7 +15,6 @@ import dbcache.model.PersistAction;
 import dbcache.service.DbAccessService;
 import dbcache.service.DbPersistService;
 import dbcache.service.DbRuleService;
-import dbcache.utils.NamedThreadFactory;
 
 
 /**
@@ -34,11 +31,6 @@ public class DelayDbPersistService implements DbPersistService {
 	private static final Logger logger = LoggerFactory.getLogger(DelayDbPersistService.class);
 
 	/**
-	 * 缺省入库线程池容量
-	 */
-	private static final int DEFAULT_DB_POOL_SIZE = 2;
-
-	/**
 	 * 更改实体队列
 	 */
 	private final ConcurrentLinkedQueue<UpdateAction> updateQueue = new ConcurrentLinkedQueue<UpdateAction>();
@@ -47,11 +39,6 @@ public class DelayDbPersistService implements DbPersistService {
 	 * 当前延迟更新的动作
 	 */
 	private volatile UpdateAction currentDelayUpdateAction;
-
-	/**
-	 * 入库线程池
-	 */
-	private ExecutorService DB_POOL_SERVICE;
 
 
 	@Autowired
@@ -94,18 +81,13 @@ public class DelayDbPersistService implements DbPersistService {
 	@Override
 	public void init() {
 
-		// 初始化入库线程
-		ThreadGroup threadGroup = new ThreadGroup("缓存模块");
-		NamedThreadFactory threadFactory = new NamedThreadFactory(threadGroup, "延迟入库线程池");
-
-		DB_POOL_SERVICE = Executors.newFixedThreadPool(DEFAULT_DB_POOL_SIZE, threadFactory);
-
 		//初始化延时入库检测线程
 		final long delayWaitTimmer = dbRuleService.getDelayWaitTimmer();//延迟入库时间(毫秒)
 
 		final long delayCheckTimmer = 1000;//延迟入库队列检测时间间隔(毫秒)
 
-		DB_POOL_SERVICE.submit(new Runnable() {
+		// 初始化入库线程
+		new Thread() {
 
 			@Override
 			public void run() {
@@ -161,7 +143,7 @@ public class DelayDbPersistService implements DbPersistService {
 					}
 				}
 			}
-		});
+		}.start();
 
 	}
 
@@ -169,39 +151,6 @@ public class DelayDbPersistService implements DbPersistService {
 	@Override
 	public void handlerPersist(PersistAction persistAction) {
 		updateQueue.add(UpdateAction.valueOf(persistAction));
-	}
-
-
-	/**
-	 * 提交延时入库任务
-	 */
-	public void submitFlushTask() {
-		Runnable task = this.createFlushTask();
-
-		try {
-			DB_POOL_SERVICE.submit(task);
-		} catch (RejectedExecutionException ex) {
-			logger.error("提交延时入库任务到更新队列产生异常", ex);
-
-			this.flushAllEntity();
-
-		} catch (Exception ex) {
-			logger.error("提交延时入库任务到更新队列产生异常", ex);
-		}
-	}
-
-
-	/**
-	 * 创建延时入库任务
-	 * @return Runnable
-	 */
-	private Runnable createFlushTask() {
-		return new Runnable() {
-			@Override
-			public void run() {
-				flushAllEntity();
-			}
-		};
 	}
 
 
@@ -247,7 +196,7 @@ public class DelayDbPersistService implements DbPersistService {
 
 	@Override
 	public ExecutorService getThreadPool() {
-		return DB_POOL_SERVICE;
+		return null;
 	}
 
 
