@@ -6,21 +6,17 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.RejectedExecutionException;
 
+import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
-import dbcache.conf.CacheRule;
-import dbcache.model.CacheObject;
-import dbcache.model.EntityInitializer;
-import dbcache.model.UpdateAction;
-import dbcache.model.UpdateType;
-import dbcache.service.Cache;
+import dbcache.model.PersistAction;
 import dbcache.service.DbAccessService;
 import dbcache.service.DbPersistService;
 import dbcache.service.DbRuleService;
-import dbcache.utils.JsonUtils;
 import dbcache.utils.NamedThreadFactory;
 
 
@@ -66,13 +62,37 @@ public class DelayDbPersistService implements DbPersistService {
 	private DbAccessService dbAccessService;
 
 	/**
-	 * 缓存器
+	 * 默认的持久化服务
 	 */
-	private Cache cache;
+	@Autowired
+	@Qualifier("inTimeDbPersistService")
+	private DbPersistService dbPersistService;
+
+
+	/**
+	 * 延迟更新操作
+	 * @author Jake
+	 * @date 2014年9月17日上午12:38:21
+	 */
+	static class UpdateAction {
+
+		PersistAction persistAction;
+
+		long createTime = System.currentTimeMillis();
+
+		public UpdateAction(PersistAction persistAction) {
+			this.persistAction = persistAction;
+		}
+
+		public static UpdateAction valueOf(PersistAction persistAction) {
+			return new UpdateAction(persistAction);
+		}
+
+	}
 
 
 	@Override
-	public void init(Cache cache) {
+	public void init() {
 
 		// 初始化入库线程
 		ThreadGroup threadGroup = new ThreadGroup("缓存模块");
@@ -92,14 +112,12 @@ public class DelayDbPersistService implements DbPersistService {
 
 				//循环定时检测入库,失败自动进入重试
 				while(true) {
+
+					UpdateAction updateAction = updateQueue.poll();
 					try {
 
-						UpdateAction updateAction = updateQueue.poll();
 						long timeDiff = 0l;
-						CacheObject<?> cacheObj = null;
-
 						do {
-
 							if(updateAction == null) {
 								//等待下一个检测时间
 								Thread.sleep(delayCheckTimmer);
@@ -107,14 +125,8 @@ public class DelayDbPersistService implements DbPersistService {
 								updateAction = updateQueue.poll();
 								continue;
 							}
-							cacheObj = updateAction.getCacheObject();
-							//缓存对象在提交之后被修改过
-							if(updateAction.getEditVersion() < cacheObj.getEditVersion()) {
-								//获取下一个操作元素
-								updateAction = updateQueue.poll();
-								continue;
-							}
-							timeDiff = System.currentTimeMillis() - updateAction.getCreateTime();
+
+							timeDiff = System.currentTimeMillis() - updateAction.createTime;
 
 							//未到延迟入库时间
 							if(timeDiff < delayWaitTimmer) {
@@ -122,23 +134,24 @@ public class DelayDbPersistService implements DbPersistService {
 								//等待
 								Thread.sleep(delayWaitTimmer - timeDiff);
 							}
-							//缓存对象在提交之后被修改过
-							if(updateAction.getEditVersion() < cacheObj.getEditVersion()) {
-								//获取下一个操作元素
-								updateAction = updateQueue.poll();
-								continue;
-							}
 
 							//执行入库
-							doSyncDb(updateAction);
+							PersistAction persistAction = updateAction.persistAction;
+							if(persistAction.valid()) {
+								dbPersistService.handlerPersist(persistAction);
+							}
 
 							//获取下一个操作元素
 							updateAction = updateQueue.poll();
 
 						} while(true);
+
 					} catch(Exception e) {
 						e.printStackTrace();
 
+						if(updateAction != null && updateAction.persistAction != null) {
+							logger.error("执行入库时产生异常! 如果是主键冲突异常可忽略!" + updateAction.persistAction.getPersistInfo(), e);
+						}
 						//等待下一个检测时间重试入库
 						try {
 							Thread.sleep(delayCheckTimmer);
@@ -150,22 +163,12 @@ public class DelayDbPersistService implements DbPersistService {
 			}
 		});
 
-		this.cache = cache;
-	}
-
-
-	/**
-	 * 提交到更新队列
-	 * @param updateAction
-	 */
-	private void addToUpdateQueue(UpdateAction updateAction) {
-		this.updateQueue.add(updateAction);
 	}
 
 
 	@Override
-	public void handlerPersist(UpdateAction updateAction) {
-		this.addToUpdateQueue(updateAction);
+	public void handlerPersist(PersistAction persistAction) {
+		updateQueue.add(UpdateAction.valueOf(persistAction));
 	}
 
 
@@ -201,6 +204,7 @@ public class DelayDbPersistService implements DbPersistService {
 		};
 	}
 
+
 	@Override
 	public void awaitTermination() {
 		//刷新所有延时入库的实体到库中
@@ -208,18 +212,21 @@ public class DelayDbPersistService implements DbPersistService {
 	}
 
 
+	/**
+	 * 持久化所有实体
+	 */
 	public void flushAllEntity() {
 		//入库延迟队列中的实体
 		UpdateAction updateAction = this.updateQueue.poll();
 		while (updateAction != null) {
 			//执行入库
-			doSyncDb(updateAction);
-
+			updateAction.persistAction.run();
 			updateAction = this.updateQueue.poll();
 		}
+
 		//入库正在延迟处理的实体
 		if(currentDelayUpdateAction != null) {
-			doSyncDb(currentDelayUpdateAction);
+			currentDelayUpdateAction.persistAction.run();
 		}
 	}
 
@@ -228,76 +235,20 @@ public class DelayDbPersistService implements DbPersistService {
 	@Override
 	public void logHadNotPersistEntity() {
 		UpdateAction updateAction = null;
-		CacheObject<?> cacheObject = null;
-		Object entity = null;
 		for (Iterator<UpdateAction> it = this.updateQueue.iterator(); it.hasNext();) {
 			updateAction = it.next();
-			cacheObject = updateAction.getCacheObject();
-			//缓存对象在提交之后被修改过
-			if(updateAction.getEditVersion() >= cacheObject.getEditVersion()) {
-				entity = cacheObject.getEntity();
-				logger.error("检测到可能未入库对象! " + entity.getClass().getName() + ":" + JsonUtils.object2JsonString(entity));
+			String persistInfo = updateAction.persistAction.getPersistInfo();
+			if(!StringUtils.isBlank(persistInfo)) {
+				logger.error("检测到可能未入库对象! " + persistInfo);
 			}
 		}
 	}
 
-
-	/**
-	 * 同步到db
-	 * @param cacheObj 实体缓存
-	 */
-	private void doSyncDb(final UpdateAction updateAction) {
-		if (updateAction == null || updateAction.getCacheObject() == null) {
-			return;
-		}
-
-		CacheObject<?> cacheObj = updateAction.getCacheObject();
-
-		//缓存对象在提交之后被修改过
-		if(updateAction.getEditVersion() < cacheObj.getEditVersion()) {
-			return;
-		}
-
-		//比较并更新入库版本号
-		if (!cacheObj.compareAndUpdateDbSync(updateAction)) {
-			return;
-		}
-
-		Object entity = null;
-		try {
-			entity = cacheObj.getEntity();
-
-			//持久化前操作
-			if(entity instanceof EntityInitializer){
-				EntityInitializer entityInitializer = (EntityInitializer) entity;
-				entityInitializer.doBeforePersist();
-			}
-
-			//缓存对象在提交之后被入库过
-			if(cacheObj.getDbVersion() > updateAction.getEditVersion()) {
-				return;
-			}
-
-			//持久化
-			if (updateAction.getUpdateType() == UpdateType.DELETE) {
-				dbAccessService.delete(cacheObj.getEntity().getClass(), cacheObj.getId());
-				Object key = CacheRule.getEntityIdKey(cacheObj.getId(), cacheObj.getClass());
-				cache.evict(key);
-			} else if (updateAction.getUpdateType() == UpdateType.INSERT) {
-				dbAccessService.save(cacheObj.getEntity());
-			} else {
-				dbAccessService.update(cacheObj.getEntity());
-			}
-
-		} catch (Exception ex) {
-			logger.error("执行入库时产生异常! 如果是主键冲突异常可忽略!" + entity.getClass().getName() + ":" + JsonUtils.object2JsonString(entity), ex);
-		}
-
-	}
 
 	@Override
 	public ExecutorService getThreadPool() {
 		return DB_POOL_SERVICE;
 	}
+
 
 }

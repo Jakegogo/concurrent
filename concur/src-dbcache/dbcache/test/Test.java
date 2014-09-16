@@ -3,6 +3,8 @@ package dbcache.test;
 import java.io.Serializable;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.util.HashMap;
+import java.util.Map;
 
 import javassist.CannotCompileException;
 import javassist.NotFoundException;
@@ -62,7 +64,7 @@ public class Test {
 	public void t1() throws InterruptedException {
 
 
-		for(int i = 0;i < 500000000;i++) {
+		for(int i = 0;i < 200000000;i++) {
 			Entity entity = this.cacheService.get(1);
 //			entity.increseNum();
 //			if(i % 1000000 == 0) {
@@ -153,5 +155,43 @@ public class Test {
 		System.out.println(orign.getNum());
 	}
 
+
+	@org.junit.Test
+	public void t5() {
+		int hash = 32;
+		hash ^= (hash >>> 20) ^ (hash >>> 12);
+		int h = hash ^ (hash >>> 7) ^ (hash >>> 4);
+		System.out.println(h&16);
+		System.out.println(Integer.toBinaryString(h));
+		System.out.println(Integer.toBinaryString(h&16));
+		System.out.println(Integer.toBinaryString(16));
+
+		Map<Integer,String> map = new HashMap<Integer,String>();
+		map.put(32, "32");
+		String str = map.get(32);
+		System.out.println(str);
+	}
+
+
+
+	@org.junit.Test
+	public void t6() {
+		int hash = 32;
+		System.out.println(Integer.toBinaryString(hash));
+	}
+
+
+	@org.junit.Test
+	public void t7() {
+		System.out.println("C9".hashCode());
+		System.out.println("Aw".hashCode());
+	}
+
+
+	@org.junit.Test
+	public void t8() {
+		System.out.println(Entity.class.hashCode());
+		System.out.println(Entity.class.hashCode() * 31);
+	}
 
 }

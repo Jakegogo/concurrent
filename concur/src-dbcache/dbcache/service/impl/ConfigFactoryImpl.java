@@ -27,6 +27,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.ReflectionUtils;
 
 import dbcache.conf.CacheConfig;
+import dbcache.conf.PersistType;
 import dbcache.model.IEntity;
 import dbcache.proxy.asm.AsmFactory;
 import dbcache.proxy.util.ClassUtil;
@@ -96,6 +97,11 @@ public class ConfigFactoryImpl implements ConfigFactory, DbCacheMBean {
 	 */
 	private Map<Class<?>, CacheConfig> cacheConfigMap = new ConcurrentHashMap<Class<?>, CacheConfig>();
 
+	/**
+	 * 持久化服务
+	 */
+	private Map<PersistType, DbPersistService> persistServiceMap = new ConcurrentHashMap<PersistType, DbPersistService>();
+
 
 	@SuppressWarnings({ "rawtypes" })
 	@Override
@@ -113,6 +119,8 @@ public class ConfigFactoryImpl implements ConfigFactory, DbCacheMBean {
 
 			//创建新的bean
 			service = applicationContext.getAutowireCapableBeanFactory().createBean(DbCacheServiceImpl.class);
+			dbCacheServiceBeanMap.putIfAbsent(clz, service);
+			service = dbCacheServiceBeanMap.get(clz);
 
 			//设置实体类
 			Field clazzField = DbCacheServiceImpl.class.getDeclaredField(entityClassProperty);
@@ -136,8 +144,14 @@ public class ConfigFactoryImpl implements ConfigFactory, DbCacheMBean {
 
 			//设置持久化PersistType方式的dbPersistService
 			Field dbPersistServiceField = DbCacheServiceImpl.class.getDeclaredField(dbPersistServiceProperty);
-			DbPersistService dbPersistService = (DbPersistService) applicationContext.getBean(cacheConfig.getPersistType().getDbPersistServiceClass());
-			dbPersistService.init(cache);
+			PersistType persistType = cacheConfig.getPersistType();
+			DbPersistService dbPersistService = persistServiceMap.get(persistType);
+			if(dbPersistService == null) {
+				dbPersistService = (DbPersistService) applicationContext.getBean(persistType.getDbPersistServiceClass());
+				persistServiceMap.putIfAbsent(persistType, dbPersistService);
+				dbPersistService = persistServiceMap.get(persistType);
+				dbPersistService.init();
+			}
 			inject(service, dbPersistServiceField, dbPersistService);
 
 
@@ -159,7 +173,6 @@ public class ConfigFactoryImpl implements ConfigFactory, DbCacheMBean {
 			ReflectionUtils.makeAccessible(cacheField1);
 			inject(indexService, cacheField1, indexCache);
 
-			dbCacheServiceBeanMap.put(clz, service);
 
 		} catch(Exception e) {
 			e.printStackTrace();

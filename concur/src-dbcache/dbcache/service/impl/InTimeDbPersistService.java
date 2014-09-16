@@ -9,16 +9,10 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import dbcache.conf.CacheRule;
-import dbcache.model.CacheObject;
-import dbcache.model.EntityInitializer;
-import dbcache.model.UpdateAction;
-import dbcache.model.UpdateType;
-import dbcache.service.Cache;
+import dbcache.model.PersistAction;
 import dbcache.service.DbAccessService;
 import dbcache.service.DbPersistService;
 import dbcache.service.DbRuleService;
-import dbcache.utils.JsonUtils;
 import dbcache.utils.NamedThreadFactory;
 import dbcache.utils.ThreadUtils;
 
@@ -54,14 +48,9 @@ public class InTimeDbPersistService implements DbPersistService {
 	@Autowired
 	private DbAccessService dbAccessService;
 
-	/**
-	 * 缓存器
-	 */
-	private Cache cache;
-
 
 	@Override
-	public void init(Cache cache) {
+	public void init() {
 
 		// 初始化入库线程
 		ThreadGroup threadGroup = new ThreadGroup("缓存模块");
@@ -72,69 +61,6 @@ public class InTimeDbPersistService implements DbPersistService {
 		}
 		DB_POOL_SERVICE = Executors.newFixedThreadPool(dbPoolSize, threadFactory);
 
-		this.cache = cache;
-	}
-
-
-	@Override
-	public void handlerPersist(UpdateAction updateAction) {
-		submitTask(updateAction);
-	}
-
-	/**
-	 * 提交任务
-	 * @param cacheObj CacheObject
-	 */
-	private void submitTask(UpdateAction updateAction) {
-		Runnable task = this.createTask(updateAction);
-		if(task == null) {
-			return;
-		}
-
-		try {
-			DB_POOL_SERVICE.submit(task);
-		} catch (RejectedExecutionException ex) {
-			logger.error("提交任务到更新队列产生异常", ex);
-
-			this.handleTask(updateAction);
-
-		} catch (Exception ex) {
-			logger.error("提交任务到更新队列产生异常", ex);
-		}
-	}
-
-
-	/**
-	 * 创建入库任务
-	 * @param updateAction 更新动作
-	 * @return Runnable
-	 */
-	private Runnable createTask(final UpdateAction updateAction) {
-		Runnable runnable = new Runnable() {
-			@Override
-			public void run() {
-				handleTask(updateAction);
-			}
-		};
-
-		//提交任务之前先判断缓存对象在提交之后被修改过
-		CacheObject<?> cacheObj = updateAction.getCacheObject();
-
-		if(updateAction.getEditVersion() < cacheObj.getEditVersion()) {
-			return null;
-		}
-
-		return runnable;
-	}
-
-
-	/**
-	 * 处理入库及回调事宜
-	 * @param cacheObj 实体缓存
-	 */
-	private void handleTask(final UpdateAction updateAction) {
-		//执行入库
-		doSyncDb(updateAction);
 	}
 
 
@@ -142,63 +68,6 @@ public class InTimeDbPersistService implements DbPersistService {
 	public void awaitTermination() {
 		//关闭消费入库线程池
 		ThreadUtils.shundownThreadPool(DB_POOL_SERVICE, false);
-	}
-
-
-	/**
-	 * 同步到db
-	 * @param cacheObj 实体缓存
-	 */
-	private void doSyncDb(final UpdateAction updateAction) {
-		if (updateAction == null || updateAction.getCacheObject() == null) {
-			return;
-		}
-
-		CacheObject<?> cacheObj = updateAction.getCacheObject();
-
-		//缓存对象在提交之后被修改过
-		if(updateAction.getEditVersion() < cacheObj.getEditVersion()) {
-			return;
-		}
-
-		//比较并更新入库版本号
-		if (!cacheObj.compareAndUpdateDbSync(updateAction)) {
-			return;
-		}
-
-		Object entity = null;
-		try {
-			entity = cacheObj.getEntity();
-
-			//持久化前操作
-			if(entity instanceof EntityInitializer){
-				EntityInitializer entityInitializer = (EntityInitializer) entity;
-				entityInitializer.doBeforePersist();
-			}
-
-			//缓存对象在提交之后被入库过
-			if(cacheObj.getDbVersion() > updateAction.getEditVersion()) {
-				return;
-			}
-
-			//持久化
-			if (updateAction.getUpdateType() == UpdateType.DELETE) {
-				dbAccessService.delete(cacheObj.getEntity().getClass(), cacheObj.getId());
-				Object key = CacheRule.getEntityIdKey(cacheObj.getId(), cacheObj.getClass());
-				cache.evict(key);
-			} else if (updateAction.getUpdateType() == UpdateType.INSERT) {
-				dbAccessService.save(cacheObj.getEntity());
-			} else {
-				dbAccessService.update(cacheObj.getEntity());
-			}
-
-			//持久化完成回调
-			updateAction.afterPersist();
-
-		} catch (Exception ex) {
-			logger.error("执行入库时产生异常! 如果是主键冲突异常可忽略!" + entity.getClass().getName() + ":" + JsonUtils.object2JsonString(entity), ex);
-		}
-
 	}
 
 
@@ -215,6 +84,30 @@ public class InTimeDbPersistService implements DbPersistService {
 	@Override
 	public void logHadNotPersistEntity() {
 
+	}
+
+
+	@Override
+	public void handlerPersist(PersistAction persistAction) {
+
+		try {
+			DB_POOL_SERVICE.submit(persistAction);
+		} catch (RejectedExecutionException ex) {
+			logger.error("提交任务到更新队列产生异常", ex);
+
+			this.handleTask(persistAction);
+
+		} catch (Exception ex) {
+			logger.error("提交任务到更新队列产生异常", ex);
+		}
+	}
+
+	/**
+	 * 处理持久化操作
+	 * @param persistAction 持久化操作
+	 */
+	private void handleTask(PersistAction persistAction) {
+		persistAction.run();
 	}
 
 

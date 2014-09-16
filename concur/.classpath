@@ -1,9 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
-	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="src" path="src-readwritelock"/>
-	<classpathentry kind="src" path="src-testrule"/>
-	<classpathentry kind="src" path="src-dbcache"/>
+	<classpathentry excluding="dbcache/test/Entity$EnhancedByCc1.java" kind="src" path="src-dbcache"/>
 	<classpathentry kind="src" path="resource"/>
 	<classpathentry kind="src" path="src-asmproxy"/>
 	<classpathentry kind="src" path="src-lock"/>

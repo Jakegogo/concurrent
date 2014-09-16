@@ -18,14 +18,14 @@ import dbcache.service.DbAccessService;
  */
 @Component("DbAccessServiceImpl")
 public class DbAccessServiceImpl extends HibernateDaoSupport implements DbAccessService {
-	
-	
+
+
 	@Autowired
-    public void setSessionFactory0(SessionFactory sessionFactory){   
-    	super.setSessionFactory(sessionFactory);   
+    public void setSessionFactory0(SessionFactory sessionFactory){
+    	super.setSessionFactory(sessionFactory);
     }
-	
-	
+
+
 	/**
 	 * 根据主键id取得实体对象
 	 * @param entityClazz 实体类
@@ -36,8 +36,8 @@ public class DbAccessServiceImpl extends HibernateDaoSupport implements DbAccess
 	public <T> T get(Class<T> entityClazz, Serializable id) {
 		return super.getHibernateTemplate().get(entityClazz, id);
 	}
-	
-	
+
+
 	/**
 	 * 保存实体对象
 	 * @param entity 实体对象
@@ -46,8 +46,8 @@ public class DbAccessServiceImpl extends HibernateDaoSupport implements DbAccess
 	public <T> void save(T entity) {
 		super.getHibernateTemplate().saveOrUpdate(entity);
 	}
-	
-	
+
+
 	/**
 	 * 更新实体对象
 	 * @param entity 实体对象
@@ -56,22 +56,21 @@ public class DbAccessServiceImpl extends HibernateDaoSupport implements DbAccess
 	public <T> void update(T entity) {
 		super.getHibernateTemplate().update(entity);
 	}
-	
-	
+
+
 	/**
 	 * 删除实体
 	 * @param entityClazz 实体对象
 	 * @param id 主键id
 	 */
 	@Override
-	public <T> void delete(Class<T> entityClazz, Serializable id) {
-		T entity = this.get(entityClazz, id);
+	public <T> void delete(T entity) {
 		if (entity != null) {
 			super.getHibernateTemplate().delete(entity);
 		}
 	}
-	
-	
+
+
 	/**
 	 * 取得最大主键值(主键为Integer/Long类型)
 	 * @param entityClazz 实体对象
@@ -84,7 +83,7 @@ public class DbAccessServiceImpl extends HibernateDaoSupport implements DbAccess
 				.uniqueResult();
 	}
 
-	
+
 	/**
 	 * 取得最大主键值(主键为Long类型)
 	 * @param clz 实体对象

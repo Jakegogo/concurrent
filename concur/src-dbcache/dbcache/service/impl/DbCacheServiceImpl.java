@@ -27,9 +27,8 @@ import dbcache.conf.CacheRule;
 import dbcache.model.CacheObject;
 import dbcache.model.EntityInitializer;
 import dbcache.model.IEntity;
-import dbcache.model.UpdateAction;
+import dbcache.model.PersistAction;
 import dbcache.model.UpdateStatus;
-import dbcache.model.UpdateType;
 import dbcache.service.Cache;
 import dbcache.service.ConfigFactory;
 import dbcache.service.DbAccessService;
@@ -122,7 +121,7 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 		dbRuleService.init();
 
 		//初始化持久化服务
-		dbPersistService.init(cache);
+		dbPersistService.init();
 
 		//注册jvm关闭钩子
 		Runtime.getRuntime().addShutdownHook(new Thread() {
@@ -294,8 +293,63 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 
 		//入库
 		if (cacheObject != null) {
-			UpdateAction updateAction = UpdateAction.valueOf(cacheObject, UpdateType.INSERT);
-			dbPersistService.handlerPersist(updateAction);
+
+			@SuppressWarnings("rawtypes")
+			final CacheObject cacheObj = cacheObject;
+			//最新修改版本号
+			final long editVersion = cacheObject.increseEditVersion();
+			final long dbVersion = cacheObject.getDbVersion();
+
+			dbPersistService.handlerPersist(new PersistAction() {
+
+				@Override
+				public void run() {
+
+					//缓存对象在提交之后被修改过
+					if(editVersion < cacheObj.getEditVersion()) {
+						return;
+					}
+
+					//比较并更新入库版本号
+					if (!cacheObj.compareAndUpdateDbSync(dbVersion, editVersion)) {
+						return;
+					}
+
+					Object entity = cacheObj.getEntity();
+
+					//持久化前操作
+					if(entity instanceof EntityInitializer){
+						EntityInitializer entityInitializer = (EntityInitializer) entity;
+						entityInitializer.doBeforePersist();
+					}
+
+					//缓存对象在提交之后被入库过
+					if(cacheObj.getDbVersion() > editVersion) {
+						return;
+					}
+
+					//持久化
+					dbAccessService.save(entity);
+				}
+
+				@Override
+				public String getPersistInfo() {
+
+					//缓存对象在提交之后被修改过
+					if(editVersion < cacheObj.getEditVersion()) {
+						return null;
+					}
+
+					return JsonUtils.object2JsonString(cacheObj.getEntity());
+				}
+
+				@Override
+				public boolean valid() {
+					return editVersion == cacheObj.getEditVersion();
+				}
+
+			});
+
 		}
 
 		Object obj = this.get(entity.getId());
@@ -305,10 +359,63 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 
 	@Override
 	public void submitUpdated2Queue(T entity) {
-		CacheObject<T> cacheObject = this.get(clazz, entity.getId());
+		final CacheObject<T> cacheObject = this.get(clazz, entity.getId());
 		if (cacheObject != null) {
-			UpdateAction updateAction = UpdateAction.valueOf(cacheObject, UpdateType.UPDATE);
-			dbPersistService.handlerPersist(updateAction);
+
+			//最新修改版本号
+			final long editVersion = cacheObject.increseEditVersion();
+			final long dbVersion = cacheObject.getDbVersion();
+
+			dbPersistService.handlerPersist(new PersistAction() {
+
+				@Override
+				public void run() {
+
+					//缓存对象在提交之后被修改过
+					if(editVersion < cacheObject.getEditVersion()) {
+						return;
+					}
+
+					//比较并更新入库版本号
+					if (!cacheObject.compareAndUpdateDbSync(dbVersion, editVersion)) {
+						return;
+					}
+
+					Object entity = cacheObject.getEntity();
+
+					//持久化前操作
+					if(entity instanceof EntityInitializer){
+						EntityInitializer entityInitializer = (EntityInitializer) entity;
+						entityInitializer.doBeforePersist();
+					}
+
+					//缓存对象在提交之后被入库过
+					if(cacheObject.getDbVersion() > editVersion) {
+						return;
+					}
+
+					//持久化
+					dbAccessService.update(entity);
+				}
+
+				@Override
+				public String getPersistInfo() {
+
+					//缓存对象在提交之后被修改过
+					if(editVersion < cacheObject.getEditVersion()) {
+						return null;
+					}
+
+					return JsonUtils.object2JsonString(cacheObject.getEntity());
+				}
+
+				@Override
+				public boolean valid() {
+					return editVersion == cacheObject.getEditVersion();
+				}
+
+			});
+
 		}
 	}
 
@@ -320,12 +427,64 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 
 
 	@Override
-	public void submitDeleted2Queue(PK id) {
-		CacheObject<T> cacheObject = this.get(clazz, id);
+	public void submitDeleted2Queue(final PK id) {
+		final CacheObject<T> cacheObject = this.get(clazz, id);
 		if (cacheObject != null) {
+			//标记为已经删除
 			cacheObject.setUpdateStatus(UpdateStatus.DELETED);
-			UpdateAction updateAction = UpdateAction.valueOf(cacheObject, UpdateType.DELETE);
-			dbPersistService.handlerPersist(updateAction);
+
+			//最新修改版本号
+			final long editVersion = cacheObject.increseEditVersion();
+			final long dbVersion = cacheObject.getDbVersion();
+
+			dbPersistService.handlerPersist(new PersistAction() {
+
+				@Override
+				public void run() {
+
+					//缓存对象在提交之后被修改过
+					if(editVersion < cacheObject.getEditVersion()) {
+						return;
+					}
+
+					//比较并更新入库版本号
+					if (!cacheObject.compareAndUpdateDbSync(dbVersion, editVersion)) {
+						return;
+					}
+
+					Object entity = cacheObject.getEntity();
+
+					//缓存对象在提交之后被入库过
+					if(cacheObject.getDbVersion() > editVersion) {
+						return;
+					}
+
+					//持久化
+					dbAccessService.delete(entity);
+					Object key = CacheRule.getEntityIdKey(id, clazz);
+					//从缓存中移除
+					cache.evict(key);
+				}
+
+				@Override
+				public String getPersistInfo() {
+
+					//缓存对象在提交之后被修改过
+					if(editVersion < cacheObject.getEditVersion()) {
+						return null;
+					}
+
+					return JsonUtils.object2JsonString(cacheObject.getEntity());
+				}
+
+
+				@Override
+				public boolean valid() {
+					return editVersion == cacheObject.getEditVersion();
+				}
+
+
+			});
 		}
 	}
 

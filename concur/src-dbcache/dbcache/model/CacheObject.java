@@ -84,25 +84,12 @@ public class CacheObject<T extends IEntity<?>> {
 
 	/**
 	 * 比较并更新入库版本号
-	 *
-	 * @param updateAction
-	 *            更新操作
+	 * @param dbVersion 已入库的版本号
+	 * @param editVersion 编辑的版本号
 	 * @return
 	 */
-	public boolean compareDbSync(UpdateAction updateAction) {
-		return this.dbVersion.get() == updateAction.getDbVersion();
-	}
-
-	/**
-	 * 比较并更新入库版本号
-	 *
-	 * @param updateAction
-	 *            更新操作
-	 * @return
-	 */
-	public boolean compareAndUpdateDbSync(UpdateAction updateAction) {
-		return this.dbVersion.compareAndSet(updateAction.getDbVersion(),
-				updateAction.getEditVersion());
+	public boolean compareAndUpdateDbSync(long dbVersion, long editVersion) {
+		return this.dbVersion.compareAndSet(dbVersion, editVersion);
 	}
 
 	/**
@@ -149,5 +136,7 @@ public class CacheObject<T extends IEntity<?>> {
 	public UpdateStatus getUpdateStatus() {
 		return updateStatus;
 	}
+
+
 
 }
