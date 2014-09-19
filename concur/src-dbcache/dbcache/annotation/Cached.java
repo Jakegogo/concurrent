@@ -52,4 +52,10 @@ public @interface Cached {
 	 */
 	public int concurrencyLevel() default 0;
 
+	/**
+	 * 是否启用索引服务
+	 * @return
+	 */
+	public boolean enableIndex() default false;
+
 }

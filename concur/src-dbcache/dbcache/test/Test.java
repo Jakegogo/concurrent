@@ -70,6 +70,10 @@ public class Test {
 //			if(i % 1000000 == 0) {
 				entity.addNum(1);
 //			}
+				if(i%1000 == 0) {
+			Thread.sleep(100);
+				}
+
 			this.cacheService.submitUpdated2Queue(entity);
 			if(i%10000000 == 0) {
 				System.out.println(ThreadUtils.dumpThreadPool("入库线程池", this.cacheService.getThreadPool()));

@@ -1,7 +1,12 @@
 package dbcache.conf;
 
+import java.lang.reflect.Field;
+import java.util.HashMap;
+import java.util.Map;
+
 import dbcache.annotation.Cached;
-import dbcache.annotation.DisableIndex;
+import dbcache.annotation.EnableIndex;
+import dbcache.model.IndexKey;
 import dbcache.utils.AnnotationUtils;
 import dbcache.utils.JsonUtils;
 
@@ -30,8 +35,12 @@ public class CacheConfig {
 	/** 并发线程数 */
 	private int concurrencyLevel;
 
-	/** 禁用索引服务 默认false */
-	private boolean disableIndex = false;
+	/** 启用索引服务 默认true */
+	private boolean enableIndex = false;
+
+	/** 索引信息  索引名 - 属性 */
+	private Map<String, Field> indexes = new HashMap<String, Field>();
+
 
 	/**
 	 * 获取实例
@@ -42,7 +51,9 @@ public class CacheConfig {
 		Cached cachedAnno = entityClass.getAnnotation(Cached.class);
 		if(cachedAnno != null) {
 			CacheConfig cacheConfig = valueOf(cachedAnno);
-			cacheConfig.setDisableIndex(entityClass.isAnnotationPresent(DisableIndex.class));
+			if(entityClass.isAnnotationPresent(EnableIndex.class)) {
+				cacheConfig.setEnableIndex(true);
+			}
 			return cacheConfig;
 		}
 		return valueOf();
@@ -60,6 +71,7 @@ public class CacheConfig {
 		cacheConfig.setEntitySize(cachedAnno.entitySize());
 		cacheConfig.setIndexSize(cachedAnno.indexSize());
 		cacheConfig.setConcurrencyLevel(cachedAnno.concurrencyLevel());
+		cacheConfig.setEnableIndex(cachedAnno.enableIndex());
 		return cacheConfig;
 	}
 
@@ -131,13 +143,22 @@ public class CacheConfig {
 		this.concurrencyLevel = concurrencyLevel;
 	}
 
-	public boolean isDisableIndex() {
-		return disableIndex;
+	public boolean isEnableIndex() {
+		return enableIndex;
 	}
 
-	public void setDisableIndex(boolean disableIndex) {
-		this.disableIndex = disableIndex;
+	public void setEnableIndex(boolean enableIndex) {
+		this.enableIndex = enableIndex;
 	}
+
+	public Map<String, Field> getIndexes() {
+		return indexes;
+	}
+
+	public void setIndexes(Map<String, Field> indexes) {
+		this.indexes = indexes;
+	}
+
 
 
 }
