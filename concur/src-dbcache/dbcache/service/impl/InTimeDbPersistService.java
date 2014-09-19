@@ -93,7 +93,7 @@ public class InTimeDbPersistService implements DbPersistService {
 		try {
 			DB_POOL_SERVICE.submit(persistAction);
 		} catch (RejectedExecutionException ex) {
-			logger.error("提交任务到更新队列产生异常", ex);
+			logger.error("提交任务到更新队列被拒绝,使用同步处理:RejectedExecutionException");
 
 			this.handleTask(persistAction);
 
