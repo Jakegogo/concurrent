@@ -62,6 +62,7 @@ public class CacheConfig {
 		cacheConfig.setEntitySize(cachedAnno.entitySize());
 		cacheConfig.setIndexSize(cachedAnno.indexSize());
 		cacheConfig.setConcurrencyLevel(cachedAnno.concurrencyLevel());
+		cacheConfig.setEnableIndex(cachedAnno.enableIndex());
 		return cacheConfig;
 	}
 
