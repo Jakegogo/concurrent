@@ -1,7 +1,10 @@
 package dbcache.model;
 
 import java.io.Serializable;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
+
 
 /**
  * 实体缓存辅助类
@@ -45,6 +48,12 @@ public class CacheObject<T extends IEntity<?>> {
 	 * 实体更新状态
 	 */
 	private volatile UpdateStatus updateStatus = UpdateStatus.PERSIST;
+
+	/**
+	 * 索引键集合
+	 */
+	private Map<String, IndexKey<?>> indexKeys = new HashMap<String, IndexKey<?>>();
+
 
 	/**
 	 * 构造方法
@@ -135,6 +144,14 @@ public class CacheObject<T extends IEntity<?>> {
 
 	public UpdateStatus getUpdateStatus() {
 		return updateStatus;
+	}
+
+	public Map<String, IndexKey<?>> getIndexKeys() {
+		return indexKeys;
+	}
+
+	public void setIndexKeys(Map<String, IndexKey<?>> indexKeys) {
+		this.indexKeys = indexKeys;
 	}
 
 

@@ -1,7 +1,12 @@
 package dbcache.conf;
 
+import java.lang.reflect.Field;
+import java.util.HashMap;
+import java.util.Map;
+
 import dbcache.annotation.Cached;
 import dbcache.annotation.EnableIndex;
+import dbcache.model.IndexKey;
 import dbcache.utils.AnnotationUtils;
 import dbcache.utils.JsonUtils;
 
@@ -32,6 +37,10 @@ public class CacheConfig {
 
 	/** 启用索引服务 默认true */
 	private boolean enableIndex = false;
+
+	/** 索引信息  索引名 - 属性 */
+	private Map<String, Field> indexes = new HashMap<String, Field>();
+
 
 	/**
 	 * 获取实例
@@ -140,6 +149,14 @@ public class CacheConfig {
 
 	public void setEnableIndex(boolean enableIndex) {
 		this.enableIndex = enableIndex;
+	}
+
+	public Map<String, Field> getIndexes() {
+		return indexes;
+	}
+
+	public void setIndexes(Map<String, Field> indexes) {
+		this.indexes = indexes;
 	}
 
 
