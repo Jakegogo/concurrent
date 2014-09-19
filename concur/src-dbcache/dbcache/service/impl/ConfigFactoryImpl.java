@@ -224,8 +224,8 @@ public class ConfigFactoryImpl implements ConfigFactory, DbCacheMBean {
 	@Override
 	public IEntity<?> createProxyEntity(IEntity<?> entity, Class<?> proxyClass, IndexService indexService) {
 		CacheConfig cacheConfig = getCacheConfig(entity.getClass());
-		//判断是否禁用索引服务
-		if(cacheConfig != null && cacheConfig.isDisableIndex()) {
+		//判断是否启用索引服务
+		if(cacheConfig == null || !cacheConfig.isEnableIndex()) {
 			return entity;
 		}
 		return ClassUtil.getProxyEntity(proxyClass, entity, indexService);
