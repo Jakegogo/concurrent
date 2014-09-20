@@ -17,34 +17,26 @@ public interface IndexService<PK extends Comparable<PK> & Serializable> {
 
 	/**
 	 * 获取索引值
-	 * @param indexKey 索引Key
+	 * @param indexName 索引名
+	 * @param indexValue 索引值
 	 */
-	public Collection<IndexValue<PK>> get(IndexKey<PK> indexKey);
+	public Collection<IndexValue<PK>> get(String indexName, Object indexValue);
 
 
 	/**
 	 * 获取索引值
-	 * @param indexKey 索引Key
+	 * @param indexName 索引名
+	 * @param indexValue 索引值
 	 * @return
 	 */
-	public IndexValue<PK> getUnique(IndexKey<PK> indexKey);
+	public IndexValue<PK> getUnique(String indexName, Object indexValue);
 
 
 	/**
 	 * 创建实体索引
-	 * @param indexKey 索引Key
 	 * @param indexValue 索引值
 	 */
 	public void create(IndexValue<PK> indexValue);
-
-
-	/**
-	 * 更新索引
-	 * @param indexKey 索引Key
-	 * @param oldIndexValue 旧的索引值
-	 * @param indexValue 新的索引值
-	 */
-	public void update(IndexValue<PK> oldIndexValue, IndexValue<PK> indexValue);
 
 
 	/**

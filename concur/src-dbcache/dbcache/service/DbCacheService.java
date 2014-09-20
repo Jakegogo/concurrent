@@ -61,6 +61,15 @@ public interface DbCacheService<T extends IEntity<PK>, PK extends Comparable<PK>
 	 */
 	void submitDeleted2Queue(PK id);
 
+	/**
+	 * 根据索引获取实体列表
+	 * @see dbcache.service.IndexService<PK>
+	 * @param indexName 索引名
+	 * @param indexValue 索引值
+	 * @return
+	 */
+	List<T> listByIndex(String indexName, Object indexValue);
+
 
 	/**
 	 * 关闭应用时回调

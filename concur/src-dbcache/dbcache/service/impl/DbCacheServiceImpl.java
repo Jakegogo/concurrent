@@ -250,6 +250,13 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 	}
 
 
+	@Override
+	public List<T> listByIndex(String indexName, Object indexValue) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+
 	@SuppressWarnings("unchecked")
 	@Override
 	public T submitNew2Queue(T entity) {
@@ -511,6 +518,7 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 		toStrMap.put("indexServiceCacheUseSize", this.indexService.getCache().getCachedSize());
 		return JsonUtils.object2JsonString(toStrMap);
 	}
+
 
 
 }

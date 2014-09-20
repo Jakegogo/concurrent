@@ -19,4 +19,15 @@ public class CacheRule {
 		return (17 + entityClazz.hashCode()) * 37 + id.hashCode();
 	}
 
+
+	/**
+	 * 获取索引Key
+	 * @param indexName 索引名
+	 * @param indexValue 索引值
+	 * @return
+	 */
+	public static Integer getIndexIdKey(String indexName, Object indexValue) {
+		return (17 + indexName.hashCode()) * 37 + indexValue.hashCode();
+	}
+
 }

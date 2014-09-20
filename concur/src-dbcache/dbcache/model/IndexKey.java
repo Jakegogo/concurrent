@@ -2,6 +2,8 @@ package dbcache.model;
 
 import java.io.Serializable;
 
+import dbcache.conf.CacheRule;
+
 /**
  * 索引Key对象
  * @author Jake
@@ -63,11 +65,7 @@ public class IndexKey<PK extends Comparable<PK> & Serializable> {
 
 	@Override
 	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + ((name == null) ? 0 : name.hashCode());
-		result = prime * result + ((value == null) ? 0 : value.hashCode());
-		return result;
+		return CacheRule.getIndexIdKey(name, value);
 	}
 
 	@SuppressWarnings("unchecked")

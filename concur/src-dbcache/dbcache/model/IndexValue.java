@@ -10,11 +10,6 @@ import java.io.Serializable;
 public class IndexValue<PK extends Comparable<PK> & Serializable> {
 
 	/**
-	 * 索引键
-	 */
-	private volatile IndexKey<PK> indexKey;
-
-	/**
 	 * 索引值对应的实体Id
 	 */
 	private final PK id;
@@ -29,9 +24,8 @@ public class IndexValue<PK extends Comparable<PK> & Serializable> {
 	 * @param id 实体Id
 	 * @param indexKey 索引键
 	 */
-	public IndexValue(PK id, IndexKey<PK> indexKey) {
+	public IndexValue(PK id) {
 		this.id = id;
-		this.indexKey = indexKey;
 	}
 
 	/**
@@ -40,29 +34,8 @@ public class IndexValue<PK extends Comparable<PK> & Serializable> {
 	 * @param indexKey 索引键
 	 * @return
 	 */
-	public static <PK extends Comparable<PK> & Serializable> IndexValue<PK> valueOf(PK id, IndexKey<PK> indexKey) {
-		return new IndexValue<PK>(id, indexKey);
-	}
-
-
-	/**
-	 * 获取实例
-	 * @param id 实体Id
-	 * @param name 索引名
-	 * @param value 索引值
-	 * @return
-	 */
-	@SuppressWarnings("unchecked")
-	public static <PK extends Comparable<PK> & Serializable> IndexValue<PK> valueOf(PK id, String name, Object value) {
-		return new IndexValue<PK>(id, (IndexKey<PK>) IndexKey.valueOf(name, value));
-	}
-
-	public IndexKey<PK> getIndexKey() {
-		return indexKey;
-	}
-
-	public void setIndexKey(IndexKey<PK> indexKey) {
-		this.indexKey = indexKey;
+	public static <PK extends Comparable<PK> & Serializable> IndexValue<PK> valueOf(PK id) {
+		return new IndexValue<PK>(id);
 	}
 
 	public PK getId() {

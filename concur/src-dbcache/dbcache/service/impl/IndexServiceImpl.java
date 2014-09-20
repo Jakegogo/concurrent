@@ -7,8 +7,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
+import dbcache.conf.CacheRule;
 import dbcache.model.IndexKey;
 import dbcache.model.IndexValue;
+import dbcache.model.UpdateStatus;
 import dbcache.service.Cache;
 import dbcache.service.IndexService;
 
@@ -29,13 +31,24 @@ public class IndexServiceImpl<PK extends Comparable<PK> & Serializable>
 
 
 	@Override
-	public Collection<IndexValue<PK>> get(IndexKey<PK> indexKey) {
-		// TODO Auto-generated method stub
+	public Collection<IndexValue<PK>> get(String indexName, Object indexValue) {
+		Object key = CacheRule.getIndexIdKey(indexName, indexValue);
+
+		Cache.ValueWrapper wrapper = (Cache.ValueWrapper) cache.get(key);
+		if(wrapper != null) {	// 已经缓存
+			@SuppressWarnings("unchecked")
+			Collection<IndexValue<PK>> indexValues = (Collection<IndexValue<PK>>) wrapper.get();
+			return indexValues;
+		}
+
+
+
+
 		return null;
 	}
 
 	@Override
-	public IndexValue<PK> getUnique(IndexKey<PK> indexKey) {
+	public IndexValue<PK> getUnique(String indexName, Object indexValue) {
 		// TODO Auto-generated method stub
 		return null;
 	}
@@ -47,29 +60,13 @@ public class IndexServiceImpl<PK extends Comparable<PK> & Serializable>
 	}
 
 	@Override
-	public void update(IndexValue<PK> oldIndexValue, IndexValue<PK> indexValue) {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
 	public void remove(IndexValue<PK> indexValue) {
 		// TODO Auto-generated method stub
 
 	}
 
 	@Override
-	public void update(Object entity, String indexName,
-			Object oldValue, Object newValue) {
-
-//		this.update(IndexKey.valueOf(indexName, oldValue));
-
-//		System.out.println("called changeIndex:" + entity.getClass().getName() + " - " + indexName + " - " + oldValue + " - " + newValue);
-	}
-
-
-	@SuppressWarnings("unused")
-	private void update(IndexKey<PK> indexKey, Object oldValue, Object newValue) {
+	public void update(Object entity, String indexName, Object oldValue, Object newValue) {
 
 	}
 
