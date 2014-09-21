@@ -281,6 +281,50 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 	}
 
 
+	@Override
+	public List<T> pageByIndex(String indexName, Object indexValue, int page,
+			int size) {
+
+		Collection<Map.Entry<PK, Boolean>> idList = this.indexService.get(indexName, indexValue);
+		if(idList == null || idList.isEmpty()) {
+			return Collections.emptyList();
+		}
+
+		int startIndex = (page - 1) * size;
+		int endIndex = page * size;
+		if(startIndex < 0) {
+			startIndex = 0;
+		}
+		if(endIndex > idList.size()) {
+			endIndex = idList.size();
+		}
+
+		List<T> result = new ArrayList<T>();
+		T temp = null;
+		int index = 0;
+
+		for(Map.Entry<PK, Boolean> entry : idList) {
+			//分页操作
+			if(index < startIndex) {
+				continue;
+			} else if(index > endIndex) {
+				break;
+			}
+			//跳过已经删除的实体
+			if(entry.getValue() != null && entry.getValue() == false) {
+				continue;
+			}
+
+			temp = this.get(entry.getKey());
+			if(temp != null) {
+				result.add(temp);
+				index ++;
+			}
+		}
+		return result;
+	}
+
+
 	@SuppressWarnings("unchecked")
 	@Override
 	public T submitNew2Queue(T entity) {

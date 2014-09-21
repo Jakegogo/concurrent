@@ -55,20 +55,36 @@ public interface DbCacheService<T extends IEntity<PK>, PK extends Comparable<PK>
 	 */
 	void submitDeleted2Queue(T entity);
 
+
 	/**
 	 * 提交实体删除任务到更新队列(即时入库)
 	 * @param id 主键id
 	 */
 	void submitDeleted2Queue(PK id);
 
+
 	/**
 	 * 根据索引获取实体列表
 	 * @see dbcache.service.IndexService<PK>
+	 * @see dbcache.model.Sortable<PK>
 	 * @param indexName 索引名
 	 * @param indexValue 索引值
 	 * @return
 	 */
 	List<T> listByIndex(String indexName, Object indexValue);
+
+
+	/**
+	 * 根据索引获取实体列表
+	 * @see dbcache.service.IndexService<PK>
+	 * @see dbcache.model.Sortable<PK>
+	 * @param indexName 索引名
+	 * @param indexValue 索引值
+	 * @param page 页码
+	 * @param size 大小
+	 * @return
+	 */
+	List<T> pageByIndex(String indexName, Object indexValue, int page, int size);
 
 
 	/**
