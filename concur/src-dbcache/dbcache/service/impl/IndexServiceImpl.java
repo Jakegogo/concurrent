@@ -1,7 +1,14 @@
 package dbcache.service.impl;
 
 import java.io.Serializable;
+import java.lang.reflect.Field;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -10,8 +17,13 @@ import org.springframework.stereotype.Component;
 import dbcache.conf.CacheConfig;
 import dbcache.conf.CacheRule;
 import dbcache.conf.Inject;
+import dbcache.model.IEntity;
+import dbcache.model.IndexKey;
+import dbcache.model.IndexObject;
 import dbcache.model.IndexValue;
+import dbcache.model.UpdateStatus;
 import dbcache.service.Cache;
+import dbcache.service.DbAccessService;
 import dbcache.service.IndexService;
 
 /**
@@ -31,51 +43,202 @@ public class IndexServiceImpl<PK extends Comparable<PK> & Serializable>
 	@Inject
 	private CacheConfig cacheConfig;
 
-
 	@Inject
 	@Autowired
 	@Qualifier("concurrentLinkedHashMapCache")
 	private Cache cache;
 
+	@Autowired
+	private DbAccessService dbAccessService;
+
+	/**
+	 * 等待锁map {key:lock}
+	 */
+	private final ConcurrentMap<Object, Lock> WAITING_LOCK_MAP = new ConcurrentHashMap<Object, Lock>();
+
+
 
 	@Override
-	public Collection<IndexValue<PK>> get(String indexName, Object indexValue) {
+	public Collection<Map.Entry<PK, Boolean>> get(String indexName, Object indexValue) {
+
+		//判断实体是否建立索引
+		if(!cacheConfig.getIndexes().containsKey(indexName)) {
+			throw new IllegalArgumentException("实体类[" + cacheConfig.getClass().getSimpleName() + "]不存在索引[" + indexName + "]!");
+		}
+
+		Map<PK, Boolean> indexValues = getPersist(indexName, indexValue);
+
+		if(indexValues == null) {
+			return Collections.emptyList();
+		}
+
+		return indexValues.entrySet();
+	}
+
+
+
+	/**
+	 * 获取可修改的线程安全的持久态索引值
+	 * @return Map<PK, Boolean> 主键 - 是否持久化(false:已删除)
+	 */
+	@SuppressWarnings("unchecked")
+	private Map<PK, Boolean> getPersist(String indexName, Object indexValue) {
 		Object key = CacheRule.getIndexIdKey(indexName, indexValue);
 
 		Cache.ValueWrapper wrapper = (Cache.ValueWrapper) cache.get(key);
 		if(wrapper != null) {	// 已经缓存
-			@SuppressWarnings("unchecked")
-			Collection<IndexValue<PK>> indexValues = (Collection<IndexValue<PK>>) wrapper.get();
-			return indexValues;
+
+			IndexObject<PK> indexObject = (IndexObject<PK>) wrapper.get();
+
+			if(indexObject != null) {
+				//持久态则返回结果
+				if(indexObject.getUpdateStatus() == UpdateStatus.PERSIST) {
+					return indexObject.getIndexValues();
+				}
+
+			} else {
+				return null;
+			}
 		}
 
 
+		Lock lock = new ReentrantLock();
+		Lock prevLock = WAITING_LOCK_MAP.putIfAbsent(key, lock);
+		lock = prevLock != null ? prevLock : lock;
 
+		Map<PK, Boolean> indexValues = null;
+		lock.lock();
+		try {
 
-		return null;
+			IndexObject<PK> indexObject = null;
+			wrapper = (Cache.ValueWrapper) cache.get(key);
+
+			if(wrapper != null) {	// 已经缓存
+
+				indexObject = (IndexObject<PK>) wrapper.get();
+
+				if(indexObject != null) {
+					//持久态直接返回结果
+					if(indexObject.getUpdateStatus() == UpdateStatus.PERSIST) {
+						return indexObject.getIndexValues();
+					}
+
+					indexValues = indexObject.getIndexValues();
+
+				} else {
+					return null;
+				}
+			}
+
+			//初始化索引
+			if(wrapper == null) {
+
+				indexObject = IndexObject.valueOf(IndexKey.valueOf(indexName, indexValue));
+
+				wrapper = cache.putIfAbsent(key, indexObject);
+
+				if (wrapper != null && wrapper.get() != null) {
+					indexObject = (IndexObject<PK>) wrapper.get();
+				}
+
+				indexValues = indexObject.getIndexValues();
+			}
+
+			//查询数据库索引
+			Field indexField = cacheConfig.getIndexes().get(indexName);
+
+			Collection<PK> ids = (Collection<PK>) dbAccessService.listIdByIndex(cacheConfig.getClass(), indexField.getName(), indexValue);
+
+			if(ids != null) {
+				for(PK id : ids) {
+					indexValues.putIfAbsent(id, true);
+				}
+			}
+
+			//设置缓存状态
+			indexObject.setUpdateStatus(UpdateStatus.PERSIST);
+
+		} finally {
+			WAITING_LOCK_MAP.remove(key);
+			lock.unlock();
+		}
+
+		return indexValues;
 	}
 
-	@Override
-	public IndexValue<PK> getUnique(String indexName, Object indexValue) {
-		// TODO Auto-generated method stub
-		return null;
+
+
+	/**
+	 * 获取可修改的线程安全的临时索引值
+	 * @return Map<PK, Boolean> 主键 - 是否持久化(false:已删除)
+	 */
+	@SuppressWarnings("unchecked")
+	private IndexObject<PK> getTransient(String indexName, Object indexValue) {
+		Object key = CacheRule.getIndexIdKey(indexName, indexValue);
+
+		Cache.ValueWrapper wrapper = (Cache.ValueWrapper) cache.get(key);
+		if(wrapper != null) {	// 已经缓存
+
+			IndexObject<PK> indexObject = (IndexObject<PK>) wrapper.get();
+
+			if(indexObject != null) {
+				return indexObject;
+			} else {
+				return null;
+			}
+		}
+
+		IndexObject<PK> indexObject = IndexObject.valueOf(IndexKey.valueOf(indexName, indexValue));
+		//设置缓存状态
+		indexObject.setUpdateStatus(UpdateStatus.TRANSIENT);
+
+		wrapper = cache.putIfAbsent(key, indexObject);
+
+		if (wrapper != null && wrapper.get() != null) {
+			indexObject = (IndexObject<PK>) wrapper.get();
+		}
+
+		return indexObject;
 	}
+
 
 	@Override
 	public void create(IndexValue<PK> indexValue) {
-		// TODO Auto-generated method stub
-
+		IndexObject<PK> indexObject = this.getTransient(indexValue.getName(), indexValue.getValue());
+		indexObject.getIndexValues().put(indexValue.getId(), Boolean.valueOf(true));
 	}
+
 
 	@Override
 	public void remove(IndexValue<PK> indexValue) {
-		// TODO Auto-generated method stub
-
+		IndexObject<PK> indexObject = this.getTransient(indexValue.getName(), indexValue.getValue());
+		Map<PK, Boolean> indexValues = indexObject.getIndexValues();
+		if(indexObject.getUpdateStatus() == UpdateStatus.PERSIST) {
+			indexValues.remove(indexValue.getId());
+		} else {
+			indexValues.put(indexValue.getId(), Boolean.valueOf(false));
+		}
 	}
 
-	@Override
-	public void update(Object entity, String indexName, Object oldValue, Object newValue) {
 
+	@Override
+	public void update(IEntity<PK> entity, String indexName, Object oldValue, Object newValue) {
+		IndexObject<PK> oldIndexObject = this.getTransient(indexName, oldValue);
+		Map<PK, Boolean> oldIndexValues = oldIndexObject.getIndexValues();
+		if(oldIndexObject.getUpdateStatus() == UpdateStatus.PERSIST) {
+			oldIndexValues.remove(entity.getId());
+		} else {
+			oldIndexValues.put(entity.getId(), Boolean.valueOf(false));
+		}
+
+
+		IndexObject<PK> newIndexObject = this.getTransient(indexName, newValue);
+		Map<PK, Boolean> newIndexValues = newIndexObject.getIndexValues();
+		if(newIndexObject.getUpdateStatus() == UpdateStatus.PERSIST) {
+			newIndexValues.remove(entity.getId());
+		} else {
+			newIndexValues.put(entity.getId(), Boolean.valueOf(false));
+		}
 	}
 
 

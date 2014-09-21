@@ -1,8 +1,10 @@
 package dbcache.service.impl;
 
 import java.io.Serializable;
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -29,6 +31,7 @@ import dbcache.conf.Inject;
 import dbcache.model.CacheObject;
 import dbcache.model.EntityInitializer;
 import dbcache.model.IEntity;
+import dbcache.model.IndexValue;
 import dbcache.model.PersistAction;
 import dbcache.model.UpdateStatus;
 import dbcache.service.Cache;
@@ -256,8 +259,25 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 
 	@Override
 	public List<T> listByIndex(String indexName, Object indexValue) {
-		// TODO Auto-generated method stub
-		return null;
+
+		Collection<Map.Entry<PK, Boolean>> idList = this.indexService.get(indexName, indexValue);
+		if(idList == null || idList.isEmpty()) {
+			return Collections.emptyList();
+		}
+
+		List<T> result = new ArrayList<T>();
+		T temp = null;
+		for(Map.Entry<PK, Boolean> entry : idList) {
+			//跳过已经删除的实体
+			if(entry.getValue() != null && entry.getValue() == false) {
+				continue;
+			}
+			temp = this.get(entry.getKey());
+			if(temp != null) {
+				result.add(temp);
+			}
+		}
+		return result;
 	}
 
 
@@ -304,6 +324,20 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 
 		//入库
 		if (cacheObject != null) {
+
+			//更新索引
+			if(cacheConfig.isEnableIndex()) {
+				entity = cacheObject.getEntity();
+				for(Map.Entry<String, Field> entry : cacheConfig.getIndexes().entrySet()) {
+					Object indexValue = null;
+					try {
+						indexValue = entry.getValue().get(entity);
+						this.indexService.create(IndexValue.valueOf(entry.getKey(), indexValue, entity.getId()));
+					} catch (Exception e) {
+						e.printStackTrace();
+					}
+				}
+			}
 
 			@SuppressWarnings("rawtypes")
 			final CacheObject cacheObj = cacheObject;
@@ -443,6 +477,20 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 		if (cacheObject != null) {
 			//标记为已经删除
 			cacheObject.setUpdateStatus(UpdateStatus.DELETED);
+
+			//更新索引
+			if(cacheConfig.isEnableIndex()) {
+				IEntity<PK> entity = cacheObject.getEntity();
+				for(Map.Entry<String, Field> entry : cacheConfig.getIndexes().entrySet()) {
+					Object indexValue = null;
+					try {
+						indexValue = entry.getValue().get(entity);
+						this.indexService.remove(IndexValue.valueOf(entry.getKey(), indexValue, entity.getId()));
+					} catch (Exception e) {
+						e.printStackTrace();
+					}
+				}
+			}
 
 			//最新修改版本号
 			final long editVersion = cacheObject.increseEditVersion();

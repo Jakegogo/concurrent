@@ -19,14 +19,9 @@ public class IndexKey {
 	 */
 	private final Object value;
 
-	/**
-	 * 索引键更新状态
-	 */
-	private volatile UpdateStatus updateStatus = UpdateStatus.TRANSIENT;
-
 
 	/** 构造方法 */
-	private IndexKey(String name, Object value) {
+	protected IndexKey(String name, Object value) {
 		this.name = name;
 		this.value = value;
 	}
@@ -53,13 +48,6 @@ public class IndexKey {
 		return value;
 	}
 
-	public UpdateStatus getUpdateStatus() {
-		return updateStatus;
-	}
-
-	public void setUpdateStatus(UpdateStatus updateStatus) {
-		this.updateStatus = updateStatus;
-	}
 
 	@Override
 	public int hashCode() {

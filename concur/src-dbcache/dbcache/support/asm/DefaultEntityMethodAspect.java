@@ -294,7 +294,7 @@ public class DefaultEntityMethodAspect extends AbstractMethodAspect {
 			mWriter.visitVarInsn(Opcodes.ALOAD, locals);
 
 			//调用静态方法
-			mWriter.visitMethodInsn(INVOKEINTERFACE, ClassUtil.toAsmCls(getAspectHandleClass().getName()), "update", "(Ljava/lang/Object;Ljava/lang/String;Ljava/lang/Object;Ljava/lang/Object;)V");
+			mWriter.visitMethodInsn(INVOKEINTERFACE, ClassUtil.toAsmCls(getAspectHandleClass().getName()), "update", "(Ldbcache/model/IEntity;Ljava/lang/String;Ljava/lang/Object;Ljava/lang/Object;)V");
 
 		}
 

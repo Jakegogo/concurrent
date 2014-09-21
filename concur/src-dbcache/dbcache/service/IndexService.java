@@ -2,8 +2,9 @@ package dbcache.service;
 
 import java.io.Serializable;
 import java.util.Collection;
+import java.util.Map;
 
-import dbcache.model.IndexKey;
+import dbcache.model.IEntity;
 import dbcache.model.IndexValue;
 
 
@@ -19,17 +20,9 @@ public interface IndexService<PK extends Comparable<PK> & Serializable> {
 	 * 获取索引值
 	 * @param indexName 索引名
 	 * @param indexValue 索引值
+	 * @return Map.Entry<PK, Boolean>> 主键Id - 是否持久态(false:已删除)
 	 */
-	public Collection<IndexValue<PK>> get(String indexName, Object indexValue);
-
-
-	/**
-	 * 获取索引值
-	 * @param indexName 索引名
-	 * @param indexValue 索引值
-	 * @return
-	 */
-	public IndexValue<PK> getUnique(String indexName, Object indexValue);
+	public Collection<Map.Entry<PK, Boolean>> get(String indexName, Object indexValue);
 
 
 	/**
@@ -46,7 +39,7 @@ public interface IndexService<PK extends Comparable<PK> & Serializable> {
 	 * @param oldValue 旧字段值
 	 * @param newValue 新字段值
 	 */
-	public void update(Object entity, String indexName, Object oldValue, Object newValue);
+	public void update(IEntity<PK> entity, String indexName, Object oldValue, Object newValue);
 
 
 	/**

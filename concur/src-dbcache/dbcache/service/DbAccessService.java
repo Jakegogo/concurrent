@@ -1,6 +1,9 @@
 package dbcache.service;
 
 import java.io.Serializable;
+import java.util.Collection;
+
+import dbcache.conf.CacheConfig;
 
 /**
  * 通用数据库管理器接口
@@ -49,7 +52,7 @@ public interface DbAccessService {
 
 	/**
 	 * 取得最大主键值(主键为Integer/Long类型)
-	 * @param entityClazz 实体对象
+	 * @param entityClazz 实体类
 	 * @return Object
 	 */
 	Object loadMaxId(Class<?> entityClazz);
@@ -57,11 +60,22 @@ public interface DbAccessService {
 
 	/**
 	 * 取得最大主键值(主键为Long类型)
-	 * @param clz 实体对象
+	 * @param clz 实体类
 	 * @param minValue 范围-最小值
 	 * @param maxValue 范围-最大值
 	 * @return
 	 */
 	Object loadMaxId(Class<?> entityClazz, long minValue, long maxValue);
+
+
+	/**
+	 * 根据索引获取Id列表
+	 * @param entityClazz 实体类
+	 * @param indexName 索引名
+	 * @param indexValue 索引值
+	 * @return
+	 */
+	Collection<Serializable> listIdByIndex(Class<? extends CacheConfig> entityClazz,
+			String indexName, Object indexValue);
 
 }

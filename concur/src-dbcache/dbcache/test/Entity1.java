@@ -29,7 +29,7 @@ public class Entity1 extends Entity {
 	    Integer localInteger1 = Integer.valueOf(this.obj.getNum());
 	    this.obj.setNum(paramInt);
 	    Integer localInteger2 = Integer.valueOf(this.obj.getNum());
-	    indexService.update(this.obj.getClass(), "uid_idx", localInteger1, localInteger2);
+	    indexService.update(this.obj, "uid_idx", localInteger1, localInteger2);
 	  }
 
 }

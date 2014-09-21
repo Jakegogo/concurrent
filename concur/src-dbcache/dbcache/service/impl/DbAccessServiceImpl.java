@@ -1,6 +1,7 @@
 package dbcache.service.impl;
 
 import java.io.Serializable;
+import java.util.Collection;
 
 import org.hibernate.SessionFactory;
 import org.hibernate.criterion.Projections;
@@ -9,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.orm.hibernate3.support.HibernateDaoSupport;
 import org.springframework.stereotype.Component;
 
+import dbcache.conf.CacheConfig;
 import dbcache.service.DbAccessService;
 
 /**
@@ -98,6 +100,22 @@ public class DbAccessServiceImpl extends HibernateDaoSupport implements DbAccess
 				.add(Restrictions.between(Projections.id().toString(), minValue, maxValue))
 				.setProjection(Projections.max(Projections.id().toString()))
 				.uniqueResult();
+	}
+
+
+	/**
+	 * 更加属性名和属性值获取ID列表
+	 */
+	@SuppressWarnings("unchecked")
+	@Override
+	public Collection<Serializable> listIdByIndex(
+			Class<? extends CacheConfig> entityClazz, String fieldName,
+			Object fieldValue) {
+		return getSession()
+				.createCriteria(entityClazz)
+				.add(Restrictions.eq(fieldName, fieldValue))
+				.setProjection(Projections.id())
+				.list();
 	}
 
 }
