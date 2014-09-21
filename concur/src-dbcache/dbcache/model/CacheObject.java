@@ -52,7 +52,7 @@ public class CacheObject<T extends IEntity<?>> {
 	/**
 	 * 索引键集合
 	 */
-	private Map<String, IndexKey<?>> indexKeys = new HashMap<String, IndexKey<?>>();
+	private Map<String, IndexKey> indexKeys = new HashMap<String, IndexKey>();
 
 
 	/**
@@ -146,11 +146,11 @@ public class CacheObject<T extends IEntity<?>> {
 		return updateStatus;
 	}
 
-	public Map<String, IndexKey<?>> getIndexKeys() {
+	public Map<String, IndexKey> getIndexKeys() {
 		return indexKeys;
 	}
 
-	public void setIndexKeys(Map<String, IndexKey<?>> indexKeys) {
+	public void setIndexKeys(Map<String, IndexKey> indexKeys) {
 		this.indexKeys = indexKeys;
 	}
 

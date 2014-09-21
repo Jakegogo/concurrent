@@ -23,7 +23,9 @@ import org.springframework.context.event.ContextClosedEvent;
 import org.springframework.stereotype.Component;
 
 import dbcache.annotation.ThreadSafe;
+import dbcache.conf.CacheConfig;
 import dbcache.conf.CacheRule;
+import dbcache.conf.Inject;
 import dbcache.model.CacheObject;
 import dbcache.model.EntityInitializer;
 import dbcache.model.IEntity;
@@ -69,12 +71,14 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 	 * 实体类形
 	 * 需要外部设定值
 	 */
+	@Inject
 	private Class<T> clazz;
 
 	/**
-	 * 实体静态代理类
+	 * 实体缓存配置
 	 */
-	private Class<?> proxyClazz;
+	@Inject
+	private CacheConfig cacheConfig;
 
 	/**
 	 * 等待锁map {key:lock}
@@ -204,7 +208,7 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 						entityInitializer.doAfterLoad();
 					}
 
-					cacheObject = new CacheObject<T>(entity, id, entityClazz, (T) configFactory.createProxyEntity(entity, proxyClazz, indexService));
+					cacheObject = new CacheObject<T>(entity, id, entityClazz, (T) configFactory.createProxyEntity(entity, this.cacheConfig.getProxyClazz(), indexService));
 					wrapper = cache.putIfAbsent(key, cacheObject);
 
 					if (wrapper != null && wrapper.get() != null) {
@@ -281,7 +285,7 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 
 		if (wrapper == null) {//缓存还不存在
 
-			cacheObject = new CacheObject<T>(entity, entity.getId(), (Class<T>) entity.getClass(), (T) configFactory.createProxyEntity(entity, proxyClazz, indexService), UpdateStatus.PERSIST);
+			cacheObject = new CacheObject<T>(entity, entity.getId(), (Class<T>) entity.getClass(), (T) configFactory.createProxyEntity(entity, this.cacheConfig.getProxyClazz(), indexService), UpdateStatus.PERSIST);
 			wrapper = cache.putIfAbsent(key, cacheObject);
 
 			cacheObject = (CacheObject<T>) wrapper.get();
@@ -508,11 +512,16 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 	}
 
 
+	public CacheConfig getCacheConfig() {
+		return cacheConfig;
+	}
+
+
 	@Override
 	public String toString() {
 		Map<String, Object> toStrMap = new HashMap<String, Object>();
 		toStrMap.put("clazz", this.clazz);
-		toStrMap.put("proxyClazz", this.proxyClazz);
+		toStrMap.put("proxyClazz", this.cacheConfig.getProxyClazz());
 		toStrMap.put("WAITING_LOCK_MAP_SIZE", this.WAITING_LOCK_MAP.size());
 		toStrMap.put("cacheUseSize", this.cache.getCachedSize());
 		toStrMap.put("indexServiceCacheUseSize", this.indexService.getCache().getCachedSize());

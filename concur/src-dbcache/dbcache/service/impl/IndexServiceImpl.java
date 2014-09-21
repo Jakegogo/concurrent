@@ -7,10 +7,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
+import dbcache.conf.CacheConfig;
 import dbcache.conf.CacheRule;
-import dbcache.model.IndexKey;
+import dbcache.conf.Inject;
 import dbcache.model.IndexValue;
-import dbcache.model.UpdateStatus;
 import dbcache.service.Cache;
 import dbcache.service.IndexService;
 
@@ -25,6 +25,14 @@ public class IndexServiceImpl<PK extends Comparable<PK> & Serializable>
 		implements IndexService<PK> {
 
 
+	/**
+	 * 实体缓存配置
+	 */
+	@Inject
+	private CacheConfig cacheConfig;
+
+
+	@Inject
 	@Autowired
 	@Qualifier("concurrentLinkedHashMapCache")
 	private Cache cache;
@@ -74,6 +82,10 @@ public class IndexServiceImpl<PK extends Comparable<PK> & Serializable>
 	@Override
 	public Cache getCache() {
 		return cache;
+	}
+
+	public CacheConfig getCacheConfig() {
+		return cacheConfig;
 	}
 
 }

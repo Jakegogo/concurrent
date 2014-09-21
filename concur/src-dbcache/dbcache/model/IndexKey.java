@@ -1,7 +1,5 @@
 package dbcache.model;
 
-import java.io.Serializable;
-
 import dbcache.conf.CacheRule;
 
 /**
@@ -9,7 +7,7 @@ import dbcache.conf.CacheRule;
  * @author Jake
  * @date 2014年8月25日上午1:05:48
  */
-public class IndexKey<PK extends Comparable<PK> & Serializable> {
+public class IndexKey {
 
 	/**
 	 * 索引名
@@ -39,11 +37,11 @@ public class IndexKey<PK extends Comparable<PK> & Serializable> {
 	 * @param value 索引值
 	 * @return
 	 */
-	public static <PK extends Comparable<PK> & Serializable> IndexKey<PK> valueOf(String name, Object value) {
+	public static IndexKey valueOf(String name, Object value) {
 		if (name == null) {
 			throw new IllegalArgumentException("索引名不能为null");
 		}
-		return new IndexKey<PK>(name, value);
+		return new IndexKey(name, value);
 	}
 
 
@@ -68,7 +66,6 @@ public class IndexKey<PK extends Comparable<PK> & Serializable> {
 		return CacheRule.getIndexIdKey(name, value);
 	}
 
-	@SuppressWarnings("unchecked")
 	@Override
 	public boolean equals(Object obj) {
 		if (this == obj)
@@ -77,7 +74,7 @@ public class IndexKey<PK extends Comparable<PK> & Serializable> {
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
-		IndexKey<PK> other = (IndexKey<PK>) obj;
+		IndexKey other = (IndexKey) obj;
 		if (name == null) {
 			if (other.name != null)
 				return false;

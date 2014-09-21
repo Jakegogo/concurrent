@@ -25,6 +25,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
 import org.springframework.util.ReflectionUtils;
+import org.springframework.util.ReflectionUtils.FieldCallback;
 
 import dbcache.conf.CacheConfig;
 import dbcache.conf.PersistType;
@@ -58,7 +59,7 @@ public class ConfigFactoryImpl implements ConfigFactory, DbCacheMBean {
 
 	private static final String cacheProperty = "cache";
 
-	private static final String proxyClassProperty = "proxyClazz";
+	private static final String proxyCacheConfigProperty = "cacheConfig";
 
 	private static final String indexServiceProperty = "indexService";
 
@@ -112,15 +113,26 @@ public class ConfigFactoryImpl implements ConfigFactory, DbCacheMBean {
 			return service;
 		}
 
-		try {
+		//创建对应实体的CacheService
+		service = this.createCacheService(clz);
+		dbCacheServiceBeanMap.putIfAbsent(clz, service);
+		service = dbCacheServiceBeanMap.get(clz);
 
+		return service;
+	}
+
+
+	@SuppressWarnings("rawtypes")
+	private DbCacheService createCacheService(Class<? extends IEntity> clz) {
+
+		DbCacheService service = null;
+
+		try {
 			//获取缓存配置
 			CacheConfig cacheConfig = this.getCacheConfig(clz);
 
 			//创建新的bean
 			service = applicationContext.getAutowireCapableBeanFactory().createBean(DbCacheServiceImpl.class);
-			dbCacheServiceBeanMap.putIfAbsent(clz, service);
-			service = dbCacheServiceBeanMap.get(clz);
 
 			//设置实体类
 			Field clazzField = DbCacheServiceImpl.class.getDeclaredField(entityClassProperty);
@@ -129,8 +141,10 @@ public class ConfigFactoryImpl implements ConfigFactory, DbCacheMBean {
 
 			//初始化代理类
 			Class<?> proxyClazz = AsmFactory.getEnhancedClass(clz, methodAspect);
-			Field proxyClazzField = DbCacheServiceImpl.class.getDeclaredField(proxyClassProperty);
-			inject(service, proxyClazzField, proxyClazz);
+			cacheConfig.setProxyClazz(proxyClazz);
+
+			Field cacheConfigField = DbCacheServiceImpl.class.getDeclaredField(proxyCacheConfigProperty);
+			inject(service, cacheConfigField, cacheConfig);
 
 
 			//初始化缓存实例
@@ -173,6 +187,10 @@ public class ConfigFactoryImpl implements ConfigFactory, DbCacheMBean {
 			ReflectionUtils.makeAccessible(cacheField1);
 			inject(indexService, cacheField1, indexCache);
 
+			//修改IndexService的cacheConfig
+			Field cacheConfigField1 = indexService.getClass().getDeclaredField(proxyCacheConfigProperty);
+			inject(indexService, cacheConfigField1, cacheConfig);
+
 
 		} catch(Exception e) {
 			e.printStackTrace();
@@ -180,8 +198,6 @@ public class ConfigFactoryImpl implements ConfigFactory, DbCacheMBean {
 
 		return service;
 	}
-
-
 
 
 	/**
@@ -192,8 +208,31 @@ public class ConfigFactoryImpl implements ConfigFactory, DbCacheMBean {
 	@Override
 	public CacheConfig getCacheConfig(Class<?> clz) {
 		CacheConfig cacheConfig = cacheConfigMap.get(clz);
+
+		//初始化CacheConfig配置
 		if(cacheConfig == null) {
 			cacheConfig = CacheConfig.valueOf(clz);
+
+			final Map<String, Field> indexes = new HashMap<String, Field>();
+			ReflectionUtils.doWithFields(clz, new FieldCallback() {
+				public void doWith(Field field) throws IllegalArgumentException, IllegalAccessException {
+					if (field.isAnnotationPresent(org.hibernate.annotations.Index.class) ||
+							field.isAnnotationPresent(dbcache.annotation.Index.class)) {
+						String indexName = null;
+						org.hibernate.annotations.Index indexAno = field.getAnnotation(org.hibernate.annotations.Index.class);
+						if(indexAno != null) {
+							indexName = indexAno.name();
+						} else {
+							dbcache.annotation.Index indexAno1 = field.getAnnotation(dbcache.annotation.Index.class);
+							indexName = indexAno1.name();
+						}
+
+						indexes.put(indexName, field);
+					}
+				}
+			});
+			cacheConfig.setIndexes(indexes);
+
 			cacheConfigMap.put(clz, cacheConfig);
 		}
 		return cacheConfig;

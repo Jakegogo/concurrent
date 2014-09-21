@@ -6,7 +6,6 @@ import java.util.Map;
 
 import dbcache.annotation.Cached;
 import dbcache.annotation.EnableIndex;
-import dbcache.model.IndexKey;
 import dbcache.utils.AnnotationUtils;
 import dbcache.utils.JsonUtils;
 
@@ -19,6 +18,12 @@ public class CacheConfig {
 
 	/** 默认配置 */
 	private static CacheConfig defaultConfig;
+
+	/** 实体类 */
+	private Class<?> clazz;
+
+	/** 实体静态代理类  */
+	private Class<?> proxyClazz;
 
 	/** 缓存容器类型 */
 	private CacheType cacheType;
@@ -51,6 +56,7 @@ public class CacheConfig {
 		Cached cachedAnno = entityClass.getAnnotation(Cached.class);
 		if(cachedAnno != null) {
 			CacheConfig cacheConfig = valueOf(cachedAnno);
+			cacheConfig.setClazz(entityClass);
 			if(entityClass.isAnnotationPresent(EnableIndex.class)) {
 				cacheConfig.setEnableIndex(true);
 			}
@@ -101,6 +107,22 @@ public class CacheConfig {
 
 	public static CacheConfig getDefaultConfig() {
 		return defaultConfig;
+	}
+
+	public Class<?> getClazz() {
+		return clazz;
+	}
+
+	public void setClazz(Class<?> clazz) {
+		this.clazz = clazz;
+	}
+
+	public Class<?> getProxyClazz() {
+		return proxyClazz;
+	}
+
+	public void setProxyClazz(Class<?> proxyClazz) {
+		this.proxyClazz = proxyClazz;
 	}
 
 	public CacheType getCacheType() {
