@@ -22,7 +22,7 @@ public interface IndexService<PK extends Comparable<PK> & Serializable> {
 	 * @param indexValue 索引值
 	 * @return Map.Entry<PK, Boolean>> 主键Id - 是否持久态(false:已删除)
 	 */
-	public Collection<Map.Entry<PK, Boolean>> get(String indexName, Object indexValue);
+	public Collection<PK> get(String indexName, Object indexValue);
 
 
 	/**

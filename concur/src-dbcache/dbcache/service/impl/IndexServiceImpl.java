@@ -7,8 +7,8 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -54,12 +54,12 @@ public class IndexServiceImpl<PK extends Comparable<PK> & Serializable>
 	/**
 	 * 等待锁map {key:lock}
 	 */
-	private final ConcurrentMap<Object, Lock> WAITING_LOCK_MAP = new ConcurrentHashMap<Object, Lock>();
+	private final ConcurrentMap<Object, ReadWriteLock> WAITING_LOCK_MAP = new ConcurrentHashMap<Object, ReadWriteLock>();
 
 
 
 	@Override
-	public Collection<Map.Entry<PK, Boolean>> get(String indexName, Object indexValue) {
+	public Collection<PK> get(String indexName, Object indexValue) {
 
 		//判断实体是否建立索引
 		if(!cacheConfig.getIndexes().containsKey(indexName)) {
@@ -72,7 +72,7 @@ public class IndexServiceImpl<PK extends Comparable<PK> & Serializable>
 			return Collections.emptyList();
 		}
 
-		return indexValues.entrySet();
+		return Collections.unmodifiableCollection(indexValues.keySet());
 	}
 
 
@@ -102,12 +102,10 @@ public class IndexServiceImpl<PK extends Comparable<PK> & Serializable>
 		}
 
 
-		Lock lock = new ReentrantLock();
-		Lock prevLock = WAITING_LOCK_MAP.putIfAbsent(key, lock);
-		lock = prevLock != null ? prevLock : lock;
+		ReadWriteLock lock = this.getIndexReadWriteLock(key);
 
 		Map<PK, Boolean> indexValues = null;
-		lock.lock();
+		lock.writeLock().lock();
 		try {
 
 			IndexObject<PK> indexObject = null;
@@ -151,7 +149,10 @@ public class IndexServiceImpl<PK extends Comparable<PK> & Serializable>
 
 			if(ids != null) {
 				for(PK id : ids) {
-					indexValues.putIfAbsent(id, true);
+					Boolean oldStatus = indexValues.putIfAbsent(id, true);
+					if(!oldStatus) {
+						indexValues.remove(id);
+					}
 				}
 			}
 
@@ -160,7 +161,7 @@ public class IndexServiceImpl<PK extends Comparable<PK> & Serializable>
 
 		} finally {
 			WAITING_LOCK_MAP.remove(key);
-			lock.unlock();
+			lock.writeLock().unlock();
 		}
 
 		return indexValues;
@@ -202,10 +203,40 @@ public class IndexServiceImpl<PK extends Comparable<PK> & Serializable>
 	}
 
 
+	/**
+	 * 获取索引读写锁
+	 * @param key 键
+	 * @return
+	 */
+	private ReadWriteLock getIndexReadWriteLock(Object key) {
+		ReadWriteLock lock = WAITING_LOCK_MAP.get(key);
+		if(lock != null) {
+			return lock;
+		}
+
+		lock = new ReentrantReadWriteLock();
+		ReadWriteLock prevLock = WAITING_LOCK_MAP.putIfAbsent(key, lock);
+		lock = prevLock != null ? prevLock : lock;
+		return lock;
+	}
+
+
 	@Override
 	public void create(IndexValue<PK> indexValue) {
 		IndexObject<PK> indexObject = this.getTransient(indexValue.getName(), indexValue.getValue());
-		indexObject.getIndexValues().put(indexValue.getId(), Boolean.valueOf(true));
+		if(indexObject.getUpdateStatus() == UpdateStatus.PERSIST) {
+			indexObject.getIndexValues().put(indexValue.getId(), Boolean.valueOf(true));
+		} else {
+			Object key = CacheRule.getIndexIdKey(indexValue.getName(), indexValue.getValue());
+			//持有读锁
+			ReadWriteLock lock = this.getIndexReadWriteLock(key);
+			lock.readLock().lock();
+			try {
+				indexObject.getIndexValues().put(indexValue.getId(), Boolean.valueOf(true));
+			} finally {
+				lock.readLock().unlock();
+			}
+		}
 	}
 
 
@@ -216,7 +247,15 @@ public class IndexServiceImpl<PK extends Comparable<PK> & Serializable>
 		if(indexObject.getUpdateStatus() == UpdateStatus.PERSIST) {
 			indexValues.remove(indexValue.getId());
 		} else {
-			indexValues.put(indexValue.getId(), Boolean.valueOf(false));
+			Object key = CacheRule.getIndexIdKey(indexValue.getName(), indexValue.getValue());
+			//持有读锁
+			ReadWriteLock lock = this.getIndexReadWriteLock(key);
+			lock.readLock().lock();
+			try {
+				indexValues.put(indexValue.getId(), Boolean.valueOf(false));
+			} finally {
+				lock.readLock().unlock();
+			}
 		}
 	}
 
@@ -228,7 +267,16 @@ public class IndexServiceImpl<PK extends Comparable<PK> & Serializable>
 		if(oldIndexObject.getUpdateStatus() == UpdateStatus.PERSIST) {
 			oldIndexValues.remove(entity.getId());
 		} else {
-			oldIndexValues.put(entity.getId(), Boolean.valueOf(false));
+			Object key = CacheRule.getIndexIdKey(indexName, oldValue);
+			//持有读锁
+			ReadWriteLock lock = this.getIndexReadWriteLock(key);
+			lock.readLock().lock();
+			try {
+				oldIndexValues.put(entity.getId(), Boolean.valueOf(false));
+			} finally {
+				lock.readLock().unlock();
+			}
+
 		}
 
 
@@ -237,7 +285,15 @@ public class IndexServiceImpl<PK extends Comparable<PK> & Serializable>
 		if(newIndexObject.getUpdateStatus() == UpdateStatus.PERSIST) {
 			newIndexValues.remove(entity.getId());
 		} else {
-			newIndexValues.put(entity.getId(), Boolean.valueOf(false));
+			Object key = CacheRule.getIndexIdKey(indexName, newValue);
+			//持有读锁
+			ReadWriteLock lock = this.getIndexReadWriteLock(key);
+			lock.readLock().lock();
+			try {
+				newIndexValues.put(entity.getId(), Boolean.valueOf(false));
+			} finally {
+				lock.readLock().unlock();
+			}
 		}
 	}
 

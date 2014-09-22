@@ -260,19 +260,15 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 	@Override
 	public List<T> listByIndex(String indexName, Object indexValue) {
 
-		Collection<Map.Entry<PK, Boolean>> idList = this.indexService.get(indexName, indexValue);
+		Collection<PK> idList = this.indexService.get(indexName, indexValue);
 		if(idList == null || idList.isEmpty()) {
 			return Collections.emptyList();
 		}
 
 		List<T> result = new ArrayList<T>(idList.size());
 		T temp = null;
-		for(Map.Entry<PK, Boolean> entry : idList) {
-			//跳过已经删除的实体
-			if(entry.getValue() != null && entry.getValue() == false) {
-				continue;
-			}
-			temp = this.get(entry.getKey());
+		for(PK id : idList) {
+			temp = this.get(id);
 			if(temp != null) {
 				result.add(temp);
 			}
@@ -283,21 +279,8 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 
 
 	@Override
-	public List<PK> listIdByIndex(String indexName, Object indexValue) {
-		Collection<Map.Entry<PK, Boolean>> idList = this.indexService.get(indexName, indexValue);
-		if(idList == null || idList.isEmpty()) {
-			return Collections.emptyList();
-		}
-
-		List<PK> result = new ArrayList<PK>(idList.size());
-		for(Map.Entry<PK, Boolean> entry : idList) {
-			//跳过已经删除的实体
-			if(entry.getValue() != null && entry.getValue() == false) {
-				continue;
-			}
-			result.add(entry.getKey());
-		}
-		return result;
+	public Collection<PK> listIdByIndex(String indexName, Object indexValue) {
+		return this.indexService.get(indexName, indexValue);
 	}
 
 
@@ -305,7 +288,7 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 	public List<T> pageByIndex(String indexName, Object indexValue, int page,
 			int size) {
 
-		Collection<Map.Entry<PK, Boolean>> idList = this.indexService.get(indexName, indexValue);
+		Collection<PK> idList = this.indexService.get(indexName, indexValue);
 		if(idList == null || idList.isEmpty()) {
 			return Collections.emptyList();
 		}
@@ -323,19 +306,15 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 		T temp = null;
 		int index = 0;
 
-		for(Map.Entry<PK, Boolean> entry : idList) {
+		for(PK id : idList) {
 			//分页操作
 			if(index < startIndex) {
 				continue;
 			} else if(index > endIndex) {
 				break;
 			}
-			//跳过已经删除的实体
-			if(entry.getValue() != null && entry.getValue() == false) {
-				continue;
-			}
 
-			temp = this.get(entry.getKey());
+			temp = this.get(id);
 			if(temp != null) {
 				result.add(temp);
 				index ++;

@@ -82,7 +82,7 @@ public interface DbCacheService<T extends IEntity<PK>, PK extends Comparable<PK>
 	 * @param indexValue 索引值
 	 * @return
 	 */
-	List<PK> listIdByIndex(String indexName, Object indexValue);
+	Collection<PK> listIdByIndex(String indexName, Object indexValue);
 
 
 	/**
