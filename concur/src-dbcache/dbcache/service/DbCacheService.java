@@ -75,6 +75,17 @@ public interface DbCacheService<T extends IEntity<PK>, PK extends Comparable<PK>
 
 
 	/**
+	 * 根据索引获取实体Id列表
+	 * @see dbcache.service.IndexService<PK>
+	 * @see dbcache.model.Sortable<PK>
+	 * @param indexName 索引名
+	 * @param indexValue 索引值
+	 * @return
+	 */
+	List<PK> listIdByIndex(String indexName, Object indexValue);
+
+
+	/**
 	 * 根据索引获取实体列表
 	 * @see dbcache.service.IndexService<PK>
 	 * @see dbcache.model.Sortable<PK>

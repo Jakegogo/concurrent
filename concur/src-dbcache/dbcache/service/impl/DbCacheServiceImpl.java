@@ -265,7 +265,7 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 			return Collections.emptyList();
 		}
 
-		List<T> result = new ArrayList<T>();
+		List<T> result = new ArrayList<T>(idList.size());
 		T temp = null;
 		for(Map.Entry<PK, Boolean> entry : idList) {
 			//跳过已经删除的实体
@@ -276,6 +276,26 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 			if(temp != null) {
 				result.add(temp);
 			}
+		}
+		return result;
+	}
+
+
+
+	@Override
+	public List<PK> listIdByIndex(String indexName, Object indexValue) {
+		Collection<Map.Entry<PK, Boolean>> idList = this.indexService.get(indexName, indexValue);
+		if(idList == null || idList.isEmpty()) {
+			return Collections.emptyList();
+		}
+
+		List<PK> result = new ArrayList<PK>(idList.size());
+		for(Map.Entry<PK, Boolean> entry : idList) {
+			//跳过已经删除的实体
+			if(entry.getValue() != null && entry.getValue() == false) {
+				continue;
+			}
+			result.add(entry.getKey());
 		}
 		return result;
 	}
