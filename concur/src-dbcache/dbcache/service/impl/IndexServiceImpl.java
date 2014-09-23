@@ -160,7 +160,6 @@ public class IndexServiceImpl<PK extends Comparable<PK> & Serializable>
 			indexObject.setUpdateStatus(UpdateStatus.PERSIST);
 
 		} finally {
-			WAITING_LOCK_MAP.remove(key);
 			lock.writeLock().unlock();
 		}
 
