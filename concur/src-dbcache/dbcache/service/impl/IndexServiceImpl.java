@@ -60,7 +60,7 @@ public class IndexServiceImpl<PK extends Comparable<PK> & Serializable>
 	@Override
 	public Collection<PK> get(String indexName, Object indexValue) {
 
-		//判断实体是否建立索引
+		// 判断实体是否建立索引
 		if(!cacheConfig.getIndexes().containsKey(indexName)) {
 			throw new IllegalArgumentException("实体类[" + cacheConfig.getClass().getSimpleName() + "]不存在索引[" + indexName + "]!");
 		}
@@ -90,7 +90,7 @@ public class IndexServiceImpl<PK extends Comparable<PK> & Serializable>
 			IndexObject<PK> indexObject = (IndexObject<PK>) wrapper.get();
 
 			if(indexObject != null) {
-				//持久态则返回结果
+				// 持久态则返回结果
 				if(indexObject.getUpdateStatus() == UpdateStatus.PERSIST) {
 					return indexObject.getIndexValues();
 				}
@@ -115,7 +115,7 @@ public class IndexServiceImpl<PK extends Comparable<PK> & Serializable>
 				indexObject = (IndexObject<PK>) wrapper.get();
 
 				if(indexObject != null) {
-					//持久态直接返回结果
+					// 持久态直接返回结果
 					if(indexObject.getUpdateStatus() == UpdateStatus.PERSIST) {
 						return indexObject.getIndexValues();
 					}
@@ -127,7 +127,7 @@ public class IndexServiceImpl<PK extends Comparable<PK> & Serializable>
 				}
 			}
 
-			//初始化索引
+			// 初始化索引
 			if(wrapper == null) {
 
 				indexObject = IndexObject.valueOf(IndexKey.valueOf(indexName, indexValue));
@@ -141,7 +141,7 @@ public class IndexServiceImpl<PK extends Comparable<PK> & Serializable>
 				indexValues = indexObject.getIndexValues();
 			}
 
-			//查询数据库索引
+			// 查询数据库索引
 			Field indexField = cacheConfig.getIndexes().get(indexName);
 
 			Collection<PK> ids = (Collection<PK>) dbAccessService.listIdByIndex(cacheConfig.getClazz(), indexField.getName(), indexValue);
@@ -155,7 +155,7 @@ public class IndexServiceImpl<PK extends Comparable<PK> & Serializable>
 				}
 			}
 
-			//设置缓存状态
+			// 设置缓存状态
 			indexObject.setUpdateStatus(UpdateStatus.PERSIST);
 
 		} finally {
@@ -188,7 +188,7 @@ public class IndexServiceImpl<PK extends Comparable<PK> & Serializable>
 		}
 
 		IndexObject<PK> indexObject = IndexObject.valueOf(IndexKey.valueOf(indexName, indexValue));
-		//设置缓存状态
+		// 设置缓存状态
 		indexObject.setUpdateStatus(UpdateStatus.TRANSIENT);
 
 		wrapper = cache.putIfAbsent(key, indexObject);
@@ -221,12 +221,14 @@ public class IndexServiceImpl<PK extends Comparable<PK> & Serializable>
 
 	@Override
 	public IndexObject<PK> create(IndexValue<PK> indexValue) {
+
 		IndexObject<PK> indexObject = this.getTransient(indexValue.getName(), indexValue.getValue());
+
 		if(indexObject.getUpdateStatus() == UpdateStatus.PERSIST) {
 			indexObject.getIndexValues().put(indexValue.getId(), Boolean.valueOf(true));
 		} else {
 			Object key = CacheRule.getIndexIdKey(indexValue.getName(), indexValue.getValue());
-			//持有读锁
+			// 持有读锁
 			ReadWriteLock lock = this.getIndexReadWriteLock(key);
 			lock.readLock().lock();
 			try {
@@ -241,13 +243,15 @@ public class IndexServiceImpl<PK extends Comparable<PK> & Serializable>
 
 	@Override
 	public void remove(IndexValue<PK> indexValue) {
+
 		IndexObject<PK> indexObject = this.getTransient(indexValue.getName(), indexValue.getValue());
+
 		Map<PK, Boolean> indexValues = indexObject.getIndexValues();
 		if(indexObject.getUpdateStatus() == UpdateStatus.PERSIST) {
 			indexValues.remove(indexValue.getId());
 		} else {
 			Object key = CacheRule.getIndexIdKey(indexValue.getName(), indexValue.getValue());
-			//持有读锁
+			// 持有读锁
 			ReadWriteLock lock = this.getIndexReadWriteLock(key);
 			lock.readLock().lock();
 			try {
@@ -261,13 +265,15 @@ public class IndexServiceImpl<PK extends Comparable<PK> & Serializable>
 
 	@Override
 	public void update(IEntity<PK> entity, String indexName, Object oldValue, Object newValue) {
+
 		IndexObject<PK> oldIndexObject = this.getTransient(indexName, oldValue);
+
 		Map<PK, Boolean> oldIndexValues = oldIndexObject.getIndexValues();
 		if(oldIndexObject.getUpdateStatus() == UpdateStatus.PERSIST) {
 			oldIndexValues.remove(entity.getId());
 		} else {
 			Object key = CacheRule.getIndexIdKey(indexName, oldValue);
-			//持有读锁
+			// 持有读锁
 			ReadWriteLock lock = this.getIndexReadWriteLock(key);
 			lock.readLock().lock();
 			try {
@@ -275,17 +281,17 @@ public class IndexServiceImpl<PK extends Comparable<PK> & Serializable>
 			} finally {
 				lock.readLock().unlock();
 			}
-
 		}
 
 
 		IndexObject<PK> newIndexObject = this.getTransient(indexName, newValue);
+
 		Map<PK, Boolean> newIndexValues = newIndexObject.getIndexValues();
 		if(newIndexObject.getUpdateStatus() == UpdateStatus.PERSIST) {
 			newIndexValues.remove(entity.getId());
 		} else {
 			Object key = CacheRule.getIndexIdKey(indexName, newValue);
-			//持有读锁
+			// 持有读锁
 			ReadWriteLock lock = this.getIndexReadWriteLock(key);
 			lock.readLock().lock();
 			try {

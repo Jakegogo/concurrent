@@ -232,7 +232,7 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 									Object indexValue = entry.getValue().get(entity);
 									IndexObject<PK> indexObject = this.indexService.create(IndexValue.valueOf(entry.getKey(), indexValue, entity.getId()));
 									// 存储索引缓存对象的引用,防止过早地被回收
-									cacheObject.getIndexObjects().add(indexObject);
+									cacheObject.getIndexObjects().put(entry.getKey(), indexObject);
 								}
 							} catch (Exception e) {
 								e.printStackTrace();
@@ -397,7 +397,9 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 				try {
 					for(Map.Entry<String, Field> entry : cacheConfig.getIndexes().entrySet()) {
 						Object indexValue = entry.getValue().get(entity);
-						this.indexService.create(IndexValue.valueOf(entry.getKey(), indexValue, entity.getId()));
+						IndexObject<PK> indexObject = this.indexService.create(IndexValue.valueOf(entry.getKey(), indexValue, entity.getId()));
+						// 存储索引缓存对象的引用,防止过早地被回收
+						cacheObject.getIndexObjects().put(entry.getKey(), indexObject);
 					}
 				} catch (Exception e) {
 					e.printStackTrace();
@@ -554,6 +556,7 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
+				cacheObject.getIndexObjects().clear();
 			}
 
 			//最新修改版本号
