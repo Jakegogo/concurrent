@@ -147,7 +147,7 @@ public class IndexServiceImpl<PK extends Comparable<PK> & Serializable>
 			//查询数据库索引
 			Field indexField = cacheConfig.getIndexes().get(indexName);
 
-			Collection<PK> ids = (Collection<PK>) dbAccessService.listIdByIndex(cacheConfig.getClass(), indexField.getName(), indexValue);
+			Collection<PK> ids = (Collection<PK>) dbAccessService.listIdByIndex(cacheConfig.getClazz(), indexField.getName(), indexValue);
 
 			if(ids != null) {
 				for(PK id : ids) {

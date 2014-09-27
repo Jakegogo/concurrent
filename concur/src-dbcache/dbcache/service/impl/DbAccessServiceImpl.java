@@ -109,7 +109,7 @@ public class DbAccessServiceImpl extends HibernateDaoSupport implements DbAccess
 	@SuppressWarnings("unchecked")
 	@Override
 	public Collection<Serializable> listIdByIndex(
-			Class<? extends CacheConfig> entityClazz, String fieldName,
+			Class<?> entityClazz, String fieldName,
 			Object fieldValue) {
 		return getSession()
 				.createCriteria(entityClazz)

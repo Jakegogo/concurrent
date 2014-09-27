@@ -4,6 +4,7 @@ import java.io.Serializable;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import javassist.CannotCompileException;
@@ -23,6 +24,7 @@ import dbcache.model.FlushMode;
 import dbcache.proxy.asm.AsmFactory;
 import dbcache.service.Cache;
 import dbcache.service.DbCacheService;
+import dbcache.utils.JsonUtils;
 import dbcache.utils.ThreadUtils;
 
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -64,15 +66,15 @@ public class Test {
 	public void t1() throws InterruptedException {
 
 
-		for(int i = 0;i < 200000000;i++) {
+		for(int i = 0;i < 1000000;i++) {
 			Entity entity = this.cacheService.get(1);
 //			entity.increseNum();
 //			if(i % 1000000 == 0) {
 				entity.addNum(1);
 //			}
-				if(i%1000 == 0) {
-			Thread.sleep(100);
-				}
+//				if(i%1000 == 0) {
+//			Thread.sleep(100);
+//				}
 
 			this.cacheService.submitUpdated2Queue(entity);
 			if(i%10000000 == 0) {
@@ -197,5 +199,24 @@ public class Test {
 		System.out.println(Entity.class.hashCode());
 		System.out.println(Entity.class.hashCode() * 31);
 	}
+
+
+
+	@org.junit.Test
+	public void t9() {
+		Entity entity = this.cacheService.get(1);
+
+		entity.setUid(201);
+
+		List<Entity> list = this.cacheService.listByIndex("uid_idx", 201);
+
+		assert list.size() == 1;
+
+		for(Entity entity1 : list) {
+			System.out.println(JsonUtils.object2JsonString(entity1));
+		}
+
+	}
+
 
 }

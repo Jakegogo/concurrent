@@ -193,9 +193,14 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 			return null;
 		}
 
-		Lock lock = new ReentrantLock();
-		Lock prevLock = WAITING_LOCK_MAP.putIfAbsent(key, lock);
-		lock = prevLock != null ? prevLock : lock;
+
+		// 获取缓存唯一锁
+		Lock lock = WAITING_LOCK_MAP.get(key);
+		if(lock == null) {
+			lock = new ReentrantLock();
+			Lock prevLock = WAITING_LOCK_MAP.putIfAbsent(key, lock);
+			lock = prevLock != null ? prevLock : lock;
+		}
 
 		CacheObject<T> cacheObject = null;
 		lock.lock();
@@ -206,18 +211,34 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 
 				T entity = dbAccessService.get(entityClazz, id);
 				if (entity != null) {
+					// 调用初始化
 					if(entity instanceof EntityInitializer){
 						EntityInitializer entityInitializer = (EntityInitializer) entity;
 						entityInitializer.doAfterLoad();
 					}
-
+					// 创建缓存对象
 					cacheObject = new CacheObject<T>(entity, id, entityClazz, (T) configFactory.createProxyEntity(entity, this.cacheConfig.getProxyClazz(), indexService));
 					wrapper = cache.putIfAbsent(key, cacheObject);
 
 					if (wrapper != null && wrapper.get() != null) {
 						cacheObject = (CacheObject<T>) wrapper.get();
+
+						// 更新索引
+						entity = cacheObject.getEntity();
+						if(cacheConfig.isEnableIndex()) {
+							for(Map.Entry<String, Field> entry : cacheConfig.getIndexes().entrySet()) {
+								Object indexValue = null;
+								try {
+									indexValue = entry.getValue().get(entity);
+									this.indexService.create(IndexValue.valueOf(entry.getKey(), indexValue, entity.getId()));
+								} catch (Exception e) {
+									e.printStackTrace();
+								}
+							}
+						}
 					}
 				} else {
+					// 缓存NULL value
 					wrapper = cache.putIfAbsent(key, null);
 					if (wrapper != null && wrapper.get() != null) {
 						cacheObject = (CacheObject<T>) wrapper.get();

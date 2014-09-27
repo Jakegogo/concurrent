@@ -4,6 +4,8 @@ import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.springframework.util.ReflectionUtils;
+
 import dbcache.annotation.Cached;
 import dbcache.annotation.EnableIndex;
 import dbcache.service.impl.ConcurrentWeekHashMapCache;
@@ -182,6 +184,9 @@ public class CacheConfig {
 	}
 
 	public void setIndexes(Map<String, Field> indexes) {
+		for(Field field : indexes.values()) {
+			ReflectionUtils.makeAccessible(field);
+		}
 		this.indexes = indexes;
 	}
 

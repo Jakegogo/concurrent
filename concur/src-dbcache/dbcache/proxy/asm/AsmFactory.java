@@ -16,18 +16,18 @@ import dbcache.proxy.AbstractMethodAspect;
 /**
  * asm代理工厂 <br/>
  * 带缓存
- * 
+ *
  * @author Jake
  * @date 2014年9月6日上午12:28:13
  */
 @ThreadSafe
 public class AsmFactory {
-	
+
 	/**
 	 * 代理类缓存
 	 */
 	public static ConcurrentHashMap<Class<?>, Class<?>> ENHANCED_CLASS_CACHE = new ConcurrentHashMap<Class<?>, Class<?>>();
-	
+
 
 	/** 代理类类名 */
 	public static final String SUFIX = "$EnhancedByCc";
@@ -37,7 +37,7 @@ public class AsmFactory {
 	 */
 	public static BytecodeLoader classLoader = new BytecodeLoader();
 
-	
+
 	/**
 	 *
 	 * <p>
@@ -59,7 +59,7 @@ public class AsmFactory {
 	 * 返回代理类
 	 * </p>
 	 * 使用默认的AbstractMethodAspect
-	 * 
+	 *
 	 * @param <T>
 	 * @param clazz
 	 * @return
@@ -138,7 +138,7 @@ public class AsmFactory {
 					writer, methodAspect);
 			reader.accept(visitor, 0);
 			byte[] byteCodes = writer.toByteArray();
-			writeClazz(enhancedClassName, byteCodes);
+//			writeClazz(enhancedClassName, byteCodes);
 			Class<T> result = (Class<T>) classLoader.defineClass(
 					enhancedClassName, byteCodes);
 
