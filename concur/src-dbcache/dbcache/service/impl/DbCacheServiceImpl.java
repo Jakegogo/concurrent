@@ -31,6 +31,7 @@ import dbcache.conf.Inject;
 import dbcache.model.CacheObject;
 import dbcache.model.EntityInitializer;
 import dbcache.model.IEntity;
+import dbcache.model.IndexObject;
 import dbcache.model.IndexValue;
 import dbcache.model.PersistAction;
 import dbcache.model.UpdateStatus;
@@ -226,14 +227,15 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 						// 更新索引
 						entity = cacheObject.getEntity();
 						if(cacheConfig.isEnableIndex()) {
-							for(Map.Entry<String, Field> entry : cacheConfig.getIndexes().entrySet()) {
-								Object indexValue = null;
-								try {
-									indexValue = entry.getValue().get(entity);
-									this.indexService.create(IndexValue.valueOf(entry.getKey(), indexValue, entity.getId()));
-								} catch (Exception e) {
-									e.printStackTrace();
+							try {
+								for(Map.Entry<String, Field> entry : cacheConfig.getIndexes().entrySet()) {
+									Object indexValue = entry.getValue().get(entity);
+									IndexObject<PK> indexObject = this.indexService.create(IndexValue.valueOf(entry.getKey(), indexValue, entity.getId()));
+									// 存储索引缓存对象的引用,防止过早地被回收
+									cacheObject.getIndexObjects().add(indexObject);
 								}
+							} catch (Exception e) {
+								e.printStackTrace();
 							}
 						}
 					}
@@ -392,14 +394,13 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 			//更新索引
 			if(cacheConfig.isEnableIndex()) {
 				entity = cacheObject.getEntity();
-				for(Map.Entry<String, Field> entry : cacheConfig.getIndexes().entrySet()) {
-					Object indexValue = null;
-					try {
-						indexValue = entry.getValue().get(entity);
+				try {
+					for(Map.Entry<String, Field> entry : cacheConfig.getIndexes().entrySet()) {
+						Object indexValue = entry.getValue().get(entity);
 						this.indexService.create(IndexValue.valueOf(entry.getKey(), indexValue, entity.getId()));
-					} catch (Exception e) {
-						e.printStackTrace();
 					}
+				} catch (Exception e) {
+					e.printStackTrace();
 				}
 			}
 
@@ -545,14 +546,13 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 			//更新索引
 			if(cacheConfig.isEnableIndex()) {
 				IEntity<PK> entity = cacheObject.getEntity();
-				for(Map.Entry<String, Field> entry : cacheConfig.getIndexes().entrySet()) {
-					Object indexValue = null;
-					try {
-						indexValue = entry.getValue().get(entity);
+				try {
+					for(Map.Entry<String, Field> entry : cacheConfig.getIndexes().entrySet()) {
+						Object indexValue = entry.getValue().get(entity);
 						this.indexService.remove(IndexValue.valueOf(entry.getKey(), indexValue, entity.getId()));
-					} catch (Exception e) {
-						e.printStackTrace();
 					}
+				} catch (Exception e) {
+					e.printStackTrace();
 				}
 			}
 

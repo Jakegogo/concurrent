@@ -1,7 +1,9 @@
 package dbcache.model;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -54,6 +56,10 @@ public class CacheObject<T extends IEntity<?>> {
 	 */
 	private Map<String, IndexKey> indexKeys = new HashMap<String, IndexKey>();
 
+	/**
+	 * 索引缓存列表
+	 */
+	private List<IndexObject<?>> indexObjects = new ArrayList<IndexObject<?>>();
 
 	/**
 	 * 构造方法
@@ -154,6 +160,13 @@ public class CacheObject<T extends IEntity<?>> {
 		this.indexKeys = indexKeys;
 	}
 
+	public List<IndexObject<?>> getIndexObjects() {
+		return indexObjects;
+	}
+
+	public void setIndexObjects(List<IndexObject<?>> indexObjects) {
+		this.indexObjects = indexObjects;
+	}
 
 
 }

@@ -220,7 +220,7 @@ public class IndexServiceImpl<PK extends Comparable<PK> & Serializable>
 
 
 	@Override
-	public void create(IndexValue<PK> indexValue) {
+	public IndexObject<PK> create(IndexValue<PK> indexValue) {
 		IndexObject<PK> indexObject = this.getTransient(indexValue.getName(), indexValue.getValue());
 		if(indexObject.getUpdateStatus() == UpdateStatus.PERSIST) {
 			indexObject.getIndexValues().put(indexValue.getId(), Boolean.valueOf(true));
@@ -235,6 +235,7 @@ public class IndexServiceImpl<PK extends Comparable<PK> & Serializable>
 				lock.readLock().unlock();
 			}
 		}
+		return indexObject;
 	}
 
 

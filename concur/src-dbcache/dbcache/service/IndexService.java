@@ -4,6 +4,7 @@ import java.io.Serializable;
 import java.util.Collection;
 
 import dbcache.model.IEntity;
+import dbcache.model.IndexObject;
 import dbcache.model.IndexValue;
 
 
@@ -28,7 +29,7 @@ public interface IndexService<PK extends Comparable<PK> & Serializable> {
 	 * 创建实体索引
 	 * @param indexValue 索引值
 	 */
-	public void create(IndexValue<PK> indexValue);
+	public IndexObject<PK> create(IndexValue<PK> indexValue);
 
 
 	/**
@@ -53,5 +54,6 @@ public interface IndexService<PK extends Comparable<PK> & Serializable> {
 	 * @return
 	 */
 	public Cache getCache();
+
 
 }
