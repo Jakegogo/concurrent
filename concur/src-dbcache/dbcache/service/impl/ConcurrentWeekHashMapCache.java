@@ -42,7 +42,7 @@ public class ConcurrentWeekHashMapCache implements Cache {
 	@Override
 	public void init(int entityCacheSize, int concurrencyLevel) {
 		this.store = new ConcurrentReferenceMap<Object, Object>(
-				ReferenceKeyType.STRONG, ReferenceValueType.WEAK,
+				ReferenceKeyType.STRONG, ReferenceValueType.SOFT,
 				DEFAULT_CAPACITY_OF_ENTITY_CACHE, 0.7f, concurrencyLevel);
 	}
 
