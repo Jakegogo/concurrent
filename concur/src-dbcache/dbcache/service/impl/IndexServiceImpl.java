@@ -22,6 +22,9 @@ import dbcache.model.IndexKey;
 import dbcache.model.IndexObject;
 import dbcache.model.IndexValue;
 import dbcache.model.UpdateStatus;
+import dbcache.refcache.ConcurrentReferenceMap;
+import dbcache.refcache.ConcurrentReferenceMap.ReferenceKeyType;
+import dbcache.refcache.ConcurrentReferenceMap.ReferenceValueType;
 import dbcache.service.Cache;
 import dbcache.service.DbAccessService;
 import dbcache.service.IndexService;
@@ -45,7 +48,7 @@ public class IndexServiceImpl<PK extends Comparable<PK> & Serializable>
 
 	@Inject
 	@Autowired
-	@Qualifier("concurrentLinkedHashMapCache")
+	@Qualifier("concurrentWeekHashMapCache")
 	private Cache cache;
 
 	@Autowired
@@ -55,7 +58,6 @@ public class IndexServiceImpl<PK extends Comparable<PK> & Serializable>
 	 * 等待锁map {key:lock}
 	 */
 	private final ConcurrentMap<Object, ReadWriteLock> WAITING_LOCK_MAP = new ConcurrentHashMap<Object, ReadWriteLock>();
-
 
 
 	@Override

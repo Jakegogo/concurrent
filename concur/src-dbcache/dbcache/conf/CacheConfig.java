@@ -6,6 +6,7 @@ import java.util.Map;
 
 import dbcache.annotation.Cached;
 import dbcache.annotation.EnableIndex;
+import dbcache.service.impl.ConcurrentWeekHashMapCache;
 import dbcache.utils.AnnotationUtils;
 import dbcache.utils.JsonUtils;
 
@@ -42,6 +43,9 @@ public class CacheConfig {
 
 	/** 启用索引服务 默认true */
 	private boolean enableIndex = false;
+
+	/** 索引服务缓存类 */
+	private Class<?> indexCacheClass = ConcurrentWeekHashMapCache.class;
 
 	/** 索引信息  索引名 - 属性 */
 	private Map<String, Field> indexes = new HashMap<String, Field>();
@@ -179,6 +183,14 @@ public class CacheConfig {
 
 	public void setIndexes(Map<String, Field> indexes) {
 		this.indexes = indexes;
+	}
+
+	public Class<?> getIndexCacheClass() {
+		return indexCacheClass;
+	}
+
+	public void setIndexCacheClass(Class<?> indexCacheClass) {
+		this.indexCacheClass = indexCacheClass;
 	}
 
 

@@ -98,7 +98,7 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 
 
 	@Autowired
-	@Qualifier("concurrentWeekHashMapCache")
+	@Qualifier("concurrentLinkedHashMapCache")
 	private Cache cache;
 
 
