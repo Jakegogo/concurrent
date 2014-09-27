@@ -3,9 +3,6 @@ package dbcache.service;
 import java.io.Serializable;
 import java.util.Collection;
 
-import dbcache.conf.CacheConfig;
-import dbcache.model.IEntity;
-
 /**
  * 通用数据库管理器接口
  */
@@ -76,7 +73,6 @@ public interface DbAccessService {
 	 * @param indexValue 索引值
 	 * @return
 	 */
-	@SuppressWarnings("rawtypes")
 	Collection<Serializable> listIdByIndex(Class<?> entityClazz,
 			String indexName, Object indexValue);
 

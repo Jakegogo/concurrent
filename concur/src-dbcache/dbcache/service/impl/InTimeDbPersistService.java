@@ -32,7 +32,7 @@ public class InTimeDbPersistService implements DbPersistService {
 	/**
 	 * 缺省入库线程池容量
 	 */
-	private static final int DEFAULT_DB_POOL_SIZE = Runtime.getRuntime().availableProcessors();
+	private static final int DEFAULT_DB_POOL_SIZE = Runtime.getRuntime().availableProcessors()/2 + 1;
 
 
 	/**

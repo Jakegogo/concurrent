@@ -2,7 +2,6 @@ package dbcache.service;
 
 import java.io.Serializable;
 import java.util.Collection;
-import java.util.Map;
 
 import dbcache.model.IEntity;
 import dbcache.model.IndexValue;

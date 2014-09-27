@@ -19,6 +19,7 @@ import dbcache.service.DbRuleService;
 
 /**
  * 延时入库实现类
+ * <br/>单线程执行入库
  * @author Jake
  * @date 2014年8月13日上午12:31:06
  */
