@@ -24,7 +24,7 @@ import dbcache.model.IndexValue;
 import dbcache.model.UpdateStatus;
 import dbcache.service.Cache;
 import dbcache.service.DbAccessService;
-import dbcache.service.IndexService;
+import dbcache.service.DbIndexService;
 
 /**
  * 实体索引服务实现类
@@ -33,8 +33,8 @@ import dbcache.service.IndexService;
  * @date 2014年8月30日下午12:49:40
  */
 @Component
-public class IndexServiceImpl<PK extends Comparable<PK> & Serializable>
-		implements IndexService<PK> {
+public class DbIndexServiceImpl<PK extends Comparable<PK> & Serializable>
+		implements DbIndexService<PK> {
 
 
 	/**
@@ -45,7 +45,7 @@ public class IndexServiceImpl<PK extends Comparable<PK> & Serializable>
 
 	@Inject
 	@Autowired
-	@Qualifier("concurrentWeekHashMapCache")
+	@Qualifier("concurrentLinkedHashMapCache")
 	private Cache cache;
 
 	@Autowired

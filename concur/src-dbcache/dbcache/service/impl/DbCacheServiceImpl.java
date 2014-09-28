@@ -41,7 +41,7 @@ import dbcache.service.DbAccessService;
 import dbcache.service.DbCacheService;
 import dbcache.service.DbPersistService;
 import dbcache.service.DbRuleService;
-import dbcache.service.IndexService;
+import dbcache.service.DbIndexService;
 import dbcache.utils.JsonUtils;
 
 
@@ -117,7 +117,7 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 	 * 索引服务
 	 */
 	@Autowired
-	private IndexService<PK> indexService;
+	private DbIndexService<PK> indexService;
 
 	/**
 	 * dbCache 初始化
@@ -231,8 +231,6 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 								for(Map.Entry<String, Field> entry : cacheConfig.getIndexes().entrySet()) {
 									Object indexValue = entry.getValue().get(entity);
 									IndexObject<PK> indexObject = this.indexService.create(IndexValue.valueOf(entry.getKey(), indexValue, entity.getId()));
-									// 存储索引缓存对象的引用,防止过早地被回收
-									cacheObject.getIndexObjects().put(entry.getKey(), indexObject);
 								}
 							} catch (Exception e) {
 								e.printStackTrace();
@@ -398,8 +396,6 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 					for(Map.Entry<String, Field> entry : cacheConfig.getIndexes().entrySet()) {
 						Object indexValue = entry.getValue().get(entity);
 						IndexObject<PK> indexObject = this.indexService.create(IndexValue.valueOf(entry.getKey(), indexValue, entity.getId()));
-						// 存储索引缓存对象的引用,防止过早地被回收
-						cacheObject.getIndexObjects().put(entry.getKey(), indexObject);
 					}
 				} catch (Exception e) {
 					e.printStackTrace();
@@ -556,7 +552,6 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
-				cacheObject.getIndexObjects().clear();
 			}
 
 			//最新修改版本号

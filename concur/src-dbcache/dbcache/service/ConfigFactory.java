@@ -19,7 +19,7 @@ public interface ConfigFactory {
 	 * @return
 	 */
 	@SuppressWarnings("rawtypes")
-	public IEntity<?> createProxyEntity(IEntity<?> entity, Class<?> proxyClass, IndexService indexService);
+	public IEntity<?> createProxyEntity(IEntity<?> entity, Class<?> proxyClass, DbIndexService indexService);
 
 
 	/**

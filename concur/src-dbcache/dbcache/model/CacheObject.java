@@ -49,11 +49,6 @@ public class CacheObject<T extends IEntity<?>> {
 	 */
 	private volatile UpdateStatus updateStatus = UpdateStatus.PERSIST;
 
-	/**
-	 * 索引缓存列表
-	 */
-	private Map<String, IndexObject<?>> indexObjects = new HashMap<String, IndexObject<?>>(5);
-
 
 	/**
 	 * 构造方法
@@ -144,14 +139,6 @@ public class CacheObject<T extends IEntity<?>> {
 
 	public UpdateStatus getUpdateStatus() {
 		return updateStatus;
-	}
-
-	public Map<String, IndexObject<?>> getIndexObjects() {
-		return indexObjects;
-	}
-
-	public void setIndexObjects(Map<String, IndexObject<?>> indexObjects) {
-		this.indexObjects = indexObjects;
 	}
 
 

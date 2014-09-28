@@ -37,7 +37,7 @@ import dbcache.service.ConfigFactory;
 import dbcache.service.DbCacheMBean;
 import dbcache.service.DbCacheService;
 import dbcache.service.DbPersistService;
-import dbcache.service.IndexService;
+import dbcache.service.DbIndexService;
 import dbcache.support.asm.DefaultEntityMethodAspect;
 import dbcache.utils.ThreadUtils;
 
@@ -173,7 +173,7 @@ public class ConfigFactoryImpl implements ConfigFactory, DbCacheMBean {
 			Field indexServiceField = DbCacheServiceImpl.class.getDeclaredField(indexServiceProperty);
 			ReflectionUtils.makeAccessible(indexServiceField);
 			Class<?> indexServiceClass = indexServiceField.get(service).getClass();
-			IndexService indexService = (IndexService) applicationContext.getAutowireCapableBeanFactory().createBean(indexServiceClass);
+			DbIndexService indexService = (DbIndexService) applicationContext.getAutowireCapableBeanFactory().createBean(indexServiceClass);
 			inject(service, indexServiceField, indexService);
 
 			// 索引服务缓存设置
@@ -260,7 +260,7 @@ public class ConfigFactoryImpl implements ConfigFactory, DbCacheMBean {
 
 	@SuppressWarnings("rawtypes")
 	@Override
-	public IEntity<?> createProxyEntity(IEntity<?> entity, Class<?> proxyClass, IndexService indexService) {
+	public IEntity<?> createProxyEntity(IEntity<?> entity, Class<?> proxyClass, DbIndexService indexService) {
 		CacheConfig cacheConfig = getCacheConfig(entity.getClass());
 		//判断是否启用索引服务
 		if(cacheConfig == null || !cacheConfig.isEnableIndex()) {

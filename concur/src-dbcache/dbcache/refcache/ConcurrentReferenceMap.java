@@ -47,14 +47,14 @@ import java.util.concurrent.ConcurrentMap;
  * <strong>该清理是 异步 且 “即时” 的,会在垃圾回收的同时清理，不需要在下次对该 Map 操作时才清理包装引用的实例。</strong>
  * </p>
  * <p>
- * 此类及其视图和迭代器实现了 {@link ConcurrentMap} 和 {@link Iterator} 接口的所有可选 方法。 
+ * 此类及其视图和迭代器实现了 {@link ConcurrentMap} 和 {@link Iterator} 接口的所有可选 方法。
  * </p>
  * <p>
  * 该实现不支持参数为 null。如果传入 null 则会抛出 {@link NullPointerException}。
  * </p>
- * 
+ *
  * @author <a href="http://www.agrael.cn">李翔</a>
- * 
+ *
  * @param <K>
  *            此映射维护的键类型
  * @param <V>
@@ -64,21 +64,21 @@ public class ConcurrentReferenceMap<K, V> extends AbstractMap<K, V> implements C
 
 	/** 版本号 */
 	private static final long serialVersionUID = -6254917146703229097L;
-	
+
 	private static final FinalizableReferenceQueue FINALIZABLE_REFERENCE_QUEUE = new FinalizableReferenceQueue("ConcurrentReferenceMapReferenceQueue");
 
 	private final ReferenceKeyType keyReferenceType;
-	
+
 	private final ReferenceValueType valueReferenceType;
-	
+
 	private transient int initialCapacity = 16;
-	
+
     private transient float loadFactor = 0.75f;
-    
+
     private transient int concurrencyLevel = 16;
-	
+
 	private transient ConcurrentMap<Object, Object> map;
-	
+
 	/**
 	 * 通过指定的 key引用类型 和 value引用类型 创建一个带有默认初始容量、加载因子和 concurrencyLevel 的新的空映射。
 	 * @param keyReferenceType key引用类型 。
@@ -103,9 +103,9 @@ public class ConcurrentReferenceMap<K, V> extends AbstractMap<K, V> implements C
 		this.initialCapacity = initialCapacity;
 		this.map = new ConcurrentHashMap<Object, Object>(initialCapacity, this.loadFactor, this.concurrencyLevel);
 	}
-	
+
 	/**
-	 * 通过指定的 key引用类型 和 value引用类型 创建一个带有指定初始容量、加载因子和并发级别的新的空映射。 
+	 * 通过指定的 key引用类型 和 value引用类型 创建一个带有指定初始容量、加载因子和并发级别的新的空映射。
 	 * @param keyReferenceType key引用类型。
 	 * @param valueReferenceType value引用类型。
 	 * @param initialCapacity 初始容量。该实现执行内部大小调整，以容纳这些元素。
@@ -147,14 +147,14 @@ public class ConcurrentReferenceMap<K, V> extends AbstractMap<K, V> implements C
 					public void remove() {
 						this.iterator.remove();
 					}
-					
+
 				};
 			}
 
 			public int size() {
 				return ConcurrentReferenceMap.this.map.size();
 			}
-			
+
 		};
 	}
 
@@ -190,13 +190,13 @@ public class ConcurrentReferenceMap<K, V> extends AbstractMap<K, V> implements C
 	private V getValue(Object valueReference) {
 		return (V) (this.valueReferenceType == ReferenceValueType.STRONG ? valueReference : valueReference == null ? null : ((Reference<V>) valueReference).get());
 	}
-	
-	
+
+
 	@SuppressWarnings("unchecked")
 	private K getKey(Object keyReference) {
 		return (K) (this.keyReferenceType == ReferenceKeyType.STRONG ? keyReference : keyReference == null ? null : ((Reference<K>) keyReference).get());
 	}
-	
+
 	/**
 	 * 创建 Key 的印射包装器。
 	 * @param key 要创建印射包装器的 key。
@@ -205,7 +205,7 @@ public class ConcurrentReferenceMap<K, V> extends AbstractMap<K, V> implements C
 	private Object createKeyReferenceWrapper(Object key) {
 		return this.keyReferenceType == ReferenceKeyType.STRONG ? key : new KeyReferenceWrapper(key);
 	}
-	
+
 	/**
 	 * 创建 Value 的印射包装器。
 	 * @param value 要创建印射包装器的 value。
@@ -214,7 +214,7 @@ public class ConcurrentReferenceMap<K, V> extends AbstractMap<K, V> implements C
 	private Object createValueReferenceWrapper(Object value) {
 		return this.valueReferenceType == ReferenceValueType.STRONG ? value : new ValueReferenceWrapper(value);
 	}
-	
+
 	/**
 	 * 得到 key 在内存中的地址的 hashCode。
 	 * @param key 要得到在内存中的地址的 hashCode 的 key。
@@ -224,8 +224,8 @@ public class ConcurrentReferenceMap<K, V> extends AbstractMap<K, V> implements C
 	private int keyHashCode(Object key) {
 		return System.identityHashCode(key);
 	}
-	
-	
+
+
 	private boolean referenceEquals(Reference<?> reference, Object object) {
 		if (reference == object) {
 			// 直接引用相同
@@ -253,7 +253,7 @@ public class ConcurrentReferenceMap<K, V> extends AbstractMap<K, V> implements C
 		Object returnValueReference = this.map.get(key);
 		return getValue(returnValueReference);
 	}
-	
+
 	@Override
 	public V put(K key, V value) {
 		notNull(key);
@@ -307,7 +307,7 @@ public class ConcurrentReferenceMap<K, V> extends AbstractMap<K, V> implements C
 		}
 		return getValue(returnValueReference);
 	}
-	
+
 	private Object wrapKey(K key) {
 		Object keyReference = null;
 		switch (this.keyReferenceType) {
@@ -326,7 +326,7 @@ public class ConcurrentReferenceMap<K, V> extends AbstractMap<K, V> implements C
 		}
 		return keyReference;
 	}
-	
+
 	private Object wrapValue(Object keyReference, V value) {
 		Object valueReference = null;
 		switch (this.valueReferenceType) {
@@ -389,7 +389,7 @@ public class ConcurrentReferenceMap<K, V> extends AbstractMap<K, V> implements C
 
 		};
 	}
-	
+
 	/**
 	 * 弱引用对象的键类。
 	 * @author <a href="http://www.agrael.cn">李翔</a>
@@ -399,7 +399,7 @@ public class ConcurrentReferenceMap<K, V> extends AbstractMap<K, V> implements C
 	protected class FinalizableKeyWeakReference<T> extends FinalizableWeakReference<T> implements FinalizableReference<T> {
 
 		private final int hashCode;
-		
+
 		/**
 		 * 构造一个新的 弱引用对象的键类 实例。
 		 * @param referent 键。
@@ -423,7 +423,7 @@ public class ConcurrentReferenceMap<K, V> extends AbstractMap<K, V> implements C
 			return referenceEquals(this, object);
 		}
 	}
-	
+
 	/**
 	 * 弱引用对象的值类。
 	 * @author <a href="http://www.agrael.cn">李翔</a>
@@ -431,9 +431,9 @@ public class ConcurrentReferenceMap<K, V> extends AbstractMap<K, V> implements C
 	 * @param <T> 引用类型
 	 */
 	protected class FinalizableValueWeakReference<T> extends FinalizableWeakReference<T> implements FinalizableReference<T> {
-		
+
 		private Object keyReference;
-		
+
 		/**
 		 * 构造一个新的 弱引用对象的值类 实例。
 		 * @param keyReference 与此值关联的 键 。
@@ -443,7 +443,7 @@ public class ConcurrentReferenceMap<K, V> extends AbstractMap<K, V> implements C
 			super(referent, FINALIZABLE_REFERENCE_QUEUE);
 			this.keyReference = keyReference;
 		}
-		
+
 		public void finalizeReferent() {
 			ConcurrentReferenceMap.this.map.remove(this.keyReference, this);
 		}
@@ -468,7 +468,7 @@ public class ConcurrentReferenceMap<K, V> extends AbstractMap<K, V> implements C
 			T v = get();
 			@SuppressWarnings("unchecked")
 			Object objV = ((FinalizableValueWeakReference<?>) obj).get();
-			
+
 			if (v == null) {
 				if (v == objV) {
 					return true;
@@ -479,7 +479,7 @@ public class ConcurrentReferenceMap<K, V> extends AbstractMap<K, V> implements C
 			}
 		}
 	}
-	
+
 	/**
 	 * 软引用对象的键类。
 	 * @author <a href="http://www.agrael.cn">李翔</a>
@@ -489,7 +489,7 @@ public class ConcurrentReferenceMap<K, V> extends AbstractMap<K, V> implements C
 	protected class FinalizableKeySoftReference<T> extends FinalizableSoftReference<T> implements FinalizableReference<T> {
 
 		private final int hashCode;
-		
+
 		/**
 		 * 构造一个新的 软引用对象的键类 实例。
 		 * @param referent 键。
@@ -513,7 +513,7 @@ public class ConcurrentReferenceMap<K, V> extends AbstractMap<K, V> implements C
 			return referenceEquals(this, object);
 		}
 	}
-	
+
 	/**
 	 * 软引用对象的值类。
 	 * @author <a href="http://www.agrael.cn">李翔</a>
@@ -521,9 +521,9 @@ public class ConcurrentReferenceMap<K, V> extends AbstractMap<K, V> implements C
 	 * @param <T> 引用类型
 	 */
 	protected class FinalizableValueSoftReference<T> extends FinalizableSoftReference<T> implements FinalizableReference<T> {
-		
+
 		private Object keyReference;
-		
+
 		/**
 		 * 构造一个新的 软引用对象的值类 实例。
 		 * @param keyReference 与此值关联的 键 。
@@ -533,7 +533,7 @@ public class ConcurrentReferenceMap<K, V> extends AbstractMap<K, V> implements C
 			super(referent, FINALIZABLE_REFERENCE_QUEUE);
 			this.keyReference = keyReference;
 		}
-		
+
 		public void finalizeReferent() {
 			ConcurrentReferenceMap.this.map.remove(this.keyReference, this);
 		}
@@ -568,9 +568,9 @@ public class ConcurrentReferenceMap<K, V> extends AbstractMap<K, V> implements C
 			}
 		}
 	}
-	
 
-	
+
+
 	/**
 	 * 虚引用对象的键类。
 	 * @author <a href="http://www.agrael.cn">李翔</a>
@@ -580,7 +580,7 @@ public class ConcurrentReferenceMap<K, V> extends AbstractMap<K, V> implements C
 	protected class FinalizableKeyPhantomReference<T> extends FinalizablePhantomReference<T> implements FinalizableReference<T> {
 
 		private final int hashCode;
-		
+
 		/**
 		 * 构造一个新的 虚引用对象的键类 实例。
 		 * @param referent 键。
@@ -604,7 +604,7 @@ public class ConcurrentReferenceMap<K, V> extends AbstractMap<K, V> implements C
 			return referenceEquals(this, object);
 		}
 	}
-	
+
 	/**
 	 * 虚引用对象的值类。
 	 * @author <a href="http://www.agrael.cn">李翔</a>
@@ -612,9 +612,9 @@ public class ConcurrentReferenceMap<K, V> extends AbstractMap<K, V> implements C
 	 * @param <T> 引用类型
 	 */
 	protected class FinalizableValuePhantomReference<T> extends FinalizablePhantomReference<T> implements FinalizableReference<T> {
-		
+
 		private Object keyReference;
-		
+
 		/**
 		 * 构造一个新的 虚引用对象的值类 实例。
 		 * @param keyReference 与此值关联的 键 。
@@ -624,11 +624,11 @@ public class ConcurrentReferenceMap<K, V> extends AbstractMap<K, V> implements C
 			super(referent, FINALIZABLE_REFERENCE_QUEUE);
 			this.keyReference = keyReference;
 		}
-		
+
 		public void finalizeReferent() {
 			ConcurrentReferenceMap.this.map.remove(this.keyReference, this);
 		}
-		
+
 		@Override
 		public int hashCode() {
 			return 0;
@@ -653,14 +653,14 @@ public class ConcurrentReferenceMap<K, V> extends AbstractMap<K, V> implements C
 			return v.equals(get());
 		}
 	}
-	
+
 	/**
 	 * 引用类型中的对象的另一个包装器，该包装器实现为引用类型中的对象保持 put 与 get 时用到的 hashCode 和 equals 方法的一致性。
 	 */
 	protected static class ReferenceWrapper {
-		
+
 		protected final Object reference;
-		
+
 		/**
 		 * 使用一个引用类型中的对象实例构造一个新的包装器。
 		 * @param reference 要包装的引用类型中的对象实例。
@@ -707,7 +707,7 @@ public class ConcurrentReferenceMap<K, V> extends AbstractMap<K, V> implements C
 			return target.reference.equals(this.reference);
 		}
 	}
-	
+
 	/**
 	 * 专用于  key 的引用类型中的对象的另一个包装器。该包装器重写了 hashCode 方法，使用 {@link System#identityHashCode(Object)} 取得 hash值 。
 	 * @author <a href="http://www.agrael.cn">李翔</a>
@@ -722,7 +722,7 @@ public class ConcurrentReferenceMap<K, V> extends AbstractMap<K, V> implements C
 		protected KeyReferenceWrapper(Object reference) {
 			super(reference);
 		}
-		
+
 		/**
 		 * 返回包装的 Key 的内存里的 hashCode。
 		 * @return 包装的 Key 的内存里的 hashCode。
@@ -734,14 +734,14 @@ public class ConcurrentReferenceMap<K, V> extends AbstractMap<K, V> implements C
 			return System.identityHashCode(this.reference);
 		}
 	}
-	
+
 	/**
 	 * 专用于  value 的引用类型中的对象的另一个包装器。该包装器重写了 hashCode 方法，使用 {@link System#identityHashCode(Object)} 取得 hash值 。
 	 * @author <a href="http://www.agrael.cn">李翔</a>
 	 *
 	 */
 	protected static class ValueReferenceWrapper extends ReferenceWrapper {
-		
+
 		/**
 		 * 使用一个引用类型中的 key对象实例 构造一个新的包装器。
 		 * @param reference 要包装的引用类型中的key对象实例。
@@ -751,54 +751,54 @@ public class ConcurrentReferenceMap<K, V> extends AbstractMap<K, V> implements C
 		}
 
 	}
-	
+
 	/**
 	 * 用作 K 的引用类型。
 	 * @author <a href="http://www.agrael.cn">李翔</a>
 	 *
 	 */
 	public static enum ReferenceKeyType {
-		
+
 		/** 强引用 */
 		STRONG,
-		
+
 		/** 软引用 */
 		SOFT,
-		
+
 		/** 弱引用 */
 		WEAK,
-		
+
 		/** 虚引用 */
 		PHANTOM;
-		
+
 	}
-	
+
 	/**
 	 * 用作 V 的引用类型。
 	 * @author <a href="http://www.agrael.cn">李翔</a>
 	 *
 	 */
 	public static enum ReferenceValueType {
-		
+
 		/** 强引用 */
 		STRONG,
-		
+
 		/** 软引用 */
 		SOFT,
-		
+
 		/** 弱引用 */
 		WEAK,
-		
+
 		/** 虚引用 */
 		PHANTOM;
 	}
-	
+
 	static void notNull(Object obj) {
 		if (obj == null) {
 			throw new NullPointerException();
 		}
 	}
-	
+
 	private void writeObject(ObjectOutputStream out) throws IOException  {
 	    out.defaultWriteObject();
 	    out.writeInt(size());
@@ -838,5 +838,5 @@ public class ConcurrentReferenceMap<K, V> extends AbstractMap<K, V> implements C
 	      put(key, value);
 	    }
 	  }
-	
+
 }

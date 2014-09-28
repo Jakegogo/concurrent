@@ -8,7 +8,7 @@ import org.springframework.util.ReflectionUtils;
 
 import dbcache.annotation.Cached;
 import dbcache.annotation.EnableIndex;
-import dbcache.service.impl.ConcurrentWeekHashMapCache;
+import dbcache.service.impl.ConcurrentLinkedHashMapCache;
 import dbcache.utils.AnnotationUtils;
 import dbcache.utils.JsonUtils;
 
@@ -47,7 +47,7 @@ public class CacheConfig {
 	private boolean enableIndex = false;
 
 	/** 索引服务缓存类 */
-	private Class<?> indexCacheClass = ConcurrentWeekHashMapCache.class;
+	private Class<?> indexCacheClass = ConcurrentLinkedHashMapCache.class;
 
 	/** 索引信息  索引名 - 属性 */
 	private Map<String, Field> indexes = new HashMap<String, Field>();

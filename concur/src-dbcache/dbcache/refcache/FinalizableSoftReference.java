@@ -17,7 +17,7 @@ public abstract class FinalizableSoftReference<T> extends SoftReference<T> imple
 	protected FinalizableSoftReference(T referent) {
 		super(referent, FinalizableReferenceQueue.getInstance());
 	}
-	
+
 	/**
 	 * 创建一个引用给定对象的新的带有回调清除功能的软引用。
 	 * @param referent 新的带有回调清除功能的软引用将引用的对象。
