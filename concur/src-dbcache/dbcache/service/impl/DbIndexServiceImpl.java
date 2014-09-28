@@ -14,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
+import dbcache.annotation.ThreadSafe;
 import dbcache.conf.CacheConfig;
 import dbcache.conf.CacheRule;
 import dbcache.conf.Inject;
@@ -32,6 +33,7 @@ import dbcache.service.DbIndexService;
  * @author Jake
  * @date 2014年8月30日下午12:49:40
  */
+@ThreadSafe
 @Component
 public class DbIndexServiceImpl<PK extends Comparable<PK> & Serializable>
 		implements DbIndexService<PK> {
@@ -65,7 +67,7 @@ public class DbIndexServiceImpl<PK extends Comparable<PK> & Serializable>
 			throw new IllegalArgumentException("实体类[" + cacheConfig.getClass().getSimpleName() + "]不存在索引[" + indexName + "]!");
 		}
 
-		Map<PK, Boolean> indexValues = getPersist(indexName, indexValue);
+		final Map<PK, Boolean> indexValues = getPersist(indexName, indexValue);
 
 		if(indexValues == null) {
 			return Collections.emptyList();
@@ -82,7 +84,7 @@ public class DbIndexServiceImpl<PK extends Comparable<PK> & Serializable>
 	 */
 	@SuppressWarnings("unchecked")
 	private Map<PK, Boolean> getPersist(String indexName, Object indexValue) {
-		Object key = CacheRule.getIndexIdKey(indexName, indexValue);
+		final Object key = CacheRule.getIndexIdKey(indexName, indexValue);
 
 		Cache.ValueWrapper wrapper = (Cache.ValueWrapper) cache.get(key);
 		if(wrapper != null) {	// 已经缓存
@@ -101,7 +103,7 @@ public class DbIndexServiceImpl<PK extends Comparable<PK> & Serializable>
 		}
 
 
-		ReadWriteLock lock = this.getIndexReadWriteLock(key);
+		final ReadWriteLock lock = this.getIndexReadWriteLock(key);
 
 		Map<PK, Boolean> indexValues = null;
 		lock.writeLock().lock();
@@ -147,9 +149,10 @@ public class DbIndexServiceImpl<PK extends Comparable<PK> & Serializable>
 			Collection<PK> ids = (Collection<PK>) dbAccessService.listIdByIndex(cacheConfig.getClazz(), indexField.getName(), indexValue);
 
 			if(ids != null) {
+				// 需要外层加锁
 				for(PK id : ids) {
 					Boolean oldStatus = indexValues.putIfAbsent(id, true);
-					if(!oldStatus) {
+					if(oldStatus != null && !oldStatus) {
 						indexValues.remove(id);
 					}
 				}
@@ -173,7 +176,7 @@ public class DbIndexServiceImpl<PK extends Comparable<PK> & Serializable>
 	 */
 	@SuppressWarnings("unchecked")
 	private IndexObject<PK> getTransient(String indexName, Object indexValue) {
-		Object key = CacheRule.getIndexIdKey(indexName, indexValue);
+		final Object key = CacheRule.getIndexIdKey(indexName, indexValue);
 
 		Cache.ValueWrapper wrapper = (Cache.ValueWrapper) cache.get(key);
 		if(wrapper != null) {	// 已经缓存
@@ -202,104 +205,84 @@ public class DbIndexServiceImpl<PK extends Comparable<PK> & Serializable>
 
 
 	/**
+	 * 存储索引缓存对象
+	 * @param key 键
+	 * @param indexObject 值
+	 * @return 是否保存成功(期间没有被修改(lru回收等)过)
+	 */
+	private boolean saveIndexObject(Object key, IndexObject<PK> indexObject) {
+		final Cache.ValueWrapper wrapper = (Cache.ValueWrapper) cache.putIfAbsent(key, indexObject);
+		if (wrapper != null && wrapper.get() != null) {
+			return wrapper.get() == indexObject;
+		}
+		return true;
+	}
+
+
+	/**
 	 * 获取索引读写锁
 	 * @param key 键
 	 * @return
 	 */
 	private ReadWriteLock getIndexReadWriteLock(Object key) {
-		ReadWriteLock lock = WAITING_LOCK_MAP.get(key);
-		if(lock != null) {
-			return lock;
-		}
-
-		lock = new ReentrantReadWriteLock();
-		ReadWriteLock prevLock = WAITING_LOCK_MAP.putIfAbsent(key, lock);
-		lock = prevLock != null ? prevLock : lock;
-		return lock;
+		final ReadWriteLock lock = new ReentrantReadWriteLock();
+		final ReadWriteLock prevLock = WAITING_LOCK_MAP.putIfAbsent(key, lock);
+		return prevLock != null ? prevLock : lock;
 	}
 
 
 	@Override
 	public IndexObject<PK> create(IndexValue<PK> indexValue) {
 
-		IndexObject<PK> indexObject = this.getTransient(indexValue.getName(), indexValue.getValue());
-
-		if(indexObject.getUpdateStatus() == UpdateStatus.PERSIST) {
+		final Object key = CacheRule.getIndexIdKey(indexValue.getName(), indexValue.getValue());
+		// 持有读锁
+		final ReadWriteLock lock = this.getIndexReadWriteLock(key);
+		lock.readLock().lock();
+		try {
+			final IndexObject<PK> indexObject = this.getTransient(indexValue.getName(), indexValue.getValue());
 			indexObject.getIndexValues().put(indexValue.getId(), Boolean.valueOf(true));
-		} else {
-			Object key = CacheRule.getIndexIdKey(indexValue.getName(), indexValue.getValue());
-			// 持有读锁
-			ReadWriteLock lock = this.getIndexReadWriteLock(key);
-			lock.readLock().lock();
-			try {
-				indexObject.getIndexValues().put(indexValue.getId(), Boolean.valueOf(true));
-			} finally {
-				lock.readLock().unlock();
+			if(!this.saveIndexObject(key, indexObject)) {
+				return this.create(indexValue);//乐观自旋
 			}
+			return this.getTransient(indexValue.getName(), indexValue.getValue());
+		} finally {
+			lock.readLock().unlock();
 		}
-		return indexObject;
 	}
 
 
 	@Override
 	public void remove(IndexValue<PK> indexValue) {
 
-		IndexObject<PK> indexObject = this.getTransient(indexValue.getName(), indexValue.getValue());
-
-		Map<PK, Boolean> indexValues = indexObject.getIndexValues();
-		if(indexObject.getUpdateStatus() == UpdateStatus.PERSIST) {
-			indexValues.remove(indexValue.getId());
-		} else {
-			Object key = CacheRule.getIndexIdKey(indexValue.getName(), indexValue.getValue());
-			// 持有读锁
-			ReadWriteLock lock = this.getIndexReadWriteLock(key);
-			lock.readLock().lock();
-			try {
-				indexValues.put(indexValue.getId(), Boolean.valueOf(false));
-			} finally {
-				lock.readLock().unlock();
+		final Object key = CacheRule.getIndexIdKey(indexValue.getName(), indexValue.getValue());
+		// 持有读锁
+		final ReadWriteLock lock = this.getIndexReadWriteLock(key);
+		lock.readLock().lock();
+		try {
+			final IndexObject<PK> indexObject = this.getTransient(indexValue.getName(), indexValue.getValue());
+			if(indexObject.getUpdateStatus() == UpdateStatus.PERSIST) {
+				indexObject.getIndexValues().remove(key);
+				if(this.saveIndexObject(key, indexObject)) {
+					return;
+				} else {
+					this.remove(indexValue);//乐观自旋
+				}
+			} else {
+				indexObject.getIndexValues().put(indexValue.getId(), Boolean.valueOf(false));
+				this.saveIndexObject(key, indexObject);
 			}
+		} finally {
+			lock.readLock().unlock();
 		}
 	}
 
 
 	@Override
 	public void update(IEntity<PK> entity, String indexName, Object oldValue, Object newValue) {
-
-		IndexObject<PK> oldIndexObject = this.getTransient(indexName, oldValue);
-
-		Map<PK, Boolean> oldIndexValues = oldIndexObject.getIndexValues();
-		if(oldIndexObject.getUpdateStatus() == UpdateStatus.PERSIST) {
-			oldIndexValues.remove(entity.getId());
-		} else {
-			Object key = CacheRule.getIndexIdKey(indexName, oldValue);
-			// 持有读锁
-			ReadWriteLock lock = this.getIndexReadWriteLock(key);
-			lock.readLock().lock();
-			try {
-				oldIndexValues.put(entity.getId(), Boolean.valueOf(false));
-			} finally {
-				lock.readLock().unlock();
-			}
-		}
-
-
-		IndexObject<PK> newIndexObject = this.getTransient(indexName, newValue);
-
-		Map<PK, Boolean> newIndexValues = newIndexObject.getIndexValues();
-		if(newIndexObject.getUpdateStatus() == UpdateStatus.PERSIST) {
-			newIndexValues.remove(entity.getId());
-		} else {
-			Object key = CacheRule.getIndexIdKey(indexName, newValue);
-			// 持有读锁
-			ReadWriteLock lock = this.getIndexReadWriteLock(key);
-			lock.readLock().lock();
-			try {
-				newIndexValues.put(entity.getId(), Boolean.valueOf(false));
-			} finally {
-				lock.readLock().unlock();
-			}
-		}
+		// 从旧的索引队列中移除
+		this.remove(IndexValue.valueOf(indexName, oldValue, entity.getId()));
+		// 添加到新的索引队列
+		this.create(IndexValue.valueOf(indexName, newValue, entity.getId()));
 	}
 
 

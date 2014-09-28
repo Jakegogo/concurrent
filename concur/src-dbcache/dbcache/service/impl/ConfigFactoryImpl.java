@@ -177,10 +177,9 @@ public class ConfigFactoryImpl implements ConfigFactory, DbCacheMBean {
 			inject(service, indexServiceField, indexService);
 
 			// 索引服务缓存设置
-			Cache indexCache = cache;
-			indexCache = (Cache) applicationContext.getAutowireCapableBeanFactory().createBean(cacheConfig.getIndexCacheClass());
+			Cache indexCache = (Cache) applicationContext.getAutowireCapableBeanFactory().createBean(cacheConfig.getIndexCacheClass());
 			// 初始化索引缓存
-			indexCache.init(cacheConfig.getIndexSize(), concurrencyLevel);
+			indexCache.init(cacheConfig.getIndexSize() > 0 ? cacheConfig.getIndexSize() : cacheConfig.getEntitySize(), concurrencyLevel);
 
 			Field cacheField1 = indexService.getClass().getDeclaredField(cacheProperty);
 			ReflectionUtils.makeAccessible(cacheField1);

@@ -14,7 +14,7 @@ import dbcache.conf.PersistType;
 import dbcache.model.EntityInitializer;
 import dbcache.model.IEntity;
 
-@Cached(persistType=PersistType.DELAY, enableIndex = true)
+@Cached(persistType=PersistType.INTIME, enableIndex = true)
 @javax.persistence.Entity
 public class Entity implements EntityInitializer, IEntity<Integer> {
 

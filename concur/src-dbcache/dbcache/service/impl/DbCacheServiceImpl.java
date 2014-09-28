@@ -31,7 +31,6 @@ import dbcache.conf.Inject;
 import dbcache.model.CacheObject;
 import dbcache.model.EntityInitializer;
 import dbcache.model.IEntity;
-import dbcache.model.IndexObject;
 import dbcache.model.IndexValue;
 import dbcache.model.PersistAction;
 import dbcache.model.UpdateStatus;
@@ -39,9 +38,9 @@ import dbcache.service.Cache;
 import dbcache.service.ConfigFactory;
 import dbcache.service.DbAccessService;
 import dbcache.service.DbCacheService;
+import dbcache.service.DbIndexService;
 import dbcache.service.DbPersistService;
 import dbcache.service.DbRuleService;
-import dbcache.service.DbIndexService;
 import dbcache.utils.JsonUtils;
 
 
@@ -164,7 +163,7 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 	@Override
 	public T get(PK id) {
 
-		CacheObject<T> cacheObject = this.get(clazz, id);
+		final CacheObject<T> cacheObject = this.get(clazz, id);
 		if (cacheObject != null) {
 			return (T) cacheObject.getProxyEntity();
 		}
@@ -181,7 +180,8 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 	 */
 	@SuppressWarnings("unchecked")
 	private CacheObject<T> get(Class<T> entityClazz, Serializable id) {
-		Object key = CacheRule.getEntityIdKey(id, entityClazz);
+
+		final Object key = CacheRule.getEntityIdKey(id, entityClazz);
 
 		Cache.ValueWrapper wrapper = (Cache.ValueWrapper) cache.get(key);
 		if(wrapper != null) {	// 已经缓存
@@ -196,12 +196,9 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 
 
 		// 获取缓存唯一锁
-		Lock lock = WAITING_LOCK_MAP.get(key);
-		if(lock == null) {
-			lock = new ReentrantLock();
-			Lock prevLock = WAITING_LOCK_MAP.putIfAbsent(key, lock);
-			lock = prevLock != null ? prevLock : lock;
-		}
+		Lock lock = new ReentrantLock();;
+		Lock prevLock = WAITING_LOCK_MAP.putIfAbsent(key, lock);
+		lock = prevLock != null ? prevLock : lock;
 
 		CacheObject<T> cacheObject = null;
 		lock.lock();
@@ -224,13 +221,13 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 					if (wrapper != null && wrapper.get() != null) {
 						cacheObject = (CacheObject<T>) wrapper.get();
 
-						// 更新索引
+						// 更新索引 需要外层加锁
 						entity = cacheObject.getEntity();
 						if(cacheConfig.isEnableIndex()) {
 							try {
 								for(Map.Entry<String, Field> entry : cacheConfig.getIndexes().entrySet()) {
 									Object indexValue = entry.getValue().get(entity);
-									IndexObject<PK> indexObject = this.indexService.create(IndexValue.valueOf(entry.getKey(), indexValue, entity.getId()));
+									this.indexService.create(IndexValue.valueOf(entry.getKey(), indexValue, entity.getId()));
 								}
 							} catch (Exception e) {
 								e.printStackTrace();
@@ -261,11 +258,12 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 
 	@Override
 	public List<T> getEntityFromIdList(Collection<PK> idList) {
+
 		if (idList == null || idList.size() == 0) {
 			return null;
 		}
 
-		List<T> list = new ArrayList<T> (idList.size());
+		final List<T> list = new ArrayList<T> (idList.size());
 
 		for (PK id : idList) {
 			T entity = this.get(id);
@@ -281,12 +279,12 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 	@Override
 	public List<T> listByIndex(String indexName, Object indexValue) {
 
-		Collection<PK> idList = this.indexService.get(indexName, indexValue);
+		final Collection<PK> idList = this.indexService.get(indexName, indexValue);
 		if(idList == null || idList.isEmpty()) {
 			return Collections.emptyList();
 		}
 
-		List<T> result = new ArrayList<T>(idList.size());
+		final List<T> result = new ArrayList<T>(idList.size());
 		T temp = null;
 		for(PK id : idList) {
 			temp = this.get(id);
@@ -309,7 +307,7 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 	public List<T> pageByIndex(String indexName, Object indexValue, int page,
 			int size) {
 
-		Collection<PK> idList = this.indexService.get(indexName, indexValue);
+		final Collection<PK> idList = this.indexService.get(indexName, indexValue);
 		if(idList == null || idList.isEmpty()) {
 			return Collections.emptyList();
 		}
@@ -364,7 +362,7 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 
 		//存储到缓存
 		CacheObject<T> cacheObject = null;
-		Object key = CacheRule.getEntityIdKey(entity.getId(), entity.getClass());
+		final Object key = CacheRule.getEntityIdKey(entity.getId(), entity.getClass());
 		Cache.ValueWrapper wrapper = (Cache.ValueWrapper) cache.get(key);
 
 		if (wrapper == null) {//缓存还不存在
@@ -395,7 +393,7 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 				try {
 					for(Map.Entry<String, Field> entry : cacheConfig.getIndexes().entrySet()) {
 						Object indexValue = entry.getValue().get(entity);
-						IndexObject<PK> indexObject = this.indexService.create(IndexValue.valueOf(entry.getKey(), indexValue, entity.getId()));
+						this.indexService.create(IndexValue.valueOf(entry.getKey(), indexValue, entity.getId()));
 					}
 				} catch (Exception e) {
 					e.printStackTrace();
@@ -460,15 +458,22 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 
 		}
 
-		Object obj = this.get(entity.getId());
-		return (T) obj;
+		return (T) this.get(entity.getId());
 	}
 
 
 	@Override
 	public void submitUpdated2Queue(T entity) {
+
 		final CacheObject<T> cacheObject = this.get(clazz, entity.getId());
+
 		if (cacheObject != null) {
+			// 验证缓存操作原子性(缓存实体必须唯一)
+			if(cacheObject.getProxyEntity() != entity) {
+				String msg = "实体使用期间缓存对象CacheObject被修改过:无法保证原子性和实体唯一,请重试";
+				logger.error(msg);
+				throw new IllegalStateException(msg);
+			}
 
 			//最新修改版本号
 			final long editVersion = cacheObject.increseEditVersion();
@@ -536,7 +541,9 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 
 	@Override
 	public void submitDeleted2Queue(final PK id) {
+
 		final CacheObject<T> cacheObject = this.get(clazz, id);
+
 		if (cacheObject != null) {
 			//标记为已经删除
 			cacheObject.setUpdateStatus(UpdateStatus.DELETED);

@@ -216,6 +216,8 @@ public class Test {
 			System.out.println(JsonUtils.object2JsonString(entity1));
 		}
 
+		this.cacheService.submitUpdated2Queue(entity);
+
 	}
 
 
