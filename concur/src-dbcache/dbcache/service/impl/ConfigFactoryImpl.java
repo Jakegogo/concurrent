@@ -95,7 +95,7 @@ public class ConfigFactoryImpl implements ConfigFactory, DbCacheMBean {
 	 * DbCacheService实例映射
 	 */
 	@SuppressWarnings("rawtypes")
-	private Map<Class<?>, DbCacheService> dbCacheServiceBeanMap = new ConcurrentHashMap<Class<?>, DbCacheService>();
+	private Map<Class<? extends IEntity>, DbCacheService> dbCacheServiceBeanMap = new ConcurrentHashMap<Class<? extends IEntity>, DbCacheService>();
 
 	/**
 	 * 配置映射
@@ -339,7 +339,7 @@ public class ConfigFactoryImpl implements ConfigFactory, DbCacheMBean {
 	@SuppressWarnings("rawtypes")
 	public Map<String, String> getDbCacheServiceBeanInfo() {
 		Map<String, String> infoMap = new HashMap<String, String>();
-		for(Entry<Class<?>, DbCacheService> entry : dbCacheServiceBeanMap.entrySet()) {
+		for(Entry<Class<? extends IEntity>, DbCacheService> entry : dbCacheServiceBeanMap.entrySet()) {
 			infoMap.put(entry.getKey().getName(), entry.getValue().toString());
 		}
 		return infoMap;

@@ -77,10 +77,12 @@ public class ConcurrentWeekHashMapCache implements Cache {
 		return result;
 	}
 
+
 	@Override
 	public void put(Object key, Object value) {
 		this.store.put(toStoreKey(key, value), toStoreValue(key, value));
 	}
+
 
 	@SuppressWarnings("rawtypes")
 	private Object toStoreKey(Object key, Object value) {
@@ -111,10 +113,12 @@ public class ConcurrentWeekHashMapCache implements Cache {
 		return SimpleValueWrapper.valueOf(this.store.putIfAbsent(key, value));
 	}
 
+
 	@Override
 	public void evict(Object key) {
 		this.store.remove(key);
 	}
+
 
 	@Override
 	public void clear() {

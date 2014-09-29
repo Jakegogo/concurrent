@@ -1,14 +1,8 @@
 package dbcache.refcache;
 
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.io.Serializable;
 import java.lang.ref.Reference;
-import java.util.AbstractMap;
 import java.util.AbstractSet;
 import java.util.Iterator;
-import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -60,7 +54,8 @@ import java.util.concurrent.ConcurrentMap;
  * @param <V>
  *            映射值的类型
  */
-public class ConcurrentReferenceMap<K, V> extends AbstractMap<K, V> implements ConcurrentMap<K, V>, Serializable {
+@SuppressWarnings({"rawtypes", "unchecked"})
+public class ConcurrentReferenceMap<K, V> extends ConcurrentHashMap {
 
 	/** 版本号 */
 	private static final long serialVersionUID = -6254917146703229097L;
@@ -71,13 +66,6 @@ public class ConcurrentReferenceMap<K, V> extends AbstractMap<K, V> implements C
 
 	private final ReferenceValueType valueReferenceType;
 
-	private transient int initialCapacity = 16;
-
-    private transient float loadFactor = 0.75f;
-
-    private transient int concurrencyLevel = 16;
-
-	private transient ConcurrentMap<Object, Object> map;
 
 	/**
 	 * 通过指定的 key引用类型 和 value引用类型 创建一个带有默认初始容量、加载因子和 concurrencyLevel 的新的空映射。
@@ -85,9 +73,9 @@ public class ConcurrentReferenceMap<K, V> extends AbstractMap<K, V> implements C
 	 * @param valueReferenceType value引用类型。
 	 */
 	public ConcurrentReferenceMap(ReferenceKeyType keyReferenceType, ReferenceValueType valueReferenceType) {
+		super();
 		this.keyReferenceType = keyReferenceType;
 		this.valueReferenceType = valueReferenceType;
-		this.map = new ConcurrentHashMap<Object, Object>(this.initialCapacity, this.loadFactor, this.concurrencyLevel);
 	}
 
 	/**
@@ -98,10 +86,9 @@ public class ConcurrentReferenceMap<K, V> extends AbstractMap<K, V> implements C
 	 */
 	public ConcurrentReferenceMap(ReferenceKeyType keyReferenceType, ReferenceValueType valueReferenceType,
 			int initialCapacity) {
+		super(initialCapacity);
 		this.keyReferenceType = keyReferenceType;
 		this.valueReferenceType = valueReferenceType;
-		this.initialCapacity = initialCapacity;
-		this.map = new ConcurrentHashMap<Object, Object>(initialCapacity, this.loadFactor, this.concurrencyLevel);
 	}
 
 	/**
@@ -114,85 +101,79 @@ public class ConcurrentReferenceMap<K, V> extends AbstractMap<K, V> implements C
 	 */
 	public ConcurrentReferenceMap(ReferenceKeyType keyReferenceType, ReferenceValueType valueReferenceType,
 			int initialCapacity, float loadFactor, int concurrencyLevel) {
+		super(initialCapacity, loadFactor, concurrencyLevel);
 		this.keyReferenceType = keyReferenceType;
 		this.valueReferenceType = valueReferenceType;
-		this.concurrencyLevel = concurrencyLevel;
-		this.initialCapacity = initialCapacity;
-		this.loadFactor = loadFactor;
-		this.map = new ConcurrentHashMap<Object, Object>(initialCapacity,
-				loadFactor, concurrencyLevel);
 	}
 
-	@SuppressWarnings("unchecked")
-	@Override
-	public Set<K> keySet() {
-		if (this.keyReferenceType == ReferenceKeyType.STRONG) {
-			// 如果为强引用，则 map 中的 keySet 就是需要的
-			return (Set<K>) this.map.keySet();
-		}
-		// 为其他引用
-		return new AbstractSet<K>() {
+//	@Override
+//	public Set<K> keySet() {
+//		if (this.keyReferenceType == ReferenceKeyType.STRONG) {
+//			// 如果为强引用，则 map 中的 keySet 就是需要的
+//			return (Set<K>) super.keySet();
+//		}
+//		// 为其他引用
+//		return new AbstractSet<K>() {
+//
+//			public Iterator<K> iterator() {
+//				return new Iterator<K>() {
+//					private Iterator<K> iterator = ConcurrentReferenceMap.super.keySet().iterator();
+//					public boolean hasNext() {
+//						return this.iterator.hasNext();
+//					}
+//
+//					public K next() {
+//						return getKey(this.iterator.next());
+//					}
+//
+//					public void remove() {
+//						this.iterator.remove();
+//					}
+//
+//				};
+//			}
+//
+//			public int size() {
+//				return ConcurrentReferenceMap.super.size();
+//			}
+//
+//		};
+//	}
 
-			public Iterator<K> iterator() {
-				return new Iterator<K>() {
-					private Iterator<Object> iterator = ConcurrentReferenceMap.this.map.keySet().iterator();
-					public boolean hasNext() {
-						return this.iterator.hasNext();
-					}
-
-					public K next() {
-						return getKey(this.iterator.next());
-					}
-
-					public void remove() {
-						this.iterator.remove();
-					}
-
-				};
-			}
-
-			public int size() {
-				return ConcurrentReferenceMap.this.map.size();
-			}
-
-		};
-	}
 
 	@Override
 	public void clear() {
-		this.map.clear();
+		super.clear();
 	}
 
 	@Override
 	public V remove(Object key) {
 		notNull(key);
 		Object keyReference = createKeyReferenceWrapper(key);
-		Object returnValueReference = this.map.remove(keyReference);
+		Object returnValueReference = super.remove(keyReference);
 		return getValue(returnValueReference);
 	}
 
 	@Override
 	public boolean containsKey(Object key) {
-		return this.map.containsKey(key);
+		return super.containsKey(key);
 	}
 
 	@Override
 	public int size() {
-		return this.map.size();
+		return super.size();
 	}
 
 	@Override
 	public boolean isEmpty() {
-		return this.map.isEmpty();
+		return super.isEmpty();
 	}
 
-	@SuppressWarnings("unchecked")
 	private V getValue(Object valueReference) {
 		return (V) (this.valueReferenceType == ReferenceValueType.STRONG ? valueReference : valueReference == null ? null : ((Reference<V>) valueReference).get());
 	}
 
 
-	@SuppressWarnings("unchecked")
 	private K getKey(Object keyReference) {
 		return (K) (this.keyReferenceType == ReferenceKeyType.STRONG ? keyReference : keyReference == null ? null : ((Reference<K>) keyReference).get());
 	}
@@ -250,29 +231,29 @@ public class ConcurrentReferenceMap<K, V> extends AbstractMap<K, V> implements C
 	@Override
 	public V get(Object key) {
 		notNull(key);
-		Object returnValueReference = this.map.get(key);
+		Object returnValueReference = super.get(key);
 		return getValue(returnValueReference);
 	}
 
 	@Override
-	public V put(K key, V value) {
+	public V put(Object key, Object value) {
 		notNull(key);
 		notNull(value);
 		Object keyReference = wrapKey(key);
 		Object valueReference = wrapValue(keyReference, value);
-		Object returnValueReference = this.map.put(keyReference, valueReference);
+		Object returnValueReference = super.put(keyReference, valueReference);
 		if (returnValueReference == null) {
 			return null;
 		}
 		return getValue(returnValueReference);
 	}
 
-	public V putIfAbsent(K key, V value) {
+	public V putIfAbsent(Object key, Object value) {
 		notNull(key);
 		notNull(value);
 		Object keyReference = wrapKey(key);
 		Object valueReference = wrapValue(keyReference, value);
-		Object returnValueReference = this.map.putIfAbsent(keyReference, valueReference);
+		Object returnValueReference = super.putIfAbsent(keyReference, valueReference);
 		if (returnValueReference == null) {
 			return null;
 		}
@@ -283,64 +264,64 @@ public class ConcurrentReferenceMap<K, V> extends AbstractMap<K, V> implements C
 		notNull(key);
 		Object keyReference = createKeyReferenceWrapper(key);
 		Object valueReference = createValueReferenceWrapper(value);
-		return this.map.remove(keyReference, valueReference);
+		return super.remove(keyReference, valueReference);
 	}
 
-	public boolean replace(K key, V oldValue, V newValue) {
+	public boolean replace(Object key, Object oldValue, Object newValue) {
 		notNull(key);
 		notNull(oldValue);
 		notNull(newValue);
 		Object keyReference = wrapKey(key);
 		Object oldValueReference = createValueReferenceWrapper(oldValue);
 		Object valueReference = wrapValue(keyReference, newValue);
-		return this.map.replace(keyReference, oldValueReference, valueReference);
+		return super.replace(keyReference, oldValueReference, valueReference);
 	}
 
-	public V replace(K key, V value) {
+	public V replace(Object key, Object value) {
 		notNull(key);
 		notNull(value);
 		Object keyReference = wrapKey(key);
 		Object valueReference = wrapValue(keyReference, value);
-		Object returnValueReference = this.map.replace(keyReference, valueReference);
+		Object returnValueReference = super.replace(keyReference, valueReference);
 		if (returnValueReference == null) {
 			return null;
 		}
 		return getValue(returnValueReference);
 	}
 
-	private Object wrapKey(K key) {
+	private Object wrapKey(Object key) {
 		Object keyReference = null;
 		switch (this.keyReferenceType) {
 		case STRONG:
 			keyReference = key;
 			break;
 		case SOFT:
-			keyReference = new FinalizableKeySoftReference<K>(key);
+			keyReference = new FinalizableKeySoftReference(key);
 			break;
 		case WEAK:
-			keyReference = new FinalizableKeyWeakReference<K>(key);
+			keyReference = new FinalizableKeyWeakReference(key);
 			break;
 		case PHANTOM:
-			keyReference = new FinalizableKeyPhantomReference<K>(key);
+			keyReference = new FinalizableKeyPhantomReference(key);
 			break;
 		}
 		return keyReference;
 	}
 
-	private Object wrapValue(Object keyReference, V value) {
+	private Object wrapValue(Object keyReference, Object value) {
 		Object valueReference = null;
 		switch (this.valueReferenceType) {
 		case STRONG:
 			valueReference = value;
 			break;
 		case SOFT:
-			valueReference = new FinalizableValueSoftReference<V>(keyReference ,value);
+			valueReference = new FinalizableValueSoftReference(keyReference ,value);
 			break;
 		case WEAK:
-			valueReference = new FinalizableValueWeakReference<V>(keyReference ,value);
+			valueReference = new FinalizableValueWeakReference(keyReference ,value);
 			break;
 		case PHANTOM:
-			valueReference = new FinalizableValuePhantomReference<V>(keyReference ,value);
+			valueReference = new FinalizableValuePhantomReference(keyReference ,value);
 			break;
 		}
 		return valueReference;
@@ -351,7 +332,7 @@ public class ConcurrentReferenceMap<K, V> extends AbstractMap<K, V> implements C
 
 			public Iterator<Entry<K, V>> iterator() {
 				return new Iterator<Entry<K, V>>() {
-					private Iterator<Entry<Object, Object>> iterator = ConcurrentReferenceMap.this.map.entrySet().iterator();
+					private Iterator<Entry<Object, Object>> iterator = ConcurrentReferenceMap.super.entrySet().iterator();
 
 					public boolean hasNext() {
 						return this.iterator.hasNext();
@@ -384,7 +365,7 @@ public class ConcurrentReferenceMap<K, V> extends AbstractMap<K, V> implements C
 			}
 
 			public int size() {
-				return ConcurrentReferenceMap.this.map.size();
+				return ConcurrentReferenceMap.super.size();
 			}
 
 		};
@@ -410,7 +391,7 @@ public class ConcurrentReferenceMap<K, V> extends AbstractMap<K, V> implements C
 		}
 
 		public void finalizeReferent() {
-			ConcurrentReferenceMap.this.map.remove(this);
+			ConcurrentReferenceMap.super.remove(this);
 		}
 
 		@Override
@@ -445,7 +426,7 @@ public class ConcurrentReferenceMap<K, V> extends AbstractMap<K, V> implements C
 		}
 
 		public void finalizeReferent() {
-			ConcurrentReferenceMap.this.map.remove(this.keyReference, this);
+			ConcurrentReferenceMap.super.remove(this.keyReference, this);
 		}
 
 		@Override
@@ -466,7 +447,6 @@ public class ConcurrentReferenceMap<K, V> extends AbstractMap<K, V> implements C
 				return false;
 			}
 			T v = get();
-			@SuppressWarnings("unchecked")
 			Object objV = ((FinalizableValueWeakReference<?>) obj).get();
 
 			if (v == null) {
@@ -500,7 +480,7 @@ public class ConcurrentReferenceMap<K, V> extends AbstractMap<K, V> implements C
 		}
 
 		public void finalizeReferent() {
-			ConcurrentReferenceMap.this.map.remove(this);
+			ConcurrentReferenceMap.super.remove(this);
 		}
 
 		@Override
@@ -535,7 +515,7 @@ public class ConcurrentReferenceMap<K, V> extends AbstractMap<K, V> implements C
 		}
 
 		public void finalizeReferent() {
-			ConcurrentReferenceMap.this.map.remove(this.keyReference, this);
+			ConcurrentReferenceMap.super.remove(this.keyReference, this);
 		}
 
 		@Override
@@ -556,7 +536,6 @@ public class ConcurrentReferenceMap<K, V> extends AbstractMap<K, V> implements C
 				return false;
 			}
 			T v = get();
-			@SuppressWarnings("unchecked")
 			Object objV = ((FinalizableValueSoftReference<?>) obj).get();
 			if (v == null) {
 				if (v == objV) {
@@ -591,7 +570,7 @@ public class ConcurrentReferenceMap<K, V> extends AbstractMap<K, V> implements C
 		}
 
 		public void finalizeReferent() {
-			ConcurrentReferenceMap.this.map.remove(this);
+			ConcurrentReferenceMap.super.remove(this);
 		}
 
 		@Override
@@ -626,7 +605,7 @@ public class ConcurrentReferenceMap<K, V> extends AbstractMap<K, V> implements C
 		}
 
 		public void finalizeReferent() {
-			ConcurrentReferenceMap.this.map.remove(this.keyReference, this);
+			ConcurrentReferenceMap.super.remove(this.keyReference, this);
 		}
 
 		@Override
@@ -645,7 +624,6 @@ public class ConcurrentReferenceMap<K, V> extends AbstractMap<K, V> implements C
 			if (!(obj instanceof ConcurrentReferenceMap<?, ?>.FinalizableValuePhantomReference<?>)) {
 				return false;
 			}
-			@SuppressWarnings("unchecked")
 			Object v = ((FinalizableValuePhantomReference<?>) obj).get();
 			if (v == null) {
 				return true;
@@ -798,45 +776,5 @@ public class ConcurrentReferenceMap<K, V> extends AbstractMap<K, V> implements C
 			throw new NullPointerException();
 		}
 	}
-
-	private void writeObject(ObjectOutputStream out) throws IOException  {
-	    out.defaultWriteObject();
-	    out.writeInt(size());
-	    out.writeFloat(this.loadFactor);
-	    out.writeInt(this.concurrencyLevel);
-	    out.writeInt(this.initialCapacity);
-	    for (Map.Entry<Object, Object> entry : this.map.entrySet()) {
-	      Object key = getKey(entry.getKey());
-	      Object value = getValue(entry.getValue());
-
-	      if (key != null && value != null) {
-	        out.writeObject(key);
-	        out.writeObject(value);
-	      }
-	    }
-	    out.writeObject(null);
-	  }
-
-	@SuppressWarnings("unchecked")
-	private void readObject(ObjectInputStream in) throws IOException,
-	      ClassNotFoundException {
-	    in.defaultReadObject();
-	    int size = in.readInt();
-	    float loadFactor = in.readFloat();
-	    int concurrencyLevel = in.readInt();
-	    int initialCapacity = in.readInt();
-	    this.loadFactor = loadFactor;
-	    this.concurrencyLevel = concurrencyLevel;
-	    this.initialCapacity = initialCapacity;
-	    this.map = new ConcurrentHashMap<Object, Object>(size, loadFactor, concurrencyLevel);
-	    while (true) {
-	      K key = (K) in.readObject();
-	      if (key == null) {
-	        break;
-	      }
-	      V value = (V) in.readObject();
-	      put(key, value);
-	    }
-	  }
 
 }
