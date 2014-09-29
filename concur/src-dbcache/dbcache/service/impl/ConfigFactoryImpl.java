@@ -28,8 +28,12 @@ import org.springframework.util.ReflectionUtils;
 import org.springframework.util.ReflectionUtils.FieldCallback;
 
 import dbcache.conf.CacheConfig;
+import dbcache.conf.CacheType;
 import dbcache.conf.PersistType;
+import dbcache.model.CacheObject;
 import dbcache.model.IEntity;
+import dbcache.model.UpdateStatus;
+import dbcache.model.WeakCacheEntity;
 import dbcache.proxy.asm.AsmFactory;
 import dbcache.proxy.util.ClassUtil;
 import dbcache.service.Cache;
@@ -261,13 +265,41 @@ public class ConfigFactoryImpl implements ConfigFactory, DbCacheMBean {
 	@Override
 	public IEntity<?> createProxyEntity(IEntity<?> entity, Class<?> proxyClass, DbIndexService indexService) {
 		CacheConfig cacheConfig = getCacheConfig(entity.getClass());
-		//判断是否启用索引服务
+		// 判断是否启用索引服务
 		if(cacheConfig == null || !cacheConfig.isEnableIndex()) {
 			return entity;
 		}
 		return ClassUtil.getProxyEntity(proxyClass, entity, indexService);
 	}
 
+
+	@Override
+	public IEntity<?> wrapEntity(IEntity<?> entity, Class<?> entityClazz) {
+		CacheConfig cacheConfig = getCacheConfig(entityClazz);
+		// 判断是否开启弱引用
+		if(cacheConfig == null || cacheConfig.getCacheType() != CacheType.WEEKMAP) {
+			return entity;
+		}
+		return WeakCacheEntity.valueOf(entity);
+	}
+
+
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	@Override
+	public CacheObject<?> createCacheObject(IEntity<?> entity,
+			Class<?> entityClazz, DbIndexService<?> indexService, UpdateStatus updateStatus) {
+		CacheConfig cacheConfig = getCacheConfig(entityClazz);
+		// 判断是否开启弱引用
+		if(cacheConfig == null || cacheConfig.getCacheType() != CacheType.WEEKMAP) {
+			return new CacheObject(entity, entity.getId(), entity.getClass(),
+					this.createProxyEntity(entity,
+							cacheConfig.getProxyClazz(), indexService), updateStatus);
+		}
+		return new CacheObject(this.wrapEntity(entity, entityClazz),
+				entity.getId(), entityClazz, this.wrapEntity(this.createProxyEntity(entity,
+						cacheConfig.getProxyClazz(),
+						indexService), entityClazz), updateStatus);
+	}
 
 
 	@Override
@@ -335,6 +367,7 @@ public class ConfigFactoryImpl implements ConfigFactory, DbCacheMBean {
 				this.delayDbPersistService.getThreadPool()));
 		return infoMap;
 	}
+
 
 
 }

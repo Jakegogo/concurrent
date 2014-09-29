@@ -1,7 +1,9 @@
 package dbcache.service;
 
 import dbcache.conf.CacheConfig;
+import dbcache.model.CacheObject;
 import dbcache.model.IEntity;
+import dbcache.model.UpdateStatus;
 
 /**
  * DbCached缓存模块配置服务接口
@@ -21,6 +23,23 @@ public interface ConfigFactory {
 	@SuppressWarnings("rawtypes")
 	public IEntity<?> createProxyEntity(IEntity<?> entity, Class<?> proxyClass, DbIndexService indexService);
 
+	/**
+	 * 包装实体(弱引用)
+	 * @param entity 实体
+	 * @param entityClazz 实体类
+	 * @return
+	 */
+	public IEntity<?> wrapEntity(IEntity<?> entity, Class<?> entityClazz);
+
+	/**
+	 * 创建缓存对象
+	 * @param entity 实体
+	 * @param entityClazz 实体类
+	 * @param indexService 索引服务
+	 * @param updateStatus 更新状态
+	 * @return
+	 */
+	public CacheObject<?> createCacheObject(IEntity<?> entity, Class<?> entityClazz, DbIndexService<?> indexService, UpdateStatus updateStatus);
 
 	/**
 	 * 获取DbCacheServiceBean

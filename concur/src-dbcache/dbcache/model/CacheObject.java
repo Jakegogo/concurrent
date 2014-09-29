@@ -1,8 +1,6 @@
 package dbcache.model;
 
 import java.io.Serializable;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
 
 
@@ -17,12 +15,12 @@ public class CacheObject<T extends IEntity<?>> {
 	/**
 	 * 缓存对象
 	 */
-	private final T entity;
+	protected final T entity;
 
 	/**
 	 * 代理缓存对象
 	 */
-	private final T proxyEntity;
+	protected final T proxyEntity;
 
 	/**
 	 * 主键id

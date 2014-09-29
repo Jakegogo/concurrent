@@ -214,8 +214,10 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 						EntityInitializer entityInitializer = (EntityInitializer) entity;
 						entityInitializer.doAfterLoad();
 					}
+
 					// 创建缓存对象
-					cacheObject = new CacheObject<T>(entity, id, entityClazz, (T) configFactory.createProxyEntity(entity, this.cacheConfig.getProxyClazz(), indexService));
+					cacheObject = (CacheObject<T>) configFactory.createCacheObject(entity, entityClazz, indexService, UpdateStatus.PERSIST);
+
 					wrapper = cache.putIfAbsent(key, cacheObject);
 
 					if (wrapper != null && wrapper.get() != null) {
@@ -367,7 +369,8 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 
 		if (wrapper == null) {//缓存还不存在
 
-			cacheObject = new CacheObject<T>(entity, entity.getId(), (Class<T>) entity.getClass(), (T) configFactory.createProxyEntity(entity, this.cacheConfig.getProxyClazz(), indexService), UpdateStatus.PERSIST);
+			cacheObject = (CacheObject<T>) configFactory.createCacheObject(entity, entity.getClass(), indexService, UpdateStatus.PERSIST);
+
 			wrapper = cache.putIfAbsent(key, cacheObject);
 
 			cacheObject = (CacheObject<T>) wrapper.get();

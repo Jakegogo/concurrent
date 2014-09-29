@@ -4,6 +4,8 @@ import java.io.Serializable;
 
 import org.springframework.stereotype.Component;
 
+import dbcache.model.CacheObject;
+import dbcache.model.WeakCacheObject;
 import dbcache.refcache.ConcurrentReferenceMap;
 import dbcache.refcache.ConcurrentReferenceMap.ReferenceKeyType;
 import dbcache.refcache.ConcurrentReferenceMap.ReferenceValueType;
@@ -77,8 +79,32 @@ public class ConcurrentWeekHashMapCache implements Cache {
 
 	@Override
 	public void put(Object key, Object value) {
-		this.store.put(key, value);
+		this.store.put(toStoreKey(key, value), toStoreValue(key, value));
 	}
+
+	@SuppressWarnings("rawtypes")
+	private Object toStoreKey(Object key, Object value) {
+
+		if(value instanceof WeakCacheObject) {
+			CacheObject cacheObject = (CacheObject) value;
+			return cacheObject;
+		}
+
+		return key;
+	}
+
+
+	@SuppressWarnings("rawtypes")
+	private Object toStoreValue(Object key, Object value) {
+
+		if(value instanceof WeakCacheObject) {
+			CacheObject cacheObject = (CacheObject) value;
+			return cacheObject.getProxyEntity();
+		}
+
+		return value;
+	}
+
 
 	@Override
 	public ValueWrapper putIfAbsent(Object key, Object value) {
