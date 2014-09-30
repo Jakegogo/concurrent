@@ -21,7 +21,8 @@ import dbcache.service.ConfigFactory;
 
 /**
  * ConcurrentWeekHashMap缓存容器
- *
+ * 建议加上VM参数:-XX:SoftRefLRUPolicyMSPerMB=0
+ * <br/>JVM 回收 SoftReference 的算法，注意它并不是真正淘汰最久最少访问的对象，而是根据内存余量，淘汰最近未访问的对象。相比真正的 LRU 淘汰算法，这显得比较粗放。
  * @author jake
  * @date 2014-8-1-下午8:30:34
  */
