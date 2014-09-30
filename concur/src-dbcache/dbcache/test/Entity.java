@@ -17,16 +17,18 @@ import dbcache.model.IEntity;
 
 @Cached(persistType=PersistType.INTIME, enableIndex = true, cacheType=CacheType.WEEKMAP)
 @javax.persistence.Entity
-public class Entity implements EntityInitializer, IEntity<Integer> {
+public class Entity implements EntityInitializer, IEntity<Long> {
 
 	@Id
-	public int id = 1;
+	public Long id;
 
 
 	@Index(name="uid_idx")
 	private int uid;
 
 	public int num;
+
+	public byte[] a = new byte[100];
 
 	@Transient
 	public AtomicInteger idgenerator;
@@ -73,13 +75,21 @@ public class Entity implements EntityInitializer, IEntity<Integer> {
 
 
 	@Override
-	public Integer getId() {
+	public Long getId() {
 		return id;
 	}
 
 	@Override
-	public void setId(Integer id) {
+	public void setId(Long id) {
 		this.id = id;
+	}
+
+	public byte[] getA() {
+		return a;
+	}
+
+	public void setA(byte[] a) {
+		this.a = a;
 	}
 
 	public static void main(String[] args) {

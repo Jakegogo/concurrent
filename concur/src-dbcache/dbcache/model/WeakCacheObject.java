@@ -17,6 +17,14 @@ public class WeakCacheObject<T extends IEntity<?>, R extends WeakCacheEntity<T,?
 	 */
 	private int hashCode;
 
+
+	/**
+	 * 默认构造方法
+	 */
+	protected WeakCacheObject() {
+	}
+
+
 	/**
 	 * 构造方法
 	 *

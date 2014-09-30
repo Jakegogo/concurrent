@@ -49,6 +49,16 @@ public class CacheObject<T extends IEntity<?>> {
 
 
 	/**
+	 * 默认构造方法
+	 */
+	protected CacheObject() {
+		this.entity = null;
+		this.id = null;
+		this.clazz = null;
+		this.proxyEntity = null;
+	}
+
+	/**
 	 * 构造方法
 	 *
 	 * @param entity

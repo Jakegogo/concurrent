@@ -416,6 +416,8 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 
 			dbPersistService.handlerPersist(new PersistAction() {
 
+				Object entity = cacheObj.getEntity();
+
 				@Override
 				public void run() {
 
@@ -428,8 +430,6 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 					if (!cacheObj.compareAndUpdateDbSync(dbVersion, editVersion)) {
 						return;
 					}
-
-					Object entity = cacheObj.getEntity();
 
 					//持久化前操作
 					if(entity instanceof EntityInitializer){
@@ -490,6 +490,8 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 
 			dbPersistService.handlerPersist(new PersistAction() {
 
+				Object entity = cacheObject.getEntity();
+
 				@Override
 				public void run() {
 
@@ -502,8 +504,6 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 					if (!cacheObject.compareAndUpdateDbSync(dbVersion, editVersion)) {
 						return;
 					}
-
-					Object entity = cacheObject.getEntity();
 
 					//持久化前操作
 					if(entity instanceof EntityInitializer){
@@ -576,6 +576,8 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 
 			dbPersistService.handlerPersist(new PersistAction() {
 
+				Object entity = cacheObject.getEntity();
+
 				@Override
 				public void run() {
 
@@ -588,8 +590,6 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 					if (!cacheObject.compareAndUpdateDbSync(dbVersion, editVersion)) {
 						return;
 					}
-
-					Object entity = cacheObject.getEntity();
 
 					//缓存对象在提交之后被入库过
 					if(cacheObject.getDbVersion() > editVersion) {

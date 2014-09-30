@@ -35,7 +35,7 @@ public abstract class ReflectionUtility extends ReflectionUtils {
 				return field.isAnnotationPresent(type);
 			}
 		});
-		
+
 		if (fields.size() > 1) {
 			throw new IllegalStateException("被注释" + type.getSimpleName() + "声明的域不唯一");
 		} else if (fields.size() == 1) {
@@ -69,7 +69,7 @@ public abstract class ReflectionUtility extends ReflectionUtils {
 			}
 		}
 	}
-	
+
 	/**
 	 * 获得第一个使用指定注释声明的属性
 	 * @param clz 属性所在类
@@ -84,26 +84,28 @@ public abstract class ReflectionUtility extends ReflectionUtils {
 		}
 		return null;
 	}
-	
+
 	/**
 	 * 获得全部使用指定注释声明的属性
 	 * @param clz 属性所在类
 	 * @param annotationClass 注释类型
 	 * @return 不会返回 null
 	 */
-	public static Field[] getDeclaredFieldsWith(Class<?> clz, final Class<? extends Annotation> annotationClass) {
+	public static Field[] getDeclaredFieldsWith(Class<?> clz, final Class<? extends Annotation>... annotationClass) {
 		final List<Field> fields = new ArrayList<Field>();
 		ReflectionUtils.doWithFields(clz, new FieldCallback() {
-			
+
 			@Override
 			public void doWith(Field field) throws IllegalArgumentException,
 					IllegalAccessException {
-				if (field.isAnnotationPresent(annotationClass)) {
-					fields.add(field);
+				for(Class<? extends Annotation> annoClazz : annotationClass) {
+					if (field.isAnnotationPresent(annoClazz)) {
+						fields.add(field);
+					}
 				}
 			}
 		});
-		
+
 		return fields.toArray(new Field[0]);
 	}
 
@@ -160,5 +162,5 @@ public abstract class ReflectionUtility extends ReflectionUtils {
 		}
 		return methods.toArray(new Method[0]);
 	}
-	
+
 }

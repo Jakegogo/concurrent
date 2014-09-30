@@ -148,7 +148,7 @@ public class ConcurrentWeekHashMapCache implements Cache {
 	@SuppressWarnings("rawtypes")
 	@Override
 	public ValueWrapper putIfAbsent(Object key, Object value) {
-		return SimpleValueWrapper.valueOf(this.store.putIfAbsent(key, (WeakCacheObject) value));
+		return SimpleValueWrapper.valueOf(this.store.putIfAbsent(key, (WeakCacheObject) (value==null ? NULL_HOLDER : value)));
 	}
 
 
@@ -202,8 +202,8 @@ public class ConcurrentWeekHashMapCache implements Cache {
 	}
 
 
-	@SuppressWarnings("serial")
-	private static class NullHolder implements ValueWrapper, Serializable {
+	@SuppressWarnings({ "serial", "rawtypes" })
+	private static class NullHolder extends WeakCacheObject implements ValueWrapper, Serializable {
 
 		@Override
 		public Object get() {
@@ -236,9 +236,9 @@ public class ConcurrentWeekHashMapCache implements Cache {
 		 * @param value 值
 		 * @return
 		 */
-		public static SimpleValueWrapper valueOf(Object value) {
+		public static ValueWrapper valueOf(Object value) {
 			if(value == null) {
-				return null;
+				return NULL_HOLDER;
 			}
 			return new SimpleValueWrapper(value);
 		}

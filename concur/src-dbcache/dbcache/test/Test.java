@@ -33,9 +33,9 @@ import dbcache.utils.ThreadUtils;
 public class Test {
 
 	@Autowired
-	private DbCacheService<Entity, Integer> cacheService;
+	private DbCacheService<Entity, Long> cacheService;
 
-	public void setCacheService(DbCacheService<Entity, Integer> cacheService) {
+	public void setCacheService(DbCacheService<Entity, Long> cacheService) {
 		this.cacheService = cacheService;
 	}
 
@@ -67,7 +67,7 @@ public class Test {
 
 
 		for(int i = 0;i < 1000000;i++) {
-			Entity entity = this.cacheService.get(1);
+			Entity entity = this.cacheService.get(1l);
 //			entity.increseNum();
 //			if(i % 1000000 == 0) {
 				entity.addNum(1);
@@ -120,7 +120,7 @@ public class Test {
 		Entity entity = new Entity();
 		long t1 = System.currentTimeMillis();
 		for(int i = 0;i < 100000000;i++) {
-			this.cacheService.get(1);
+			this.cacheService.get(1l);
 		}
 		System.out.println(System.currentTimeMillis() - t1);
 	}
@@ -204,23 +204,24 @@ public class Test {
 
 	@org.junit.Test
 	public void t9() {
-		Entity entity = this.cacheService.get(1);
+//		Entity entity = this.cacheService.get(1l);
+//
+//		entity.setUid(201);
+//
+//		List<Entity> list = this.cacheService.listByIndex("uid_idx", 201);
+//
+//		assert list.size() == 1;
+//
+//		for(Entity entity1 : list) {
+//			System.out.println(JsonUtils.object2JsonString(entity1));
+//		}
 
-		entity.setUid(201);
+//		this.cacheService.submitUpdated2Queue(entity);
 
-		List<Entity> list = this.cacheService.listByIndex("uid_idx", 201);
+		Entity entity = null;
 
-		assert list.size() == 1;
-
-		for(Entity entity1 : list) {
-			System.out.println(JsonUtils.object2JsonString(entity1));
-		}
-
-		this.cacheService.submitUpdated2Queue(entity);
-
-		for(int i = 0;i < 500;i ++) {
+		for(int i = 0;i < 5000;i ++) {
 			entity = new Entity();
-			entity.setId(i+1);
 			this.cacheService.submitNew2Queue(entity);
 			System.gc();
 		}
@@ -228,7 +229,7 @@ public class Test {
 
 		System.gc();
 
-		entity = this.cacheService.get(300);
+		entity = this.cacheService.get(300l);
 		System.out.println(JsonUtils.object2JsonString(entity));
 	}
 

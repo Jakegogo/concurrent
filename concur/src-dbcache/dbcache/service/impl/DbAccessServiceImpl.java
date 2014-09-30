@@ -45,7 +45,7 @@ public class DbAccessServiceImpl extends HibernateDaoSupport implements DbAccess
 	 */
 	@Override
 	public <T> void save(T entity) {
-		super.getHibernateTemplate().saveOrUpdate(entity);
+		super.getHibernateTemplate().save(entity);
 	}
 
 
