@@ -4,8 +4,11 @@ import java.io.Serializable;
 import java.lang.ref.Reference;
 import java.lang.ref.ReferenceQueue;
 import java.lang.ref.WeakReference;
+import java.util.Iterator;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,6 +44,12 @@ public class ConcurrentWeekHashMapCache implements Cache {
 	private static final ValueWrapper NULL_HOLDER = new NullHolder();
 
 	/**
+	 * 所有的回收队列
+	 */
+	@SuppressWarnings("rawtypes")
+	private static final ConcurrentLinkedQueue<FinalizableReferenceQueue> referenceQueues = new ConcurrentLinkedQueue<FinalizableReferenceQueue>();
+
+	/**
 	 * 缓存容器
 	 */
 	@SuppressWarnings("rawtypes")
@@ -49,11 +58,49 @@ public class ConcurrentWeekHashMapCache implements Cache {
 	/**
 	 * 回收队列
 	 */
-	private final FinalizableReferenceQueue referenceQueue = new FinalizableReferenceQueue("ConcurrentWeekHashMapCache.FinalizableReferenceQueue");
+	@SuppressWarnings("rawtypes")
+	private final FinalizableReferenceQueue referenceQueue = new FinalizableReferenceQueue();
 
 
 	@Autowired
 	private ConfigFactory configFactory;
+
+
+	static {
+
+		Thread thread = new Thread("垃圾回收引用监视器") {
+
+			@SuppressWarnings("rawtypes")
+			@Override
+			public void run() {
+
+				long waitTimmer = TimeUnit.SECONDS.toMillis(1);
+				while (true) {
+
+					for(Iterator<FinalizableReferenceQueue> it = referenceQueues.iterator();it.hasNext();) {
+						try {
+							it.next().cleanUp(waitTimmer);
+						} catch (Exception e) {
+							// 不处理
+						}
+					}
+
+					try {
+						Thread.sleep(waitTimmer);
+					} catch (InterruptedException e) {
+						e.printStackTrace();
+					}
+				}
+			}
+		};
+		thread.setDaemon(true);
+		thread.start();
+
+		if (logger.isDebugEnabled()) {
+			logger.debug("垃圾回收引用监视器开始工作。");
+		}
+
+	}
 
 
 	/**
@@ -65,6 +112,7 @@ public class ConcurrentWeekHashMapCache implements Cache {
 	@Override
 	public void init(int entityCacheSize, int concurrencyLevel) {
 		this.store = new ConcurrentHashMap<Object, WeakReference>(DEFAULT_CAPACITY_OF_ENTITY_CACHE, 0.7f, concurrencyLevel);
+		referenceQueues.add(this.referenceQueue);
 	}
 
 
@@ -119,65 +167,38 @@ public class ConcurrentWeekHashMapCache implements Cache {
 	/**
 	 * 用做 ReferenceMap 的清除引用的引用队列。
 	 */
-	public class FinalizableReferenceQueue extends ReferenceQueue<Object> {
-
-		private final Object LOCK = new Object();
-
-		private int i;
+	public class FinalizableReferenceQueue<T> extends ReferenceQueue<T> {
 
 		/**
 		 * 构造一个新的清除引用的引用队列。
 		 */
 		public FinalizableReferenceQueue() {
-			synchronized (LOCK) {
-				start("FinalizableReferenceQueue#" + ++i);
-			}
 		}
 
-		/**
-		 * 构造一个新的清除引用的引用队列。
-		 * @param name 引用队列的名称，该名称用做清理的守护线程的名称。
-		 */
-		public FinalizableReferenceQueue(String name) {
-			start(name);
-		}
 
 		/**
 		 * 执行引用的清除工作。
-		 * @param reference 要执行清除工作的引用。
+		 * @param waitTimmer 清除等待时间
 		 */
 		@SuppressWarnings("rawtypes")
-		void cleanUp(Reference<?> reference) {
+		void cleanUp(long waitTimmer) {
 			try {
-				store.remove(((WeakCacheEntity) reference).getKey());
+				Reference<? extends T> reference = null;
+				do {
+					reference = remove(waitTimmer);
+					if(reference != null) {
+						Object key = ((WeakCacheEntity) reference).getKey();
+						WeakReference value = store.get(key);
+						if(value != null && value.get() == null) {
+							store.remove(key);
+						}
+					}
+				} while(reference != null);
 			} catch (Throwable t) {
 				logger.error("清除引用时发生错误", t);
 			}
 		}
 
-		/**
-		 * 开始垃圾回收引用监视。
-		 */
-		void start(String name) {
-			Thread thread = new Thread(name) {
-
-				@Override
-				public void run() {
-					while (true) {
-						try {
-							cleanUp(remove());
-						} catch (InterruptedException e) {
-							// 不处理
-						}
-					}
-				}
-			};
-			thread.setDaemon(true);
-			thread.start();
-			if (logger.isDebugEnabled()) {
-				logger.debug("垃圾回收引用监视器[" + name + "]开始工作。");
-			}
-		}
 	}
 
 
@@ -232,6 +253,7 @@ public class ConcurrentWeekHashMapCache implements Cache {
 	}
 
 
+	@SuppressWarnings("rawtypes")
 	@Override
 	public FinalizableReferenceQueue getReferencequeue() {
 		return referenceQueue;
