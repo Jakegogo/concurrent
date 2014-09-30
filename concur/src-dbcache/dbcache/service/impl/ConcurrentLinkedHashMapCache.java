@@ -39,20 +39,6 @@ public class ConcurrentLinkedHashMapCache implements Cache {
 	private ConcurrentMap<Object, ValueWrapper> store;
 
 
-
-	/**
-	 * 初始化
-	 */
-//	@PostConstruct
-	public void init() {
-		int entityCacheSize = dbRuleService.getEntityCacheSize();
-		if(entityCacheSize <= 0) {
-			entityCacheSize = DEFAULT_MAX_CAPACITY_OF_ENTITY_CACHE;
-		}
-		this.store = new ConcurrentLinkedHashMap.Builder<Object, ValueWrapper>().maximumWeightedCapacity(entityCacheSize).build();
-	}
-
-
 	/**
 	 * 初始化
 	 * @param entityCacheSize
@@ -60,7 +46,7 @@ public class ConcurrentLinkedHashMapCache implements Cache {
 	 */
 	public void init(int entityCacheSize, int concurrencyLevel) {
 		this.store = new ConcurrentLinkedHashMap.Builder<Object, ValueWrapper>()
-				.maximumWeightedCapacity(entityCacheSize)
+				.maximumWeightedCapacity(entityCacheSize > 0 ? entityCacheSize : DEFAULT_MAX_CAPACITY_OF_ENTITY_CACHE)
 				.concurrencyLevel(concurrencyLevel).build();
 	}
 
