@@ -93,6 +93,7 @@ public class ConcurrentWeekHashMapCache implements Cache {
 				}
 			}
 		};
+
 		thread.setDaemon(true);
 		thread.start();
 
@@ -127,10 +128,10 @@ public class ConcurrentWeekHashMapCache implements Cache {
 	@Override
 	public ValueWrapper get(Object key) {
 		WeakCacheObject value = this.store.get(key);
+		if(value == NULL_HOLDER) {
+			return NULL_HOLDER;
+		}
 		if(value == null || value.getProxyEntity() == null) {
-			if(this.store.containsKey(key)) {
-				return NULL_HOLDER;
-			}
 			return null;
 		}
 		ValueWrapper result = SimpleValueWrapper.valueOf(value);

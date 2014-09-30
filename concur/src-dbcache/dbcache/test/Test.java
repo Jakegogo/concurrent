@@ -66,7 +66,7 @@ public class Test {
 	public void t1() throws InterruptedException {
 
 
-		for(int i = 0;i < 1000000;i++) {
+		for(int i = 0;i < 100000000;i++) {
 			Entity entity = this.cacheService.get(1l);
 //			entity.increseNum();
 //			if(i % 1000000 == 0) {
@@ -220,17 +220,36 @@ public class Test {
 
 		Entity entity = null;
 
-		for(int i = 0;i < 5000;i ++) {
+		boolean enter = false;
+		for(int i = 0;i < 10000000;i ++) {
 			entity = new Entity();
 			this.cacheService.submitNew2Queue(entity);
-			System.gc();
+			if(i > 100000) {
+				if(!enter) {
+					System.out.println("enter");
+					enter = true;
+				}
+				this.cacheService.get(100010000000000l + (i-100000));
+				if(i%100 == 0)
+				try {
+					Thread.sleep(10);
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+			}
 		}
 
-
-		System.gc();
+		System.out.println("over");
 
 		entity = this.cacheService.get(300l);
 		System.out.println(JsonUtils.object2JsonString(entity));
+
+		try {
+			Thread.sleep(1000000);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+
 	}
 
 
