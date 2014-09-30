@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 import javax.annotation.PostConstruct;
 import javax.management.InstanceAlreadyExistsException;
@@ -95,17 +96,17 @@ public class ConfigFactoryImpl implements ConfigFactory, DbCacheMBean {
 	 * DbCacheService实例映射
 	 */
 	@SuppressWarnings("rawtypes")
-	private Map<Class<? extends IEntity>, DbCacheService> dbCacheServiceBeanMap = new ConcurrentHashMap<Class<? extends IEntity>, DbCacheService>();
+	private ConcurrentMap<Class<? extends IEntity>, DbCacheService> dbCacheServiceBeanMap = new ConcurrentHashMap<Class<? extends IEntity>, DbCacheService>();
 
 	/**
 	 * 配置映射
 	 */
-	private Map<Class<?>, CacheConfig> cacheConfigMap = new ConcurrentHashMap<Class<?>, CacheConfig>();
+	private ConcurrentMap<Class<?>, CacheConfig> cacheConfigMap = new ConcurrentHashMap<Class<?>, CacheConfig>();
 
 	/**
 	 * 持久化服务
 	 */
-	private Map<PersistType, DbPersistService> persistServiceMap = new ConcurrentHashMap<PersistType, DbPersistService>();
+	private ConcurrentMap<PersistType, DbPersistService> persistServiceMap = new ConcurrentHashMap<PersistType, DbPersistService>();
 
 
 	@SuppressWarnings({ "rawtypes" })

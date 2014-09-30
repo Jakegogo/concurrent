@@ -105,7 +105,7 @@ public class DbIndexServiceImpl<PK extends Comparable<PK> & Serializable>
 
 		final ReadWriteLock lock = this.getIndexReadWriteLock(key);
 
-		Map<PK, Boolean> indexValues = null;
+		ConcurrentMap<PK, Boolean> indexValues = null;
 		lock.writeLock().lock();
 		try {
 
