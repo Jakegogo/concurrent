@@ -28,8 +28,6 @@ public class Entity implements EntityInitializer, IEntity<Integer> {
 
 	public int num;
 
-	private byte[] a = new byte[1024000000];
-
 	@Transient
 	public AtomicInteger idgenerator;
 
@@ -82,14 +80,6 @@ public class Entity implements EntityInitializer, IEntity<Integer> {
 	@Override
 	public void setId(Integer id) {
 		this.id = id;
-	}
-
-	public byte[] getA() {
-		return a;
-	}
-
-	public void setA(byte[] a) {
-		this.a = a;
 	}
 
 	public static void main(String[] args) {

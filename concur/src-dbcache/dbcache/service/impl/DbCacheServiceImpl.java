@@ -372,8 +372,10 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 			cacheObject = (CacheObject<T>) configFactory.createCacheObject(entity, entity.getClass(), indexService, key, cache, UpdateStatus.PERSIST);
 
 			wrapper = cache.putIfAbsent(key, cacheObject);
+			if (wrapper != null && wrapper.get() != null) {
+				cacheObject = (CacheObject<T>) wrapper.get();
+			}
 
-			cacheObject = (CacheObject<T>) wrapper.get();
 		} else {
 
 			cacheObject = (CacheObject<T>) wrapper.get();
@@ -382,6 +384,9 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 				//删除再保存，实际上很少出现这种情况
 				cacheObject.setUpdateStatus(UpdateStatus.PERSIST);
 				wrapper = cache.putIfAbsent(key, cacheObject);
+				if (wrapper != null && wrapper.get() != null) {
+					cacheObject = (CacheObject<T>) wrapper.get();
+				}
 
 				cacheObject = (CacheObject<T>) wrapper.get();
 			}

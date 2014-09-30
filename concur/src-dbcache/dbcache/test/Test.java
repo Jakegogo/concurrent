@@ -218,12 +218,17 @@ public class Test {
 
 		this.cacheService.submitUpdated2Queue(entity);
 
-		entity = null;
+		for(int i = 0;i < 500;i ++) {
+			entity = new Entity();
+			entity.setId(i+1);
+			this.cacheService.submitNew2Queue(entity);
+			System.gc();
+		}
+
 
 		System.gc();
-		System.gc();
 
-		entity = this.cacheService.get(1);
+		entity = this.cacheService.get(300);
 		System.out.println(JsonUtils.object2JsonString(entity));
 	}
 
