@@ -3,7 +3,6 @@ package dbcache.service.impl;
 import java.io.Serializable;
 import java.lang.ref.Reference;
 import java.lang.ref.ReferenceQueue;
-import java.lang.ref.WeakReference;
 import java.util.Iterator;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -16,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import dbcache.model.WeakCacheEntity;
+import dbcache.model.WeakCacheObject;
 import dbcache.service.Cache;
 import dbcache.service.ConfigFactory;
 
@@ -53,7 +53,7 @@ public class ConcurrentWeekHashMapCache implements Cache {
 	 * 缓存容器
 	 */
 	@SuppressWarnings("rawtypes")
-	private ConcurrentMap<Object, WeakReference> store;
+	private ConcurrentMap<Object, WeakCacheObject> store;
 
 	/**
 	 * 回收队列
@@ -111,7 +111,7 @@ public class ConcurrentWeekHashMapCache implements Cache {
 	@SuppressWarnings("rawtypes")
 	@Override
 	public void init(int entityCacheSize, int concurrencyLevel) {
-		this.store = new ConcurrentHashMap<Object, WeakReference>(DEFAULT_CAPACITY_OF_ENTITY_CACHE, 0.7f, concurrencyLevel);
+		this.store = new ConcurrentHashMap<Object, WeakCacheObject>(DEFAULT_CAPACITY_OF_ENTITY_CACHE, 0.7f, concurrencyLevel);
 		referenceQueues.add(this.referenceQueue);
 	}
 
@@ -126,11 +126,11 @@ public class ConcurrentWeekHashMapCache implements Cache {
 	@SuppressWarnings("rawtypes")
 	@Override
 	public ValueWrapper get(Object key) {
-		WeakReference value = this.store.get(key);
-		if(value == null && this.store.containsKey(key)) {
-			return NULL_HOLDER;
-		}
-		if(value.get() == null) {
+		WeakCacheObject value = this.store.get(key);
+		if(value == null || value.getProxyEntity() == null) {
+			if(this.store.containsKey(key)) {
+				return NULL_HOLDER;
+			}
 			return null;
 		}
 		ValueWrapper result = SimpleValueWrapper.valueOf(value);
@@ -141,14 +141,14 @@ public class ConcurrentWeekHashMapCache implements Cache {
 	@SuppressWarnings("rawtypes")
 	@Override
 	public void put(Object key, Object value) {
-		this.store.put(key, (WeakReference)value);
+		this.store.put(key, (WeakCacheObject)value);
 	}
 
 
 	@SuppressWarnings("rawtypes")
 	@Override
 	public ValueWrapper putIfAbsent(Object key, Object value) {
-		return SimpleValueWrapper.valueOf(this.store.putIfAbsent(key, (WeakReference)value));
+		return SimpleValueWrapper.valueOf(this.store.putIfAbsent(key, (WeakCacheObject)value));
 	}
 
 
@@ -188,8 +188,8 @@ public class ConcurrentWeekHashMapCache implements Cache {
 					reference = remove(waitTimmer);
 					if(reference != null) {
 						Object key = ((WeakCacheEntity) reference).getKey();
-						WeakReference value = store.get(key);
-						if(value != null && value.get() == null) {
+						WeakCacheObject value = store.get(key);
+						if(value != null && value.getProxyEntity() == null) {
 							store.remove(key);
 						}
 					}

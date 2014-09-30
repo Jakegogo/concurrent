@@ -34,6 +34,7 @@ import dbcache.model.CacheObject;
 import dbcache.model.IEntity;
 import dbcache.model.UpdateStatus;
 import dbcache.model.WeakCacheEntity;
+import dbcache.model.WeakCacheObject;
 import dbcache.proxy.asm.AsmFactory;
 import dbcache.proxy.util.ClassUtil;
 import dbcache.service.Cache;
@@ -295,10 +296,10 @@ public class ConfigFactoryImpl implements ConfigFactory, DbCacheMBean {
 					this.createProxyEntity(entity,
 							cacheConfig.getProxyClazz(), indexService), updateStatus);
 		}
-		return new CacheObject(this.wrapEntity(entity, entityClazz, cache, key),
-				entity.getId(), entityClazz, this.wrapEntity(this.createProxyEntity(entity,
+		return new WeakCacheObject((WeakCacheEntity) this.wrapEntity(entity, entityClazz, cache, key),
+				entity.getId(), entityClazz, (WeakCacheEntity) this.wrapEntity(this.createProxyEntity(entity,
 						cacheConfig.getProxyClazz(),
-						indexService), entityClazz, cache, key), updateStatus);
+						indexService), entityClazz, cache, key), key, updateStatus);
 	}
 
 

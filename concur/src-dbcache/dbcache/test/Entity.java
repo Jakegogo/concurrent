@@ -10,11 +10,12 @@ import org.hibernate.annotations.Index;
 
 import dbcache.annotation.Cached;
 import dbcache.annotation.UpdateIndex;
+import dbcache.conf.CacheType;
 import dbcache.conf.PersistType;
 import dbcache.model.EntityInitializer;
 import dbcache.model.IEntity;
 
-@Cached(persistType=PersistType.INTIME, enableIndex = true)
+@Cached(persistType=PersistType.INTIME, enableIndex = true, cacheType=CacheType.WEEKMAP)
 @javax.persistence.Entity
 public class Entity implements EntityInitializer, IEntity<Integer> {
 
@@ -26,6 +27,8 @@ public class Entity implements EntityInitializer, IEntity<Integer> {
 	private int uid;
 
 	public int num;
+
+	private byte[] a = new byte[1024000000];
 
 	@Transient
 	public AtomicInteger idgenerator;
@@ -79,6 +82,14 @@ public class Entity implements EntityInitializer, IEntity<Integer> {
 	@Override
 	public void setId(Integer id) {
 		this.id = id;
+	}
+
+	public byte[] getA() {
+		return a;
+	}
+
+	public void setA(byte[] a) {
+		this.a = a;
 	}
 
 	public static void main(String[] args) {

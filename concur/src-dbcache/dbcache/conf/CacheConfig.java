@@ -4,11 +4,13 @@ import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.codehaus.jackson.map.annotate.JsonSerialize;
 import org.springframework.util.ReflectionUtils;
 
 import dbcache.annotation.Cached;
 import dbcache.annotation.EnableIndex;
 import dbcache.service.impl.ConcurrentLinkedHashMapCache;
+import dbcache.support.jackson.ToStringJsonSerializer;
 import dbcache.utils.AnnotationUtils;
 import dbcache.utils.JsonUtils;
 
@@ -179,6 +181,7 @@ public class CacheConfig {
 		this.enableIndex = enableIndex;
 	}
 
+	@JsonSerialize(using = ToStringJsonSerializer.class)
 	public Map<String, Field> getIndexes() {
 		return indexes;
 	}

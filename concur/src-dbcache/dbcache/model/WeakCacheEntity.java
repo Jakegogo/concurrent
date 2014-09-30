@@ -41,7 +41,7 @@ public class WeakCacheEntity<T extends IEntity<PK>, PK extends Comparable<PK> & 
 
 	@Override
 	public PK getId() {
-		T t = get();
+		IEntity<PK> t = get();
 		if(t != null) {
 			return t.getId();
 		}
@@ -51,7 +51,7 @@ public class WeakCacheEntity<T extends IEntity<PK>, PK extends Comparable<PK> & 
 
 	@Override
 	public void setId(PK id) {
-		T t = get();
+		IEntity<PK> t = get();
 		if(t != null) {
 			t.setId(id);
 		}

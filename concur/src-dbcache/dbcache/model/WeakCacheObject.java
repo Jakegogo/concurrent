@@ -10,7 +10,7 @@ import java.lang.ref.WeakReference;
  * @author jake
  * @date 2014-7-31-下午8:18:03
  */
-public class WeakCacheObject<T extends IEntity<?>> extends CacheObject<T> {
+public class WeakCacheObject<T extends IEntity<?>, R extends WeakCacheEntity<T,?>> extends CacheObject<T> {
 
 	/**
 	 * CacheObject的哈希码
@@ -28,7 +28,7 @@ public class WeakCacheObject<T extends IEntity<?>> extends CacheObject<T> {
 	 *            类型
 	 */
 	@SuppressWarnings("unchecked")
-	public WeakCacheObject(WeakCacheEntity<T, ?> entity, Serializable id, Class<T> clazz, WeakReference<T> proxyEntity) {
+	public WeakCacheObject(WeakCacheEntity<?,?> entity, Serializable id, Class<T> clazz, WeakReference<?> proxyEntity) {
 		super((T) entity, id, clazz, (T) proxyEntity);
 	}
 
@@ -45,21 +45,22 @@ public class WeakCacheObject<T extends IEntity<?>> extends CacheObject<T> {
 	 *            更新方式
 	 */
 	@SuppressWarnings("unchecked")
-	public WeakCacheObject(WeakCacheEntity<T, ?> entity, Serializable id, Class<T> clazz, WeakReference<T> proxyEntity,
+	public WeakCacheObject(WeakCacheEntity<T, ?> entity, Serializable id, Class<T> clazz, WeakCacheEntity<?,?> proxyEntity, Object key,
 			UpdateStatus updateStatus) {
 		super((T) entity, id, clazz, (T) proxyEntity, updateStatus);
+		this.hashCode = key.hashCode();
 	}
 
 
-	@SuppressWarnings({ "rawtypes", "unchecked" })
+	@SuppressWarnings("unchecked")
 	public T getEntity() {
-		return (T) ((WeakCacheEntity) entity).get();
+		return ((R) entity).get();
 	}
 
 
-	@SuppressWarnings({ "rawtypes", "unchecked" })
+	@SuppressWarnings("unchecked")
 	public T getProxyEntity() {
-		return (T) ((WeakCacheEntity) proxyEntity).get();
+		return ((R) proxyEntity).get();
 	}
 
 	@Override
