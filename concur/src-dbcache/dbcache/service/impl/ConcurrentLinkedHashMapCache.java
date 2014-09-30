@@ -8,9 +8,9 @@ import org.springframework.stereotype.Component;
 
 import com.googlecode.concurrentlinkedhashmap.ConcurrentLinkedHashMap;
 
-import dbcache.refcache.FinalizableReferenceQueue;
 import dbcache.service.Cache;
 import dbcache.service.DbRuleService;
+import dbcache.utils.weakref.FinalizableReferenceQueue;
 
 /**
  * ConcurrentLinkedHashMap缓存容器

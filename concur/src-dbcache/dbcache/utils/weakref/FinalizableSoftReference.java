@@ -1,4 +1,4 @@
-package dbcache.refcache;
+package dbcache.utils.weakref;
 
 import java.lang.ref.SoftReference;
 

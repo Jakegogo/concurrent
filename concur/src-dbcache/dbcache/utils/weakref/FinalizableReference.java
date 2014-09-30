@@ -1,4 +1,4 @@
-package dbcache.refcache;
+package dbcache.utils.weakref;
 
 /**
  * 带有回调清除功能的引用类型。

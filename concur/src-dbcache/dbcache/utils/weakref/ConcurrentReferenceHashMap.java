@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package dbcache.utils;
+package dbcache.utils.weakref;
 
 import java.lang.ref.ReferenceQueue;
 import java.lang.ref.SoftReference;
