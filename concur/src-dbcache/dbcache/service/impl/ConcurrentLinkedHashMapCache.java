@@ -8,6 +8,7 @@ import org.springframework.stereotype.Component;
 
 import com.googlecode.concurrentlinkedhashmap.ConcurrentLinkedHashMap;
 
+import dbcache.refcache.FinalizableReferenceQueue;
 import dbcache.service.Cache;
 import dbcache.service.DbRuleService;
 
@@ -197,6 +198,12 @@ public class ConcurrentLinkedHashMapCache implements Cache {
 	@Override
 	public int getCachedSize() {
 		return store.size();
+	}
+
+
+	@Override
+	public FinalizableReferenceQueue getReferencequeue() {
+		return null;
 	}
 
 

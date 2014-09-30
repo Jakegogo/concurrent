@@ -1,15 +1,20 @@
 package dbcache.service.impl;
 
 import java.io.Serializable;
+import java.lang.ref.Reference;
+import java.lang.ref.ReferenceQueue;
+import java.lang.ref.WeakReference;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import dbcache.model.CacheObject;
-import dbcache.model.WeakCacheObject;
-import dbcache.refcache.ConcurrentReferenceMap;
-import dbcache.refcache.ConcurrentReferenceMap.ReferenceKeyType;
-import dbcache.refcache.ConcurrentReferenceMap.ReferenceValueType;
+import dbcache.model.WeakCacheEntity;
 import dbcache.service.Cache;
+import dbcache.service.ConfigFactory;
 
 /**
  * ConcurrentWeekHashMap缓存容器
@@ -19,6 +24,11 @@ import dbcache.service.Cache;
  */
 @Component("concurrentWeekHashMapCache")
 public class ConcurrentWeekHashMapCache implements Cache {
+
+	/**
+	 * logger
+	 */
+	private static final Logger logger = LoggerFactory.getLogger(ConcurrentWeekHashMapCache.class);
 
 	/**
 	 * 初始容量
@@ -33,19 +43,28 @@ public class ConcurrentWeekHashMapCache implements Cache {
 	/**
 	 * 缓存容器
 	 */
-	private ConcurrentReferenceMap<Object, Object> store;
+	@SuppressWarnings("rawtypes")
+	private ConcurrentMap<Object, WeakReference> store;
+
+	/**
+	 * 回收队列
+	 */
+	private final FinalizableReferenceQueue referenceQueue = new FinalizableReferenceQueue("ConcurrentWeekHashMapCache.FinalizableReferenceQueue");
+
+
+	@Autowired
+	private ConfigFactory configFactory;
 
 
 	/**
 	 * 初始化
-	 * @param entityCacheSize
-	 * @param concurrencyLevel
+	 * @param entityCacheSize 初始缓存容量
+	 * @param concurrencyLevel 并发值
 	 */
+	@SuppressWarnings("rawtypes")
 	@Override
 	public void init(int entityCacheSize, int concurrencyLevel) {
-		this.store = new ConcurrentReferenceMap<Object, Object>(
-				ReferenceKeyType.STRONG, ReferenceValueType.SOFT,
-				DEFAULT_CAPACITY_OF_ENTITY_CACHE, 0.7f, concurrencyLevel);
+		this.store = new ConcurrentHashMap<Object, WeakReference>(DEFAULT_CAPACITY_OF_ENTITY_CACHE, 0.7f, concurrencyLevel);
 	}
 
 
@@ -55,62 +74,33 @@ public class ConcurrentWeekHashMapCache implements Cache {
 	public ConcurrentWeekHashMapCache() {
 	}
 
-	/**
-	 * 构造方法
-	 *
-	 * @param concurrentReferenceMap
-	 *            弱引用Map
-	 */
-	public ConcurrentWeekHashMapCache(
-			ConcurrentReferenceMap<Object, Object> concurrentReferenceMap) {
-		this.store = concurrentReferenceMap;
-	}
 
-
+	@SuppressWarnings("rawtypes")
 	@Override
 	public ValueWrapper get(Object key) {
-		Object value = this.store.get(key);
+		WeakReference value = this.store.get(key);
 		if(value == null && this.store.containsKey(key)) {
 			return NULL_HOLDER;
+		}
+		if(value.get() == null) {
+			return null;
 		}
 		ValueWrapper result = SimpleValueWrapper.valueOf(value);
 		return result;
 	}
 
 
+	@SuppressWarnings("rawtypes")
 	@Override
 	public void put(Object key, Object value) {
-		this.store.put(toStoreKey(key, value), toStoreValue(key, value));
+		this.store.put(key, (WeakReference)value);
 	}
 
 
 	@SuppressWarnings("rawtypes")
-	private Object toStoreKey(Object key, Object value) {
-
-		if(value instanceof WeakCacheObject) {
-			CacheObject cacheObject = (CacheObject) value;
-			return cacheObject;
-		}
-
-		return key;
-	}
-
-
-	@SuppressWarnings("rawtypes")
-	private Object toStoreValue(Object key, Object value) {
-
-		if(value instanceof WeakCacheObject) {
-			CacheObject cacheObject = (CacheObject) value;
-			return cacheObject.getProxyEntity();
-		}
-
-		return value;
-	}
-
-
 	@Override
 	public ValueWrapper putIfAbsent(Object key, Object value) {
-		return SimpleValueWrapper.valueOf(this.store.putIfAbsent(key, value));
+		return SimpleValueWrapper.valueOf(this.store.putIfAbsent(key, (WeakReference)value));
 	}
 
 
@@ -124,6 +114,72 @@ public class ConcurrentWeekHashMapCache implements Cache {
 	public void clear() {
 		this.store.clear();
 	}
+
+
+	/**
+	 * 用做 ReferenceMap 的清除引用的引用队列。
+	 */
+	public class FinalizableReferenceQueue extends ReferenceQueue<Object> {
+
+		private final Object LOCK = new Object();
+
+		private int i;
+
+		/**
+		 * 构造一个新的清除引用的引用队列。
+		 */
+		public FinalizableReferenceQueue() {
+			synchronized (LOCK) {
+				start("FinalizableReferenceQueue#" + ++i);
+			}
+		}
+
+		/**
+		 * 构造一个新的清除引用的引用队列。
+		 * @param name 引用队列的名称，该名称用做清理的守护线程的名称。
+		 */
+		public FinalizableReferenceQueue(String name) {
+			start(name);
+		}
+
+		/**
+		 * 执行引用的清除工作。
+		 * @param reference 要执行清除工作的引用。
+		 */
+		@SuppressWarnings("rawtypes")
+		void cleanUp(Reference<?> reference) {
+			try {
+				store.remove(((WeakCacheEntity) reference).getKey());
+			} catch (Throwable t) {
+				logger.error("清除引用时发生错误", t);
+			}
+		}
+
+		/**
+		 * 开始垃圾回收引用监视。
+		 */
+		void start(String name) {
+			Thread thread = new Thread(name) {
+
+				@Override
+				public void run() {
+					while (true) {
+						try {
+							cleanUp(remove());
+						} catch (InterruptedException e) {
+							// 不处理
+						}
+					}
+				}
+			};
+			thread.setDaemon(true);
+			thread.start();
+			if (logger.isDebugEnabled()) {
+				logger.debug("垃圾回收引用监视器[" + name + "]开始工作。");
+			}
+		}
+	}
+
 
 	@SuppressWarnings("serial")
 	private static class NullHolder implements ValueWrapper, Serializable {
@@ -173,6 +229,12 @@ public class ConcurrentWeekHashMapCache implements Cache {
 			return this.value;
 		}
 
+	}
+
+
+	@Override
+	public FinalizableReferenceQueue getReferencequeue() {
+		return referenceQueue;
 	}
 
 

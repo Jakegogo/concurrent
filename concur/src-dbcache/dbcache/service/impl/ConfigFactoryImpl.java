@@ -40,8 +40,8 @@ import dbcache.service.Cache;
 import dbcache.service.ConfigFactory;
 import dbcache.service.DbCacheMBean;
 import dbcache.service.DbCacheService;
-import dbcache.service.DbPersistService;
 import dbcache.service.DbIndexService;
+import dbcache.service.DbPersistService;
 import dbcache.support.asm.DefaultEntityMethodAspect;
 import dbcache.utils.ThreadUtils;
 
@@ -68,7 +68,6 @@ public class ConfigFactoryImpl implements ConfigFactory, DbCacheMBean {
 	private static final String indexServiceProperty = "indexService";
 
 	private static final String dbPersistServiceProperty = "dbPersistService";
-
 
 	@Autowired
 	private ApplicationContext applicationContext;
@@ -273,21 +272,22 @@ public class ConfigFactoryImpl implements ConfigFactory, DbCacheMBean {
 	}
 
 
+	@SuppressWarnings("unchecked")
 	@Override
-	public IEntity<?> wrapEntity(IEntity<?> entity, Class<?> entityClazz) {
+	public IEntity<?> wrapEntity(IEntity<?> entity, Class<?> entityClazz, Cache cache, Object key) {
 		CacheConfig cacheConfig = getCacheConfig(entityClazz);
 		// 判断是否开启弱引用
 		if(cacheConfig == null || cacheConfig.getCacheType() != CacheType.WEEKMAP) {
 			return entity;
 		}
-		return WeakCacheEntity.valueOf(entity);
+		return WeakCacheEntity.valueOf(entity, cache.getReferencequeue(), key);
 	}
 
 
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	@Override
 	public CacheObject<?> createCacheObject(IEntity<?> entity,
-			Class<?> entityClazz, DbIndexService<?> indexService, UpdateStatus updateStatus) {
+			Class<?> entityClazz, DbIndexService<?> indexService, Object key, Cache cache, UpdateStatus updateStatus) {
 		CacheConfig cacheConfig = getCacheConfig(entityClazz);
 		// 判断是否开启弱引用
 		if(cacheConfig == null || cacheConfig.getCacheType() != CacheType.WEEKMAP) {
@@ -295,10 +295,10 @@ public class ConfigFactoryImpl implements ConfigFactory, DbCacheMBean {
 					this.createProxyEntity(entity,
 							cacheConfig.getProxyClazz(), indexService), updateStatus);
 		}
-		return new CacheObject(this.wrapEntity(entity, entityClazz),
+		return new CacheObject(this.wrapEntity(entity, entityClazz, cache, key),
 				entity.getId(), entityClazz, this.wrapEntity(this.createProxyEntity(entity,
 						cacheConfig.getProxyClazz(),
-						indexService), entityClazz), updateStatus);
+						indexService), entityClazz, cache, key), updateStatus);
 	}
 
 

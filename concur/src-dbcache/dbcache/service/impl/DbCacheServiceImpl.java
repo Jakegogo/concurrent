@@ -216,7 +216,7 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 					}
 
 					// 创建缓存对象
-					cacheObject = (CacheObject<T>) configFactory.createCacheObject(entity, entityClazz, indexService, UpdateStatus.PERSIST);
+					cacheObject = (CacheObject<T>) configFactory.createCacheObject(entity, entityClazz, indexService, key, cache, UpdateStatus.PERSIST);
 
 					wrapper = cache.putIfAbsent(key, cacheObject);
 
@@ -369,7 +369,7 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 
 		if (wrapper == null) {//缓存还不存在
 
-			cacheObject = (CacheObject<T>) configFactory.createCacheObject(entity, entity.getClass(), indexService, UpdateStatus.PERSIST);
+			cacheObject = (CacheObject<T>) configFactory.createCacheObject(entity, entity.getClass(), indexService, key, cache, UpdateStatus.PERSIST);
 
 			wrapper = cache.putIfAbsent(key, cacheObject);
 

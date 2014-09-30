@@ -1,5 +1,7 @@
 package dbcache.service;
 
+import java.lang.ref.ReferenceQueue;
+
 
 /**
  * 缓存容器接口
@@ -67,5 +69,12 @@ public interface Cache {
 	 */
 	void init(int entityCacheSize, int concurrencyLevel);
 
+
+	/**
+	 * 获取回收队列
+	 * @return
+	 */
+	@SuppressWarnings("rawtypes")
+	ReferenceQueue getReferencequeue();
 
 }
