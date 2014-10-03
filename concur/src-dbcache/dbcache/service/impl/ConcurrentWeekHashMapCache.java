@@ -77,15 +77,13 @@ public class ConcurrentWeekHashMapCache implements Cache {
 
 				long waitTimmer = TimeUnit.SECONDS.toMillis(1);
 				while (true) {
-
-					for(Iterator<FinalizableReferenceQueue> it = referenceQueues.iterator();it.hasNext();) {
-						try {
+					try {
+						for(Iterator<FinalizableReferenceQueue> it = referenceQueues.iterator();it.hasNext();) {
 							it.next().cleanUp(waitTimmer);
-						} catch (Exception e) {
-							// 不处理
 						}
+					} catch (Exception e) {
+						e.printStackTrace();
 					}
-
 					try {
 						Thread.sleep(waitTimmer);
 					} catch (InterruptedException e) {
