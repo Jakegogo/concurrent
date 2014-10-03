@@ -15,7 +15,7 @@ import dbcache.conf.PersistType;
 import dbcache.model.EntityInitializer;
 import dbcache.model.IEntity;
 
-@Cached(persistType=PersistType.INTIME, enableIndex = true, cacheType=CacheType.WEEKMAP)
+@Cached(persistType=PersistType.INTIME, enableIndex = true, cacheType=CacheType.LRU)
 @javax.persistence.Entity
 public class Entity implements EntityInitializer, IEntity<Long> {
 
@@ -23,9 +23,10 @@ public class Entity implements EntityInitializer, IEntity<Long> {
 	public Long id;
 
 
-	@Index(name="uid_idx")
+
 	private int uid;
 
+	@Index(name="num_idx")
 	public int num;
 
 	public byte[] a = new byte[100];
@@ -49,7 +50,7 @@ public class Entity implements EntityInitializer, IEntity<Long> {
 		this.num = num;
 	}
 
-	@UpdateIndex({ "uid_idx" })
+	@UpdateIndex({ "num_idx" })
 	public void addNum(int num) {
 		this.num += num;
 	}

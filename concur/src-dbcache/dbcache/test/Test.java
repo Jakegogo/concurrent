@@ -70,11 +70,17 @@ public class Test {
 			Entity entity = this.cacheService.get(1l);
 //			entity.increseNum();
 //			if(i % 1000000 == 0) {
-				entity.addNum(1);
+//				entity.addNum(1);
 //			}
-//				if(i%1000 == 0) {
-//			Thread.sleep(100);
-//				}
+
+
+			entity.setNum(i);
+
+			entity.setUid(i);
+
+//			if(i%100 == 0) {
+//			Thread.sleep(10);
+//			}
 
 			this.cacheService.submitUpdated2Queue(entity);
 			if(i%10000000 == 0) {

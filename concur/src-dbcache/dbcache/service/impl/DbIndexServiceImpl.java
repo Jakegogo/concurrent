@@ -225,9 +225,13 @@ public class DbIndexServiceImpl<PK extends Comparable<PK> & Serializable>
 	 * @return
 	 */
 	private ReadWriteLock getIndexReadWriteLock(Object key) {
-		final ReadWriteLock lock = new ReentrantReadWriteLock();
-		final ReadWriteLock prevLock = WAITING_LOCK_MAP.putIfAbsent(key, lock);
-		return prevLock != null ? prevLock : lock;
+		final ReadWriteLock lock = WAITING_LOCK_MAP.get(key);
+		if(lock != null) {
+			return lock;
+		}
+		final ReadWriteLock newLock = new ReentrantReadWriteLock();
+		final ReadWriteLock prevLock = WAITING_LOCK_MAP.putIfAbsent(key, newLock);
+		return prevLock != null ? prevLock : newLock;
 	}
 
 
