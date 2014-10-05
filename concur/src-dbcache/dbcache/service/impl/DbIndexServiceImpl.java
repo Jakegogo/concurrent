@@ -225,6 +225,7 @@ public class DbIndexServiceImpl<PK extends Comparable<PK> & Serializable>
 	 * @return
 	 */
 	private ReadWriteLock getIndexReadWriteLock(Object key) {
+
 		final ReadWriteLock lock = WAITING_LOCK_MAP.get(key);
 		if(lock != null) {
 			return lock;

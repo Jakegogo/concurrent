@@ -13,7 +13,7 @@ import java.lang.annotation.Target;
  * @date 2014年9月13日下午1:30:16
  */
 @Documented
-@Target(ElementType.TYPE)
+@Target({ElementType.TYPE, ElementType.METHOD})
 @Retention(RetentionPolicy.SOURCE)
 public @interface ThreadSafe {
 
@@ -21,6 +21,6 @@ public @interface ThreadSafe {
 	 * 标注内部持有锁对象的类型
 	 * @return
 	 */
-	public Class<?>[] lockBy() default void.class;
+	public Class<?>[] withLock() default void.class;
 
 }
