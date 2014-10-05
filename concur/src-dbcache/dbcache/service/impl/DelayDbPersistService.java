@@ -120,6 +120,7 @@ public class DelayDbPersistService implements DbPersistService {
 
 						long timeDiff = 0l;
 						do {
+
 							if(updateAction == null) {
 								//等待下一个检测时间
 								Thread.sleep(delayCheckTimmer);
@@ -127,33 +128,34 @@ public class DelayDbPersistService implements DbPersistService {
 								//切换更新队列
 								operattingQueue.set(getDumpQueue());
 
-								//获取下一个操作元素
-								updateAction = getDumpQueue().poll();
-								continue;
+							} else {
+
+								timeDiff = System.currentTimeMillis() - updateAction.createTime;
+
+								//未到延迟入库时间
+								if(timeDiff < delayWaitTimmer) {
+
+									//切换更新队列
+									operattingQueue.set(getDumpQueue());
+
+									currentDelayUpdateAction = updateAction;
+
+									//等待
+									Thread.sleep(delayWaitTimmer - timeDiff);
+								}
+
+								//执行入库
+								PersistAction persistAction = updateAction.persistAction;
+								if(persistAction.valid()) {
+									persistAction.run();
+								}
 							}
 
-							timeDiff = System.currentTimeMillis() - updateAction.createTime;
-
-							//未到延迟入库时间
-							if(timeDiff < delayWaitTimmer) {
-
-								//切换更新队列
-								operattingQueue.set(getDumpQueue());
-
-								currentDelayUpdateAction = updateAction;
-
-								//等待
-								Thread.sleep(delayWaitTimmer - timeDiff);
-							}
-
-							//执行入库
-							PersistAction persistAction = updateAction.persistAction;
-							if(persistAction.valid()) {
-								persistAction.run();
-							}
-
-							//获取下一个操作元素
+							//获取下一个有效的操作元素
 							updateAction = getDumpQueue().poll();
+							while(!updateAction.persistAction.valid()) {
+								updateAction = getDumpQueue().poll();
+							}
 
 						} while(true);
 
