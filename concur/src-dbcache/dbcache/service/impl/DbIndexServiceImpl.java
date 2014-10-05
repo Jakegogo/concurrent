@@ -229,8 +229,10 @@ public class DbIndexServiceImpl<PK extends Comparable<PK> & Serializable>
 		if(lock != null) {
 			return lock;
 		}
+
 		final ReadWriteLock newLock = new ReentrantReadWriteLock();
 		final ReadWriteLock prevLock = WAITING_LOCK_MAP.putIfAbsent(key, newLock);
+
 		return prevLock != null ? prevLock : newLock;
 	}
 
@@ -239,19 +241,34 @@ public class DbIndexServiceImpl<PK extends Comparable<PK> & Serializable>
 	public IndexObject<PK> create(IndexValue<PK> indexValue) {
 
 		final Object key = CacheRule.getIndexIdKey(indexValue.getName(), indexValue.getValue());
-		// 持有读锁
-		final ReadWriteLock lock = this.getIndexReadWriteLock(key);
-		lock.readLock().lock();
-		try {
-			final IndexObject<PK> indexObject = this.getTransient(indexValue.getName(), indexValue.getValue());
+
+		final IndexObject<PK> indexObject = this.getTransient(indexValue.getName(), indexValue.getValue());
+
+		if(indexObject.getUpdateStatus() == UpdateStatus.PERSIST) {
+
 			indexObject.getIndexValues().put(indexValue.getId(), Boolean.valueOf(true));
 			if(!this.saveIndexObject(key, indexObject)) {
 				return this.create(indexValue);//乐观自旋
 			}
+
 			return this.getTransient(indexValue.getName(), indexValue.getValue());
-		} finally {
-			lock.readLock().unlock();
+		} else {
+			// 持有读锁
+			final ReadWriteLock lock = this.getIndexReadWriteLock(key);
+			lock.readLock().lock();
+			try {
+
+				indexObject.getIndexValues().put(indexValue.getId(), Boolean.valueOf(true));
+				if(!this.saveIndexObject(key, indexObject)) {
+					return this.create(indexValue);//乐观自旋
+				}
+
+				return this.getTransient(indexValue.getName(), indexValue.getValue());
+			} finally {
+				lock.readLock().unlock();
+			}
 		}
+
 	}
 
 
@@ -259,25 +276,32 @@ public class DbIndexServiceImpl<PK extends Comparable<PK> & Serializable>
 	public void remove(IndexValue<PK> indexValue) {
 
 		final Object key = CacheRule.getIndexIdKey(indexValue.getName(), indexValue.getValue());
-		// 持有读锁
-		final ReadWriteLock lock = this.getIndexReadWriteLock(key);
-		lock.readLock().lock();
-		try {
-			final IndexObject<PK> indexObject = this.getTransient(indexValue.getName(), indexValue.getValue());
-			if(indexObject.getUpdateStatus() == UpdateStatus.PERSIST) {
-				indexObject.getIndexValues().remove(key);
-				if(this.saveIndexObject(key, indexObject)) {
-					return;
-				} else {
-					this.remove(indexValue);//乐观自旋
-				}
+
+		final IndexObject<PK> indexObject = this.getTransient(indexValue.getName(), indexValue.getValue());
+
+		if(indexObject.getUpdateStatus() == UpdateStatus.PERSIST) {
+			indexObject.getIndexValues().remove(key);
+
+			if(this.saveIndexObject(key, indexObject)) {
+				return;
 			} else {
+				this.remove(indexValue);//乐观自旋
+			}
+
+		} else {
+			// 持有读锁
+			final ReadWriteLock lock = this.getIndexReadWriteLock(key);
+			lock.readLock().lock();
+			try {
+
 				indexObject.getIndexValues().put(indexValue.getId(), Boolean.valueOf(false));
 				this.saveIndexObject(key, indexObject);
+
+			} finally {
+				lock.readLock().unlock();
 			}
-		} finally {
-			lock.readLock().unlock();
 		}
+
 	}
 
 
