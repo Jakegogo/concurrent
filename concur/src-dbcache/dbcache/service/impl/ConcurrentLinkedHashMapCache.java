@@ -7,13 +7,18 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.googlecode.concurrentlinkedhashmap.ConcurrentLinkedHashMap;
+import com.googlecode.concurrentlinkedhashmap.EvictionListener;
 
 import dbcache.service.Cache;
 import dbcache.service.DbRuleService;
+import dbcache.utils.weakref.ConcurrentReferenceMap;
+import dbcache.utils.weakref.ConcurrentReferenceMap.ReferenceKeyType;
+import dbcache.utils.weakref.ConcurrentReferenceMap.ReferenceValueType;
 import dbcache.utils.weakref.FinalizableReferenceQueue;
 
 /**
  * ConcurrentLinkedHashMap缓存容器
+ * 如果外部持有缓存对象的引用,对象将不会被回收
  * @author jake
  * @date 2014-7-31-下午8:24:23
  */
@@ -38,6 +43,11 @@ public class ConcurrentLinkedHashMapCache implements Cache {
 	 */
 	private ConcurrentMap<Object, ValueWrapper> store;
 
+	/**
+	 * 已经回收的实体
+	 */
+	private ConcurrentReferenceMap<Object, Object> evictions;
+
 
 	/**
 	 * 初始化
@@ -45,9 +55,19 @@ public class ConcurrentLinkedHashMapCache implements Cache {
 	 * @param concurrencyLevel
 	 */
 	public void init(int entityCacheSize, int concurrencyLevel) {
+
+		this.evictions = new ConcurrentReferenceMap<Object, Object>(ReferenceKeyType.STRONG, ReferenceValueType.WEAK);
+
 		this.store = new ConcurrentLinkedHashMap.Builder<Object, ValueWrapper>()
 				.maximumWeightedCapacity(entityCacheSize > 0 ? entityCacheSize : DEFAULT_MAX_CAPACITY_OF_ENTITY_CACHE)
-				.concurrencyLevel(concurrencyLevel).build();
+				.concurrencyLevel(concurrencyLevel).listener(new EvictionListener<Object, ValueWrapper>() {
+
+					@Override
+					public void onEviction(Object key, ValueWrapper value) {
+						evictions.put(key, value.get());
+					}
+
+				}).build();
 	}
 
 	/**
@@ -78,7 +98,14 @@ public class ConcurrentLinkedHashMapCache implements Cache {
 	@Override
 	public ValueWrapper get(Object key) {
 		Object value = this.store.get(key);
-		return (ValueWrapper) fromStoreValue(value);
+		if(value != null) {
+			return (ValueWrapper) fromStoreValue(value);
+		}
+		value = this.evictions.get(key);
+		if(value != null) {
+			return SimpleValueWrapper.valueOf(value);
+		}
+		return null;
 	}
 
 
