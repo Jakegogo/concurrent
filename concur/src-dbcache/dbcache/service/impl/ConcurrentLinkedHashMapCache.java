@@ -1,6 +1,7 @@
 package dbcache.service.impl;
 
 import java.io.Serializable;
+import java.lang.ref.ReferenceQueue;
 import java.util.concurrent.ConcurrentMap;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,7 +15,6 @@ import dbcache.service.DbRuleService;
 import dbcache.utils.weakref.ConcurrentReferenceMap;
 import dbcache.utils.weakref.ConcurrentReferenceMap.ReferenceKeyType;
 import dbcache.utils.weakref.ConcurrentReferenceMap.ReferenceValueType;
-import dbcache.utils.weakref.FinalizableReferenceQueue;
 
 /**
  * ConcurrentLinkedHashMap缓存容器
@@ -117,17 +117,21 @@ public class ConcurrentLinkedHashMapCache implements Cache {
 
 	@Override
 	public ValueWrapper putIfAbsent(Object key, Object value) {
-		return this.store.putIfAbsent(key, toStoreValue(SimpleValueWrapper.valueOf(value)));
+		this.store.putIfAbsent(key, toStoreValue(SimpleValueWrapper.valueOf(value)));
+		return this.get(key);
 	}
+
 
 	@Override
 	public void evict(Object key) {
 		this.store.remove(key);
+		this.evictions.remove(key);
 	}
 
 	@Override
 	public void clear() {
 		this.store.clear();
+		this.evictions.clear();
 	}
 
 
@@ -214,9 +218,10 @@ public class ConcurrentLinkedHashMapCache implements Cache {
 	}
 
 
+	@SuppressWarnings("rawtypes")
 	@Override
-	public FinalizableReferenceQueue getReferencequeue() {
-		return null;
+	public ReferenceQueue getReferencequeue() {
+		return evictions.getReferenceQueue();
 	}
 
 

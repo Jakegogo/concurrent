@@ -5,6 +5,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.lang.ref.Reference;
+import java.lang.ref.ReferenceQueue;
 import java.util.AbstractMap;
 import java.util.AbstractSet;
 import java.util.Iterator;
@@ -792,6 +793,17 @@ public class ConcurrentReferenceMap<K, V> extends AbstractMap<K, V> implements C
 		/** 虚引用 */
 		PHANTOM;
 	}
+
+
+	/**
+	 * 获取回收队列
+	 * @return
+	 */
+	@SuppressWarnings("rawtypes")
+	public ReferenceQueue getReferenceQueue() {
+		return FINALIZABLE_REFERENCE_QUEUE;
+	}
+
 
 	static void notNull(Object obj) {
 		if (obj == null) {
