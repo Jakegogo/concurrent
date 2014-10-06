@@ -68,15 +68,15 @@ public class Test {
 
 		for(int i = 0;i < 100000000;i++) {
 			Entity entity = this.cacheService.get(1l);
-//			entity.increseNum();
+			entity.increseNum();
 //			if(i % 1000000 == 0) {
 //				entity.addNum(1);
 //			}
 
 
-			entity.setNum(i);
+//			entity.setNum(i);
 
-			entity.setUid(i);
+//			entity.setUid(i);
 
 //			if(i%100 == 0) {
 //			Thread.sleep(10);
