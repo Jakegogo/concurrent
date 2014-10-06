@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassVisitor;
@@ -318,6 +320,7 @@ public class ClassUtil implements Opcodes {
 				return false;
 			}
 		}
+
 		return true;
 	}
 
@@ -327,20 +330,27 @@ public class ClassUtil implements Opcodes {
 	 * <p>
 	 * 获取方法的参数名
 	 * </p>
-	 *
+	 * 兼容JDK1.6
 	 * @param m
 	 * @return
 	 */
-	public static String[] getMethodParamNames(final Method m) {
-		final String[] paramNames = new String[m.getParameterTypes().length];
+	public static Map<String, Class<?>> getMethodParams(final Method m) {
+		//获取参数类型列表
+		final Class<?>[] parameterTypes = m.getParameterTypes();
+
+		final Map<String, Class<?>> paramMap = new LinkedHashMap<String, Class<?>>(parameterTypes.length);
+
 		final String n = m.getDeclaringClass().getName();
 		ClassReader cr = null;
+
 		try {
 			cr = new ClassReader(n);
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}
+
 		cr.accept(new ClassVisitor(Opcodes.ASM4) {
+
 			@Override
 			public MethodVisitor visitMethod(final int access,
 					final String name, final String desc,
@@ -354,6 +364,7 @@ public class ClassUtil implements Opcodes {
 				}
 				MethodVisitor v = super.visitMethod(access, name, desc,
 						signature, exceptions);
+
 				return new MethodVisitor(Opcodes.ASM4, v) {
 					@Override
 					public void visitLocalVariable(String name, String desc,
@@ -364,17 +375,19 @@ public class ClassUtil implements Opcodes {
 						if (Modifier.isStatic(m.getModifiers())) {
 							i = index;
 						}
-						if (i >= 0 && i < paramNames.length) {
-							paramNames[i] = name;
+						if (i >= 0 && i < parameterTypes.length) {
+							paramMap.put(name, parameterTypes[i]);
 						}
 						super.visitLocalVariable(name, desc, signature, start,
 								end, index);
 					}
 
 				};
+
 			}
 		}, 0);
-		return paramNames;
+
+		return paramMap;
 	}
 
 }
