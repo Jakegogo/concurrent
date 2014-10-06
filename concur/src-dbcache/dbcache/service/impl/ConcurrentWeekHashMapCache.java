@@ -42,7 +42,7 @@ public class ConcurrentWeekHashMapCache implements Cache {
 	/**
 	 * 空值的引用
 	 */
-	private static final ValueWrapper NULL_HOLDER = new NullHolder();
+	private static final SimpleValueWrapper NULL_HOLDER = new NullHolder(null);
 
 	/**
 	 * 所有的回收队列
@@ -53,8 +53,7 @@ public class ConcurrentWeekHashMapCache implements Cache {
 	/**
 	 * 缓存容器
 	 */
-	@SuppressWarnings("rawtypes")
-	private ConcurrentMap<Object, WeakCacheObject> store;
+	private ConcurrentMap<Object, SimpleValueWrapper> store;
 
 	/**
 	 * 回收队列
@@ -108,10 +107,9 @@ public class ConcurrentWeekHashMapCache implements Cache {
 	 * @param entityCacheSize 初始缓存容量
 	 * @param concurrencyLevel 并发值
 	 */
-	@SuppressWarnings("rawtypes")
 	@Override
 	public void init(int entityCacheSize, int concurrencyLevel) {
-		this.store = new ConcurrentHashMap<Object, WeakCacheObject>(DEFAULT_CAPACITY_OF_ENTITY_CACHE, 0.7f, concurrencyLevel);
+		this.store = new ConcurrentHashMap<Object, SimpleValueWrapper>(DEFAULT_CAPACITY_OF_ENTITY_CACHE, 0.7f, concurrencyLevel);
 		referenceQueues.add(this.referenceQueue);
 	}
 
@@ -123,32 +121,31 @@ public class ConcurrentWeekHashMapCache implements Cache {
 	}
 
 
-	@SuppressWarnings("rawtypes")
 	@Override
 	public ValueWrapper get(Object key) {
-		WeakCacheObject value = this.store.get(key);
+		SimpleValueWrapper value = this.store.get(key);
 		if(value == NULL_HOLDER) {
 			return NULL_HOLDER;
 		}
-		if(value == null || value.getProxyEntity() == null) {
+		if(value == null || value.get() == null || value.get().getProxyEntity() == null) {
 			return null;
 		}
-		ValueWrapper result = SimpleValueWrapper.valueOf(value);
-		return result;
+		return value;
 	}
 
 
 	@SuppressWarnings("rawtypes")
 	@Override
 	public void put(Object key, Object value) {
-		this.store.put(key, (WeakCacheObject) value);
+		this.store.put(key, SimpleValueWrapper.valueOf((WeakCacheObject) value));
 	}
 
 
 	@SuppressWarnings("rawtypes")
 	@Override
 	public ValueWrapper putIfAbsent(Object key, Object value) {
-		return SimpleValueWrapper.valueOf(this.store.putIfAbsent(key, (WeakCacheObject) (value==null ? NULL_HOLDER : value)));
+		this.store.putIfAbsent(key,  (value == null ? NULL_HOLDER : SimpleValueWrapper.valueOf((WeakCacheObject) value)));
+		return this.get(key);
 	}
 
 
@@ -188,8 +185,8 @@ public class ConcurrentWeekHashMapCache implements Cache {
 					reference = remove(waitTimmer);
 					if(reference != null) {
 						Object key = ((WeakCacheEntity) reference).getKey();
-						WeakCacheObject value = store.get(key);
-						if(value != null && value.getProxyEntity() == null) {
+						SimpleValueWrapper value = store.get(key);
+						if(value != null && value.get().getProxyEntity() == null) {
 							store.remove(key);
 						}
 					}
@@ -203,10 +200,14 @@ public class ConcurrentWeekHashMapCache implements Cache {
 
 
 	@SuppressWarnings({ "serial", "rawtypes" })
-	private static class NullHolder extends WeakCacheObject implements ValueWrapper, Serializable {
+	private static class NullHolder extends SimpleValueWrapper implements Serializable {
+
+		public NullHolder(WeakCacheObject value) {
+			super(value);
+		}
 
 		@Override
-		public Object get() {
+		public WeakCacheObject get() {
 			return null;
 		}
 	}
@@ -220,14 +221,16 @@ public class ConcurrentWeekHashMapCache implements Cache {
 	public static class SimpleValueWrapper implements ValueWrapper {
 
 		/** 缓存的实体 */
-		private final Object value;
+		@SuppressWarnings("rawtypes")
+		private final WeakCacheObject value;
 
 		/**
 		 * 构造方法
 		 *
 		 * @param value 实体(可以为空)
 		 */
-		public SimpleValueWrapper(Object value) {
+		@SuppressWarnings("rawtypes")
+		public SimpleValueWrapper(WeakCacheObject value) {
 			this.value = value;
 		}
 
@@ -236,7 +239,8 @@ public class ConcurrentWeekHashMapCache implements Cache {
 		 * @param value 值
 		 * @return
 		 */
-		public static ValueWrapper valueOf(Object value) {
+		@SuppressWarnings("rawtypes")
+		public static SimpleValueWrapper valueOf(WeakCacheObject value) {
 			if(value == null) {
 				return NULL_HOLDER;
 			}
@@ -246,7 +250,9 @@ public class ConcurrentWeekHashMapCache implements Cache {
 		/**
 		 * 获取实体
 		 */
-		public Object get() {
+		@SuppressWarnings("rawtypes")
+		@Override
+		public WeakCacheObject get() {
 			return this.value;
 		}
 
