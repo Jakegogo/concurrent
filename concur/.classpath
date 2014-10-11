@@ -7,6 +7,7 @@
 	<classpathentry kind="src" path="src-lock"/>
 	<classpathentry kind="src" path="src-mis"/>
 	<classpathentry kind="src" path="src-game"/>
+	<classpathentry kind="src" path="src-socket"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/4"/>
 	<classpathentry kind="con" path="org.eclipse.m2e.MAVEN2_CLASSPATH_CONTAINER">
 		<attributes>
