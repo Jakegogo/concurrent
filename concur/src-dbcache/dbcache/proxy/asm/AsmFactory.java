@@ -87,7 +87,7 @@ public class AsmFactory {
 					writer);
 			reader.accept(visitor, 0);
 			byte[] byteCodes = writer.toByteArray();
-			writeClazz(enhancedClassName, byteCodes);
+//			writeClazz(enhancedClassName, byteCodes);
 			Class<T> result = (Class<T>) classLoader.defineClass(
 					enhancedClassName, byteCodes);
 

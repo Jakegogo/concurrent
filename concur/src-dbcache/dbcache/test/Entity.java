@@ -15,9 +15,11 @@ import dbcache.conf.PersistType;
 import dbcache.model.EntityInitializer;
 import dbcache.model.IEntity;
 
-@Cached(persistType=PersistType.INTIME, enableIndex = false, cacheType=CacheType.LRU)
+@Cached(persistType=PersistType.DELAY, enableIndex = true, cacheType=CacheType.LRU)
 @javax.persistence.Entity
 public class Entity implements EntityInitializer, IEntity<Long> {
+
+	public static final String NUM_INDEX = "num_idx";
 
 	@Id
 	public Long id;
@@ -26,7 +28,7 @@ public class Entity implements EntityInitializer, IEntity<Long> {
 
 	private int uid;
 
-	@Index(name="num_idx")
+	@Index(name=NUM_INDEX)
 	public int num;
 
 	public byte[] a = new byte[100];
@@ -38,6 +40,7 @@ public class Entity implements EntityInitializer, IEntity<Long> {
 //		doAfterLoad();
 	}
 
+	@UpdateIndex({ "num_idx" })
 	public void increseNum() {
 		this.num = this.idgenerator.incrementAndGet();
 	}

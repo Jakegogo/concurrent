@@ -3,7 +3,6 @@ package dbcache.service.impl;
 import java.util.Iterator;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.atomic.AtomicReference;
 
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
@@ -34,17 +33,7 @@ public class DelayDbPersistService implements DbPersistService {
 	/**
 	 * 更改实体队列
 	 */
-	private final ConcurrentLinkedQueue<UpdateAction> updateQueue1 = new ConcurrentLinkedQueue<UpdateAction>();
-
-	/**
-	 * 更改实体队列
-	 */
-	private final ConcurrentLinkedQueue<UpdateAction> updateQueue2 = new ConcurrentLinkedQueue<UpdateAction>();
-
-	/**
-	 * 正在Dump的队列
-	 */
-	private final AtomicReference<ConcurrentLinkedQueue<UpdateAction>> operattingQueue = new AtomicReference<ConcurrentLinkedQueue<UpdateAction>>(updateQueue1);
+	private final ConcurrentLinkedQueue<UpdateAction> updateQueue = new ConcurrentLinkedQueue<UpdateAction>();
 
 	/**
 	 * 当前延迟更新的动作
@@ -81,22 +70,6 @@ public class DelayDbPersistService implements DbPersistService {
 
 	}
 
-	/**
-	 * 获取当前的更新队列
-	 * @return
-	 */
-	private ConcurrentLinkedQueue<UpdateAction> getUpdateQueue() {
-		return operattingQueue.get();
-	}
-
-	/**
-	 * 获取Dump的更新队列
-	 * @return
-	 */
-	private ConcurrentLinkedQueue<UpdateAction> getDumpQueue() {
-		return operattingQueue.get() == updateQueue1?updateQueue2:updateQueue1;
-	}
-
 
 	@Override
 	public void init() {
@@ -115,7 +88,7 @@ public class DelayDbPersistService implements DbPersistService {
 				//循环定时检测入库,失败自动进入重试
 				while(true) {
 
-					UpdateAction updateAction = getDumpQueue().poll();
+					UpdateAction updateAction = updateQueue.poll();
 					try {
 
 						long timeDiff = 0l;
@@ -124,20 +97,12 @@ public class DelayDbPersistService implements DbPersistService {
 							if(updateAction == null) {
 								//等待下一个检测时间
 								Thread.sleep(delayCheckTimmer);
-
-								//切换更新队列
-								operattingQueue.set(getDumpQueue());
-
 							} else {
 
 								timeDiff = System.currentTimeMillis() - updateAction.createTime;
 
 								//未到延迟入库时间
 								if(timeDiff < delayWaitTimmer) {
-
-									//切换更新队列
-									operattingQueue.set(getDumpQueue());
-
 									currentDelayUpdateAction = updateAction;
 
 									//等待
@@ -152,9 +117,9 @@ public class DelayDbPersistService implements DbPersistService {
 							}
 
 							//获取下一个有效的操作元素
-							updateAction = getDumpQueue().poll();
+							updateAction = updateQueue.poll();
 							while(!updateAction.persistAction.valid()) {
-								updateAction = getDumpQueue().poll();
+								updateAction = updateQueue.poll();
 							}
 
 						} while(true);
@@ -181,7 +146,7 @@ public class DelayDbPersistService implements DbPersistService {
 
 	@Override
 	public void handlerPersist(PersistAction persistAction) {
-		getUpdateQueue().add(UpdateAction.valueOf(persistAction));
+		updateQueue.add(UpdateAction.valueOf(persistAction));
 	}
 
 
@@ -197,18 +162,11 @@ public class DelayDbPersistService implements DbPersistService {
 	 */
 	public void flushAllEntity() {
 		//入库延迟队列中的实体
-		UpdateAction updateAction = this.updateQueue1.poll();
+		UpdateAction updateAction = this.updateQueue.poll();
 		while (updateAction != null) {
 			//执行入库
 			updateAction.persistAction.run();
-			updateAction = this.updateQueue1.poll();
-		}
-
-		updateAction = this.updateQueue2.poll();
-		while (updateAction != null) {
-			//执行入库
-			updateAction.persistAction.run();
-			updateAction = this.updateQueue2.poll();
+			updateAction = this.updateQueue.poll();
 		}
 
 		//入库正在延迟处理的实体
@@ -222,15 +180,7 @@ public class DelayDbPersistService implements DbPersistService {
 	@Override
 	public void logHadNotPersistEntity() {
 		UpdateAction updateAction = null;
-		for (Iterator<UpdateAction> it = this.updateQueue1.iterator(); it.hasNext();) {
-			updateAction = it.next();
-			String persistInfo = updateAction.persistAction.getPersistInfo();
-			if(!StringUtils.isBlank(persistInfo)) {
-				logger.error("检测到可能未入库对象! " + persistInfo);
-			}
-		}
-
-		for (Iterator<UpdateAction> it = this.updateQueue2.iterator(); it.hasNext();) {
+		for (Iterator<UpdateAction> it = this.updateQueue.iterator(); it.hasNext();) {
 			updateAction = it.next();
 			String persistInfo = updateAction.persistAction.getPersistInfo();
 			if(!StringUtils.isBlank(persistInfo)) {

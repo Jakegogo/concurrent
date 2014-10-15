@@ -66,7 +66,7 @@ public class Test {
 	public void t1() throws InterruptedException {
 
 
-		for(int i = 0;i < 100000000;i++) {
+		for(int i = 0;i < 10000000;i++) {
 			Entity entity = this.cacheService.get(1l);
 			entity.increseNum();
 //			if(i % 1000000 == 0) {
@@ -210,19 +210,6 @@ public class Test {
 
 	@org.junit.Test
 	public void t9() {
-//		Entity entity = this.cacheService.get(1l);
-//
-//		entity.setUid(201);
-//
-//		List<Entity> list = this.cacheService.listByIndex("uid_idx", 201);
-//
-//		assert list.size() == 1;
-//
-//		for(Entity entity1 : list) {
-//			System.out.println(JsonUtils.object2JsonString(entity1));
-//		}
-
-//		this.cacheService.submitUpdated2Queue(entity);
 
 		Entity entity = null;
 
@@ -256,6 +243,26 @@ public class Test {
 			e.printStackTrace();
 		}
 
+	}
+
+	@org.junit.Test
+	public void t10() {
+		for(int i = 0; i < 10000000;i++) {
+
+			Entity entity = this.cacheService.get(1l);
+
+			entity.setNum(201);
+
+			List<Entity> list = this.cacheService.listByIndex(Entity.NUM_INDEX, 201);
+
+			assert list.size() == 1;
+
+//			for(Entity entity1 : list) {
+//				System.out.println(JsonUtils.object2JsonString(entity1));
+//			}
+
+			this.cacheService.submitUpdated2Queue(entity);
+		}
 	}
 
 
