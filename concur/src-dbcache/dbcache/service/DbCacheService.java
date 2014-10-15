@@ -65,6 +65,7 @@ public interface DbCacheService<T extends IEntity<PK>, PK extends Comparable<PK>
 
 	/**
 	 * 根据索引获取实体列表
+	 * <br/>内部已维护索引表
 	 * @see dbcache.service.IndexService<PK>
 	 * @see dbcache.model.Sortable<PK>
 	 * @param indexName 索引名
@@ -76,6 +77,7 @@ public interface DbCacheService<T extends IEntity<PK>, PK extends Comparable<PK>
 
 	/**
 	 * 根据索引获取实体Id列表
+	 * <br/>内部已维护索引表
 	 * @see dbcache.service.IndexService<PK>
 	 * @see dbcache.model.Sortable<PK>
 	 * @param indexName 索引名
@@ -87,6 +89,7 @@ public interface DbCacheService<T extends IEntity<PK>, PK extends Comparable<PK>
 
 	/**
 	 * 根据索引获取实体列表
+	 * <br/>内部已维护索引表
 	 * @see dbcache.service.IndexService<PK>
 	 * @see dbcache.model.Sortable<PK>
 	 * @param indexName 索引名

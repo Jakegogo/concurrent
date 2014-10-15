@@ -67,8 +67,8 @@ public class DbIndexServiceImpl<PK extends Comparable<PK> & Serializable>
 			throw new IllegalArgumentException("实体类[" + cacheConfig.getClass().getSimpleName() + "]不存在索引[" + indexName + "]!");
 		}
 
-		final Map<PK, Boolean> indexValues = getPersist(indexName, indexValue);
-
+		final Map<PK, Boolean> indexValues = this.getPersist(indexName, indexValue);
+		// 索引为空
 		if(indexValues == null) {
 			return Collections.emptyList();
 		}
@@ -205,21 +205,6 @@ public class DbIndexServiceImpl<PK extends Comparable<PK> & Serializable>
 
 
 	/**
-	 * 存储索引缓存对象
-	 * @param key 键
-	 * @param indexObject 值
-	 * @return 是否保存成功(期间没有被修改(lru回收等)过)
-	 */
-	private boolean saveIndexObject(Object key, IndexObject<PK> indexObject) {
-		final Cache.ValueWrapper wrapper = (Cache.ValueWrapper) cache.putIfAbsent(key, indexObject);
-		if (wrapper != null && wrapper.get() != null) {
-			return wrapper.get() == indexObject;
-		}
-		return true;
-	}
-
-
-	/**
 	 * 获取索引读写锁
 	 * @param key 键
 	 * @return
@@ -245,24 +230,19 @@ public class DbIndexServiceImpl<PK extends Comparable<PK> & Serializable>
 
 		final IndexObject<PK> indexObject = this.getTransient(indexValue.getName(), indexValue.getValue());
 
+		// 持久状态
 		if(indexObject.getUpdateStatus() == UpdateStatus.PERSIST) {
 
 			indexObject.getIndexValues().put(indexValue.getId(), Boolean.valueOf(true));
-			if(!this.saveIndexObject(key, indexObject)) {
-				return this.create(indexValue);//乐观自旋
-			}
 
 			return this.getTransient(indexValue.getName(), indexValue.getValue());
-		} else {
+		} else {// 内存临时状态
 			// 持有读锁
 			final ReadWriteLock lock = this.getIndexReadWriteLock(key);
 			lock.readLock().lock();
 			try {
 
 				indexObject.getIndexValues().put(indexValue.getId(), Boolean.valueOf(true));
-				if(!this.saveIndexObject(key, indexObject)) {
-					return this.create(indexValue);//乐观自旋
-				}
 
 				return this.getTransient(indexValue.getName(), indexValue.getValue());
 			} finally {
@@ -280,24 +260,16 @@ public class DbIndexServiceImpl<PK extends Comparable<PK> & Serializable>
 
 		final IndexObject<PK> indexObject = this.getTransient(indexValue.getName(), indexValue.getValue());
 
+		// 持久状态直接移除
 		if(indexObject.getUpdateStatus() == UpdateStatus.PERSIST) {
 			indexObject.getIndexValues().remove(key);
-
-			if(this.saveIndexObject(key, indexObject)) {
-				return;
-			} else {
-				this.remove(indexValue);//乐观自旋
-			}
-
-		} else {
+		} else {//内存临时虚存储状态
 			// 持有读锁
 			final ReadWriteLock lock = this.getIndexReadWriteLock(key);
+
 			lock.readLock().lock();
 			try {
-
 				indexObject.getIndexValues().put(indexValue.getId(), Boolean.valueOf(false));
-				this.saveIndexObject(key, indexObject);
-
 			} finally {
 				lock.readLock().unlock();
 			}
