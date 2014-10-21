@@ -76,4 +76,9 @@ public class IndexKey {
 		return true;
 	}
 
+	@Override
+	public String toString() {
+		return this.name + ":" + this.value;
+	}
+
 }
