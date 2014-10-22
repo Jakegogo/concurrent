@@ -5,10 +5,8 @@ import java.lang.reflect.Field;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.locks.ReadWriteLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -53,11 +51,6 @@ public class DbIndexServiceImpl<PK extends Comparable<PK> & Serializable>
 	@Autowired
 	private DbAccessService dbAccessService;
 
-	/**
-	 * 等待锁map {key:lock}
-	 */
-	private final ConcurrentMap<Object, ReadWriteLock> WAITING_LOCK_MAP = new ConcurrentHashMap<Object, ReadWriteLock>();
-
 
 	@Override
 	public Collection<PK> get(String indexName, Object indexValue) {
@@ -84,64 +77,27 @@ public class DbIndexServiceImpl<PK extends Comparable<PK> & Serializable>
 	 */
 	@SuppressWarnings("unchecked")
 	private Map<PK, Boolean> getPersist(String indexName, Object indexValue) {
-		final Object key = CacheRule.getIndexIdKey(indexName, indexValue);
 
-		Cache.ValueWrapper wrapper = (Cache.ValueWrapper) cache.get(key);
-		if(wrapper != null) {	// 已经缓存
+		IndexObject<PK> indexObject = this.getTransient(indexName, indexValue);
 
-			IndexObject<PK> indexObject = (IndexObject<PK>) wrapper.get();
-
-			if(indexObject != null) {
-				// 持久态则返回结果
-				if(indexObject.getUpdateStatus() == UpdateStatus.PERSIST) {
-					return indexObject.getIndexValues();
-				}
-
-			} else {
-				return null;
-			}
+		if(indexObject == null) {
+			return null;
+		} else if(indexObject.getUpdateStatus() == UpdateStatus.PERSIST) {
+			return indexObject.getIndexValues();
 		}
 
-
-		final ReadWriteLock lock = this.getIndexReadWriteLock(key);
+		final ReadWriteLock lock = indexObject.getLock();
 
 		ConcurrentMap<PK, Boolean> indexValues = null;
 		lock.writeLock().lock();
 		try {
 
-			IndexObject<PK> indexObject = null;
-			wrapper = (Cache.ValueWrapper) cache.get(key);
-
-			if(wrapper != null) {	// 已经缓存
-
-				indexObject = (IndexObject<PK>) wrapper.get();
-
-				if(indexObject != null) {
-					// 持久态直接返回结果
-					if(indexObject.getUpdateStatus() == UpdateStatus.PERSIST) {
-						return indexObject.getIndexValues();
-					}
-
-					indexValues = indexObject.getIndexValues();
-
-				} else {
-					return null;
-				}
+			// 持久态则返回结果
+			if(indexObject.getUpdateStatus() == UpdateStatus.PERSIST) {
+				return indexObject.getIndexValues();
 			}
 
-			// 初始化索引
-			if(wrapper == null) {
-
-				indexObject = IndexObject.valueOf(IndexKey.valueOf(indexName, indexValue));
-
-				wrapper = cache.putIfAbsent(key, indexObject);
-
-				if (wrapper != null && wrapper.get() != null) {
-					indexObject = (IndexObject<PK>) wrapper.get();
-				}
-
-				indexValues = indexObject.getIndexValues();
-			}
+			indexValues = indexObject.getIndexValues();
 
 			// 查询数据库索引
 			Field indexField = cacheConfig.getIndexes().get(indexName);
@@ -160,6 +116,8 @@ public class DbIndexServiceImpl<PK extends Comparable<PK> & Serializable>
 
 			// 设置缓存状态
 			indexObject.setUpdateStatus(UpdateStatus.PERSIST);
+			// 清除锁
+			indexObject.setLock(null);
 
 		} finally {
 			lock.writeLock().unlock();
@@ -204,29 +162,8 @@ public class DbIndexServiceImpl<PK extends Comparable<PK> & Serializable>
 	}
 
 
-	/**
-	 * 获取索引读写锁
-	 * @param key 键
-	 * @return
-	 */
-	private ReadWriteLock getIndexReadWriteLock(Object key) {
-
-		final ReadWriteLock lock = WAITING_LOCK_MAP.get(key);
-		if(lock != null) {
-			return lock;
-		}
-
-		final ReadWriteLock newLock = new ReentrantReadWriteLock();
-		final ReadWriteLock prevLock = WAITING_LOCK_MAP.putIfAbsent(key, newLock);
-
-		return prevLock != null ? prevLock : newLock;
-	}
-
-
 	@Override
 	public IndexObject<PK> create(IndexValue<PK> indexValue) {
-
-		final Object key = CacheRule.getIndexIdKey(indexValue.getName(), indexValue.getValue());
 
 		final IndexObject<PK> indexObject = this.getTransient(indexValue.getName(), indexValue.getValue());
 
@@ -238,7 +175,7 @@ public class DbIndexServiceImpl<PK extends Comparable<PK> & Serializable>
 			return this.getTransient(indexValue.getName(), indexValue.getValue());
 		} else {// 内存临时状态
 			// 持有读锁
-			final ReadWriteLock lock = this.getIndexReadWriteLock(key);
+			final ReadWriteLock lock = indexObject.getLock();
 			lock.readLock().lock();
 			try {
 
@@ -265,7 +202,7 @@ public class DbIndexServiceImpl<PK extends Comparable<PK> & Serializable>
 			indexObject.getIndexValues().remove(key);
 		} else {//内存临时虚存储状态
 			// 持有读锁
-			final ReadWriteLock lock = this.getIndexReadWriteLock(key);
+			final ReadWriteLock lock = indexObject.getLock();
 
 			lock.readLock().lock();
 			try {

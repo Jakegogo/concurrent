@@ -2,6 +2,8 @@ package dbcache.model;
 
 import java.io.Serializable;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 /**
  * 索引缓存对象
@@ -26,10 +28,16 @@ public class IndexObject<PK extends Comparable<PK> & Serializable> {
 	 */
 	private ConcurrentHashMap<PK, Boolean> indexValues = new ConcurrentHashMap<PK, Boolean>();
 
+	/**
+	 * 索引缓存持有锁
+	 */
+	private ReadWriteLock lock = new ReentrantReadWriteLock();
+
 
 	/**
 	 * 获取实例
 	 * @param indexKey 索引键
+	 * @param lock
 	 * @return
 	 */
 	public static <PK extends Comparable<PK> & Serializable> IndexObject<PK> valueOf(IndexKey indexKey) {
@@ -74,6 +82,14 @@ public class IndexObject<PK extends Comparable<PK> & Serializable> {
 
 	public void setIndexValues(ConcurrentHashMap<PK, Boolean> indexValues) {
 		this.indexValues = indexValues;
+	}
+
+	public ReadWriteLock getLock() {
+		return lock;
+	}
+
+	public void setLock(ReadWriteLock lock) {
+		this.lock = lock;
 	}
 
 
