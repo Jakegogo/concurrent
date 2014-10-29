@@ -17,7 +17,7 @@ public class ToStringJsonSerializer extends JsonSerializer<Object> {
 	@Override
 	public void serialize(Object value, JsonGenerator jgen,
 			SerializerProvider sp) throws IOException, JsonProcessingException {
-		jgen.writeString(value.toString());
+		jgen.writeString(String.valueOf(value));
 	}
 
 }
