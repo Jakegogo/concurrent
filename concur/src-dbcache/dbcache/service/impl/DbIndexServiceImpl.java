@@ -49,6 +49,7 @@ public class DbIndexServiceImpl<PK extends Comparable<PK> & Serializable>
 	private Cache cache;
 
 	@Autowired
+	@Qualifier("hibernateDbAccessServiceImpl")
 	private DbAccessService dbAccessService;
 
 

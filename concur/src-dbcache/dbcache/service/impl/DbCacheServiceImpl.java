@@ -94,6 +94,7 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 
 
 	@Autowired
+	@Qualifier("hibernateDbAccessServiceImpl")
 	private DbAccessService dbAccessService;
 
 

@@ -17,8 +17,8 @@ import dbcache.service.DbAccessService;
  * @author jake
  * @date 2014-7-31-下午8:18:16
  */
-@Component("DbAccessServiceImpl")
-public class DbAccessServiceImpl extends HibernateDaoSupport implements DbAccessService {
+@Component("hibernateDbAccessServiceImpl")
+public class HibernateDbAccessServiceImpl extends HibernateDaoSupport implements DbAccessService {
 
 
 	@Autowired

@@ -60,6 +60,7 @@ public class DbRuleServiceImpl implements DbRuleService {
 
 
 	@Autowired
+	@Qualifier("hibernateDbAccessServiceImpl")
 	private DbAccessService dbAccessService;
 
 
