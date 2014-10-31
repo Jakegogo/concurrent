@@ -37,14 +37,14 @@ import dbcache.model.UpdateStatus;
 import dbcache.model.WeakCacheEntity;
 import dbcache.model.WeakCacheObject;
 import dbcache.proxy.asm.AsmFactory;
-import dbcache.proxy.util.ClassUtil;
+import dbcache.proxy.asm.IndexMethodAspect;
 import dbcache.service.Cache;
 import dbcache.service.ConfigFactory;
 import dbcache.service.DbCacheMBean;
 import dbcache.service.DbCacheService;
 import dbcache.service.DbIndexService;
 import dbcache.service.DbPersistService;
-import dbcache.support.asm.DefaultEntityMethodAspect;
+import dbcache.utils.AsmUtils;
 import dbcache.utils.ThreadUtils;
 
 /**
@@ -75,7 +75,7 @@ public class ConfigFactoryImpl implements ConfigFactory, DbCacheMBean {
 	private ApplicationContext applicationContext;
 
 	@Autowired
-	private DefaultEntityMethodAspect methodAspect;
+	private IndexMethodAspect methodAspect;
 
 	/**
 	 * 即时持久化服务
@@ -270,7 +270,7 @@ public class ConfigFactoryImpl implements ConfigFactory, DbCacheMBean {
 		if(cacheConfig == null || !cacheConfig.isEnableIndex()) {
 			return entity;
 		}
-		return ClassUtil.getProxyEntity(proxyClass, entity, indexService);
+		return AsmUtils.getProxyEntity(proxyClass, entity, indexService);
 	}
 
 

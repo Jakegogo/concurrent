@@ -11,8 +11,8 @@ import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 
-import dbcache.proxy.AbstractMethodAspect;
-import dbcache.proxy.util.ClassUtil;
+import dbcache.proxy.AbstractEntityMethodAspect;
+import dbcache.utils.AsmUtils;
 
 /**
  * (动态)生成静态代理类
@@ -21,7 +21,7 @@ import dbcache.proxy.util.ClassUtil;
  * @author Jake
  * @date 2014年9月6日上午12:06:47
  */
-public class ClassAdapter extends ClassVisitor implements Opcodes {
+public class EntityClassAdapter extends ClassVisitor implements Opcodes {
 
 	/** 构造方法名常量 */
 	private static final String INIT = "<init>";
@@ -35,7 +35,7 @@ public class ClassAdapter extends ClassVisitor implements Opcodes {
 	/**
 	 * 切面方法重写器
 	 */
-	private AbstractMethodAspect methodAspect;
+	private AbstractEntityMethodAspect methodAspect;
 
 	/**
 	 * ClassWriter
@@ -64,9 +64,9 @@ public class ClassAdapter extends ClassVisitor implements Opcodes {
 	 * @param targetClass 被代理类
 	 * @param writer  ClassWriter
 	 */
-	public ClassAdapter(String enhancedClassName, Class<?> targetClass,
+	public EntityClassAdapter(String enhancedClassName, Class<?> targetClass,
 			ClassWriter writer) {
-		this(enhancedClassName, targetClass, writer, new AbstractMethodAspect() {});
+		this(enhancedClassName, targetClass, writer, new AbstractEntityMethodAspect() {});
 	}
 
 	/**
@@ -76,8 +76,8 @@ public class ClassAdapter extends ClassVisitor implements Opcodes {
 	 * @param writer ClassWriter
 	 * @param methodAspect 方法切面修改器
 	 */
-	public ClassAdapter(String enhancedClassName, Class<?> targetClass,
-			ClassWriter writer, AbstractMethodAspect methodAspect) {
+	public EntityClassAdapter(String enhancedClassName, Class<?> targetClass,
+			ClassWriter writer, AbstractEntityMethodAspect methodAspect) {
 		super(Opcodes.ASM4, writer);
 		this.classWriter = writer;
 		this.originalClassName = targetClass.getName();
@@ -98,7 +98,7 @@ public class ClassAdapter extends ClassVisitor implements Opcodes {
 	public void visit(int version, int access, String name, String signature,
 			String superName, String[] interfaces) {
 		cv.visit(version, Opcodes.ACC_PUBLIC,
-				ClassUtil.toAsmCls(enhancedClassName), signature, name,
+				AsmUtils.toAsmCls(enhancedClassName), signature, name,
 				interfaces);
 	}
 
@@ -133,7 +133,7 @@ public class ClassAdapter extends ClassVisitor implements Opcodes {
 				null, null);
 		mvInit.visitVarInsn(ALOAD, 0);
 		mvInit.visitMethodInsn(INVOKESPECIAL,
-				ClassUtil.toAsmCls(originalClassName), INIT, "()V");
+				AsmUtils.toAsmCls(originalClassName), INIT, "()V");
 		mvInit.visitInsn(RETURN);
 		mvInit.visitMaxs(0, 0);
 		mvInit.visitEnd();
@@ -144,13 +144,13 @@ public class ClassAdapter extends ClassVisitor implements Opcodes {
 		mvInit1.visitVarInsn(Opcodes.ALOAD, 0);
 
 		mvInit1.visitMethodInsn(INVOKESPECIAL,
-				ClassUtil.toAsmCls(originalClassName), INIT, "()V");
+				AsmUtils.toAsmCls(originalClassName), INIT, "()V");
 
 		mvInit1.visitVarInsn(Opcodes.ALOAD, 0);
 		mvInit1.visitVarInsn(Opcodes.ALOAD, 1);
 
 		mvInit1.visitFieldInsn(Opcodes.PUTFIELD,
-				ClassUtil.toAsmCls(enhancedClassName), REAL_OBJECT,
+				AsmUtils.toAsmCls(enhancedClassName), REAL_OBJECT,
 				Type.getDescriptor(originalClass));
 
 		mvInit1.visitInsn(RETURN);
@@ -165,20 +165,20 @@ public class ClassAdapter extends ClassVisitor implements Opcodes {
 		mvInit2.visitVarInsn(Opcodes.ALOAD, 0);
 
 		mvInit2.visitMethodInsn(INVOKESPECIAL,
-				ClassUtil.toAsmCls(originalClassName), INIT, "()V");
+				AsmUtils.toAsmCls(originalClassName), INIT, "()V");
 
 		mvInit2.visitVarInsn(Opcodes.ALOAD, 0);
 		mvInit2.visitVarInsn(Opcodes.ALOAD, 1);
 
 		mvInit2.visitFieldInsn(Opcodes.PUTFIELD,
-				ClassUtil.toAsmCls(enhancedClassName), REAL_OBJECT,
+				AsmUtils.toAsmCls(enhancedClassName), REAL_OBJECT,
 				Type.getDescriptor(originalClass));
 
 		mvInit2.visitVarInsn(Opcodes.ALOAD, 0);
 		mvInit2.visitVarInsn(Opcodes.ALOAD, 2);
 
 		mvInit2.visitFieldInsn(Opcodes.PUTFIELD,
-				ClassUtil.toAsmCls(enhancedClassName), HANDLER_OBJECT,
+				AsmUtils.toAsmCls(enhancedClassName), HANDLER_OBJECT,
 				Type.getDescriptor(methodAspect.getAspectHandleClass()));
 
 		mvInit2.visitInsn(RETURN);
@@ -188,13 +188,13 @@ public class ClassAdapter extends ClassVisitor implements Opcodes {
 		// 获取所有方法，并重写(main方法 和 Object的方法除外)
 		Method[] methods = originalClass.getMethods();
 		for (Method m : methods) {
-			if (!ClassUtil.needOverride(m)) {
+			if (!AsmUtils.needOverride(m)) {
 				continue;
 			}
 			Type mt = Type.getType(m);
 
 			// 方法是被哪个类定义的
-			String declaringCls = ClassUtil.toAsmCls(m.getDeclaringClass()
+			String declaringCls = AsmUtils.toAsmCls(m.getDeclaringClass()
 					.getName());
 
 			// 方法 description
@@ -220,7 +220,7 @@ public class ClassAdapter extends ClassVisitor implements Opcodes {
 			if (!Modifier.isStatic(m.getModifiers())) {
 				mWriter.visitVarInsn(Opcodes.ALOAD, 0);
 				mWriter.visitFieldInsn(Opcodes.GETFIELD,
-						ClassUtil.toAsmCls(enhancedClassName), REAL_OBJECT,
+						AsmUtils.toAsmCls(enhancedClassName), REAL_OBJECT,
 						Type.getDescriptor(originalClass));
 			}
 
@@ -228,7 +228,7 @@ public class ClassAdapter extends ClassVisitor implements Opcodes {
 			// load 出方法的所有参数
 			for (Class<?> tCls : m.getParameterTypes()) {
 				Type t = Type.getType(tCls);
-				mWriter.visitVarInsn(ClassUtil.loadCode(t), i++);
+				mWriter.visitVarInsn(AsmUtils.loadCode(t), i++);
 				// long和double 用64位表示，要后移一个位置，否则会报错
 				if (t.getSort() == Type.LONG || t.getSort() == Type.DOUBLE) {
 					i++;
@@ -237,7 +237,7 @@ public class ClassAdapter extends ClassVisitor implements Opcodes {
 
 			// this.obj.xxx();
 			mWriter.visitMethodInsn(INVOKEVIRTUAL,
-					ClassUtil.toAsmCls(declaringCls), m.getName(),
+					AsmUtils.toAsmCls(declaringCls), m.getName(),
 					mt.toString());
 
 			//doBefore 累加方法访问的本地变量数
@@ -253,9 +253,9 @@ public class ClassAdapter extends ClassVisitor implements Opcodes {
 			}
 			// 把return xxx() 转变成 ： Object o = xxx(); return o;
 			else {
-				int storeCode = ClassUtil.storeCode(rt);
-				int loadCode = ClassUtil.loadCode(rt);
-				int returnCode = ClassUtil.rtCode(rt);
+				int storeCode = AsmUtils.storeCode(rt);
+				int loadCode = AsmUtils.loadCode(rt);
+				int returnCode = AsmUtils.rtCode(rt);
 
 				mWriter.visitVarInsn(storeCode, i);
 				aspectAfterLocalNum = this.methodAspect.doAfter(mWriter, m, i);

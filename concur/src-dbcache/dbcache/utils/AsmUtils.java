@@ -1,7 +1,8 @@
-package dbcache.proxy.util;
+package dbcache.utils;
 
 import java.io.IOException;
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.LinkedHashMap;
@@ -20,7 +21,7 @@ import org.objectweb.asm.Type;
  * @author Jake
  * @date 2014年9月6日上午12:10:37
  */
-public class ClassUtil implements Opcodes {
+public class AsmUtils implements Opcodes {
 
 
 	/**
@@ -113,6 +114,54 @@ public class ClassUtil implements Opcodes {
 		}
 		return true;
 	}
+
+
+	public static String getPrimitiveLetter(Class<?> type) {
+        if (Integer.TYPE.equals(type)) {
+            return "I";
+        } else if (Void.TYPE.equals(type)) {
+            return "V";
+        } else if (Boolean.TYPE.equals(type)) {
+            return "Z";
+        } else if (Character.TYPE.equals(type)) {
+            return "C";
+        } else if (Byte.TYPE.equals(type)) {
+            return "B";
+        } else if (Short.TYPE.equals(type)) {
+            return "S";
+        } else if (Float.TYPE.equals(type)) {
+            return "F";
+        } else if (Long.TYPE.equals(type)) {
+            return "J";
+        } else if (Double.TYPE.equals(type)) {
+            return "D";
+        }
+
+        throw new IllegalStateException("Type: " + type.getCanonicalName() + " is not a primitive type");
+    }
+
+
+    public static java.lang.reflect.Type getMethodType(Class<?> clazz, String methodName) {
+        try {
+            Method method = clazz.getMethod(methodName);
+
+            return method.getGenericReturnType();
+        } catch (Exception ex) {
+            return null;
+        }
+    }
+
+
+    public static java.lang.reflect.Type getFieldType(Class<?> clazz, String fieldName) {
+        try {
+            Field field = clazz.getField(fieldName);
+
+            return field.getGenericType();
+        } catch (Exception ex) {
+            return null;
+        }
+    }
+
 
 
 	/**

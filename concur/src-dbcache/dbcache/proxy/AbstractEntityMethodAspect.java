@@ -10,7 +10,7 @@ import org.objectweb.asm.Opcodes;
  * @author Jake
  * @date 2014年9月7日下午6:40:52
  */
-public abstract class AbstractMethodAspect implements Opcodes {
+public abstract class AbstractEntityMethodAspect implements Opcodes {
 
 
 	/**

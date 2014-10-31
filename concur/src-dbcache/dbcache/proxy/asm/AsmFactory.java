@@ -11,7 +11,7 @@ import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.ClassWriter;
 
-import dbcache.proxy.AbstractMethodAspect;
+import dbcache.proxy.AbstractEntityMethodAspect;
 
 /**
  * asm代理工厂 <br/>
@@ -35,23 +35,8 @@ public class AsmFactory {
 	/**
 	 * 字节码类加载器
 	 */
-	public static BytecodeLoader classLoader = new BytecodeLoader();
+	public static AsmClassLoader classLoader = new AsmClassLoader();
 
-
-	/**
-	 *
-	 * <p>
-	 * 根据字节码加载class
-	 * </p>
-	 *
-	 * @author dixingxing
-	 * @date Apr 29, 2012
-	 */
-	public static class BytecodeLoader extends ClassLoader {
-		public Class<?> defineClass(String className, byte[] byteCodes) {
-			return super.defineClass(className, byteCodes, 0, byteCodes.length);
-		}
-	}
 
 	/**
 	 *
@@ -83,7 +68,7 @@ public class AsmFactory {
 				throw new RuntimeException(ioexception);
 			}
 			ClassWriter writer = new ClassWriter(ClassWriter.COMPUTE_MAXS);
-			ClassVisitor visitor = new ClassAdapter(enhancedClassName, clazz,
+			ClassVisitor visitor = new EntityClassAdapter(enhancedClassName, clazz,
 					writer);
 			reader.accept(visitor, 0);
 			byte[] byteCodes = writer.toByteArray();
@@ -114,7 +99,7 @@ public class AsmFactory {
 	 */
 	@SuppressWarnings("unchecked")
 	public static <T> Class<T> getEnhancedClass(Class<T> clazz,
-			AbstractMethodAspect methodAspect) {
+			AbstractEntityMethodAspect methodAspect) {
 		// 从缓存这获取
 		if (ENHANCED_CLASS_CACHE.containsKey(clazz)) {
 			return (Class<T>) ENHANCED_CLASS_CACHE.get(clazz);
@@ -134,7 +119,7 @@ public class AsmFactory {
 
 			// 初始化实体类的方法切面信息
 			methodAspect.initClass(clazz, enhancedClassName);
-			ClassVisitor visitor = new ClassAdapter(enhancedClassName, clazz,
+			ClassVisitor visitor = new EntityClassAdapter(enhancedClassName, clazz,
 					writer, methodAspect);
 			reader.accept(visitor, 0);
 			byte[] byteCodes = writer.toByteArray();

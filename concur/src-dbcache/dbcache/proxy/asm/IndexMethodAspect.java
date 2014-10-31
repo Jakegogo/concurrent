@@ -1,4 +1,4 @@
-package dbcache.support.asm;
+package dbcache.proxy.asm;
 
 import java.beans.IntrospectionException;
 import java.beans.PropertyDescriptor;
@@ -19,10 +19,9 @@ import org.springframework.util.ReflectionUtils;
 import org.springframework.util.ReflectionUtils.FieldCallback;
 import org.springframework.util.ReflectionUtils.MethodCallback;
 
-import dbcache.proxy.AbstractMethodAspect;
-import dbcache.proxy.asm.ClassAdapter;
-import dbcache.proxy.util.ClassUtil;
+import dbcache.proxy.AbstractEntityMethodAspect;
 import dbcache.service.DbIndexService;
+import dbcache.utils.AsmUtils;
 
 /**
  * 默认方法切面处理
@@ -30,7 +29,7 @@ import dbcache.service.DbIndexService;
  * @date 2014年9月7日下午6:51:36
  */
 @Component("defaultMethodAspect")
-public class DefaultEntityMethodAspect extends AbstractMethodAspect {
+public class IndexMethodAspect extends AbstractEntityMethodAspect {
 
 	/**
 	 * 类索引信息
@@ -199,7 +198,7 @@ public class DefaultEntityMethodAspect extends AbstractMethodAspect {
 			final Field field = fieldsMap.get(methodMetaData.indexName);
 			//获取this.obj.fieldName
 			mWriter.visitVarInsn(Opcodes.ALOAD, 0);
-			mWriter.visitFieldInsn(Opcodes.GETFIELD,ClassUtil.toAsmCls(classIndexesMetaData.enhancedClassName), ClassAdapter.REAL_OBJECT, Type.getDescriptor(entityClass));
+			mWriter.visitFieldInsn(Opcodes.GETFIELD,AsmUtils.toAsmCls(classIndexesMetaData.enhancedClassName), EntityClassAdapter.REAL_OBJECT, Type.getDescriptor(entityClass));
 
 			PropertyDescriptor propertyDescriptor = null;
 			try {
@@ -212,12 +211,12 @@ public class DefaultEntityMethodAspect extends AbstractMethodAspect {
 
 			Type mt = Type.getType(getMethod);
 			mWriter.visitMethodInsn(INVOKEVIRTUAL,
-					ClassUtil.toAsmCls(field.getDeclaringClass().getName()), getMethod.getName(),
+					AsmUtils.toAsmCls(field.getDeclaringClass().getName()), getMethod.getName(),
 					mt.toString());
 
 			// 处理返回值类型 到 Object类型
 			Type rt = Type.getReturnType(getMethod);
-			ClassUtil.withBoxingType(mWriter, rt);
+			AsmUtils.withBoxingType(mWriter, rt);
 
 			//存储到变量
 			mWriter.visitVarInsn(Opcodes.ASTORE, locals);
@@ -252,7 +251,7 @@ public class DefaultEntityMethodAspect extends AbstractMethodAspect {
 			final Field field = fieldsMap.get(methodMetaData.indexName);
 			//获取this.obj.getFieldName
 			mWriter.visitVarInsn(Opcodes.ALOAD, 0);
-			mWriter.visitFieldInsn(Opcodes.GETFIELD,ClassUtil.toAsmCls(classIndexesMetaData.enhancedClassName), ClassAdapter.REAL_OBJECT, Type.getDescriptor(entityClass));
+			mWriter.visitFieldInsn(Opcodes.GETFIELD,AsmUtils.toAsmCls(classIndexesMetaData.enhancedClassName), EntityClassAdapter.REAL_OBJECT, Type.getDescriptor(entityClass));
 
 			PropertyDescriptor propertyDescriptor = null;
 			try {
@@ -265,12 +264,12 @@ public class DefaultEntityMethodAspect extends AbstractMethodAspect {
 
 			Type mt = Type.getType(getMethod);
 			mWriter.visitMethodInsn(INVOKEVIRTUAL,
-					ClassUtil.toAsmCls(field.getDeclaringClass().getName()), getMethod.getName(),
+					AsmUtils.toAsmCls(field.getDeclaringClass().getName()), getMethod.getName(),
 					mt.toString());
 
 			// 处理返回值类型  到 Object类型
 			Type rt = Type.getReturnType(getMethod);
-			ClassUtil.withBoxingType(mWriter, rt);
+			AsmUtils.withBoxingType(mWriter, rt);
 
 			//存储到变量
 			mWriter.visitVarInsn(Opcodes.ASTORE, locals);
@@ -278,11 +277,11 @@ public class DefaultEntityMethodAspect extends AbstractMethodAspect {
 			//调用 changeIndex(Object entity, String indexName, Object oldValue, Object newValue)
 			//获取this.handler
 			mWriter.visitVarInsn(Opcodes.ALOAD, 0);
-			mWriter.visitFieldInsn(Opcodes.GETFIELD, ClassUtil.toAsmCls(classIndexesMetaData.enhancedClassName), ClassAdapter.HANDLER_OBJECT, Type.getDescriptor(this.getAspectHandleClass()));
+			mWriter.visitFieldInsn(Opcodes.GETFIELD, AsmUtils.toAsmCls(classIndexesMetaData.enhancedClassName), EntityClassAdapter.HANDLER_OBJECT, Type.getDescriptor(this.getAspectHandleClass()));
 
 			//获取this.obj
 			mWriter.visitVarInsn(Opcodes.ALOAD, 0);
-			mWriter.visitFieldInsn(Opcodes.GETFIELD,ClassUtil.toAsmCls(classIndexesMetaData.enhancedClassName), ClassAdapter.REAL_OBJECT, Type.getDescriptor(entityClass));
+			mWriter.visitFieldInsn(Opcodes.GETFIELD,AsmUtils.toAsmCls(classIndexesMetaData.enhancedClassName), EntityClassAdapter.REAL_OBJECT, Type.getDescriptor(entityClass));
 
 			//load indexName
 			mWriter.visitLdcInsn(methodMetaData.indexName);
@@ -294,7 +293,7 @@ public class DefaultEntityMethodAspect extends AbstractMethodAspect {
 			mWriter.visitVarInsn(Opcodes.ALOAD, locals);
 
 			//调用静态方法
-			mWriter.visitMethodInsn(INVOKEINTERFACE, ClassUtil.toAsmCls(getAspectHandleClass().getName()), "update", "(Ldbcache/model/IEntity;Ljava/lang/String;Ljava/lang/Object;Ljava/lang/Object;)V");
+			mWriter.visitMethodInsn(INVOKEINTERFACE, AsmUtils.toAsmCls(getAspectHandleClass().getName()), "update", "(Ldbcache/model/IEntity;Ljava/lang/String;Ljava/lang/Object;Ljava/lang/Object;)V");
 
 		}
 
