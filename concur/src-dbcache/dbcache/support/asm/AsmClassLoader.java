@@ -1,4 +1,4 @@
-package dbcache.proxy.asm;
+package dbcache.support.asm;
 
 import java.security.PrivilegedAction;
 

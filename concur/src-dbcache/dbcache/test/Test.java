@@ -21,7 +21,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import dbcache.model.CacheObject;
 import dbcache.model.FlushMode;
-import dbcache.proxy.asm.AsmFactory;
+import dbcache.proxy.asm.EntityAsmFactory;
 import dbcache.service.Cache;
 import dbcache.service.DbCacheService;
 import dbcache.utils.JsonUtils;
@@ -151,7 +151,7 @@ public class Test {
 			NoSuchMethodException, SecurityException, IllegalArgumentException,
 			InvocationTargetException {
 
-		Class<Entity> rsCls = AsmFactory.getEnhancedClass(Entity.class);
+		Class<Entity> rsCls = EntityAsmFactory.getEntityEnhancedClass(Entity.class);
 
 		Class<?>[] paramTypes = { Entity.class };
 		Entity orign = new Entity();

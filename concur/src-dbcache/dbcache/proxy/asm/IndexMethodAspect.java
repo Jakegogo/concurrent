@@ -19,7 +19,7 @@ import org.springframework.util.ReflectionUtils;
 import org.springframework.util.ReflectionUtils.FieldCallback;
 import org.springframework.util.ReflectionUtils.MethodCallback;
 
-import dbcache.proxy.AbstractEntityMethodAspect;
+import dbcache.proxy.AbstractAsmMethodAspect;
 import dbcache.service.DbIndexService;
 import dbcache.utils.AsmUtils;
 
@@ -29,7 +29,7 @@ import dbcache.utils.AsmUtils;
  * @date 2014年9月7日下午6:51:36
  */
 @Component("defaultMethodAspect")
-public class IndexMethodAspect extends AbstractEntityMethodAspect {
+public class IndexMethodAspect extends AbstractAsmMethodAspect {
 
 	/**
 	 * 类索引信息

@@ -11,7 +11,7 @@ import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 
-import dbcache.proxy.AbstractEntityMethodAspect;
+import dbcache.proxy.AbstractAsmMethodAspect;
 import dbcache.utils.AsmUtils;
 
 /**
@@ -35,7 +35,7 @@ public class EntityClassAdapter extends ClassVisitor implements Opcodes {
 	/**
 	 * 切面方法重写器
 	 */
-	private AbstractEntityMethodAspect methodAspect;
+	private AbstractAsmMethodAspect methodAspect;
 
 	/**
 	 * ClassWriter
@@ -66,7 +66,7 @@ public class EntityClassAdapter extends ClassVisitor implements Opcodes {
 	 */
 	public EntityClassAdapter(String enhancedClassName, Class<?> targetClass,
 			ClassWriter writer) {
-		this(enhancedClassName, targetClass, writer, new AbstractEntityMethodAspect() {});
+		this(enhancedClassName, targetClass, writer, new AbstractAsmMethodAspect() {});
 	}
 
 	/**
@@ -77,7 +77,7 @@ public class EntityClassAdapter extends ClassVisitor implements Opcodes {
 	 * @param methodAspect 方法切面修改器
 	 */
 	public EntityClassAdapter(String enhancedClassName, Class<?> targetClass,
-			ClassWriter writer, AbstractEntityMethodAspect methodAspect) {
+			ClassWriter writer, AbstractAsmMethodAspect methodAspect) {
 		super(Opcodes.ASM4, writer);
 		this.classWriter = writer;
 		this.originalClassName = targetClass.getName();

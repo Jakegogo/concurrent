@@ -36,7 +36,7 @@ import dbcache.model.IEntity;
 import dbcache.model.UpdateStatus;
 import dbcache.model.WeakCacheEntity;
 import dbcache.model.WeakCacheObject;
-import dbcache.proxy.asm.AsmFactory;
+import dbcache.proxy.asm.EntityAsmFactory;
 import dbcache.proxy.asm.IndexMethodAspect;
 import dbcache.service.Cache;
 import dbcache.service.ConfigFactory;
@@ -145,7 +145,7 @@ public class ConfigFactoryImpl implements ConfigFactory, DbCacheMBean {
 
 
 			//初始化代理类
-			Class<?> proxyClazz = AsmFactory.getEnhancedClass(clz, methodAspect);
+			Class<?> proxyClazz = EntityAsmFactory.getEntityEnhancedClass(clz, methodAspect);
 			cacheConfig.setProxyClazz(proxyClazz);
 
 			Field cacheConfigField = DbCacheServiceImpl.class.getDeclaredField(proxyCacheConfigProperty);

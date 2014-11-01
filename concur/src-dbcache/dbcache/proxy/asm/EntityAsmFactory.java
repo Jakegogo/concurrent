@@ -11,7 +11,8 @@ import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.ClassWriter;
 
-import dbcache.proxy.AbstractEntityMethodAspect;
+import dbcache.proxy.AbstractAsmMethodAspect;
+import dbcache.support.asm.AsmClassLoader;
 
 /**
  * asm代理工厂 <br/>
@@ -21,7 +22,7 @@ import dbcache.proxy.AbstractEntityMethodAspect;
  * @date 2014年9月6日上午12:28:13
  */
 @ThreadSafe
-public class AsmFactory {
+public class EntityAsmFactory {
 
 	/**
 	 * 代理类缓存
@@ -30,7 +31,7 @@ public class AsmFactory {
 
 
 	/** 代理类类名 */
-	public static final String SUFIX = "$EnhancedByCc";
+	public static final String SUFIX = "$EnhancedByAsm";
 
 	/**
 	 * 字节码类加载器
@@ -51,7 +52,7 @@ public class AsmFactory {
 	 * @throws Exception
 	 */
 	@SuppressWarnings("unchecked")
-	public static <T> Class<T> getEnhancedClass(Class<T> clazz) {
+	public static <T> Class<T> getEntityEnhancedClass(Class<T> clazz) {
 		// 从缓存这获取
 		if (ENHANCED_CLASS_CACHE.containsKey(clazz)) {
 			return (Class<T>) ENHANCED_CLASS_CACHE.get(clazz);
@@ -98,8 +99,8 @@ public class AsmFactory {
 	 * @throws Exception
 	 */
 	@SuppressWarnings("unchecked")
-	public static <T> Class<T> getEnhancedClass(Class<T> clazz,
-			AbstractEntityMethodAspect methodAspect) {
+	public static <T> Class<T> getEntityEnhancedClass(Class<T> clazz,
+			AbstractAsmMethodAspect methodAspect) {
 		// 从缓存这获取
 		if (ENHANCED_CLASS_CACHE.containsKey(clazz)) {
 			return (Class<T>) ENHANCED_CLASS_CACHE.get(clazz);
