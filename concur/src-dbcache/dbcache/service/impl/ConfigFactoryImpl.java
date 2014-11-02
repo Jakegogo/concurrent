@@ -278,12 +278,11 @@ public class ConfigFactoryImpl implements ConfigFactory, DbCacheMBean {
 
 
 	@SuppressWarnings("unchecked")
-	@Override
-	public IEntity<?> wrapEntity(IEntity<?> entity, Class<?> entityClazz, Cache cache, Object key) {
+	private WeakCacheEntity<?, ?> wrapEntity(IEntity<?> entity, Class<?> entityClazz, Cache cache, Object key) {
 		CacheConfig<?> cacheConfig = getCacheConfig(entityClazz);
 		// 判断是否开启弱引用
 		if(cacheConfig == null || cacheConfig.getCacheType() != CacheType.WEEKMAP) {
-			return entity;
+			return null;
 		}
 		return WeakCacheEntity.valueOf(entity, cache.getReferencequeue(), key);
 	}
@@ -295,14 +294,17 @@ public class ConfigFactoryImpl implements ConfigFactory, DbCacheMBean {
 			Class<?> entityClazz, DbIndexService<?> indexService, Object key, Cache cache, UpdateStatus updateStatus, CacheConfig<?> cacheConfig) {
 		// 判断是否开启弱引用
 		if(cacheConfig == null || cacheConfig.getCacheType() != CacheType.WEEKMAP) {
-			return new CacheObject(entity, entity.getId(), entity.getClass(),
-					this.createProxyEntity(entity,
-							cacheConfig.getProxyClazz(), indexService), updateStatus);
+			return new CacheObject(
+					entity, entity.getId(), entity.getClass(),
+					this.createProxyEntity(entity, cacheConfig.getProxyClazz(), indexService),
+					updateStatus);
 		}
-		return new WeakCacheObject((WeakCacheEntity) this.wrapEntity(entity, entityClazz, cache, key),
-				entity.getId(), entityClazz, (WeakCacheEntity) this.wrapEntity(this.createProxyEntity(entity,
-						cacheConfig.getProxyClazz(),
-						indexService), entityClazz, cache, key), key, updateStatus);
+
+		return new WeakCacheObject(
+				this.wrapEntity(entity, entityClazz, cache, key),
+				entity.getId(), entityClazz,
+				this.wrapEntity(this.createProxyEntity(entity, cacheConfig.getProxyClazz(), indexService),
+						entityClazz, cache, key), key, updateStatus);
 	}
 
 
