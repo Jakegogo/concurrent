@@ -1,5 +1,8 @@
 package dbcache.utils;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
@@ -438,5 +441,32 @@ public class AsmUtils implements Opcodes {
 
 		return paramMap;
 	}
+
+
+
+	/**
+	 *
+	 * <p>
+	 * 把java字节码写入class文件
+	 * </p>
+	 *
+	 * @param <T>
+	 * @param name
+	 * @param data
+	 * @throws FileNotFoundException
+	 * @throws IOException
+	 */
+	public static <T> void writeClazz(String name, byte[] data) {
+		try {
+			File file = new File("I:\\" + name + ".class");
+			FileOutputStream fout = new FileOutputStream(file);
+
+			fout.write(data);
+			fout.close();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
 
 }

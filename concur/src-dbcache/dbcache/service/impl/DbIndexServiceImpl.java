@@ -1,7 +1,6 @@
 package dbcache.service.impl;
 
 import java.io.Serializable;
-import java.lang.reflect.Field;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
@@ -24,6 +23,7 @@ import dbcache.model.UpdateStatus;
 import dbcache.service.Cache;
 import dbcache.service.DbAccessService;
 import dbcache.service.DbIndexService;
+import dbcache.support.asm.ValueGetter;
 
 /**
  * 实体索引服务实现类
@@ -41,7 +41,7 @@ public class DbIndexServiceImpl<PK extends Comparable<PK> & Serializable>
 	 * 实体缓存配置
 	 */
 	@Inject
-	private CacheConfig cacheConfig;
+	private CacheConfig<?> cacheConfig;
 
 	@Inject
 	@Autowired
@@ -101,7 +101,7 @@ public class DbIndexServiceImpl<PK extends Comparable<PK> & Serializable>
 			indexValues = indexObject.getIndexValues();
 
 			// 查询数据库索引
-			Field indexField = cacheConfig.getIndexes().get(indexName);
+			ValueGetter<?> indexField = cacheConfig.getIndexes().get(indexName);
 
 			Collection<PK> ids = (Collection<PK>) dbAccessService.listIdByIndex(cacheConfig.getClazz(), indexField.getName(), indexValue);
 
@@ -218,6 +218,9 @@ public class DbIndexServiceImpl<PK extends Comparable<PK> & Serializable>
 
 	@Override
 	public void update(IEntity<PK> entity, String indexName, Object oldValue, Object newValue) {
+		if(oldValue != null && oldValue.equals(newValue)) {
+			return;
+		}
 		// 从旧的索引队列中移除
 		this.remove(IndexValue.valueOf(indexName, oldValue, entity.getId()));
 		// 添加到新的索引队列
@@ -230,7 +233,7 @@ public class DbIndexServiceImpl<PK extends Comparable<PK> & Serializable>
 		return cache;
 	}
 
-	public CacheConfig getCacheConfig() {
+	public CacheConfig<?> getCacheConfig() {
 		return cacheConfig;
 	}
 

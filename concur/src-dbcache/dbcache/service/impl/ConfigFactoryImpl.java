@@ -44,6 +44,8 @@ import dbcache.service.DbCacheMBean;
 import dbcache.service.DbCacheService;
 import dbcache.service.DbIndexService;
 import dbcache.service.DbPersistService;
+import dbcache.support.asm.AsmFieldGetter;
+import dbcache.support.asm.ValueGetter;
 import dbcache.utils.AsmUtils;
 import dbcache.utils.ThreadUtils;
 
@@ -101,7 +103,7 @@ public class ConfigFactoryImpl implements ConfigFactory, DbCacheMBean {
 	/**
 	 * 配置映射
 	 */
-	private ConcurrentMap<Class<?>, CacheConfig> cacheConfigMap = new ConcurrentHashMap<Class<?>, CacheConfig>();
+	private ConcurrentMap<Class<?>, CacheConfig<?>> cacheConfigMap = new ConcurrentHashMap<Class<?>, CacheConfig<?>>();
 
 	/**
 	 * 持久化服务
@@ -127,7 +129,7 @@ public class ConfigFactoryImpl implements ConfigFactory, DbCacheMBean {
 	}
 
 
-	@SuppressWarnings("rawtypes")
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	private DbCacheService createCacheService(Class<? extends IEntity> clz) {
 
 		DbCacheService service = null;
@@ -208,15 +210,16 @@ public class ConfigFactoryImpl implements ConfigFactory, DbCacheMBean {
 	 * @param clz 实体类
 	 * @return
 	 */
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	@Override
-	public CacheConfig getCacheConfig(Class<?> clz) {
+	public CacheConfig<?> getCacheConfig(final Class<?> clz) {
 		CacheConfig cacheConfig = cacheConfigMap.get(clz);
 
 		//初始化CacheConfig配置
 		if(cacheConfig == null) {
 			cacheConfig = CacheConfig.valueOf(clz);
 
-			final Map<String, Field> indexes = new HashMap<String, Field>();
+			final Map<String, ValueGetter<?>> indexes = new HashMap<String, ValueGetter<?>>();
 			ReflectionUtils.doWithFields(clz, new FieldCallback() {
 				public void doWith(Field field) throws IllegalArgumentException, IllegalAccessException {
 					if (field.isAnnotationPresent(org.hibernate.annotations.Index.class) ||
@@ -230,7 +233,7 @@ public class ConfigFactoryImpl implements ConfigFactory, DbCacheMBean {
 							indexName = indexAno1.name();
 						}
 
-						indexes.put(indexName, field);
+						indexes.put(indexName, AsmFieldGetter.valueOf(clz, field));
 					}
 				}
 			});
@@ -277,7 +280,7 @@ public class ConfigFactoryImpl implements ConfigFactory, DbCacheMBean {
 	@SuppressWarnings("unchecked")
 	@Override
 	public IEntity<?> wrapEntity(IEntity<?> entity, Class<?> entityClazz, Cache cache, Object key) {
-		CacheConfig cacheConfig = getCacheConfig(entityClazz);
+		CacheConfig<?> cacheConfig = getCacheConfig(entityClazz);
 		// 判断是否开启弱引用
 		if(cacheConfig == null || cacheConfig.getCacheType() != CacheType.WEEKMAP) {
 			return entity;
@@ -351,7 +354,7 @@ public class ConfigFactoryImpl implements ConfigFactory, DbCacheMBean {
 	@Override
 	public Map<String, String> getCacheConfigInfo() {
 		Map<String, String> infoMap = new HashMap<String, String>();
-		for(Entry<Class<?>, CacheConfig> entry : cacheConfigMap.entrySet()) {
+		for(Entry<Class<?>, CacheConfig<?>> entry : cacheConfigMap.entrySet()) {
 			infoMap.put(entry.getKey().getName(), entry.getValue().toString());
 		}
 		return infoMap;

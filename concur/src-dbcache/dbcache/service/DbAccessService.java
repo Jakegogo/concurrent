@@ -69,11 +69,11 @@ public interface DbAccessService {
 	/**
 	 * 根据索引获取Id列表
 	 * @param entityClazz 实体类
-	 * @param indexName 索引名
+	 * @param fieldName 属性名
 	 * @param indexValue 索引值
 	 * @return
 	 */
 	Collection<Serializable> listIdByIndex(Class<?> entityClazz,
-			String indexName, Object indexValue);
+			String fieldName, Object indexValue);
 
 }

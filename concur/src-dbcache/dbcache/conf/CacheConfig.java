@@ -1,15 +1,14 @@
 package dbcache.conf;
 
-import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.Map;
 
 import org.codehaus.jackson.map.annotate.JsonSerialize;
-import org.springframework.util.ReflectionUtils;
 
 import dbcache.annotation.Cached;
 import dbcache.annotation.EnableIndex;
 import dbcache.service.impl.ConcurrentLinkedHashMapCache;
+import dbcache.support.asm.ValueGetter;
 import dbcache.support.jackson.ToStringJsonSerializer;
 import dbcache.utils.AnnotationUtils;
 import dbcache.utils.JsonUtils;
@@ -19,16 +18,16 @@ import dbcache.utils.JsonUtils;
  * @author Jake
  * @date 2014年9月14日下午5:05:51
  */
-public class CacheConfig {
+public class CacheConfig<T> {
 
 	/** 默认配置 */
-	private static CacheConfig defaultConfig;
+	private static CacheConfig<?> defaultConfig;
 
 	/** 实体类 */
-	private Class<?> clazz;
+	private Class<T> clazz;
 
 	/** 实体静态代理类  */
-	private Class<?> proxyClazz;
+	private Class<T> proxyClazz;
 
 	/** 缓存容器类型 */
 	private CacheType cacheType;
@@ -52,7 +51,7 @@ public class CacheConfig {
 	private Class<?> indexCacheClass = ConcurrentLinkedHashMapCache.class;
 
 	/** 索引信息  索引名 - 属性 */
-	private Map<String, Field> indexes = new HashMap<String, Field>();
+	private Map<String, ValueGetter<T>> indexes = new HashMap<String, ValueGetter<T>>();
 
 
 	/**
@@ -60,17 +59,18 @@ public class CacheConfig {
 	 * @param entityClass 实体类
 	 * @return
 	 */
-	public static CacheConfig valueOf(Class<?> entityClass) {
+	@SuppressWarnings("unchecked")
+	public static <T> CacheConfig<T> valueOf(Class<T> entityClass) {
 		Cached cachedAnno = entityClass.getAnnotation(Cached.class);
 		if(cachedAnno != null) {
-			CacheConfig cacheConfig = valueOf(cachedAnno);
+			CacheConfig<T> cacheConfig = (CacheConfig<T>) valueOf(cachedAnno);
 			cacheConfig.setClazz(entityClass);
 			if(entityClass.isAnnotationPresent(EnableIndex.class)) {
 				cacheConfig.setEnableIndex(true);
 			}
 			return cacheConfig;
 		}
-		return valueOf();
+		return (CacheConfig<T>) valueOf();
 	}
 
 	/**
@@ -78,8 +78,9 @@ public class CacheConfig {
 	 * @param cachedAnno Cache注解
 	 * @return
 	 */
-	public static CacheConfig valueOf(Cached cachedAnno) {
-		CacheConfig cacheConfig = new CacheConfig();
+	@SuppressWarnings("rawtypes")
+	public static CacheConfig<?> valueOf(Cached cachedAnno) {
+		CacheConfig<?> cacheConfig = new CacheConfig();
 		cacheConfig.setCacheType(cachedAnno.cacheType());
 		cacheConfig.setPersistType(cachedAnno.persistType());
 		cacheConfig.setEntitySize(cachedAnno.entitySize());
@@ -94,12 +95,12 @@ public class CacheConfig {
 	 * 获取默认的CacheConfig
 	 * @return
 	 */
-	public static CacheConfig valueOf() {
+	public static CacheConfig<?> valueOf() {
 		if(defaultConfig != null) {
 			return defaultConfig;
 		}
 		Cached cachedAnno = AnnotationUtils.getDafault(Cached.class);
-		CacheConfig cacheConfig = new CacheConfig();
+		CacheConfig<?> cacheConfig = new CacheConfig<Object>();
 		cacheConfig.setCacheType(cachedAnno.cacheType());
 		cacheConfig.setPersistType(cachedAnno.persistType());
 		cacheConfig.setEntitySize(cachedAnno.entitySize());
@@ -113,7 +114,7 @@ public class CacheConfig {
 		return JsonUtils.object2JsonString(this);
 	}
 
-	public static CacheConfig getDefaultConfig() {
+	public static CacheConfig<?> getDefaultConfig() {
 		return defaultConfig;
 	}
 
@@ -121,7 +122,7 @@ public class CacheConfig {
 		return clazz;
 	}
 
-	public void setClazz(Class<?> clazz) {
+	public void setClazz(Class<T> clazz) {
 		this.clazz = clazz;
 	}
 
@@ -129,7 +130,7 @@ public class CacheConfig {
 		return proxyClazz;
 	}
 
-	public void setProxyClazz(Class<?> proxyClazz) {
+	public void setProxyClazz(Class<T> proxyClazz) {
 		this.proxyClazz = proxyClazz;
 	}
 
@@ -182,14 +183,11 @@ public class CacheConfig {
 	}
 
 	@JsonSerialize(using = ToStringJsonSerializer.class)
-	public Map<String, Field> getIndexes() {
+	public Map<String, ValueGetter<T>> getIndexes() {
 		return indexes;
 	}
 
-	public void setIndexes(Map<String, Field> indexes) {
-		for(Field field : indexes.values()) {
-			ReflectionUtils.makeAccessible(field);
-		}
+	public void setIndexes(Map<String, ValueGetter<T>> indexes) {
 		this.indexes = indexes;
 	}
 

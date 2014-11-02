@@ -68,7 +68,7 @@ public interface ConfigFactory {
 	 * @param clz 缓存实体类
 	 * @return
 	 */
-	public CacheConfig getCacheConfig(Class<?> clz);
+	public CacheConfig<?> getCacheConfig(Class<?> clz);
 
 
 }

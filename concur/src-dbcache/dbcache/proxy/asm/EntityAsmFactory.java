@@ -1,8 +1,5 @@
 package dbcache.proxy.asm;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -13,6 +10,7 @@ import org.objectweb.asm.ClassWriter;
 
 import dbcache.proxy.AbstractAsmMethodAspect;
 import dbcache.support.asm.AsmClassLoader;
+import dbcache.utils.AsmUtils;
 
 /**
  * asm代理工厂 <br/>
@@ -73,7 +71,7 @@ public class EntityAsmFactory {
 					writer);
 			reader.accept(visitor, 0);
 			byte[] byteCodes = writer.toByteArray();
-//			writeClazz(enhancedClassName, byteCodes);
+			AsmUtils.writeClazz(enhancedClassName, byteCodes);
 			Class<T> result = (Class<T>) classLoader.defineClass(
 					enhancedClassName, byteCodes);
 
@@ -124,7 +122,7 @@ public class EntityAsmFactory {
 					writer, methodAspect);
 			reader.accept(visitor, 0);
 			byte[] byteCodes = writer.toByteArray();
-//			writeClazz(enhancedClassName, byteCodes);
+			AsmUtils.writeClazz(enhancedClassName, byteCodes);
 			Class<T> result = (Class<T>) classLoader.defineClass(
 					enhancedClassName, byteCodes);
 
@@ -135,28 +133,5 @@ public class EntityAsmFactory {
 		}
 	}
 
-	/**
-	 *
-	 * <p>
-	 * 把java字节码写入class文件
-	 * </p>
-	 *
-	 * @param <T>
-	 * @param name
-	 * @param data
-	 * @throws FileNotFoundException
-	 * @throws IOException
-	 */
-	public static <T> void writeClazz(String name, byte[] data) {
-		try {
-			File file = new File("C:\\" + name + ".class");
-			FileOutputStream fout = new FileOutputStream(file);
-
-			fout.write(data);
-			fout.close();
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
 
 }

@@ -247,22 +247,20 @@ public class Test {
 
 	@org.junit.Test
 	public void t10() {
-		for(int i = 0; i < 100;i++) {
 
-			Entity entity = this.cacheService.get(1l);
+		Entity entity = this.cacheService.get(1l);
 
-			entity.setNum(201);
+		entity.setNum(202);
 
-			List<Entity> list = this.cacheService.listByIndex(Entity.NUM_INDEX, 201);
+		List<Entity> list = this.cacheService.listByIndex(Entity.NUM_INDEX, 201);
 
-			assert list.size() == 1;
+		assert list.size() == 1;
 
-//			for(Entity entity1 : list) {
-//				System.out.println(JsonUtils.object2JsonString(entity1));
-//			}
-
-			this.cacheService.submitUpdated2Queue(entity);
+		for(Entity entity1 : list) {
+			System.out.println(JsonUtils.object2JsonString(entity1));
 		}
+		System.out.println(entity.getNum());
+		this.cacheService.submitUpdated2Queue(entity);
 	}
 
 
