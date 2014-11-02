@@ -40,9 +40,10 @@ public interface ConfigFactory {
 	 * @param indexService 索引服务
 	 * @param cache 实体缓存容器
 	 * @param updateStatus 更新状态
+	 * @param cacheConfig 缓存配置
 	 * @return
 	 */
-	public CacheObject<?> createCacheObject(IEntity<?> entity, Class<?> entityClazz, DbIndexService<?> indexService, Object key, Cache cache, UpdateStatus updateStatus);
+	public CacheObject<?> createCacheObject(IEntity<?> entity, Class<?> entityClazz, DbIndexService<?> indexService, Object key, Cache cache, UpdateStatus updateStatus, CacheConfig<?> cacheConfig);
 
 	/**
 	 * 获取DbCacheServiceBean

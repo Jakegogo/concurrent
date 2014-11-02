@@ -292,8 +292,7 @@ public class ConfigFactoryImpl implements ConfigFactory, DbCacheMBean {
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	@Override
 	public CacheObject<?> createCacheObject(IEntity<?> entity,
-			Class<?> entityClazz, DbIndexService<?> indexService, Object key, Cache cache, UpdateStatus updateStatus) {
-		CacheConfig cacheConfig = getCacheConfig(entityClazz);
+			Class<?> entityClazz, DbIndexService<?> indexService, Object key, Cache cache, UpdateStatus updateStatus, CacheConfig<?> cacheConfig) {
 		// 判断是否开启弱引用
 		if(cacheConfig == null || cacheConfig.getCacheType() != CacheType.WEEKMAP) {
 			return new CacheObject(entity, entity.getId(), entity.getClass(),
