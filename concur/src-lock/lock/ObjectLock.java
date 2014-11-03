@@ -22,9 +22,9 @@ import org.slf4j.LoggerFactory;
 public class ObjectLock extends ReentrantLock implements Comparable<ObjectLock> {
 
 	private static final long serialVersionUID = -1738309259140428174L;
-	
+
 	private static final Class<IEntity> IENTITY_CLASS = IEntity.class;
-	
+
 	private static final Logger log = LoggerFactory.getLogger(ObjectLock.class);
 
 	/** 锁定对象的类型 */
@@ -61,7 +61,7 @@ public class ObjectLock extends ReentrantLock implements Comparable<ObjectLock> 
 			entity = false;
 		}
 	}
-	
+
 	/**
 	 * 检查当前锁是否无法和另一锁分出先后次序
 	 * @param other 与当前锁比较的另一锁
@@ -76,7 +76,7 @@ public class ObjectLock extends ReentrantLock implements Comparable<ObjectLock> 
 		}
 		return false;
 	}
-	
+
 	// Getter ...
 
 	/**
@@ -94,7 +94,7 @@ public class ObjectLock extends ReentrantLock implements Comparable<ObjectLock> 
 	public Comparable getValue() {
 		return value;
 	}
-	
+
 	/**
 	 * 检查该对象锁所锁定的是否实体
 	 * @return
@@ -111,15 +111,20 @@ public class ObjectLock extends ReentrantLock implements Comparable<ObjectLock> 
 		} else if (!this.isEntity() && o.isEntity()) {
 			return -1;
 		}
-		
+
 		if (this.clz != o.clz) {
+			int classNameCompare = this.clz.getName()
+					.compareTo(o.clz.getName());
+			if(classNameCompare != 0) {
+				return classNameCompare;
+			}
 			// 类型不同的排序
 			if (this.clz.hashCode() < o.clz.hashCode()) {
 				return -1;
 			} else if (this.clz.hashCode() > o.clz.hashCode()) {
 				return 1;
 			}
-			return this.clz.getName().compareTo(o.clz.getName());
+			return 0;
 		} else {
 			// 类型相同的处理
 			return this.value.compareTo(o.value);
