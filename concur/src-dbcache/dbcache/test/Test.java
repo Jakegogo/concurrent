@@ -264,4 +264,10 @@ public class Test {
 	}
 
 
+	@org.junit.Test
+	public void t11() {
+		new String().getBytes();
+	}
+
+
 }
