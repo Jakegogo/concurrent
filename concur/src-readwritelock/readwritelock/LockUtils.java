@@ -110,9 +110,18 @@ public class LockUtils {
 		return holder.getClassInstanceCount();
 	}
 	
+	
+	/**
+	 * 输出加锁对象信息
+	 */
+	public static void printLockObject(){
+		holder.printLockObject();
+	}
+
+	
 	/**
 	 * 输出加锁对象的线程堆栈信息
-	 * 仅在slf4j为调试模式才会输出
+	 * 仅在slf4j为WARN以下模式才会输出
 	 */
 	public static void printStackTrace(){
 		holder.printStackTrace();

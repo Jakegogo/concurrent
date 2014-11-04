@@ -103,8 +103,12 @@ public class ObjectLock extends ReentrantLock implements Comparable<ObjectLock> 
 		return entity;
 	}
 
-//	@Override
+	@Override
 	public int compareTo(ObjectLock o) {
+		// 同一对象引用
+		if(this == o) {
+			return 0;
+		}
 		// 实体和非实体间的排序
 		if (this.isEntity() && !o.isEntity()) {
 			return 1;
@@ -113,6 +117,7 @@ public class ObjectLock extends ReentrantLock implements Comparable<ObjectLock> 
 		}
 
 		if (this.clz != o.clz) {
+			// 根据类名比较
 			int classNameCompare = this.clz.getName()
 					.compareTo(o.clz.getName());
 			if(classNameCompare != 0) {

@@ -204,6 +204,7 @@ public class ObjectLockHolder {
 	 * @return String
 	 */
 	public void printStackTrace() {
+		
 		if(log.isWarnEnabled()) {
 			//停止所有锁操作的线程
 			DebugReentrantReadWriteLock.stopTheWorld();
@@ -279,5 +280,27 @@ public class ObjectLockHolder {
 			DebugReentrantReadWriteLock.freeTheWorld();
 		}
 	}
+	
+	
+	/**
+	 * 打印持有锁对象
+	 */
+	public void printLockObject() {
+		
+		SimpleDateFormat dateFormat = new SimpleDateFormat(STACK_TRACE_DATE_FORMAT);
+		log.warn(dateFormat.format(new Date()));
+		log.warn("LockUtils.printLockObject()");
+		for (Entry<Class, Holder> entry: holders.entrySet()) {
+			Class clazz = entry.getKey();
+			Holder holder = entry.getValue();
+			log.warn(clazz.getName() + ":");
+			for(Iterator<Entry<Object, ObjectLock>> it = holder.lockIterator();it.hasNext();) {
+				Entry<Object, ObjectLock> entry1 = it.next();
+				log.warn("\t" + entry1.getKey() + " : " + JsonUtils.object2JsonString(entry1.getKey()));
+			}
+		}
+		
+	}
+	
 	
 }
