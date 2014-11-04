@@ -18,21 +18,27 @@ import org.slf4j.LoggerFactory;
 
 import dbcache.utils.AsmUtils;
 
+
 /**
- * ASM属性获取器
- * for version <= jdk 1.6
+ * ASM读取object属性工具类
  * @author Jake
- * @date 2014年11月1日上午1:12:54
+ * @date 2014年11月5日上午1:05:14
  */
-public class AsmFieldGetter<T> extends AbstractFieldGetter<T> implements Opcodes {
+public class AsmAccessHelper implements Opcodes {
 
 	/**
 	 * logger
 	 */
-	private static final Logger logger = LoggerFactory.getLogger(AsmFieldGetter.class);
+	private static final Logger logger = LoggerFactory.getLogger(AsmAccessHelper.class);
 
 	/** 获取的方法名 */
 	public static final String GETTER_METHOD_NAME = "get";
+
+	/** 获取的方法名 */
+	public static final String SET_TARGET_METHOD_NAME = "setTarget";
+
+	/** 获取值名称 */
+	public static final String GET_NAME_METHOD_NAME = "getName";
 
 	/** 构造方法名常量 */
 	private static final String INIT = "<init>";
@@ -43,66 +49,27 @@ public class AsmFieldGetter<T> extends AbstractFieldGetter<T> implements Opcodes
 	/** 分隔符 */
 	public static final String SPLITER = "_";
 
+	/** 真实对象引用 */
+	protected static final String REAL_OBJECT = "target";
+
 	/** 序号生成器 */
 	private static AtomicLong id = new AtomicLong(0);
 
 	/**
 	 * 字节码类加载器
 	 */
-	public static BytecodeLoader classLoader = new BytecodeLoader();
+	public static AsmClassLoader classLoader = new AsmClassLoader();
 
-
-	private Class<T> clazz;
-
-
-	private Field field;
-
-	/** 属性获取的asm代理对象 */
-	private ValueGetter<T> fieldGetter;
-
-	/** 值的名称 */
-	private String name;
-
-	public static class BytecodeLoader extends ClassLoader {
-		public Class<?> defineClass(String className, byte[] byteCodes) {
-			return super.defineClass(className, byteCodes, 0, byteCodes.length);
-		}
-	}
 
 	/**
-	 * 默认构造方法
-	 */
-	protected AsmFieldGetter() {
-
-	}
-
-	/**
-	 * 构造方法
+	 * 创建属性获取器
 	 * @param clazz 类
 	 * @param field 属性
+	 * @return ValueGetter<T>
+	 * @throws Exception
 	 */
-	protected AsmFieldGetter(Class<T> clazz, Field field) {
-		this.clazz = clazz;
-		this.field = field;
-		this.name = field.getName();
-		this.init(clazz, field);
-	}
-
-
-	/**
-	 * 获取实例
-	 * @param clazz 类
-	 * @param field 属性
-	 * @return
-	 */
-	public static <T> AsmFieldGetter<T> valueOf(Class<T> clazz, Field field) {
-		return new AsmFieldGetter<T>(clazz, field);
-	}
-
-
-	//初始化
 	@SuppressWarnings("unchecked")
-	private void init(final Class<T> clazz, final Field field) {
+	public static <T> ValueGetter<T> createFieldGetter(final Class<T> clazz, final Field field) throws Exception {
 
 		Class<T> enhancedClass = null;
 		//代理类名
@@ -148,11 +115,14 @@ public class AsmFieldGetter<T> extends AbstractFieldGetter<T> implements Opcodes
 				@Override
 				public MethodVisitor visitMethod(int access, String name,
 						String desc, String signature, String[] exceptions) {
-					if(name.equals(GETTER_METHOD_NAME)) {
+
+					if(name.equals(GETTER_METHOD_NAME)) {// get
+
 						MethodVisitor mv = writer.visitMethod(ACC_PUBLIC, name, desc, signature, exceptions);
-						//调用object.getField
-						mv.visitVarInsn(ALOAD, 1);
-						mv.visitTypeInsn(CHECKCAST, AsmUtils.toAsmCls(clazz.getName()));
+						//获取this.target
+						mv.visitVarInsn(ALOAD, 0);
+						mv.visitFieldInsn(GETFIELD, AsmUtils.toAsmCls(enhancedClassName), REAL_OBJECT, entityTypeString);
+
 						mv.visitMethodInsn(INVOKEVIRTUAL,
 								AsmUtils.toAsmCls(clazz.getName()), getMethod.getName(),
 								mt.toString());
@@ -161,23 +131,52 @@ public class AsmFieldGetter<T> extends AbstractFieldGetter<T> implements Opcodes
 						Type rt = Type.getReturnType(getMethod);
 						AsmUtils.withBoxingType(mv, rt);
 						mv.visitInsn(ARETURN);
-						mv.visitMaxs(0, 0);
+						mv.visitMaxs(1, 1);
 						mv.visitEnd();
 						return mv;
+
+					} else if(name.equals(SET_TARGET_METHOD_NAME)) {// setTarget
+
+						MethodVisitor mv = writer.visitMethod(ACC_PUBLIC, name, desc, signature, exceptions);
+						//调用this.target = object;
+						mv.visitVarInsn(ALOAD, 0);
+						mv.visitVarInsn(ALOAD, 1);
+						mv.visitTypeInsn(Opcodes.CHECKCAST, AsmUtils.toAsmCls(clazz.getName()));
+
+						mv.visitFieldInsn(Opcodes.PUTFIELD,
+								AsmUtils.toAsmCls(enhancedClassName), REAL_OBJECT, entityTypeString);
+						mv.visitInsn(RETURN);
+						mv.visitMaxs(2, 2);
+						mv.visitEnd();
+						return mv;
+
+					} else if(name.equals(GET_NAME_METHOD_NAME)) {//getName
+						MethodVisitor mv = writer.visitMethod(ACC_PUBLIC, name, desc, signature, exceptions);
+						mv.visitLdcInsn(field.getName());
+						mv.visitInsn(ARETURN);
+						mv.visitMaxs(1, 1);
+						mv.visitEnd();
 					}
+
+
 					return null;
 				}
 
 				@Override
 				public void visitEnd() {
+
+					//添加this.target属性
+					writer.visitField(Opcodes.ACC_PROTECTED, REAL_OBJECT, entityTypeString, null, null);
+
 					// 调用originalClassName的<init>方法，否则class不能实例化
 					MethodVisitor mvInit = writer.visitMethod(ACC_PUBLIC, INIT, "()V",
 							null, null);
 					mvInit.visitVarInsn(ALOAD, 0);
 					mvInit.visitMethodInsn(INVOKESPECIAL, fieldGetterClassName, INIT, "()V");
 					mvInit.visitInsn(RETURN);
-					mvInit.visitMaxs(0, 0);
+					mvInit.visitMaxs(1, 1);
 					mvInit.visitEnd();
+
 				}
 
 			};
@@ -192,36 +191,15 @@ public class AsmFieldGetter<T> extends AbstractFieldGetter<T> implements Opcodes
 		}
 
 		try {
-			this.fieldGetter = (ValueGetter<T>) enhancedClass.newInstance();
+			return (ValueGetter<T>) enhancedClass.newInstance();
 		} catch (Exception e) {
 			logger.error("无法创建代理类对象:" + enhancedClassName);
-			e.printStackTrace();
+			throw e;
 		}
 
-
 	}
 
 
-	/**
-	 * 获取值
-	 * @return
-	 */
-	@Override
-	public Object get(T object) {
-		return fieldGetter.get(object);
-	}
 
-	public Class<?> getClazz() {
-		return clazz;
-	}
-
-	public Field getField() {
-		return field;
-	}
-
-	@Override
-	public String getName() {
-		return this.name;
-	}
 
 }

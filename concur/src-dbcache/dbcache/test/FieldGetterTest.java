@@ -3,20 +3,23 @@ package dbcache.test;
 import java.lang.reflect.Field;
 
 import dbcache.support.asm.AbstractFieldGetter;
-import dbcache.support.asm.AsmFieldGetter;
+import dbcache.support.asm.AsmAccessHelper;
+import dbcache.support.asm.ValueGetter;
 
 public class FieldGetterTest<T> {
 
-	public static void main(String[] args) throws NoSuchFieldException, SecurityException {
+	public static void main(String[] args) throws Exception {
 		Entity entity = new Entity();
 		entity.setNum(2);
 
 		long t1 = System.currentTimeMillis();
-		AbstractFieldGetter<Entity> getNum = AsmFieldGetter.valueOf(Entity.class, Entity.class.getField("num"));
+		ValueGetter<Entity> getNum = AsmAccessHelper.createFieldGetter(Entity.class, Entity.class.getField("num"));
+		getNum.setTarget(entity);
 		for(int i = 0;i < 100000000;i++) {
-			getNum.get(entity);
+			getNum.get();
 		}
 		System.out.println(System.currentTimeMillis() - t1);
+		System.out.println(getNum.getName());
 
 
 		long t2 = System.currentTimeMillis();
@@ -38,5 +41,9 @@ public class FieldGetterTest<T> {
 	  {
 	    return Integer.valueOf(((Entity)paramT).getNum());
 	  }
+
+	public String getName() {
+		return "num";
+	}
 
 }

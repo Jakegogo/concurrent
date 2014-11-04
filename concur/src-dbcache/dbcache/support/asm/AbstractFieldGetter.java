@@ -8,12 +8,17 @@ package dbcache.support.asm;
  */
 public abstract class AbstractFieldGetter<T> implements ValueGetter<T> {
 
-	/**
-	 * 获取属性值
-	 * @param object 目标对象
-	 * @return 属性值
-	 */
-	public abstract Object get(T object);
+	@Override
+	public abstract Object get();
+
+
+	@Override
+	public abstract void setTarget(T object);
+
+
+	@Override
+	public abstract String getName();
+
 
 
 }
