@@ -220,7 +220,7 @@ public class ObjectLockHolder {
 					StringBuilder sb = new StringBuilder();
 					boolean show = false;
 					Entry<Object, ObjectLock> entry1 = it.next();
-					sb.append("\t" + entry1.getKey() + " : " + JsonUtils.object2JsonString(entry1));
+					sb.append("\t" + entry1.getKey() + " : " + JsonUtils.object2JsonString(entry1.getKey()));
 					DebugReentrantReadWriteLock lock = (DebugReentrantReadWriteLock)entry1.getValue();
 					//遍历写锁加锁线程堆栈
 					if(lock.getLastReadLockThreadInfo() != null) {

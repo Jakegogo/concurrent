@@ -11,7 +11,7 @@ public class Test {
 	@org.junit.Test
 	public void test1() {
 		
-		Object obj = new Object();
+		Entity obj = new Entity();
 
 		ReadWriteLock readWriteLock = LockUtils.getLock(obj);
 
@@ -24,6 +24,20 @@ public class Test {
 			LockUtils.printStackTrace();
 		} finally {
 			readLock.unlock();
+		}
+		
+	}
+	
+	
+	class Entity {
+		private int i = 0;
+
+		public int getI() {
+			return i;
+		}
+
+		public void setI(int i) {
+			this.i = i;
 		}
 		
 	}
