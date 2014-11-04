@@ -1,4 +1,4 @@
-package readwritelock.deadlock;
+package readwritelock.checkdeadlock;
 
 import java.util.ArrayList;
 import java.util.List;

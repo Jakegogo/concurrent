@@ -16,11 +16,14 @@ import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 
+
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import readwritelock.deadlock.DebugReentrantReadWriteLock;
-import readwritelock.deadlock.LockedThreadInfo;
+import dbcache.utils.JsonUtils;
+import readwritelock.checkdeadlock.DebugReentrantReadWriteLock;
+import readwritelock.checkdeadlock.LockedThreadInfo;
 
 
 /**
@@ -91,7 +94,7 @@ public class ObjectLockHolder {
 				if (result != null) {
 					return result;
 				}
-				if(log.isDebugEnabled()) {
+				if(log.isWarnEnabled()) {
 					result = new DebugReentrantReadWriteLock(object);
 				} else {
 					result = new ObjectLock(object);
@@ -201,21 +204,23 @@ public class ObjectLockHolder {
 	 * @return String
 	 */
 	public void printStackTrace() {
-		if(log.isDebugEnabled()) {
+		if(log.isWarnEnabled()) {
 			//停止所有锁操作的线程
 			DebugReentrantReadWriteLock.stopTheWorld();
 			SimpleDateFormat dateFormat = new SimpleDateFormat(STACK_TRACE_DATE_FORMAT);
-			System.out.println(dateFormat.format(new Date()));
-			System.out.println("LockUtils.printStackTrace()");
+			log.warn(dateFormat.format(new Date()));
+			log.warn("LockUtils.printStackTrace()");
 			for (Entry<Class, Holder> entry: holders.entrySet()) {
+				
 				Class clazz = entry.getKey();
 				Holder holder = entry.getValue();
-				System.out.println(clazz.getName() + ":");
+				log.warn(clazz.getName() + ":");
 				for(Iterator<Entry<Object, ObjectLock>> it = holder.lockIterator();it.hasNext();) {
+					
 					StringBuilder sb = new StringBuilder();
 					boolean show = false;
 					Entry<Object, ObjectLock> entry1 = it.next();
-					sb.append("\t" + entry1.getKey());
+					sb.append("\t" + entry1.getKey() + " : " + JsonUtils.object2JsonString(entry1));
 					DebugReentrantReadWriteLock lock = (DebugReentrantReadWriteLock)entry1.getValue();
 					//遍历写锁加锁线程堆栈
 					if(lock.getLastReadLockThreadInfo() != null) {
@@ -266,7 +271,7 @@ public class ObjectLockHolder {
 						}
 					}
 					if(show) {
-						System.out.println(sb.toString());
+						log.warn(sb.toString());
 					}
 				}
 			}
