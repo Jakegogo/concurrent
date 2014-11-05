@@ -1,5 +1,6 @@
 package dbcache.service.impl;
 
+import java.io.Serializable;
 import java.lang.management.ManagementFactory;
 import java.lang.reflect.Field;
 import java.util.HashMap;
@@ -44,7 +45,8 @@ import dbcache.service.DbCacheMBean;
 import dbcache.service.DbCacheService;
 import dbcache.service.DbIndexService;
 import dbcache.service.DbPersistService;
-import dbcache.support.asm.AsmFieldGetter;
+import dbcache.support.asm.AbstractFieldGetter;
+import dbcache.support.asm.AsmAccessHelper;
 import dbcache.support.asm.ValueGetter;
 import dbcache.utils.AsmUtils;
 import dbcache.utils.ThreadUtils;
@@ -233,7 +235,12 @@ public class ConfigFactoryImpl implements ConfigFactory, DbCacheMBean {
 							indexName = indexAno1.name();
 						}
 
-						indexes.put(indexName, AsmFieldGetter.valueOf(clz, field));
+						try {
+							indexes.put(indexName, AsmAccessHelper.createFieldGetter(clz, field));
+						} catch (Exception e) {
+							logger.equals("获取实体配置出错:生成索引失败(" + clz.getName() + "." + field.getName() + ").");
+							e.printStackTrace();
+						}
 					}
 				}
 			});
@@ -267,8 +274,7 @@ public class ConfigFactoryImpl implements ConfigFactory, DbCacheMBean {
 
 	@SuppressWarnings("rawtypes")
 	@Override
-	public IEntity<?> createProxyEntity(IEntity<?> entity, Class<?> proxyClass, DbIndexService indexService) {
-		CacheConfig cacheConfig = getCacheConfig(entity.getClass());
+	public IEntity<?> createProxyEntity(IEntity<?> entity, Class<?> proxyClass, DbIndexService indexService, CacheConfig<?> cacheConfig) {
 		// 判断是否启用索引服务
 		if(cacheConfig == null || !cacheConfig.isEnableIndex()) {
 			return entity;
@@ -278,8 +284,7 @@ public class ConfigFactoryImpl implements ConfigFactory, DbCacheMBean {
 
 
 	@SuppressWarnings("unchecked")
-	private WeakCacheEntity<?, ?> wrapEntity(IEntity<?> entity, Class<?> entityClazz, Cache cache, Object key) {
-		CacheConfig<?> cacheConfig = getCacheConfig(entityClazz);
+	private WeakCacheEntity<?, ?> wrapEntity(IEntity<?> entity, Class<?> entityClazz, Cache cache, Object key, CacheConfig<?> cacheConfig) {
 		// 判断是否开启弱引用
 		if(cacheConfig == null || cacheConfig.getCacheType() != CacheType.WEEKMAP) {
 			return null;
@@ -290,21 +295,33 @@ public class ConfigFactoryImpl implements ConfigFactory, DbCacheMBean {
 
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	@Override
-	public CacheObject<?> createCacheObject(IEntity<?> entity,
-			Class<?> entityClazz, DbIndexService<?> indexService, Object key, Cache cache, UpdateStatus updateStatus, CacheConfig<?> cacheConfig) {
+	public <T extends IEntity<PK>, PK extends Comparable<PK> & Serializable> CacheObject<T> createCacheObject(
+			T entity, Class<? extends IEntity> entityClazz,
+			DbIndexService<?> indexService, Object key, Cache cache,
+			UpdateStatus updateStatus, CacheConfig<T> cacheConfig) {
+
+		// 创建索引属性表
+		Map<String, ValueGetter<T>> indexes = new HashMap<String, ValueGetter<T>>();
+		for(Entry<String, ValueGetter<T>> entry : cacheConfig.getIndexes().entrySet()) {
+			ValueGetter<T> instance = entry.getValue().clone();
+			instance.setTarget(entity);
+			indexes.put(entry.getKey(), instance);
+		}
+
 		// 判断是否开启弱引用
 		if(cacheConfig == null || cacheConfig.getCacheType() != CacheType.WEEKMAP) {
 			return new CacheObject(
 					entity, entity.getId(), entity.getClass(),
-					this.createProxyEntity(entity, cacheConfig.getProxyClazz(), indexService),
-					updateStatus);
+					this.createProxyEntity(entity, cacheConfig.getProxyClazz(), indexService, cacheConfig),
+					updateStatus, indexes);
 		}
 
+		// 创建弱引用缓存对象
 		return new WeakCacheObject(
-				this.wrapEntity(entity, entityClazz, cache, key),
+				this.wrapEntity(entity, entityClazz, cache, key, cacheConfig),
 				entity.getId(), entityClazz,
-				this.wrapEntity(this.createProxyEntity(entity, cacheConfig.getProxyClazz(), indexService),
-						entityClazz, cache, key), key, updateStatus);
+				this.wrapEntity(this.createProxyEntity(entity, cacheConfig.getProxyClazz(), indexService, cacheConfig),
+						entityClazz, cache, key, cacheConfig), key, updateStatus, indexes);
 	}
 
 

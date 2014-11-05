@@ -1,7 +1,11 @@
 package dbcache.model;
 
 import java.io.Serializable;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
+
+import dbcache.support.asm.ValueGetter;
 
 
 /**
@@ -47,6 +51,12 @@ public class CacheObject<T extends IEntity<?>> {
 	 */
 	private volatile UpdateStatus updateStatus = UpdateStatus.PERSIST;
 
+	/**
+	 * 索引信息
+	 * 索引名 - 属性
+	 */
+	private Map<String, ValueGetter<T>> indexes = new HashMap<String, ValueGetter<T>>();
+
 
 	/**
 	 * 默认构造方法
@@ -69,7 +79,7 @@ public class CacheObject<T extends IEntity<?>> {
 	 *            类型
 	 */
 	public CacheObject(T entity, Serializable id, Class<T> clazz, T proxyEntity) {
-		this(entity, id, clazz, proxyEntity, UpdateStatus.PERSIST);
+		this(entity, id, clazz, proxyEntity, UpdateStatus.PERSIST, null);
 	}
 
 	/**
@@ -85,12 +95,13 @@ public class CacheObject<T extends IEntity<?>> {
 	 *            更新方式
 	 */
 	public CacheObject(T entity, Serializable id, Class<T> clazz, T proxyEntity,
-			UpdateStatus updateStatus) {
+			UpdateStatus updateStatus, Map<String, ValueGetter<T>> indexes) {
 		this.entity = entity;
 		this.id = id;
 		this.clazz = clazz;
 		this.proxyEntity = proxyEntity;
 		this.updateStatus = updateStatus;
+		this.indexes = indexes;
 	}
 
 
@@ -147,6 +158,10 @@ public class CacheObject<T extends IEntity<?>> {
 
 	public UpdateStatus getUpdateStatus() {
 		return updateStatus;
+	}
+
+	public Map<String, ValueGetter<T>> getIndexes() {
+		return indexes;
 	}
 
 

@@ -217,7 +217,7 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 					}
 
 					// 创建缓存对象
-					cacheObject = (CacheObject<T>) configFactory.createCacheObject(entity, entityClazz, indexService, key, cache, UpdateStatus.PERSIST, cacheConfig);
+					cacheObject = configFactory.createCacheObject(entity, entityClazz, indexService, key, cache, UpdateStatus.PERSIST, cacheConfig);
 
 					wrapper = cache.putIfAbsent(key, cacheObject);
 
@@ -227,8 +227,8 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 						// 更新索引 需要外层加锁
 						entity = cacheObject.getEntity();
 						if(cacheConfig.isEnableIndex()) {
-							for(Map.Entry<String, ValueGetter<T>> entry : cacheConfig.getIndexes().entrySet()) {
-								Object indexValue = entry.getValue().get(entity);
+							for(Map.Entry<String, ValueGetter<T>> entry : cacheObject.getIndexes().entrySet()) {
+								Object indexValue = entry.getValue().get();
 								this.indexService.create(IndexValue.valueOf(entry.getKey(), indexValue, entity.getId()));
 							}
 						}
@@ -366,7 +366,7 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 
 		if (wrapper == null) {//缓存还不存在
 
-			cacheObject = (CacheObject<T>) configFactory.createCacheObject(entity, entity.getClass(), indexService, key, cache, UpdateStatus.PERSIST, cacheConfig);
+			cacheObject = configFactory.createCacheObject(entity, entity.getClass(), indexService, key, cache, UpdateStatus.PERSIST, cacheConfig);
 
 			wrapper = cache.putIfAbsent(key, cacheObject);
 			if (wrapper != null && wrapper.get() != null) {
@@ -395,8 +395,8 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 			//更新索引
 			if(cacheConfig.isEnableIndex()) {
 				entity = cacheObject.getEntity();
-				for(Map.Entry<String, ValueGetter<T>> entry : cacheConfig.getIndexes().entrySet()) {
-					Object indexValue = entry.getValue().get(entity);
+				for(Map.Entry<String, ValueGetter<T>> entry : cacheObject.getIndexes().entrySet()) {
+					Object indexValue = entry.getValue().get();
 					this.indexService.create(IndexValue.valueOf(entry.getKey(), indexValue, entity.getId()));
 				}
 			}
@@ -553,8 +553,8 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 			//更新索引
 			if(cacheConfig.isEnableIndex()) {
 				T entity = cacheObject.getEntity();
-				for(Map.Entry<String, ValueGetter<T>> entry : cacheConfig.getIndexes().entrySet()) {
-					Object indexValue = entry.getValue().get(entity);
+				for(Map.Entry<String, ValueGetter<T>> entry : cacheObject.getIndexes().entrySet()) {
+					Object indexValue = entry.getValue().get();
 					this.indexService.remove(IndexValue.valueOf(entry.getKey(), indexValue, entity.getId()));
 				}
 			}

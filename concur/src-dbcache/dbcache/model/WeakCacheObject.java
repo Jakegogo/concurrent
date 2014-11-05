@@ -2,6 +2,9 @@ package dbcache.model;
 
 import java.io.Serializable;
 import java.lang.ref.WeakReference;
+import java.util.Map;
+
+import dbcache.support.asm.ValueGetter;
 
 
 /**
@@ -54,8 +57,8 @@ public class WeakCacheObject<T extends IEntity<?>, R extends WeakCacheEntity<T,?
 	 */
 	@SuppressWarnings("unchecked")
 	public WeakCacheObject(WeakCacheEntity<T, ?> entity, Serializable id, Class<T> clazz, WeakCacheEntity<?,?> proxyEntity, Object key,
-			UpdateStatus updateStatus) {
-		super((T) entity, id, clazz, (T) proxyEntity, updateStatus);
+			UpdateStatus updateStatus, Map<String, ValueGetter<T>> indexes) {
+		super((T) entity, id, clazz, (T) proxyEntity, updateStatus, indexes);
 		this.hashCode = key.hashCode();
 	}
 

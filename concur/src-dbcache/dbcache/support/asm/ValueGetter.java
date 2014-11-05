@@ -6,7 +6,7 @@ package dbcache.support.asm;
  * @author Jake
  * @date 2014年11月2日下午6:33:26
  */
-public interface ValueGetter<T> extends Cloneable {
+public interface ValueGetter<T> {
 
 	/**
 	 * 设置真实对象
@@ -26,5 +26,11 @@ public interface ValueGetter<T> extends Cloneable {
 	 * @return
 	 */
 	public String getName();
+
+	/**
+	 * 克隆对象
+	 * @return
+	 */
+	public ValueGetter<T> clone();
 
 }

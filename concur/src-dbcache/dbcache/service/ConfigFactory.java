@@ -1,5 +1,7 @@
 package dbcache.service;
 
+import java.io.Serializable;
+
 import dbcache.conf.CacheConfig;
 import dbcache.model.CacheObject;
 import dbcache.model.IEntity;
@@ -18,22 +20,23 @@ public interface ConfigFactory {
 	 * @param entity 实体
 	 * @param proxyClass 代理类
 	 * @param indexService 索引服务
+	 * @param cacheConfig 缓存配置
 	 * @return
 	 */
 	@SuppressWarnings("rawtypes")
-	public IEntity<?> createProxyEntity(IEntity<?> entity, Class<?> proxyClass, DbIndexService indexService);
+	public IEntity<?> createProxyEntity(IEntity<?> entity, Class<?> proxyClass, DbIndexService indexService, CacheConfig<?> cacheConfig);
 
 	/**
 	 * 创建缓存对象
 	 * @param entity 实体
-	 * @param entityClazz 实体类
+	 * @param class1 实体类
 	 * @param indexService 索引服务
 	 * @param cache 实体缓存容器
 	 * @param updateStatus 更新状态
 	 * @param cacheConfig 缓存配置
 	 * @return
 	 */
-	public CacheObject<?> createCacheObject(IEntity<?> entity, Class<?> entityClazz, DbIndexService<?> indexService, Object key, Cache cache, UpdateStatus updateStatus, CacheConfig<?> cacheConfig);
+	public <T extends IEntity<PK>, PK extends Comparable<PK> & Serializable> CacheObject<T> createCacheObject(T entity, Class<? extends IEntity> class1, DbIndexService<?> indexService, Object key, Cache cache, UpdateStatus updateStatus, CacheConfig<T> cacheConfig);
 
 	/**
 	 * 获取DbCacheServiceBean
