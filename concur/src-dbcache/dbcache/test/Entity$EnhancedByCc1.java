@@ -4,7 +4,7 @@ import dbcache.model.EntityInitializer;
 import dbcache.model.IEntity;
 
 public class Entity$EnhancedByCc1
-  implements EntityInitializer, IEntity<Integer>
+  implements EntityInitializer, IEntity<Long>
 {
   protected Entity obj;
 
@@ -17,9 +17,9 @@ public class Entity$EnhancedByCc1
     this.obj = paramEntity;
   }
 
-  public Integer getId()
+  public Long getId()
   {
-    Integer localInteger = this.obj.getId();
+    Long localInteger = this.obj.getId();
     return localInteger;
   }
 
@@ -66,7 +66,7 @@ public class Entity$EnhancedByCc1
     this.obj.doBeforePersist();
   }
 
-  public void setId(Integer paramInteger)
+  public void setId(Long paramInteger)
   {
     this.obj.setId(paramInteger);
   }

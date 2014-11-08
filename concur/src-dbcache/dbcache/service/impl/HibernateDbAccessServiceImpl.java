@@ -107,7 +107,7 @@ public class HibernateDbAccessServiceImpl extends HibernateDaoSupport implements
 	 */
 	@SuppressWarnings("unchecked")
 	@Override
-	public Collection<Serializable> listIdByIndex(
+	public Collection<?> listIdByIndex(
 			Class<?> entityClazz, String fieldName,
 			Object fieldValue) {
 		return getSession()

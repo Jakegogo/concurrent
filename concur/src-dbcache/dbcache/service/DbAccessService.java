@@ -73,7 +73,7 @@ public interface DbAccessService {
 	 * @param indexValue 索引值
 	 * @return
 	 */
-	Collection<Serializable> listIdByIndex(Class<?> entityClazz,
+	Collection<?> listIdByIndex(Class<?> entityClazz,
 			String fieldName, Object indexValue);
 
 }
