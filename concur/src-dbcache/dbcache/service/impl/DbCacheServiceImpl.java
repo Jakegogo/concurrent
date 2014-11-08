@@ -414,36 +414,26 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 				@Override
 				public void run() {
 
-					//缓存对象在提交之后被修改过
-					if(editVersion < cacheObj.getEditVersion()) {
+					// 判断是否有效
+					if(!this.valid()) {
 						return;
 					}
 
-					//比较并更新入库版本号
-					if (!cacheObj.compareAndUpdateDbSync(dbVersion, editVersion)) {
-						return;
-					}
-
-					//持久化前操作
+					// 持久化前操作
 					if(entity instanceof EntityInitializer){
 						EntityInitializer entityInitializer = (EntityInitializer) entity;
 						entityInitializer.doBeforePersist();
 					}
 
-					//缓存对象在提交之后被入库过
-					if(cacheObj.getDbVersion() > editVersion) {
-						return;
-					}
-
-					//持久化
+					// 持久化
 					dbAccessService.save(entity);
 				}
 
 				@Override
 				public String getPersistInfo() {
 
-					//缓存对象在提交之后被修改过
-					if(editVersion < cacheObj.getEditVersion()) {
+					// 判断状态有效性
+					if(!this.valid()) {
 						return null;
 					}
 
@@ -452,7 +442,7 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 
 				@Override
 				public boolean valid() {
-					return editVersion == cacheObj.getEditVersion();
+					return cacheObj.getUpdateStatus() != UpdateStatus.DELETED;
 				}
 
 			});
@@ -547,10 +537,16 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 		final CacheObject<T> cacheObject = this.get(clazz, id);
 
 		if (cacheObject != null) {
-			//标记为已经删除
+
+			// 是否已经被删除
+			if(cacheObject.getUpdateStatus() == UpdateStatus.DELETED) {
+				return;
+			}
+
+			// 标记为已经删除
 			cacheObject.setUpdateStatus(UpdateStatus.DELETED);
 
-			//更新索引
+			// 更新索引
 			if(cacheConfig.isEnableIndex()) {
 				T entity = cacheObject.getEntity();
 				for(Map.Entry<String, ValueGetter<T>> entry : cacheObject.getIndexes().entrySet()) {
@@ -559,7 +555,7 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 				}
 			}
 
-			//最新修改版本号
+			// 最新修改版本号
 			final long editVersion = cacheObject.increseEditVersion();
 			final long dbVersion = cacheObject.getDbVersion();
 
@@ -570,33 +566,38 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 				@Override
 				public void run() {
 
-					//缓存对象在提交之后被修改过
+					// 判断是否已经标记删除
+					if(cacheObject.getUpdateStatus() != UpdateStatus.DELETED) {
+						return;
+					}
+
+					// 缓存对象在提交之后被修改过
 					if(editVersion < cacheObject.getEditVersion()) {
 						return;
 					}
 
-					//比较并更新入库版本号
+					// 比较并更新入库版本号
 					if (!cacheObject.compareAndUpdateDbSync(dbVersion, editVersion)) {
 						return;
 					}
 
-					//缓存对象在提交之后被入库过
+					// 缓存对象在提交之后被入库过
 					if(cacheObject.getDbVersion() > editVersion) {
 						return;
 					}
 
-					//持久化
+					// 持久化
 					dbAccessService.delete(entity);
 					Object key = CacheRule.getEntityIdKey(id, clazz);
-					//从缓存中移除
+					// 从缓存中移除
 					cache.evict(key);
 				}
 
 				@Override
 				public String getPersistInfo() {
 
-					//缓存对象在提交之后被修改过
-					if(editVersion < cacheObject.getEditVersion()) {
+					// 缓存对象在提交之后被修改过
+					if(cacheObject.getUpdateStatus() == UpdateStatus.DELETED || editVersion < cacheObject.getEditVersion()) {
 						return null;
 					}
 
@@ -606,7 +607,7 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 
 				@Override
 				public boolean valid() {
-					return editVersion == cacheObject.getEditVersion();
+					return cacheObject.getUpdateStatus() == UpdateStatus.DELETED && editVersion == cacheObject.getEditVersion();
 				}
 
 
