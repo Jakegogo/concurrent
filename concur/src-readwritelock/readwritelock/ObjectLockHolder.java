@@ -16,8 +16,7 @@ import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 
-
-
+import com.jake.utils.ConcurrentWeakHashMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -50,10 +49,10 @@ public class ObjectLockHolder {
 		/** 类型唯一锁 */
 		private final ReadWriteLock tieLock = new ReentrantReadWriteLock();
 		/** 对象实例与其对应的锁缓存 */
-		private final WeakHashMap<Object, ObjectLock> locks = new WeakHashMap<Object, ObjectLock>();
+		private final ConcurrentWeakHashMap<Object, ObjectLock> locks = new ConcurrentWeakHashMap<Object, ObjectLock>();
 		/** 持有者内置读写锁 */
 		private final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
-		
+
 		/**
 		 * 创建一个持有者实例
 		 * @param clz
@@ -68,15 +67,9 @@ public class ObjectLockHolder {
 		 * @return
 		 */
 		public ObjectLock getLock(Object object) {
-			Lock lock = this.lock.readLock();
-			try {
-				lock.lock();
-				ObjectLock result = locks.get(object);
-				if (result != null) {
-					return result;
-				}
-			} finally {
-				lock.unlock();
+			ObjectLock result = locks.get(object);
+			if (result != null) {
+				return result;
 			}
 			return createLock(object);
 		}
@@ -87,23 +80,17 @@ public class ObjectLockHolder {
 		 * @return
 		 */
 		private ObjectLock createLock(Object object) {
-			Lock lock = this.lock.writeLock();
-			try {
-				lock.lock();
-				ObjectLock result = locks.get(object);
-				if (result != null) {
-					return result;
-				}
-				if(log.isWarnEnabled()) {
-					result = new DebugReentrantReadWriteLock(object);
-				} else {
-					result = new ObjectLock(object);
-				}
-				locks.put(object, result);
+			ObjectLock result = locks.get(object);
+			if (result != null) {
 				return result;
-			} finally {
-				lock.unlock();
 			}
+			if(log.isWarnEnabled()) {
+				result = new DebugReentrantReadWriteLock(object);
+			} else {
+				result = new ObjectLock(object);
+			}
+			locks.putIfAbsent(object, result);
+			return locks.get(object);
 		}
 
 		/**

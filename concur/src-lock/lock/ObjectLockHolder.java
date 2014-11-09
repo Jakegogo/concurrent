@@ -3,12 +3,11 @@ package lock;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.WeakHashMap;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
 
+import com.jake.utils.ConcurrentWeakHashMap;
 import dbcache.utils.JsonUtils;
 
 /**
@@ -30,10 +29,8 @@ public class ObjectLockHolder {
 		/** 类型唯一锁 */
 		private final Lock tieLock = new ReentrantLock();
 		/** 对象实例与其对应的锁缓存 */
-		private final WeakHashMap<Object, ObjectLock> locks = new WeakHashMap<Object, ObjectLock>();
-		
-		private final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
-		
+		private final ConcurrentWeakHashMap<Object, ObjectLock> locks = new ConcurrentWeakHashMap<Object, ObjectLock>();
+
 		/**
 		 * 创建一个持有者实例
 		 * @param clz
@@ -48,15 +45,9 @@ public class ObjectLockHolder {
 		 * @return
 		 */
 		public ObjectLock getLock(Object object) {
-			Lock lock = this.lock.readLock();
-			try {
-				lock.lock();
-				ObjectLock result = locks.get(object);
-				if (result != null) {
-					return result;
-				}
-			} finally {
-				lock.unlock();
+			ObjectLock result = locks.get(object);
+			if (result != null) {
+				return result;
 			}
 			return createLock(object);
 		}
@@ -67,19 +58,14 @@ public class ObjectLockHolder {
 		 * @return
 		 */
 		private ObjectLock createLock(Object object) {
-			Lock lock = this.lock.writeLock();
-			try {
-				lock.lock();
-				ObjectLock result = locks.get(object);
-				if (result != null) {
-					return result;
-				}
-				result = new ObjectLock(object);
-				locks.put(object, result);
+			ObjectLock result = locks.get(object);
+			if (result != null) {
 				return result;
-			} finally {
-				lock.unlock();
 			}
+			result = new ObjectLock(object);
+			locks.putIfAbsent(object, result);
+			return locks.get(object);
+
 		}
 
 		/**
