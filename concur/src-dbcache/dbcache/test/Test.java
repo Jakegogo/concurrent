@@ -7,20 +7,19 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import dbcache.utils.ConcurrentWeakHashMap;
 import javassist.CannotCompileException;
 import javassist.NotFoundException;
 
 import javax.annotation.Resource;
 
+import org.junit.Assert;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import dbcache.model.CacheObject;
-import dbcache.model.FlushMode;
 import dbcache.proxy.asm.EntityAsmFactory;
 import dbcache.service.Cache;
 import dbcache.service.DbCacheService;
@@ -267,6 +266,22 @@ public class Test {
 	@org.junit.Test
 	public void t11() {
 		new String().getBytes();
+	}
+
+
+	@org.junit.Test
+	public void t12() {
+		ConcurrentWeakHashMap map = new ConcurrentWeakHashMap<Entity,Integer>();
+
+		for(int i = 0;i < 100000;i++) {
+			Entity entity = new Entity();
+			entity.setId(Long.valueOf(i));
+
+			map.putIfAbsent(entity, i);
+
+			Assert.assertEquals(map.get(entity), Integer.valueOf(i));
+		}
+
 	}
 
 

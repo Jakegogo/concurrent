@@ -46,10 +46,6 @@ public class InTimeDbPersistService implements DbPersistService {
 	private DbRuleService dbRuleService;
 
 
-	@Autowired
-	@Qualifier("hibernateDbAccessServiceImpl")
-	private DbAccessService dbAccessService;
-
 
 	@Override
 	public void init() {
@@ -57,10 +53,14 @@ public class InTimeDbPersistService implements DbPersistService {
 		// 初始化入库线程
 		ThreadGroup threadGroup = new ThreadGroup("缓存模块");
 		NamedThreadFactory threadFactory = new NamedThreadFactory(threadGroup, "即时入库线程池");
+
+		// 设置线程池大小
 		int dbPoolSize = dbRuleService.getDbPoolSize();
 		if(dbPoolSize <= 0) {
 			dbPoolSize = DEFAULT_DB_POOL_SIZE;
 		}
+
+		// 初始化线程池
 		DB_POOL_SERVICE = Executors.newFixedThreadPool(dbPoolSize, threadFactory);
 
 	}

@@ -4,6 +4,7 @@ import java.io.Serializable;
 import java.lang.ref.ReferenceQueue;
 import java.util.concurrent.ConcurrentMap;
 
+import dbcache.utils.ConcurrentWeakHashMap;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -12,9 +13,6 @@ import com.googlecode.concurrentlinkedhashmap.EvictionListener;
 
 import dbcache.service.Cache;
 import dbcache.service.DbRuleService;
-import dbcache.utils.weakref.ConcurrentReferenceMap;
-import dbcache.utils.weakref.ConcurrentReferenceMap.ReferenceKeyType;
-import dbcache.utils.weakref.ConcurrentReferenceMap.ReferenceValueType;
 
 /**
  * ConcurrentLinkedHashMap缓存容器
@@ -46,7 +44,7 @@ public class ConcurrentLinkedHashMapCache implements Cache {
 	/**
 	 * 已经回收的实体
 	 */
-	private ConcurrentReferenceMap<Object, Object> evictions;
+	private ConcurrentWeakHashMap<Object, Object> evictions;
 
 
 	/**
@@ -56,7 +54,7 @@ public class ConcurrentLinkedHashMapCache implements Cache {
 	 */
 	public void init(int entityCacheSize, int concurrencyLevel) {
 
-		this.evictions = new ConcurrentReferenceMap<Object, Object>(ReferenceKeyType.STRONG, ReferenceValueType.WEAK);
+		this.evictions = new ConcurrentWeakHashMap<Object, Object>();
 
 		this.store = new ConcurrentLinkedHashMap.Builder<Object, ValueWrapper>()
 				.maximumWeightedCapacity(entityCacheSize > 0 ? entityCacheSize : DEFAULT_MAX_CAPACITY_OF_ENTITY_CACHE)
@@ -221,7 +219,7 @@ public class ConcurrentLinkedHashMapCache implements Cache {
 	@SuppressWarnings("rawtypes")
 	@Override
 	public ReferenceQueue getReferencequeue() {
-		return evictions.getReferenceQueue();
+		return null;
 	}
 
 

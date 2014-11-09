@@ -3,7 +3,9 @@ package dbcache.service.impl;
 import java.util.Iterator;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
+import dbcache.utils.NamedThreadFactory;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -46,9 +48,10 @@ public class DelayDbPersistService implements DbPersistService {
 	private DbRuleService dbRuleService;
 
 
-	@Autowired
-	@Qualifier("hibernateDbAccessServiceImpl")
-	private DbAccessService dbAccessService;
+	/**
+	 * 入库线程池
+	 */
+	private ExecutorService DB_POOL_SERVICE;
 
 
 	/**
@@ -82,13 +85,18 @@ public class DelayDbPersistService implements DbPersistService {
 		final long delayCheckTimmer = 1000;//延迟入库队列检测时间间隔(毫秒)
 
 		// 初始化入库线程
-		new Thread() {
+		ThreadGroup threadGroup = new ThreadGroup("缓存模块");
+		NamedThreadFactory threadFactory = new NamedThreadFactory(threadGroup, "延时入库线程池");
+		DB_POOL_SERVICE = Executors.newSingleThreadExecutor(threadFactory);
+
+		// 初始化入库线程
+		DB_POOL_SERVICE.submit(new Runnable() {
 
 			@Override
 			public void run() {
 
 				//循环定时检测入库,失败自动进入重试
-				while(true) {
+				while (true) {
 
 					UpdateAction updateAction = updateQueue.poll();
 					try {
@@ -96,7 +104,7 @@ public class DelayDbPersistService implements DbPersistService {
 						long timeDiff = 0l;
 						do {
 
-							if(updateAction == null) {
+							if (updateAction == null) {
 								//等待下一个检测时间
 								Thread.sleep(delayCheckTimmer);
 							} else {
@@ -104,7 +112,7 @@ public class DelayDbPersistService implements DbPersistService {
 								timeDiff = System.currentTimeMillis() - updateAction.createTime;
 
 								//未到延迟入库时间
-								if(timeDiff < delayWaitTimmer) {
+								if (timeDiff < delayWaitTimmer) {
 									currentDelayUpdateAction = updateAction;
 
 									//等待
@@ -113,23 +121,23 @@ public class DelayDbPersistService implements DbPersistService {
 
 								//执行入库
 								PersistAction persistAction = updateAction.persistAction;
-								if(persistAction.valid()) {
+								if (persistAction.valid()) {
 									persistAction.run();
 								}
 							}
 
 							//获取下一个有效的操作元素
 							updateAction = updateQueue.poll();
-							while(!updateAction.persistAction.valid()) {
+							while (!updateAction.persistAction.valid()) {
 								updateAction = updateQueue.poll();
 							}
 
-						} while(true);
+						} while (true);
 
-					} catch(Exception e) {
+					} catch (Exception e) {
 						e.printStackTrace();
 
-						if(updateAction != null && updateAction.persistAction != null) {
+						if (updateAction != null && updateAction.persistAction != null) {
 							logger.error("执行入库时产生异常! 如果是主键冲突异常可忽略!" + updateAction.persistAction.getPersistInfo(), e);
 						}
 						//等待下一个检测时间重试入库
@@ -141,7 +149,7 @@ public class DelayDbPersistService implements DbPersistService {
 					}
 				}
 			}
-		}.start();
+		});
 
 	}
 
@@ -194,7 +202,7 @@ public class DelayDbPersistService implements DbPersistService {
 
 	@Override
 	public ExecutorService getThreadPool() {
-		return null;
+		return DB_POOL_SERVICE;
 	}
 
 

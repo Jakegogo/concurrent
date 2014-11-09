@@ -74,20 +74,26 @@ public class ConcurrentWeekHashMapCache implements Cache {
 			@Override
 			public void run() {
 
-				long waitTimmer = TimeUnit.SECONDS.toMillis(1);
-				while (true) {
-					try {
-						for(Iterator<FinalizableReferenceQueue> it = referenceQueues.iterator();it.hasNext();) {
-							it.next().cleanUp(waitTimmer);
+				try {
+
+					long waitTimmer = TimeUnit.SECONDS.toMillis(1);
+					while (true) {
+						try {
+							for (Iterator<FinalizableReferenceQueue> it = referenceQueues.iterator(); it.hasNext(); ) {
+								it.next().cleanUp(waitTimmer);
+							}
+						} catch (Exception e) {
+							e.printStackTrace();
 						}
-					} catch (Exception e) {
-						e.printStackTrace();
+						try {
+							Thread.sleep(waitTimmer);
+						} catch (InterruptedException e) {
+							e.printStackTrace();
+						}
 					}
-					try {
-						Thread.sleep(waitTimmer);
-					} catch (InterruptedException e) {
-						e.printStackTrace();
-					}
+
+				} catch (Exception e) {
+					e.printStackTrace();
 				}
 			}
 		};

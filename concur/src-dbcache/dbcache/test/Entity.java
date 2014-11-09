@@ -96,6 +96,27 @@ public class Entity implements EntityInitializer, IEntity<Long> {
 		this.a = a;
 	}
 
+
+	@Override
+	public int hashCode() {
+		return 305668771 + 1793910479 * this.getId().hashCode();
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if(this == obj) {
+			return true;
+		}
+		if(obj == null) {
+			return false;
+		}
+		if(!(obj instanceof Entity)) {
+			return false;
+		}
+		Entity target = (Entity) obj;
+		return this.id.equals(target.id);
+	}
+
 	public static void main(String[] args) {
 
 		for(Method method : Entity.class.getDeclaredMethods() ) {
