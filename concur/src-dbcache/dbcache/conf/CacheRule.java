@@ -16,7 +16,7 @@ public class CacheRule {
 	 * @return String key
 	 */
 	public static Integer getEntityIdKey(Serializable id, Class<?> entityClazz) {
-		return (17 + entityClazz.hashCode()) * 37 + id.hashCode();
+		return Integer.valueOf((17 + entityClazz.hashCode()) * 37 + id.hashCode());
 	}
 
 
@@ -27,7 +27,7 @@ public class CacheRule {
 	 * @return
 	 */
 	public static Integer getIndexIdKey(String indexName, Object indexValue) {
-		return (17 + indexName.hashCode()) * 37 + indexValue.hashCode();
+		return Integer.valueOf((17 + indexName.hashCode()) * 37 + indexValue.hashCode());
 	}
 
 }
