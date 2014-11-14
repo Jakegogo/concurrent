@@ -36,6 +36,7 @@ public interface ConfigFactory {
 	 * @param cacheConfig 缓存配置
 	 * @return
 	 */
+	@SuppressWarnings("rawtypes")
 	public <T extends IEntity<PK>, PK extends Comparable<PK> & Serializable> CacheObject<T> createCacheObject(T entity, Class<? extends IEntity> class1, DbIndexService<?> indexService, Object key, Cache cache, UpdateStatus updateStatus, CacheConfig<T> cacheConfig);
 
 	/**

@@ -45,7 +45,6 @@ import dbcache.service.DbCacheMBean;
 import dbcache.service.DbCacheService;
 import dbcache.service.DbIndexService;
 import dbcache.service.DbPersistService;
-import dbcache.support.asm.AbstractFieldGetter;
 import dbcache.support.asm.AsmAccessHelper;
 import dbcache.support.asm.ValueGetter;
 import dbcache.utils.AsmUtils;

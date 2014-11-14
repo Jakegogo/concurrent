@@ -5,18 +5,16 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import dbcache.utils.NamedThreadFactory;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
 import dbcache.model.PersistAction;
-import dbcache.service.DbAccessService;
 import dbcache.service.DbPersistService;
 import dbcache.service.DbRuleService;
+import dbcache.utils.NamedThreadFactory;
 
 
 /**

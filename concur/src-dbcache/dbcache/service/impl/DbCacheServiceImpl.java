@@ -403,10 +403,7 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 
 			@SuppressWarnings("rawtypes")
 			final CacheObject cacheObj = cacheObject;
-			//最新修改版本号
-			final long editVersion = cacheObject.increseEditVersion();
-			final long dbVersion = cacheObject.getDbVersion();
-
+			
 			dbPersistService.handlerPersist(new PersistAction() {
 
 				Object entity = cacheObj.getEntity();

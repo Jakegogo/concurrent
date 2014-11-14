@@ -105,7 +105,6 @@ public class HibernateDbAccessServiceImpl extends HibernateDaoSupport implements
 	/**
 	 * 更加属性名和属性值获取ID列表
 	 */
-	@SuppressWarnings("unchecked")
 	@Override
 	public Collection<?> listIdByIndex(
 			Class<?> entityClazz, String fieldName,
