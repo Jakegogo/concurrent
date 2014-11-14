@@ -65,7 +65,7 @@ public class ConcurrentLruHashMapCache implements Cache {
 
 		this.evictions = new ConcurrentWeakHashMap<Object, Object>();
 
-		cleanupThread.init();
+		cleanupThread.start();
 
 		int size = (entityCacheSize * 4 + 3) / 3;
 		this.store = new ConcurrentLRUCache<Object, ValueWrapper>(size, entityCacheSize, (int) Math

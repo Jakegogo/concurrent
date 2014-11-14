@@ -31,13 +31,13 @@ public class CleanupThread extends Thread
         caches.add(new WeakReference<ConcurrentLRUCache>(c));
     }
 
-
-    public void init() {
+    @Override
+    public void start() {
         if(!started) {
             synchronized (this)
             {
                 if(!started) {
-                    this.start();
+                    super.start();
                     started = true;
                 }
             }
