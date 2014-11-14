@@ -85,6 +85,11 @@ public class Test {
 			if(i%10000000 == 0) {
 				System.out.println(ThreadUtils.dumpThreadPool("入库线程池", this.cacheService.getThreadPool()));
 			}
+
+			if(i%10000 == 0) {
+				Thread.sleep(10);
+			}
+
 			entity = null;
 //			System.gc();
 		}

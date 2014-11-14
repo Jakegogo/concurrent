@@ -164,7 +164,7 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 	@Override
 	public T get(PK id) {
 
-		final CacheObject<T> cacheObject = this.get(clazz, id);
+		final CacheObject<T> cacheObject = this.getCacheObject(id);
 		if (cacheObject != null) {
 			return (T) cacheObject.getProxyEntity();
 		}
@@ -175,14 +175,11 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 
 	/**
 	 * 获取缓存对象
-	 * @param entityClazz 实体类型
-	 * @param id 实体id
+	 * @param key 实体id
 	 * @return
 	 */
 	@SuppressWarnings("unchecked")
-	private CacheObject<T> get(Class<T> entityClazz, Serializable id) {
-
-		final Object key = CacheRule.getEntityIdKey(id, entityClazz);
+	private CacheObject<T> getCacheObject(Serializable key) {
 
 		Cache.ValueWrapper wrapper = (Cache.ValueWrapper) cache.get(key);
 		if(wrapper != null) {	// 已经缓存
@@ -208,7 +205,7 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 			wrapper = (Cache.ValueWrapper) cache.get(key);
 			if (wrapper == null) {
 
-				T entity = dbAccessService.get(entityClazz, id);
+				T entity = dbAccessService.get(clazz, key);
 				if (entity != null) {
 					// 调用初始化
 					if(entity instanceof EntityInitializer){
@@ -217,7 +214,7 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 					}
 
 					// 创建缓存对象
-					cacheObject = configFactory.createCacheObject(entity, entityClazz, indexService, key, cache, UpdateStatus.PERSIST, cacheConfig);
+					cacheObject = configFactory.createCacheObject(entity, clazz, indexService, key, cache, UpdateStatus.PERSIST, cacheConfig);
 
 					wrapper = cache.putIfAbsent(key, cacheObject);
 
@@ -361,7 +358,7 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 
 		//存储到缓存
 		CacheObject<T> cacheObject = null;
-		final Object key = CacheRule.getEntityIdKey(entity.getId(), entity.getClass());
+		final Object key = entity.getId();
 		Cache.ValueWrapper wrapper = (Cache.ValueWrapper) cache.get(key);
 
 		if (wrapper == null) {//缓存还不存在
@@ -453,7 +450,7 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 	@Override
 	public void submitUpdated2Queue(T entity) {
 
-		final CacheObject<T> cacheObject = this.get(clazz, entity.getId());
+		final CacheObject<T> cacheObject = this.getCacheObject(entity.getId());
 
 		if (cacheObject != null) {
 			// 验证缓存操作原子性(缓存实体必须唯一)
@@ -531,7 +528,7 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 	@Override
 	public void submitDeleted2Queue(final PK id) {
 
-		final CacheObject<T> cacheObject = this.get(clazz, id);
+		final CacheObject<T> cacheObject = this.getCacheObject(id);
 
 		if (cacheObject != null) {
 
@@ -585,9 +582,8 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 
 					// 持久化
 					dbAccessService.delete(entity);
-					Object key = CacheRule.getEntityIdKey(id, clazz);
 					// 从缓存中移除
-					cache.evict(key);
+					cache.evict(id);
 				}
 
 				@Override

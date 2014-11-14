@@ -101,6 +101,7 @@ public class ConcurrentLinkedHashMapCache implements Cache {
 		}
 		value = this.evictions.get(key);
 		if(value != null) {
+			this.putIfAbsent(key, value);
 			return SimpleValueWrapper.valueOf(value);
 		}
 		return null;
