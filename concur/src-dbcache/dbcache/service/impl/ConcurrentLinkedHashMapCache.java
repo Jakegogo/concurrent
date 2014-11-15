@@ -15,7 +15,7 @@ import dbcache.service.Cache;
 import dbcache.service.DbRuleService;
 
 /**
- * ConcurrentLinkedHashMap缓存容器
+ * 谷歌ConcurrentLinkedHashMap缓存容器
  * 如果外部持有缓存对象的引用,对象将不会被回收
  * @author jake
  * @date 2014-7-31-下午8:24:23
@@ -101,8 +101,12 @@ public class ConcurrentLinkedHashMapCache implements Cache {
 		}
 		value = this.evictions.get(key);
 		if(value != null) {
+			// 添加到主缓存
 			this.putIfAbsent(key, value);
-			return SimpleValueWrapper.valueOf(value);
+			// 从临时缓存中移除
+			this.evictions.remove(key);
+
+			return this.get(key);
 		}
 		return null;
 	}

@@ -80,11 +80,13 @@ public class ConcurrentLRUCache<K, V>
         this.acceptableWaterMark = acceptableWatermark;
         this.evictionListener = evictionListener;
         if(cleanupThread != null) {
+            this.cleanupThread = cleanupThread;
             cleanupThread.addConcurrentLRUCache(this);
+            this.cleanupThread.start();
         } else if (runCleanupThread)
         {
-            cleanupThread = new CleanupThread(this);
-            cleanupThread.start();
+            this.cleanupThread = new CleanupThread(this);
+            this.cleanupThread.start();
         }
     }
 
@@ -181,7 +183,7 @@ public class ConcurrentLRUCache<K, V>
             }
             else if (cleanupThread != null)
             {
-                cleanupThread.wakeThread();
+                cleanupThread.wakeThread(this);
             }
             else
             {
@@ -244,7 +246,7 @@ public class ConcurrentLRUCache<K, V>
             }
             else if (cleanupThread != null)
             {
-                cleanupThread.wakeThread();
+                cleanupThread.wakeThread(this);
             }
             else
             {
@@ -736,7 +738,7 @@ public class ConcurrentLRUCache<K, V>
         {
             if (cleanupThread != null)
             {
-                cleanupThread.stopThread();
+                cleanupThread.stopThread(this);
             }
         }
         finally

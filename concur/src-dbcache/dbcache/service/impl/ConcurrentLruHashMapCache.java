@@ -18,7 +18,7 @@ import dbcache.service.Cache;
 import dbcache.service.DbRuleService;
 
 /**
- * ConcurrentLRUCache缓存容器
+ * Apache ConcurrentLRUCache缓存容器
  * 如果外部持有缓存对象的引用,对象将不会被回收
  * @author jake
  * @date 2014-7-31-下午8:24:23
@@ -65,17 +65,16 @@ public class ConcurrentLruHashMapCache implements Cache {
 
 		this.evictions = new ConcurrentWeakHashMap<Object, Object>();
 
-		cleanupThread.start();
-
 		int size = (entityCacheSize * 4 + 3) / 3;
 		this.store = new ConcurrentLRUCache<Object, ValueWrapper>(size, entityCacheSize, (int) Math
 				.floor((entityCacheSize + size) / 2), (int) Math
-				.ceil(0.75 * size), false, false, new ConcurrentLRUCache.EvictionListener<Object, ValueWrapper>() {
+				.ceil(0.75 * size), true, false, new ConcurrentLRUCache.EvictionListener<Object, ValueWrapper>() {
 
 			@Override
 			public void evictedEntry(Object key, ValueWrapper value) {
 				evictions.put(key, value.get());
 			}
+
 		}, cleanupThread);
 
 	}
@@ -95,8 +94,12 @@ public class ConcurrentLruHashMapCache implements Cache {
 		}
 		value = this.evictions.get(key);
 		if(value != null) {
+			// 添加到主缓存
 			this.putIfAbsent(key, value);
-			return SimpleValueWrapper.valueOf(value);
+			// 从临时缓存中移除
+			this.evictions.remove(key);
+
+			return this.get(key);
 		}
 		return null;
 	}

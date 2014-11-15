@@ -15,7 +15,7 @@ import dbcache.conf.PersistType;
 import dbcache.model.EntityInitializer;
 import dbcache.model.IEntity;
 
-@Cached(persistType=PersistType.INTIME, enableIndex = true, cacheType=CacheType.LRU)
+@Cached(persistType=PersistType.INTIME, enableIndex = true, cacheType=CacheType.LRU, entitySize = 2)
 @javax.persistence.Entity
 public class Entity implements EntityInitializer, IEntity<Long> {
 
@@ -54,8 +54,9 @@ public class Entity implements EntityInitializer, IEntity<Long> {
 	}
 
 	@UpdateIndex({ "num_idx" })
-	public void addNum(int num) {
+	public int addNum(int num) {
 		this.num += num;
+		return this.num;
 	}
 
 

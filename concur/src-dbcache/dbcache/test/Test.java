@@ -284,7 +284,23 @@ public class Test {
 
 			map.putIfAbsent(entity, i);
 
-			Assert.assertEquals(map.get(entity), Integer.valueOf(i));
+			Assert.assertEquals(entity, Integer.valueOf(i));
+		}
+
+	}
+
+
+	@org.junit.Test
+	public void t13() {
+
+		for(int i = 0;i < 100;i++) {
+			Long id = Long.valueOf(i + 100);
+			Entity entity = new Entity();
+			entity.setId(id);
+
+			this.cacheService.submitNew2Queue(entity);
+
+			Assert.assertEquals(entity, this.cacheService.get(id));
 		}
 
 	}

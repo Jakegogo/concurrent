@@ -9,11 +9,21 @@ import java.lang.ref.WeakReference;
 */
 public class CleanupThread extends Thread
 {
+    // ConcurrentLRUCaches
     private static ConcurrentHashSet<WeakReference<ConcurrentLRUCache>>
             caches = new ConcurrentHashSet<WeakReference<ConcurrentLRUCache>>();
 
+    // 需要Clean的Cache队列
+    private ConcurrentHashSet<ConcurrentLRUCache>
+            cleanQueue = new ConcurrentHashSet<ConcurrentLRUCache>();
+
+    // 是否停止线程
     private volatile boolean stop = false;
 
+    // 正在markAndSweep
+    private volatile boolean sweeping = false;
+
+    // 是否已经start Thread
     private boolean started = false;
 
 
@@ -67,32 +77,53 @@ public class CleanupThread extends Thread
             {
                 break;
             }
+            sweeping = true;
             for(WeakReference<ConcurrentLRUCache> cache : caches) {
 
                 ConcurrentLRUCache c = cache.get();
                 if (c == null) {
-                    caches.remove(c);
+                    caches.remove(cache);
                     continue;
                 }
-                c.markAndSweep();
+                if(cleanQueue.remove(c)) {
+                    c.markAndSweep();
+                }
             }
+            sweeping = false;
         }
     }
 
 
-    void wakeThread()
+    void wakeThread(ConcurrentLRUCache target)
     {
+        if(sweeping) {
+            cleanQueue.add(target);
+            return;
+        }
         synchronized (this)
         {
+            cleanQueue.add(target);
             this.notify();
         }
     }
 
-    void stopThread()
+
+    void stopThread(ConcurrentLRUCache target)
     {
         synchronized (this)
         {
-            stop = true;
+            for(WeakReference<ConcurrentLRUCache> cache : caches) {
+
+                ConcurrentLRUCache c = cache.get();
+                if (c == target) {
+                    caches.remove(cache);
+                    break;
+                }
+            }
+            cleanQueue.remove(target);
+            if(caches.isEmpty()) {
+                stop = true;
+            }
             this.notify();
         }
     }
