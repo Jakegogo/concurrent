@@ -16,6 +16,8 @@ import dbcache.service.DbPersistService;
 import dbcache.service.DbRuleService;
 import dbcache.utils.NamedThreadFactory;
 
+import javax.annotation.PostConstruct;
+
 
 /**
  * 延时入库实现类
@@ -74,7 +76,7 @@ public class DelayDbPersistService implements DbPersistService {
 	}
 
 
-	@Override
+	@PostConstruct
 	public void init() {
 
 		//初始化延时入库检测线程

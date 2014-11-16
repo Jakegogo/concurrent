@@ -12,11 +12,6 @@ import dbcache.model.PersistAction;
 public interface DbPersistService {
 
 	/**
-	 * 执行初始化
-	 */
-	public void init();
-
-	/**
 	 * 处理持久化
 	 * @param persistAction 持久化行为
 	 */

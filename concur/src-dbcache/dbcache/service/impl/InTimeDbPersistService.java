@@ -15,6 +15,8 @@ import dbcache.service.DbRuleService;
 import dbcache.utils.NamedThreadFactory;
 import dbcache.utils.ThreadUtils;
 
+import javax.annotation.PostConstruct;
+
 /**
  * 即时入库实现
  * @author Jake
@@ -45,7 +47,7 @@ public class InTimeDbPersistService implements DbPersistService {
 
 
 
-	@Override
+	@PostConstruct
 	public void init() {
 
 		// 初始化入库线程
@@ -56,6 +58,9 @@ public class InTimeDbPersistService implements DbPersistService {
 		int dbPoolSize = dbRuleService.getDbPoolSize();
 		if(dbPoolSize <= 0) {
 			dbPoolSize = DEFAULT_DB_POOL_SIZE;
+		}
+		if(dbPoolSize <= 0) {
+			dbPoolSize = 4;
 		}
 
 		// 初始化线程池

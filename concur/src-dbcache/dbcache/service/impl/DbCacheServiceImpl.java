@@ -98,6 +98,7 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 	private DbAccessService dbAccessService;
 
 
+	@Inject
 	@Autowired
 	@Qualifier("concurrentLruHashMapCache")
 	private Cache cache;
@@ -109,27 +110,28 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 	/**
 	 * 默认的持久化服务
 	 */
+	@Inject
 	@Autowired
 	@Qualifier("inTimeDbPersistService")
 	private DbPersistService dbPersistService;
 
+
+	@Autowired
+	@Qualifier("inTimeDbPersistService")
+	private DbPersistService inTimeDbPersistService;
+
 	/**
 	 * 索引服务
 	 */
+	@Inject
 	@Autowired
 	private DbIndexService<PK> indexService;
 
 	/**
 	 * dbCache 初始化
 	 */
-	@PostConstruct
-	private void init() {
-
-		//初始化dbCacheRule
-		dbRuleService.init();
-
-		//初始化持久化服务
-		dbPersistService.init();
+	@Override
+	public void init() {
 
 		//注册jvm关闭钩子
 		Runtime.getRuntime().addShutdownHook(new Thread() {
@@ -400,8 +402,8 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 
 			@SuppressWarnings("rawtypes")
 			final CacheObject cacheObj = cacheObject;
-			
-			dbPersistService.handlerPersist(new PersistAction() {
+
+			inTimeDbPersistService.handlerPersist(new PersistAction() {
 
 				Object entity = cacheObj.getEntity();
 
@@ -553,7 +555,7 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 			final long editVersion = cacheObject.increseEditVersion();
 			final long dbVersion = cacheObject.getDbVersion();
 
-			dbPersistService.handlerPersist(new PersistAction() {
+			inTimeDbPersistService.handlerPersist(new PersistAction() {
 
 				Object entity = cacheObject.getEntity();
 

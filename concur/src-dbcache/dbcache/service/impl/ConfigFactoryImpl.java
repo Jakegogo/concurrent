@@ -172,7 +172,6 @@ public class ConfigFactoryImpl implements ConfigFactory, DbCacheMBean {
 				dbPersistService = (DbPersistService) applicationContext.getBean(persistType.getDbPersistServiceClass());
 				persistServiceMap.putIfAbsent(persistType, dbPersistService);
 				dbPersistService = persistServiceMap.get(persistType);
-				dbPersistService.init();
 			}
 			inject(service, dbPersistServiceField, dbPersistService);
 
@@ -197,6 +196,8 @@ public class ConfigFactoryImpl implements ConfigFactory, DbCacheMBean {
 			Field cacheConfigField1 = indexService.getClass().getDeclaredField(proxyCacheConfigProperty);
 			inject(indexService, cacheConfigField1, cacheConfig);
 
+			// 初始化DbCache服务
+			service.init();
 
 		} catch(Exception e) {
 			e.printStackTrace();

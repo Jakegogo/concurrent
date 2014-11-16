@@ -102,6 +102,12 @@ public interface DbCacheService<T extends IEntity<PK>, PK extends Comparable<PK>
 
 
 	/**
+	 * DbCache初始化
+	 */
+	public void init();
+
+
+	/**
 	 * 关闭应用时回调
 	 */
 	void onCloseApplication();

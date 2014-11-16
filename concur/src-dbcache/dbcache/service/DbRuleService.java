@@ -11,12 +11,7 @@ import dbcache.key.IdGenerator;
  * @date 2014-8-1-下午9:38:37
  */
 public interface DbRuleService {
-	
-	
-	/**
-	 * dbCacheRule 初始化
-	 */
-	void init();
+
 	
 	/**
 	 * 获取 入库线程池大小

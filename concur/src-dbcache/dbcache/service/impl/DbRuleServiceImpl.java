@@ -16,6 +16,7 @@ import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
+import javax.annotation.PostConstruct;
 import javax.persistence.Entity;
 
 import org.slf4j.Logger;
@@ -166,7 +167,7 @@ public class DbRuleServiceImpl implements DbRuleService {
 	private final int MAX_LENGTH_OF_USER_ID = 15;
 
 
-	@Override
+	@PostConstruct
 	public void init() {
 
 		// 加载配置文件
