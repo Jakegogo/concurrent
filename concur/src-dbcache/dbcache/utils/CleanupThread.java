@@ -78,9 +78,11 @@ public class CleanupThread extends Thread
                 break;
             }
             sweeping = true;
+
+            ConcurrentLRUCache c = null;
             for(WeakReference<ConcurrentLRUCache> cache : caches) {
 
-                ConcurrentLRUCache c = cache.get();
+                c = cache.get();
                 if (c == null) {
                     caches.remove(cache);
                     continue;

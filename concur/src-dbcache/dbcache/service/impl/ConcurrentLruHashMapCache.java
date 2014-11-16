@@ -27,7 +27,7 @@ import dbcache.service.DbRuleService;
 public class ConcurrentLruHashMapCache implements Cache {
 
 	/**
-	 * LRU Cache清除线程
+	 * LRU Cache清除线程(单线程)
 	 */
 	private static CleanupThread cleanupThread = new CleanupThread();
 
@@ -68,7 +68,7 @@ public class ConcurrentLruHashMapCache implements Cache {
 		int size = (entityCacheSize * 4 + 3) / 3;
 		this.store = new ConcurrentLRUCache<Object, ValueWrapper>(size, entityCacheSize, (int) Math
 				.floor((entityCacheSize + size) / 2), (int) Math
-				.ceil(0.75 * size), true, false, new ConcurrentLRUCache.EvictionListener<Object, ValueWrapper>() {
+				.ceil(0.75 * size), true, false, concurrencyLevel, new ConcurrentLRUCache.EvictionListener<Object, ValueWrapper>() {
 
 			@Override
 			public void evictedEntry(Object key, ValueWrapper value) {

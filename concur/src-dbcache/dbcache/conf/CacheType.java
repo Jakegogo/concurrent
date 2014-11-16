@@ -1,6 +1,7 @@
 package dbcache.conf;
 
 import dbcache.service.impl.ConcurrentLinkedHashMapCache;
+import dbcache.service.impl.ConcurrentLruHashMapCache;
 import dbcache.service.impl.ConcurrentWeekHashMapCache;
 
 /**
@@ -11,9 +12,16 @@ import dbcache.service.impl.ConcurrentWeekHashMapCache;
 public enum CacheType {
 
 	/**
-	 * LRU
+	 * Apache ConcurrentLRUCache LRU
 	 */
-	LRU(ConcurrentLinkedHashMapCache.class),
+	LRU(ConcurrentLruHashMapCache.class),
+
+
+	/**
+	 * Google ConcurrentLinkedHashMap LRU
+	 */
+	LRU1(ConcurrentLinkedHashMapCache.class),
+
 
 	/**
 	 * 使用WeekHashMap

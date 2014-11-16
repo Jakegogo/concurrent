@@ -45,7 +45,7 @@ public class DbIndexServiceImpl<PK extends Comparable<PK> & Serializable>
 
 	@Inject
 	@Autowired
-	@Qualifier("concurrentLinkedHashMapCache")
+	@Qualifier("concurrentLruHashMapCache")
 	private Cache cache;
 
 	@Autowired

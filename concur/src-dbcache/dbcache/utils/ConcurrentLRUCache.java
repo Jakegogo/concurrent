@@ -61,7 +61,7 @@ public class ConcurrentLRUCache<K, V>
 
     public ConcurrentLRUCache(int upperWaterMark, final int lowerWaterMark,
             int acceptableWatermark, int initialSize, boolean runCleanupThread,
-            boolean runNewThreadForCleanup,
+            boolean runNewThreadForCleanup, int concurrencyLevel,
             EvictionListener<K, V> evictionListener, CleanupThread cleanupThread)
     {
         if (upperWaterMark < 1)
@@ -73,7 +73,7 @@ public class ConcurrentLRUCache<K, V>
             throw new IllegalArgumentException(
                     "lowerWaterMark must be  < upperWaterMark");
         }
-        map = new ConcurrentHashMap<Object, CacheEntry<K, V>>(initialSize);
+        map = new ConcurrentHashMap<Object, CacheEntry<K, V>>(initialSize, 0.75f, concurrencyLevel);
         newThreadForCleanup = runNewThreadForCleanup;
         this.upperWaterMark = upperWaterMark;
         this.lowerWaterMark = lowerWaterMark;
@@ -94,7 +94,7 @@ public class ConcurrentLRUCache<K, V>
     {
         this(size, lowerWatermark, (int) Math
                 .floor((lowerWatermark + size) / 2), (int) Math
-                .ceil(0.75 * size), false, false, null, null);
+                .ceil(0.75 * size), false, false, 16, null, null);
     }
 
     public void setAlive(boolean live)

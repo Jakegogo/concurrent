@@ -86,7 +86,7 @@ public class Test {
 				System.out.println(ThreadUtils.dumpThreadPool("入库线程池", this.cacheService.getThreadPool()));
 			}
 
-			if(i%10000 == 0) {
+			if(i%1000000 == 0) {
 				Thread.sleep(10);
 			}
 
@@ -301,6 +301,28 @@ public class Test {
 			this.cacheService.submitNew2Queue(entity);
 
 			Assert.assertEquals(entity, this.cacheService.get(id));
+		}
+
+	}
+
+
+	@org.junit.Test
+	public void t14() {
+
+		for(int i = 101;i < 200;i++) {
+			Long id = Long.valueOf(i + 100);
+			Entity entity = new Entity();
+			entity.setId(id);
+
+			this.cacheService.submitNew2Queue(entity);
+
+//			Assert.assertEquals(entity, this.cacheService.get(id));
+		}
+
+		try {
+			Thread.sleep(100000);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
 		}
 
 	}
