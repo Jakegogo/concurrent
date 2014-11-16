@@ -6,6 +6,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CyclicBarrier;
 
 import dbcache.utils.ConcurrentWeakHashMap;
 import javassist.CannotCompileException;
@@ -325,6 +326,17 @@ public class Test {
 			e.printStackTrace();
 		}
 
+	}
+
+
+//	public void t15() {
+//		CyclicBarrier cb = new CyclicBarrier()
+//	}
+
+
+	@org.junit.Test
+	public void t16() {
+		System.out.println("16 >>> 1 : " + (16 >>> 1));
 	}
 
 
