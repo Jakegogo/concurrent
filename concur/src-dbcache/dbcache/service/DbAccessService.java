@@ -58,7 +58,7 @@ public interface DbAccessService {
 
 	/**
 	 * 取得最大主键值(主键为Long类型)
-	 * @param clz 实体类
+	 * @param entityClazz 实体类
 	 * @param minValue 范围-最小值
 	 * @param maxValue 范围-最大值
 	 * @return

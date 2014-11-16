@@ -11,7 +11,6 @@ public interface DbCacheMBean {
 
 	/**
 	 * 获取DbCacheServiceBean信息
-	 * @param clz 实体类
 	 * @return
 	 */
 	public Map<String, String> getDbCacheServiceBeanInfo();
@@ -19,7 +18,6 @@ public interface DbCacheMBean {
 
 	/**
 	 * 获取缓存实体类配置
-	 * @param clz 缓存实体类
 	 * @return
 	 */
 	public Map<String, String> getCacheConfigInfo();
