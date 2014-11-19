@@ -33,8 +33,14 @@ public class LockUtils {
 	 * @return
 	 */
 	public static List<? extends Lock> loadLocks(Object...objects) {
+
+		if(objects.length == 1) {
+			ObjectLock lock = holder.getLock(objects[0]);
+			return Collections.singletonList(lock);
+		}
+
 		// 获取锁并排序
-		List<ObjectLock> locks = new ArrayList<ObjectLock>();
+		List<ObjectLock> locks = new ArrayList<ObjectLock>(objects.length);
 		for (Object obj : objects) {
 			ObjectLock lock = holder.getLock(obj);
 			locks.add(lock);
