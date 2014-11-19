@@ -1,5 +1,11 @@
 package lock;
 
+import com.jake.utils.ConcurrentWeakHashMap;
+import dbcache.utils.JsonUtils;
+import lock.checkdeadlock.AlternateDeadlockDetectingLock;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -7,15 +13,14 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
-import com.jake.utils.ConcurrentWeakHashMap;
-import dbcache.utils.JsonUtils;
-
 /**
  * 对象锁持有者
  * @author frank
  */
 @SuppressWarnings("rawtypes")
 public class ObjectLockHolder {
+
+	private static final Logger log = LoggerFactory.getLogger(ObjectLockHolder.class);
 	
 	/**
 	 * 单一类的锁持有者
@@ -62,7 +67,12 @@ public class ObjectLockHolder {
 			if (result != null) {
 				return result;
 			}
-			result = new ObjectLock(object);
+			if(log.isDebugEnabled()) {
+				result = new AlternateDeadlockDetectingLock(object);
+			} else {
+				result = new ObjectLock(object);
+			}
+
 			locks.putIfAbsent(object, result);
 			return locks.get(object);
 

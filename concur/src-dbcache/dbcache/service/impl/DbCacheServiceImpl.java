@@ -36,13 +36,14 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 		implements DbCacheService<T, PK>, ApplicationListener<ContextClosedEvent> {
 
 	/**
-	 * 实现原则:
+	 * 实现宗旨:
 	 * 1,不需要用锁的地方尽量不用到锁;横向扩展设计,减少并发争用资源
 	 * 2,维护缓存原子性,数据入库采用类似异步事件驱动方式
 	 * 3,支持大批量操作数据
 	 * 4,积极解耦,模块/组件的方式,基于接口的设计,易于维护和迁移
 	 * 5,用户不需要了解太多的内部原理,不需要太多配置
 	 * 6,可监控,易于问题排查
+	 * 7,注重性能和内存占用以及回收
 	 */
 
 	/**

@@ -74,7 +74,7 @@ public class ObjectLockHolder {
 			if (result != null) {
 				return result;
 			}
-			if(log.isWarnEnabled()) {
+			if(log.isDebugEnabled()) {
 				result = new DebugReentrantReadWriteLock(object);
 			} else {
 				result = new ObjectLock(object);
