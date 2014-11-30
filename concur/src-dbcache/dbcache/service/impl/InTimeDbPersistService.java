@@ -1,21 +1,23 @@
 package dbcache.service.impl;
 
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.RejectedExecutionException;
-
+import dbcache.model.CacheObject;
+import dbcache.model.EntityInitializer;
+import dbcache.model.PersistAction;
+import dbcache.service.DbAccessService;
+import dbcache.service.DbPersistService;
+import dbcache.service.DbRuleService;
+import dbcache.utils.JsonUtils;
+import dbcache.utils.NamedThreadFactory;
+import dbcache.utils.ThreadUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import dbcache.model.PersistAction;
-import dbcache.service.DbPersistService;
-import dbcache.service.DbRuleService;
-import dbcache.utils.NamedThreadFactory;
-import dbcache.utils.ThreadUtils;
-
 import javax.annotation.PostConstruct;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.RejectedExecutionException;
 
 /**
  * 即时入库实现
@@ -70,6 +72,160 @@ public class InTimeDbPersistService implements DbPersistService {
 
 
 	@Override
+	public void handleSave(final CacheObject<?> cacheObject, final DbAccessService dbAccessService) {
+		this.handlePersist(new PersistAction() {
+
+			Object entity = cacheObject.getEntity();
+
+			@Override
+			public void run() {
+
+				// 判断是否有效
+				if(!this.valid()) {
+					return;
+				}
+
+				// 持久化前操作
+				if(entity instanceof EntityInitializer){
+					EntityInitializer entityInitializer = (EntityInitializer) entity;
+					entityInitializer.doBeforePersist();
+				}
+
+				// 持久化
+				dbAccessService.save(entity);
+			}
+
+			@Override
+			public String getPersistInfo() {
+
+				// 判断状态有效性
+				if(!this.valid()) {
+					return null;
+				}
+
+				return JsonUtils.object2JsonString(cacheObject.getEntity());
+			}
+
+			@Override
+			public boolean valid() {
+				return true;
+			}
+
+		});
+	}
+
+	@Override
+	public void handleUpdate(final CacheObject<?> cacheObject, final DbAccessService dbAccessService) {
+		//最新修改版本号
+		final long editVersion = cacheObject.increseEditVersion();
+		final long dbVersion = cacheObject.getDbVersion();
+
+		this.handlePersist(new PersistAction() {
+
+			Object entity = cacheObject.getEntity();
+
+			@Override
+			public void run() {
+
+				//缓存对象在提交之后被修改过
+				if(editVersion < cacheObject.getEditVersion()) {
+					return;
+				}
+
+				//比较并更新入库版本号
+				if (!cacheObject.compareAndUpdateDbSync(dbVersion, editVersion)) {
+					return;
+				}
+
+				//持久化前操作
+				if(entity instanceof EntityInitializer){
+					EntityInitializer entityInitializer = (EntityInitializer) entity;
+					entityInitializer.doBeforePersist();
+				}
+
+				//缓存对象在提交之后被入库过
+				if(cacheObject.getDbVersion() > editVersion) {
+					return;
+				}
+
+				//持久化
+				dbAccessService.update(entity);
+			}
+
+			@Override
+			public String getPersistInfo() {
+
+				//缓存对象在提交之后被修改过
+				if(editVersion < cacheObject.getEditVersion()) {
+					return null;
+				}
+
+				return JsonUtils.object2JsonString(cacheObject.getEntity());
+			}
+
+			@Override
+			public boolean valid() {
+				return editVersion == cacheObject.getEditVersion();
+			}
+
+		});
+	}
+
+	@Override
+	public void handleDelete(final CacheObject<?> cacheObject, final DbAccessService dbAccessService) {
+		// 最新修改版本号
+		final long editVersion = cacheObject.increseEditVersion();
+		final long dbVersion = cacheObject.getDbVersion();
+
+		this.handlePersist(new PersistAction() {
+
+			Object entity = cacheObject.getEntity();
+
+			@Override
+			public void run() {
+
+				// 缓存对象在提交之后被修改过
+				if(editVersion < cacheObject.getEditVersion()) {
+					return;
+				}
+
+				// 比较并更新入库版本号
+				if (!cacheObject.compareAndUpdateDbSync(dbVersion, editVersion)) {
+					return;
+				}
+
+				// 缓存对象在提交之后被入库过
+				if(cacheObject.getDbVersion() > editVersion) {
+					return;
+				}
+
+				// 持久化
+				dbAccessService.delete(entity);
+
+			}
+
+			@Override
+			public String getPersistInfo() {
+
+				// 缓存对象在提交之后被修改过
+				if(editVersion < cacheObject.getEditVersion()) {
+					return null;
+				}
+
+				return JsonUtils.object2JsonString(cacheObject.getEntity());
+			}
+
+
+			@Override
+			public boolean valid() {
+				return editVersion == cacheObject.getEditVersion();
+			}
+
+
+		});
+	}
+
+	@Override
 	public void awaitTermination() {
 		//关闭消费入库线程池
 		ThreadUtils.shundownThreadPool(DB_POOL_SERVICE, false);
@@ -92,8 +248,11 @@ public class InTimeDbPersistService implements DbPersistService {
 	}
 
 
-	@Override
-	public void handlerPersist(PersistAction persistAction) {
+	/**
+	 * 提交持久化任务
+	 * @param persistAction
+	 */
+	private void handlePersist(PersistAction persistAction) {
 
 		try {
 			DB_POOL_SERVICE.submit(persistAction);

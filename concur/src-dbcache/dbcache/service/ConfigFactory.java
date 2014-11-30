@@ -1,11 +1,10 @@
 package dbcache.service;
 
-import java.io.Serializable;
-
 import dbcache.conf.CacheConfig;
 import dbcache.model.CacheObject;
 import dbcache.model.IEntity;
-import dbcache.model.UpdateStatus;
+
+import java.io.Serializable;
 
 /**
  * DbCached缓存模块配置服务接口
@@ -32,12 +31,11 @@ public interface ConfigFactory {
 	 * @param class1 实体类
 	 * @param indexService 索引服务
 	 * @param cache 实体缓存容器
-	 * @param updateStatus 更新状态
 	 * @param cacheConfig 缓存配置
 	 * @return
 	 */
 	@SuppressWarnings("rawtypes")
-	public <T extends IEntity<PK>, PK extends Comparable<PK> & Serializable> CacheObject<T> createCacheObject(T entity, Class<? extends IEntity> class1, DbIndexService<?> indexService, Object key, Cache cache, UpdateStatus updateStatus, CacheConfig<T> cacheConfig);
+	public <T extends IEntity<PK>, PK extends Comparable<PK> & Serializable> CacheObject<T> createCacheObject(T entity, Class<? extends IEntity> class1, DbIndexService<?> indexService, Object key, Cache cache, CacheConfig<T> cacheConfig);
 
 	/**
 	 * 获取DbCacheServiceBean

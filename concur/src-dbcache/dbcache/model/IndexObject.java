@@ -21,7 +21,7 @@ public class IndexObject<PK extends Comparable<PK> & Serializable> {
 	/**
 	 * 索引键更新状态
 	 */
-	private volatile UpdateStatus updateStatus = UpdateStatus.TRANSIENT;
+	private volatile PersistStatus updateStatus = PersistStatus.TRANSIENT;
 
 	/**
 	 * 随影区域缓存
@@ -37,7 +37,6 @@ public class IndexObject<PK extends Comparable<PK> & Serializable> {
 	/**
 	 * 获取实例
 	 * @param indexKey 索引键
-	 * @param lock
 	 * @return
 	 */
 	public static <PK extends Comparable<PK> & Serializable> IndexObject<PK> valueOf(IndexKey indexKey) {
@@ -52,7 +51,7 @@ public class IndexObject<PK extends Comparable<PK> & Serializable> {
 	 * @param updateStatus 更新状态
 	 * @return
 	 */
-	public static <PK extends Comparable<PK> & Serializable> IndexObject<PK> valueOf(IndexKey indexKey, UpdateStatus updateStatus) {
+	public static <PK extends Comparable<PK> & Serializable> IndexObject<PK> valueOf(IndexKey indexKey, PersistStatus updateStatus) {
 		IndexObject<PK> indexObject = new IndexObject<PK>();
 		indexObject.indexKey = indexKey;
 		indexObject.updateStatus = updateStatus;
@@ -68,11 +67,11 @@ public class IndexObject<PK extends Comparable<PK> & Serializable> {
 		this.indexKey = indexKey;
 	}
 
-	public UpdateStatus getUpdateStatus() {
+	public PersistStatus getUpdateStatus() {
 		return updateStatus;
 	}
 
-	public void setUpdateStatus(UpdateStatus updateStatus) {
+	public void setUpdateStatus(PersistStatus updateStatus) {
 		this.updateStatus = updateStatus;
 	}
 

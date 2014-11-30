@@ -52,13 +52,10 @@ public class WeakCacheObject<T extends IEntity<?>, R extends WeakCacheEntity<T,?
 	 *            主键
 	 * @param clazz
 	 *            类型
-	 * @param updateStatus
-	 *            更新方式
 	 */
 	@SuppressWarnings("unchecked")
-	public WeakCacheObject(WeakCacheEntity<T, ?> entity, Serializable id, Class<T> clazz, WeakCacheEntity<?,?> proxyEntity, Object key,
-			UpdateStatus updateStatus, Map<String, ValueGetter<T>> indexes) {
-		super((T) entity, id, clazz, (T) proxyEntity, updateStatus, indexes);
+	public WeakCacheObject(WeakCacheEntity<T, ?> entity, Serializable id, Class<T> clazz, WeakCacheEntity<?,?> proxyEntity, Object key, Map<String, ValueGetter<T>> indexes) {
+		super((T) entity, id, clazz, (T) proxyEntity, indexes);
 		this.hashCode = key.hashCode();
 	}
 

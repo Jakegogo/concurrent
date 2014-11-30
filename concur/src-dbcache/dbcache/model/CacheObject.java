@@ -47,11 +47,6 @@ public class CacheObject<T extends IEntity<?>> {
 	private AtomicLong dbVersion = new AtomicLong(editVersion.get());
 
 	/**
-	 * 实体更新状态
-	 */
-	private volatile UpdateStatus updateStatus = UpdateStatus.PERSIST;
-
-	/**
 	 * 索引信息
 	 * 索引名 - 属性
 	 */
@@ -79,7 +74,7 @@ public class CacheObject<T extends IEntity<?>> {
 	 *            类型
 	 */
 	public CacheObject(T entity, Serializable id, Class<T> clazz, T proxyEntity) {
-		this(entity, id, clazz, proxyEntity, UpdateStatus.PERSIST, null);
+		this(entity, id, clazz, proxyEntity, null);
 	}
 
 	/**
@@ -91,16 +86,12 @@ public class CacheObject<T extends IEntity<?>> {
 	 *            主键
 	 * @param clazz
 	 *            类型
-	 * @param updateStatus
-	 *            更新方式
 	 */
-	public CacheObject(T entity, Serializable id, Class<T> clazz, T proxyEntity,
-			UpdateStatus updateStatus, Map<String, ValueGetter<T>> indexes) {
+	public CacheObject(T entity, Serializable id, Class<T> clazz, T proxyEntity, Map<String, ValueGetter<T>> indexes) {
 		this.entity = entity;
 		this.id = id;
 		this.clazz = clazz;
 		this.proxyEntity = proxyEntity;
-		this.updateStatus = updateStatus;
 		this.indexes = indexes;
 	}
 
@@ -120,16 +111,6 @@ public class CacheObject<T extends IEntity<?>> {
 	 */
 	public long increseEditVersion() {
 		return this.editVersion.incrementAndGet();
-	}
-
-	/**
-	 * 设置状态
-	 *
-	 * @param newStatus
-	 *            新状态
-	 */
-	public void setUpdateStatus(UpdateStatus updateStatus) {
-		this.updateStatus = updateStatus;
 	}
 
 	public T getEntity() {
@@ -154,10 +135,6 @@ public class CacheObject<T extends IEntity<?>> {
 
 	public long getDbVersion() {
 		return dbVersion.get();
-	}
-
-	public UpdateStatus getUpdateStatus() {
-		return updateStatus;
 	}
 
 	public Map<String, ValueGetter<T>> getIndexes() {

@@ -36,7 +36,7 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 		implements DbCacheService<T, PK>, ApplicationListener<ContextClosedEvent> {
 
 	/**
-	 * 实现宗旨:
+	 * 实现原则:
 	 * 1,不需要用锁的地方尽量不用到锁;横向扩展设计,减少并发争用资源
 	 * 2,维护缓存原子性,数据入库采用类似异步事件驱动方式
 	 * 3,支持大批量操作数据
@@ -166,13 +166,7 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 
 		Cache.ValueWrapper wrapper = (Cache.ValueWrapper) cache.get(key);
 		if(wrapper != null) {	// 已经缓存
-
-			CacheObject<T> cacheObject = (CacheObject<T>) wrapper.get();
-			if(cacheObject != null && cacheObject.getUpdateStatus() != UpdateStatus.DELETED) {
-				return cacheObject;
-			}
-
-			return null;
+			return (CacheObject<T>) wrapper.get();
 		}
 
 
@@ -197,7 +191,7 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 					}
 
 					// 创建缓存对象
-					cacheObject = configFactory.createCacheObject(entity, clazz, indexService, key, cache, UpdateStatus.PERSIST, cacheConfig);
+					cacheObject = configFactory.createCacheObject(entity, clazz, indexService, key, cache, cacheConfig);
 
 					wrapper = cache.putIfAbsent(key, cacheObject);
 
@@ -227,11 +221,7 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 			lock.unlock();
 		}
 
-		if (cacheObject != null && cacheObject.getUpdateStatus() != UpdateStatus.DELETED) {
-			return cacheObject;
-		}
-
-		return null;
+		return cacheObject;
 	}
 
 
@@ -340,13 +330,13 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 		}
 
 		//存储到缓存
-		CacheObject<T> cacheObject = null;
 		final Object key = entity.getId();
 		Cache.ValueWrapper wrapper = (Cache.ValueWrapper) cache.get(key);
+		CacheObject<T> cacheObject = (CacheObject<T>) wrapper.get();
 
-		if (wrapper == null) {//缓存还不存在
+		if (cacheObject == null) {//缓存还不存在
 
-			cacheObject = configFactory.createCacheObject(entity, entity.getClass(), indexService, key, cache, UpdateStatus.PERSIST, cacheConfig);
+			cacheObject = configFactory.createCacheObject(entity, entity.getClass(), indexService, key, cache, cacheConfig);
 
 			wrapper = cache.putIfAbsent(key, cacheObject);
 			if (wrapper != null && wrapper.get() != null) {
@@ -355,18 +345,11 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 
 		} else {
 
-			cacheObject = (CacheObject<T>) wrapper.get();
-
-			if(cacheObject.getUpdateStatus() == UpdateStatus.DELETED) {//已被删除
-				//删除再保存，实际上很少出现这种情况
-				cacheObject.setUpdateStatus(UpdateStatus.PERSIST);
-				wrapper = cache.putIfAbsent(key, cacheObject);
-				if (wrapper != null && wrapper.get() != null) {
-					cacheObject = (CacheObject<T>) wrapper.get();
-				}
-
+			wrapper = cache.putIfAbsent(key, cacheObject);
+			if (wrapper != null) {
 				cacheObject = (CacheObject<T>) wrapper.get();
 			}
+
 		}
 
 		//入库
@@ -381,48 +364,8 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 				}
 			}
 
-			@SuppressWarnings("rawtypes")
-			final CacheObject cacheObj = cacheObject;
-
-			inTimeDbPersistService.handlerPersist(new PersistAction() {
-
-				Object entity = cacheObj.getEntity();
-
-				@Override
-				public void run() {
-
-					// 判断是否有效
-					if(!this.valid()) {
-						return;
-					}
-
-					// 持久化前操作
-					if(entity instanceof EntityInitializer){
-						EntityInitializer entityInitializer = (EntityInitializer) entity;
-						entityInitializer.doBeforePersist();
-					}
-
-					// 持久化
-					dbAccessService.save(entity);
-				}
-
-				@Override
-				public String getPersistInfo() {
-
-					// 判断状态有效性
-					if(!this.valid()) {
-						return null;
-					}
-
-					return JsonUtils.object2JsonString(cacheObj.getEntity());
-				}
-
-				@Override
-				public boolean valid() {
-					return cacheObj.getUpdateStatus() != UpdateStatus.DELETED;
-				}
-
-			});
+			// 提交持久化
+			inTimeDbPersistService.handleSave(cacheObject, this.dbAccessService);
 
 		}
 
@@ -444,59 +387,8 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 				throw new IllegalStateException(msg);
 			}
 
-			//最新修改版本号
-			final long editVersion = cacheObject.increseEditVersion();
-			final long dbVersion = cacheObject.getDbVersion();
-
-			dbPersistService.handlerPersist(new PersistAction() {
-
-				Object entity = cacheObject.getEntity();
-
-				@Override
-				public void run() {
-
-					//缓存对象在提交之后被修改过
-					if(editVersion < cacheObject.getEditVersion()) {
-						return;
-					}
-
-					//比较并更新入库版本号
-					if (!cacheObject.compareAndUpdateDbSync(dbVersion, editVersion)) {
-						return;
-					}
-
-					//持久化前操作
-					if(entity instanceof EntityInitializer){
-						EntityInitializer entityInitializer = (EntityInitializer) entity;
-						entityInitializer.doBeforePersist();
-					}
-
-					//缓存对象在提交之后被入库过
-					if(cacheObject.getDbVersion() > editVersion) {
-						return;
-					}
-
-					//持久化
-					dbAccessService.update(entity);
-				}
-
-				@Override
-				public String getPersistInfo() {
-
-					//缓存对象在提交之后被修改过
-					if(editVersion < cacheObject.getEditVersion()) {
-						return null;
-					}
-
-					return JsonUtils.object2JsonString(cacheObject.getEntity());
-				}
-
-				@Override
-				public boolean valid() {
-					return editVersion == cacheObject.getEditVersion();
-				}
-
-			});
+			// 提交持久化任务
+			dbPersistService.handleUpdate(cacheObject, this.dbAccessService);
 
 		}
 	}
@@ -515,13 +407,8 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 
 		if (cacheObject != null) {
 
-			// 是否已经被删除
-			if(cacheObject.getUpdateStatus() == UpdateStatus.DELETED) {
-				return;
-			}
-
-			// 标记为已经删除
-			cacheObject.setUpdateStatus(UpdateStatus.DELETED);
+			// 从缓存中移除
+			cache.put(id, null);
 
 			// 更新索引
 			if(cacheConfig.isEnableIndex()) {
@@ -532,62 +419,8 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 				}
 			}
 
-			// 最新修改版本号
-			final long editVersion = cacheObject.increseEditVersion();
-			final long dbVersion = cacheObject.getDbVersion();
-
-			inTimeDbPersistService.handlerPersist(new PersistAction() {
-
-				Object entity = cacheObject.getEntity();
-
-				@Override
-				public void run() {
-
-					// 判断是否已经标记删除
-					if(cacheObject.getUpdateStatus() != UpdateStatus.DELETED) {
-						return;
-					}
-
-					// 缓存对象在提交之后被修改过
-					if(editVersion < cacheObject.getEditVersion()) {
-						return;
-					}
-
-					// 比较并更新入库版本号
-					if (!cacheObject.compareAndUpdateDbSync(dbVersion, editVersion)) {
-						return;
-					}
-
-					// 缓存对象在提交之后被入库过
-					if(cacheObject.getDbVersion() > editVersion) {
-						return;
-					}
-
-					// 持久化
-					dbAccessService.delete(entity);
-					// 从缓存中移除
-					cache.evict(id);
-				}
-
-				@Override
-				public String getPersistInfo() {
-
-					// 缓存对象在提交之后被修改过
-					if(cacheObject.getUpdateStatus() == UpdateStatus.DELETED || editVersion < cacheObject.getEditVersion()) {
-						return null;
-					}
-
-					return JsonUtils.object2JsonString(cacheObject.getEntity());
-				}
-
-
-				@Override
-				public boolean valid() {
-					return cacheObject.getUpdateStatus() == UpdateStatus.DELETED && editVersion == cacheObject.getEditVersion();
-				}
-
-
-			});
+			// 提交持久化任务
+			inTimeDbPersistService.handleDelete(cacheObject, this.dbAccessService);
 		}
 	}
 

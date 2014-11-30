@@ -2,6 +2,7 @@ package dbcache.service;
 
 import java.util.concurrent.ExecutorService;
 
+import dbcache.model.CacheObject;
 import dbcache.model.PersistAction;
 
 /**
@@ -12,10 +13,25 @@ import dbcache.model.PersistAction;
 public interface DbPersistService {
 
 	/**
-	 * 处理持久化
-	 * @param persistAction 持久化行为
+	 * 处理创建
+	 * @param cacheObject 实体缓存对象
+	 * @param dbAccessService 数据库存取服务
 	 */
-	public void handlerPersist(PersistAction persistAction);
+	public void handleSave(CacheObject<?> cacheObject, DbAccessService dbAccessService);
+
+	/**
+	 * 处理更新
+	 * @param cacheObject 实体缓存对象
+	 * @param dbAccessService 数据库存取服务
+	 */
+	public void handleUpdate(CacheObject<?> cacheObject, DbAccessService dbAccessService);
+
+	/**
+	 * 处理删除
+	 * @param cacheObject 实体缓存对象
+	 * @param dbAccessService 数据库存取服务
+	 */
+	public void handleDelete(CacheObject<?> cacheObject, DbAccessService dbAccessService);
 
 	/**
 	 * 等待处理完毕

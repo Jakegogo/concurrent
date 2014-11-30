@@ -1,23 +1,19 @@
 package dbcache.service.impl;
 
-import java.io.Serializable;
-import java.lang.management.ManagementFactory;
-import java.lang.reflect.Field;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-
-import javax.annotation.PostConstruct;
-import javax.management.InstanceAlreadyExistsException;
-import javax.management.MBeanRegistrationException;
-import javax.management.MBeanServer;
-import javax.management.MalformedObjectNameException;
-import javax.management.NotCompliantMBeanException;
-import javax.management.ObjectName;
-import javax.management.StandardMBean;
-
+import dbcache.conf.CacheConfig;
+import dbcache.conf.CacheType;
+import dbcache.conf.PersistType;
+import dbcache.model.CacheObject;
+import dbcache.model.IEntity;
+import dbcache.model.WeakCacheEntity;
+import dbcache.model.WeakCacheObject;
+import dbcache.proxy.asm.EntityAsmFactory;
+import dbcache.proxy.asm.IndexMethodAspect;
+import dbcache.service.*;
+import dbcache.support.asm.AsmAccessHelper;
+import dbcache.support.asm.ValueGetter;
+import dbcache.utils.AsmUtils;
+import dbcache.utils.ThreadUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.helpers.FormattingTuple;
@@ -29,26 +25,16 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.ReflectionUtils;
 import org.springframework.util.ReflectionUtils.FieldCallback;
 
-import dbcache.conf.CacheConfig;
-import dbcache.conf.CacheType;
-import dbcache.conf.PersistType;
-import dbcache.model.CacheObject;
-import dbcache.model.IEntity;
-import dbcache.model.UpdateStatus;
-import dbcache.model.WeakCacheEntity;
-import dbcache.model.WeakCacheObject;
-import dbcache.proxy.asm.EntityAsmFactory;
-import dbcache.proxy.asm.IndexMethodAspect;
-import dbcache.service.Cache;
-import dbcache.service.ConfigFactory;
-import dbcache.service.DbCacheMBean;
-import dbcache.service.DbCacheService;
-import dbcache.service.DbIndexService;
-import dbcache.service.DbPersistService;
-import dbcache.support.asm.AsmAccessHelper;
-import dbcache.support.asm.ValueGetter;
-import dbcache.utils.AsmUtils;
-import dbcache.utils.ThreadUtils;
+import javax.annotation.PostConstruct;
+import javax.management.*;
+import java.io.Serializable;
+import java.lang.management.ManagementFactory;
+import java.lang.reflect.Field;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 /**
  * DbCached缓存模块配置服务实现
@@ -297,8 +283,7 @@ public class ConfigFactoryImpl implements ConfigFactory, DbCacheMBean {
 	@Override
 	public <T extends IEntity<PK>, PK extends Comparable<PK> & Serializable> CacheObject<T> createCacheObject(
 			T entity, Class<? extends IEntity> entityClazz,
-			DbIndexService<?> indexService, Object key, Cache cache,
-			UpdateStatus updateStatus, CacheConfig<T> cacheConfig) {
+			DbIndexService<?> indexService, Object key, Cache cache, CacheConfig<T> cacheConfig) {
 
 		// 创建索引属性表
 		Map<String, ValueGetter<T>> indexes = new HashMap<String, ValueGetter<T>>();
@@ -312,8 +297,7 @@ public class ConfigFactoryImpl implements ConfigFactory, DbCacheMBean {
 		if(cacheConfig == null || cacheConfig.getCacheType() != CacheType.WEEKMAP) {
 			return new CacheObject(
 					entity, entity.getId(), entity.getClass(),
-					this.createProxyEntity(entity, cacheConfig.getProxyClazz(), indexService, cacheConfig),
-					updateStatus, indexes);
+					this.createProxyEntity(entity, cacheConfig.getProxyClazz(), indexService, cacheConfig), indexes);
 		}
 
 		// 创建弱引用缓存对象
@@ -321,7 +305,7 @@ public class ConfigFactoryImpl implements ConfigFactory, DbCacheMBean {
 				this.wrapEntity(entity, entityClazz, cache, key, cacheConfig),
 				entity.getId(), entityClazz,
 				this.wrapEntity(this.createProxyEntity(entity, cacheConfig.getProxyClazz(), indexService, cacheConfig),
-						entityClazz, cache, key, cacheConfig), key, updateStatus, indexes);
+						entityClazz, cache, key, cacheConfig), key, indexes);
 	}
 
 

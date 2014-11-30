@@ -257,7 +257,7 @@ public class Test {
 
 		entity.setNum(202);
 
-		List<Entity> list = this.cacheService.listByIndex(Entity.NUM_INDEX, 201);
+		List<Entity> list = this.cacheService.listByIndex(Entity.NUM_INDEX, 202);
 
 		assert list.size() == 1;
 

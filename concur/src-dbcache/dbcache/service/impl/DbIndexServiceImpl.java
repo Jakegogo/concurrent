@@ -19,7 +19,7 @@ import dbcache.model.IEntity;
 import dbcache.model.IndexKey;
 import dbcache.model.IndexObject;
 import dbcache.model.IndexValue;
-import dbcache.model.UpdateStatus;
+import dbcache.model.PersistStatus;
 import dbcache.service.Cache;
 import dbcache.service.DbAccessService;
 import dbcache.service.DbIndexService;
@@ -83,7 +83,7 @@ public class DbIndexServiceImpl<PK extends Comparable<PK> & Serializable>
 
 		if(indexObject == null) {
 			return null;
-		} else if(indexObject.getUpdateStatus() == UpdateStatus.PERSIST) {
+		} else if(indexObject.getUpdateStatus() == PersistStatus.PERSIST) {
 			return indexObject.getIndexValues();
 		}
 
@@ -94,7 +94,7 @@ public class DbIndexServiceImpl<PK extends Comparable<PK> & Serializable>
 		try {
 
 			// 持久态则返回结果
-			if(indexObject.getUpdateStatus() == UpdateStatus.PERSIST) {
+			if(indexObject.getUpdateStatus() == PersistStatus.PERSIST) {
 				return indexObject.getIndexValues();
 			}
 
@@ -116,7 +116,7 @@ public class DbIndexServiceImpl<PK extends Comparable<PK> & Serializable>
 			}
 
 			// 设置缓存状态
-			indexObject.setUpdateStatus(UpdateStatus.PERSIST);
+			indexObject.setUpdateStatus(PersistStatus.PERSIST);
 			// 清除锁
 			indexObject.setLock(null);
 
@@ -151,7 +151,7 @@ public class DbIndexServiceImpl<PK extends Comparable<PK> & Serializable>
 
 		IndexObject<PK> indexObject = IndexObject.valueOf(IndexKey.valueOf(indexName, indexValue));
 		// 设置缓存状态
-		indexObject.setUpdateStatus(UpdateStatus.TRANSIENT);
+		indexObject.setUpdateStatus(PersistStatus.TRANSIENT);
 
 		wrapper = cache.putIfAbsent(key, indexObject);
 
@@ -169,7 +169,7 @@ public class DbIndexServiceImpl<PK extends Comparable<PK> & Serializable>
 		final IndexObject<PK> indexObject = this.getTransient(indexValue.getName(), indexValue.getValue());
 
 		// 持久状态
-		if(indexObject.getUpdateStatus() == UpdateStatus.PERSIST) {
+		if(indexObject.getUpdateStatus() == PersistStatus.PERSIST) {
 
 			indexObject.getIndexValues().put(indexValue.getId(), Boolean.valueOf(true));
 
@@ -199,7 +199,7 @@ public class DbIndexServiceImpl<PK extends Comparable<PK> & Serializable>
 		final IndexObject<PK> indexObject = this.getTransient(indexValue.getName(), indexValue.getValue());
 
 		// 持久状态直接移除
-		if(indexObject.getUpdateStatus() == UpdateStatus.PERSIST) {
+		if(indexObject.getUpdateStatus() == PersistStatus.PERSIST) {
 			indexObject.getIndexValues().remove(key);
 		} else {//内存临时虚存储状态
 			// 持有读锁
