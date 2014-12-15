@@ -22,7 +22,7 @@ public interface Cache {
 	 * @param key 键
 	 * @param value 值
 	 */
-	void put(Object key, Object value);
+	ValueWrapper put(Object key, Object value);
 
 	/**
 	 * 存入缓存并返回最新的值
@@ -35,8 +35,9 @@ public interface Cache {
 	/**
 	 * 清除缓存
 	 * @param key 对应的键
+	 * @return
 	 */
-	void evict(Object key);
+	ValueWrapper evict(Object key);
 
 	/**
 	 * 清空缓存
@@ -59,6 +60,7 @@ public interface Cache {
 		 * 获取缓存值
 		 */
 		Object get();
+
 	}
 
 

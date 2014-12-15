@@ -3,6 +3,8 @@ package dbcache.service.impl;
 import dbcache.model.CacheObject;
 import dbcache.model.EntityInitializer;
 import dbcache.model.PersistAction;
+import dbcache.model.PersistStatus;
+import dbcache.service.Cache;
 import dbcache.service.DbAccessService;
 import dbcache.service.DbPersistService;
 import dbcache.service.DbRuleService;
@@ -93,6 +95,9 @@ public class InTimeDbPersistService implements DbPersistService {
 
 				// 持久化
 				dbAccessService.save(entity);
+
+				// 设置状态为持久化
+				cacheObject.setPersistStatus(PersistStatus.PERSIST);
 			}
 
 			@Override
@@ -108,7 +113,7 @@ public class InTimeDbPersistService implements DbPersistService {
 
 			@Override
 			public boolean valid() {
-				return true;
+				return cacheObject.getPersistStatus() != PersistStatus.DELETED;
 			}
 
 		});
@@ -172,7 +177,7 @@ public class InTimeDbPersistService implements DbPersistService {
 	}
 
 	@Override
-	public void handleDelete(final CacheObject<?> cacheObject, final DbAccessService dbAccessService) {
+	public void handleDelete(final CacheObject<?> cacheObject, final DbAccessService dbAccessService, final Object key, final Cache cache) {
 		// 最新修改版本号
 		final long editVersion = cacheObject.increseEditVersion();
 		final long dbVersion = cacheObject.getDbVersion();
@@ -201,6 +206,9 @@ public class InTimeDbPersistService implements DbPersistService {
 
 				// 持久化
 				dbAccessService.delete(entity);
+
+				// 从缓存中移除
+				cache.put(key, null);
 
 			}
 

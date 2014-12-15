@@ -106,8 +106,8 @@ public class ConcurrentLruHashMapCache implements Cache {
 
 
 	@Override
-	public void put(Object key, Object value) {
-		this.store.put(key, toStoreValue(SimpleValueWrapper.valueOf(value)));
+	public ValueWrapper put(Object key, Object value) {
+		return this.store.put(key, toStoreValue(SimpleValueWrapper.valueOf(value)));
 	}
 
 
@@ -119,9 +119,10 @@ public class ConcurrentLruHashMapCache implements Cache {
 
 
 	@Override
-	public void evict(Object key) {
-		this.store.remove(key);
-		this.evictions.remove(key);
+	public ValueWrapper evict(Object key) {
+		ValueWrapper value = this.store.remove(key);
+		Object value1 = this.evictions.remove(key);
+		return value == null ? SimpleValueWrapper.valueOf(value1) : value;
 	}
 
 	@Override

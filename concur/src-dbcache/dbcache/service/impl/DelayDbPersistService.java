@@ -5,8 +5,11 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import dbcache.conf.PersistType;
 import dbcache.model.CacheObject;
 import dbcache.model.EntityInitializer;
+import dbcache.model.PersistStatus;
+import dbcache.service.Cache;
 import dbcache.service.DbAccessService;
 import dbcache.utils.JsonUtils;
 import org.apache.commons.lang.StringUtils;
@@ -180,6 +183,9 @@ public class DelayDbPersistService implements DbPersistService {
 
 				// 持久化
 				dbAccessService.save(entity);
+
+				// 设置更新状态
+				cacheObject.setPersistStatus(PersistStatus.PERSIST);
 			}
 
 			@Override
@@ -195,7 +201,7 @@ public class DelayDbPersistService implements DbPersistService {
 
 			@Override
 			public boolean valid() {
-				return true;
+				return cacheObject.getPersistStatus() == PersistStatus.TRANSIENT;
 			}
 
 		});
@@ -259,7 +265,7 @@ public class DelayDbPersistService implements DbPersistService {
 	}
 
 	@Override
-	public void handleDelete(final CacheObject<?> cacheObject, final DbAccessService dbAccessService) {
+	public void handleDelete(final CacheObject<?> cacheObject, final DbAccessService dbAccessService, final Object key, final Cache cache) {
 		// 最新修改版本号
 		final long editVersion = cacheObject.increseEditVersion();
 		final long dbVersion = cacheObject.getDbVersion();
@@ -289,6 +295,9 @@ public class DelayDbPersistService implements DbPersistService {
 				// 持久化
 				dbAccessService.delete(entity);
 
+				// 从缓存中移除
+				cache.put(key, null);
+
 			}
 
 			@Override
@@ -305,7 +314,7 @@ public class DelayDbPersistService implements DbPersistService {
 
 			@Override
 			public boolean valid() {
-				return editVersion == cacheObject.getEditVersion();
+				return editVersion == cacheObject.getEditVersion() && cacheObject.getPersistStatus() == PersistStatus.DELETED;
 			}
 
 

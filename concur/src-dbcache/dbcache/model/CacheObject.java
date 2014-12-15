@@ -52,6 +52,11 @@ public class CacheObject<T extends IEntity<?>> {
 	 */
 	private Map<String, ValueGetter<T>> indexes = new HashMap<String, ValueGetter<T>>();
 
+	/**
+	 * 持久化状态
+	 */
+	private volatile PersistStatus persistStatus;
+
 
 	/**
 	 * 默认构造方法
@@ -93,6 +98,7 @@ public class CacheObject<T extends IEntity<?>> {
 		this.clazz = clazz;
 		this.proxyEntity = proxyEntity;
 		this.indexes = indexes;
+		this.persistStatus = PersistStatus.TRANSIENT;
 	}
 
 
@@ -142,4 +148,11 @@ public class CacheObject<T extends IEntity<?>> {
 	}
 
 
+	public PersistStatus getPersistStatus() {
+		return persistStatus;
+	}
+
+	public void setPersistStatus(PersistStatus persistStatus) {
+		this.persistStatus = persistStatus;
+	}
 }

@@ -142,8 +142,8 @@ public class ConcurrentWeekHashMapCache implements Cache {
 
 	@SuppressWarnings("rawtypes")
 	@Override
-	public void put(Object key, Object value) {
-		this.store.put(key, SimpleValueWrapper.valueOf((WeakCacheObject) value));
+	public ValueWrapper put(Object key, Object value) {
+		return this.store.put(key, SimpleValueWrapper.valueOf((WeakCacheObject) value));
 	}
 
 
@@ -156,8 +156,8 @@ public class ConcurrentWeekHashMapCache implements Cache {
 
 
 	@Override
-	public void evict(Object key) {
-		this.store.remove(key);
+	public ValueWrapper evict(Object key) {
+		return this.store.remove(key);
 	}
 
 

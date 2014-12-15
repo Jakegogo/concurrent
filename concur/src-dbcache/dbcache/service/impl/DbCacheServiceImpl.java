@@ -148,7 +148,7 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 	public T get(PK id) {
 
 		final CacheObject<T> cacheObject = this.getCacheObject(id);
-		if (cacheObject != null) {
+		if (cacheObject != null && cacheObject.getPersistStatus() != PersistStatus.DELETED) {
 			return (T) cacheObject.getProxyEntity();
 		}
 
@@ -162,7 +162,7 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 	 * @return
 	 */
 	@SuppressWarnings("unchecked")
-	private CacheObject<T> getCacheObject(Serializable key) {
+	private CacheObject<T> getCacheObject(PK key) {
 
 		Cache.ValueWrapper wrapper = (Cache.ValueWrapper) cache.get(key);
 		if(wrapper != null) {	// 已经缓存
@@ -199,11 +199,10 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 						cacheObject = (CacheObject<T>) wrapper.get();
 
 						// 更新索引 需要外层加锁
-						entity = cacheObject.getEntity();
 						if(cacheConfig.isEnableIndex()) {
 							for(Map.Entry<String, ValueGetter<T>> entry : cacheObject.getIndexes().entrySet()) {
 								Object indexValue = entry.getValue().get();
-								this.indexService.create(IndexValue.valueOf(entry.getKey(), indexValue, entity.getId()));
+								this.indexService.create(IndexValue.valueOf(entry.getKey(), indexValue, key));
 							}
 						}
 					}
@@ -330,11 +329,14 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 		}
 
 		//存储到缓存
+		CacheObject<T> cacheObject = null;
 		final Object key = entity.getId();
 		Cache.ValueWrapper wrapper = (Cache.ValueWrapper) cache.get(key);
-		CacheObject<T> cacheObject = (CacheObject<T>) wrapper.get();
+		if(wrapper != null) {
+			cacheObject = (CacheObject<T>) wrapper.get();
+		}
 
-		if (cacheObject == null) {//缓存还不存在
+		if (wrapper == null) {//缓存还不存在
 
 			cacheObject = configFactory.createCacheObject(entity, entity.getClass(), indexService, key, cache, cacheConfig);
 
@@ -343,11 +345,25 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 				cacheObject = (CacheObject<T>) wrapper.get();
 			}
 
-		} else {
+		} else if(cacheObject == null) {
+
+			cacheObject = configFactory.createCacheObject(entity, entity.getClass(), indexService, key, cache, cacheConfig);
+
+			wrapper = cache.evict(key);
+			if (wrapper != null && wrapper.get() != null) {
+				cacheObject = (CacheObject<T>) wrapper.get();
+			}
 
 			wrapper = cache.putIfAbsent(key, cacheObject);
-			if (wrapper != null) {
+			if (wrapper != null && wrapper.get() != null) {
 				cacheObject = (CacheObject<T>) wrapper.get();
+			}
+
+		}  else {
+
+			if(cacheObject.getPersistStatus() == PersistStatus.DELETED) {//已被删除
+				//删除再保存，实际上很少出现这种情况
+				cacheObject.setPersistStatus(PersistStatus.TRANSIENT);
 			}
 
 		}
@@ -407,8 +423,13 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 
 		if (cacheObject != null) {
 
-			// 从缓存中移除
-			cache.put(id, null);
+			// 是否已经被删除
+			if(cacheObject.getPersistStatus() == PersistStatus.DELETED) {
+				return;
+			}
+
+			// 标记为已经删除
+			cacheObject.setPersistStatus(PersistStatus.DELETED);
 
 			// 更新索引
 			if(cacheConfig.isEnableIndex()) {
@@ -420,7 +441,7 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 			}
 
 			// 提交持久化任务
-			inTimeDbPersistService.handleDelete(cacheObject, this.dbAccessService);
+			inTimeDbPersistService.handleDelete(cacheObject, this.dbAccessService, id, this.cache);
 		}
 	}
 
