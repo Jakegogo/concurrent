@@ -24,7 +24,7 @@ public class IndexObject<PK extends Comparable<PK> & Serializable> {
 	private volatile PersistStatus updateStatus = PersistStatus.TRANSIENT;
 
 	/**
-	 * 随影区域缓存
+	 * 索引区域缓存
 	 */
 	private ConcurrentHashMap<PK, Boolean> indexValues = new ConcurrentHashMap<PK, Boolean>();
 

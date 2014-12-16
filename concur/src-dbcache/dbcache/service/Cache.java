@@ -21,6 +21,7 @@ public interface Cache {
 	 * 存入缓存
 	 * @param key 键
 	 * @param value 值
+	 * @retrun 先前的值
 	 */
 	ValueWrapper put(Object key, Object value);
 
@@ -28,14 +29,14 @@ public interface Cache {
 	 * 存入缓存并返回最新的值
 	 * @param key 键
 	 * @param value 值
-	 * @return
+	 * @return 最新的值
 	 */
 	ValueWrapper putIfAbsent(Object key, Object value);
 
 	/**
 	 * 清除缓存
 	 * @param key 对应的键
-	 * @return
+	 * @return 移除的值
 	 */
 	ValueWrapper evict(Object key);
 
