@@ -57,6 +57,11 @@ public class CacheObject<T extends IEntity<?>> {
 	 */
 	private volatile PersistStatus persistStatus;
 
+	/**
+	 * 是否在更新处理中
+	 */
+	private volatile boolean updateProcessing = false;
+
 
 	/**
 	 * 默认构造方法
@@ -154,5 +159,13 @@ public class CacheObject<T extends IEntity<?>> {
 
 	public void setPersistStatus(PersistStatus persistStatus) {
 		this.persistStatus = persistStatus;
+	}
+
+	public boolean isUpdateProcessing() {
+		return updateProcessing;
+	}
+
+	public void setUpdateProcessing(boolean updateProcessing) {
+		this.updateProcessing = updateProcessing;
 	}
 }

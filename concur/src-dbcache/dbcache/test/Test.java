@@ -66,9 +66,9 @@ public class Test {
 	public void t1() throws InterruptedException {
 
 
-		for(int i = 0;i < 100000000;i++) {
+		for(int i = 0;i <= 100000000;i++) {
 			Entity entity = this.cacheService.get(1l);
-			entity.increseNum();
+//			entity.increseNum();
 //			if(i % 1000000 == 0) {
 //				entity.addNum(1);
 //			}
@@ -76,7 +76,7 @@ public class Test {
 
 //			entity.setNum(i);
 
-//			entity.setUid(i);
+			entity.setUid(i);
 
 //			if(i%100 == 0) {
 //			Thread.sleep(10);

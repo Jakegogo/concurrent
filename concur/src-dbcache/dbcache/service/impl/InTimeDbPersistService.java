@@ -121,6 +121,13 @@ public class InTimeDbPersistService implements DbPersistService {
 
 	@Override
 	public void handleUpdate(final CacheObject<?> cacheObject, final DbAccessService dbAccessService) {
+		// 更新处理中
+		if(cacheObject.isUpdateProcessing()) {
+			return;
+		}
+		// 改变更新状态
+		cacheObject.setUpdateProcessing(true);
+
 		//最新修改版本号
 		final long editVersion = cacheObject.increseEditVersion();
 		final long dbVersion = cacheObject.getDbVersion();
@@ -131,6 +138,9 @@ public class InTimeDbPersistService implements DbPersistService {
 
 			@Override
 			public void run() {
+
+				// 改变更新状态
+				cacheObject.setUpdateProcessing(false);
 
 				//缓存对象在提交之后被修改过
 				if(editVersion < cacheObject.getEditVersion()) {
