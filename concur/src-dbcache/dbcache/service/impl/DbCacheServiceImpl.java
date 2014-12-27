@@ -226,7 +226,7 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 
 
 	@Override
-	public List<T> getEntityFromIdList(Collection<PK> idList) {
+	public List<T> listById(Collection<PK> idList) {
 
 		if (idList == null || idList.size() == 0) {
 			return null;
@@ -314,7 +314,7 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public T submitNew2Queue(T entity) {
+	public T submitCreate(T entity) {
 
 		//生成主键
 		if (entity.getId() == null) {
@@ -391,7 +391,7 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 
 
 	@Override
-	public void submitUpdated2Queue(T entity) {
+	public void submitUpdate(T entity) {
 
 		final CacheObject<T> cacheObject = this.getCacheObject(entity.getId());
 
@@ -412,13 +412,13 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 
 
 	@Override
-	public void submitDeleted2Queue(T entity) {
-		submitDeleted2Queue(entity.getId());
+	public void submitDelete(T entity) {
+		submitDelete(entity.getId());
 	}
 
 
 	@Override
-	public void submitDeleted2Queue(final PK id) {
+	public void submitDelete(final PK id) {
 
 		final CacheObject<T> cacheObject = this.getCacheObject(id);
 

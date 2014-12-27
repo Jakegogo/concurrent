@@ -30,7 +30,7 @@ public interface DbCacheService<T extends IEntity<PK>, PK extends Comparable<PK>
 	 * @param idList 主键id列表
 	 * @return 实体对象列表
 	 */
-	List<T> getEntityFromIdList(Collection<PK> idList);
+	List<T> listById(Collection<PK> idList);
 
 
 	/**
@@ -39,28 +39,28 @@ public interface DbCacheService<T extends IEntity<PK>, PK extends Comparable<PK>
 	 * @return 返回保存的实体对象(可能与entity不是同一个实例)
 	 * @throws IllegalArgumentException 如果主键id==null
 	 */
-	T submitNew2Queue(T entity);
+	T submitCreate(T entity);
 
 
 	/**
 	 * 提交实体修改任务到更新队列(默认即时入库)
 	 * @param entity 实体
 	 */
-	void submitUpdated2Queue(T entity);
+	void submitUpdate(T entity);
 
 
 	/**
 	 * 提交实体删除任务到更新队列(即时入库)
 	 * @param entity 实体
 	 */
-	void submitDeleted2Queue(T entity);
+	void submitDelete(T entity);
 
 
 	/**
 	 * 提交实体删除任务到更新队列(即时入库)
 	 * @param id 主键id
 	 */
-	void submitDeleted2Queue(PK id);
+	void submitDelete(PK id);
 
 
 	/**

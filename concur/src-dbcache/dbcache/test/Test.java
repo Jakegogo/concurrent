@@ -82,7 +82,7 @@ public class Test {
 //			Thread.sleep(10);
 //			}
 
-			this.cacheService.submitUpdated2Queue(entity);
+			this.cacheService.submitUpdate(entity);
 			if(i%10000000 == 0) {
 				System.out.println(ThreadUtils.dumpThreadPool("入库线程池", this.cacheService.getThreadPool()));
 			}
@@ -221,7 +221,7 @@ public class Test {
 		boolean enter = false;
 		for(int i = 0;i < 10000000;i ++) {
 			entity = new Entity();
-			this.cacheService.submitNew2Queue(entity);
+			this.cacheService.submitCreate(entity);
 			if(i > 100000) {
 				if(!enter) {
 					System.out.println("enter");
@@ -265,7 +265,7 @@ public class Test {
 			System.out.println(JsonUtils.object2JsonString(entity1));
 		}
 		System.out.println(entity.getNum());
-		this.cacheService.submitUpdated2Queue(entity);
+		this.cacheService.submitUpdate(entity);
 	}
 
 
@@ -299,7 +299,7 @@ public class Test {
 			Entity entity = new Entity();
 			entity.setId(id);
 
-			this.cacheService.submitNew2Queue(entity);
+			this.cacheService.submitCreate(entity);
 
 			Assert.assertEquals(entity, this.cacheService.get(id));
 		}
@@ -315,7 +315,7 @@ public class Test {
 			Entity entity = new Entity();
 			entity.setId(id);
 
-			this.cacheService.submitNew2Queue(entity);
+			this.cacheService.submitCreate(entity);
 
 //			Assert.assertEquals(entity, this.cacheService.get(id));
 		}
