@@ -2,7 +2,7 @@ package dbcache.model;
 
 import java.io.Serializable;
 import java.lang.ref.ReferenceQueue;
-import java.lang.ref.SoftReference;
+import java.lang.ref.WeakReference;
 
 /**
  * 软引用实体缓存对象
@@ -11,7 +11,7 @@ import java.lang.ref.SoftReference;
  * @param <T>
  * @param <PK>
  */
-public class WeakCacheEntity<T extends IEntity<PK>, PK extends Comparable<PK> & Serializable> extends SoftReference<T> implements IEntity<PK> {
+public class WeakCacheEntity<T extends IEntity<PK>, PK extends Comparable<PK> & Serializable> extends WeakReference<T> implements IEntity<PK> {
 
 	/**
 	 * 弱引用实体Key
