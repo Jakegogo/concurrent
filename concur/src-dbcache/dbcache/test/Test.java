@@ -43,13 +43,13 @@ public class Test {
 	private Cache cache;
 
 	// 用户名 - ID 缓存
-	private CommonCache<ConcurrentHashSet<Integer>> userNameCache = CacheUtils.cacheBuilder(new HibernateCacheQuerier<ConcurrentHashSet<Integer>>(){
+	private CommonCache<ConcurrentHashSet<Integer>> userNameCache = CacheUtils.cacheBuilder(new CacheQuerier<ConcurrentHashSet<Integer>>() {
 		@Override
 		public ConcurrentHashSet<Integer> query(Object... keys) {
 			DetachedCriteria dc = DetachedCriteria.forClass(Entity.class)
 					.add(Restrictions.eq("name", keys[0]))
 					.setProjection(Projections.id());
-			List list = this.getQueryResult(dc);
+			List list = dc.getExecutableCriteria(HibernateUtils.getSession()).list();
 			if (list != null && list.size() > 0) {
 				return new ConcurrentHashSet<Integer>(list);
 			} else {
