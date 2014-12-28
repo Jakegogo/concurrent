@@ -1,19 +1,15 @@
 package dbcache.test;
 
-import java.io.Serializable;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.CyclicBarrier;
-
-import dbcache.utils.ConcurrentWeakHashMap;
+import dbcache.proxy.asm.EntityAsmFactory;
+import dbcache.service.Cache;
+import dbcache.service.DbCacheService;
+import dbcache.utils.*;
 import javassist.CannotCompileException;
 import javassist.NotFoundException;
-
-import javax.annotation.Resource;
-
+import org.apache.mina.util.ConcurrentHashSet;
+import org.hibernate.criterion.DetachedCriteria;
+import org.hibernate.criterion.Projections;
+import org.hibernate.criterion.Restrictions;
 import org.junit.Assert;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,11 +17,13 @@ import org.springframework.stereotype.Component;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import dbcache.proxy.asm.EntityAsmFactory;
-import dbcache.service.Cache;
-import dbcache.service.DbCacheService;
-import dbcache.utils.JsonUtils;
-import dbcache.utils.ThreadUtils;
+import javax.annotation.Resource;
+import java.io.Serializable;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(locations = { "classpath:applicationContext.xml" })
@@ -43,6 +41,22 @@ public class Test {
 
 	@Resource(name = "concurrentWeekHashMapCache")
 	private Cache cache;
+
+	// 用户名 - ID 缓存
+	private CommonCache<ConcurrentHashSet<Integer>> userNameCache = CacheUtils.cacheBuilder(new HibernateCacheQuerier<ConcurrentHashSet<Integer>>(){
+		@Override
+		public ConcurrentHashSet<Integer> query(Object... keys) {
+			DetachedCriteria dc = DetachedCriteria.forClass(Entity.class)
+					.add(Restrictions.eq("name", keys[0]))
+					.setProjection(Projections.id());
+			List list = this.getQueryResult(dc);
+			if (list != null && list.size() > 0) {
+				return new ConcurrentHashSet<Integer>(list);
+			} else {
+				return new ConcurrentHashSet<Integer>();
+			}
+		}
+	}).build();
 
 
 	public static String getEntityIdKey(Serializable id, Class<?> entityClazz) {
@@ -337,6 +351,13 @@ public class Test {
 	@org.junit.Test
 	public void t16() {
 		System.out.println("16 >>> 1 : " + (16 >>> 1));
+	}
+
+
+
+	@org.junit.Test
+	public void t17() {
+		System.out.println(userNameCache.get("test"));
 	}
 
 

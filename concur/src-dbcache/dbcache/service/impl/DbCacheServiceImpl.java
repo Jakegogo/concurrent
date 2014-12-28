@@ -346,16 +346,11 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 				cacheObject = (CacheObject<T>) wrapper.get();
 			}
 
-		} else if(cacheObject == null) {
+		} else if(cacheObject == null) {// 缓存为NULL
 
 			cacheObject = configFactory.createCacheObject(entity, entity.getClass(), indexService, key, cache, cacheConfig);
 
-			wrapper = cache.evict(key);
-			if (wrapper != null && wrapper.get() != null) {
-				cacheObject = (CacheObject<T>) wrapper.get();
-			}
-
-			wrapper = cache.putIfAbsent(key, cacheObject);
+			wrapper = cache.replace(key, null, cacheObject);
 			if (wrapper != null && wrapper.get() != null) {
 				cacheObject = (CacheObject<T>) wrapper.get();
 			}

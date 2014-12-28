@@ -146,7 +146,7 @@ public class ConfigFactoryImpl implements ConfigFactory, DbCacheMBean {
 			Class<?> cacheClass = cacheConfig.getCacheType().getCacheClass();
 			Cache cache = (Cache) applicationContext.getAutowireCapableBeanFactory().createBean(cacheClass);
 			int concurrencyLevel = cacheConfig.getConcurrencyLevel() == 0? Runtime.getRuntime().availableProcessors() : cacheConfig.getConcurrencyLevel();
-			cache.init(cacheConfig.getEntitySize(), concurrencyLevel);
+			cache.init("ENTITY_CACHE_" + cacheClass.getSimpleName(), cacheConfig.getEntitySize(), concurrencyLevel);
 			inject(service, cacheField, cache);
 
 
@@ -172,7 +172,7 @@ public class ConfigFactoryImpl implements ConfigFactory, DbCacheMBean {
 			// 索引服务缓存设置
 			Cache indexCache = (Cache) applicationContext.getAutowireCapableBeanFactory().createBean(cacheConfig.getIndexCacheClass());
 			// 初始化索引缓存
-			indexCache.init(cacheConfig.getIndexSize() > 0 ? cacheConfig.getIndexSize() : cacheConfig.getEntitySize(), concurrencyLevel);
+			indexCache.init("INDEX_CACHE_" + cacheClass.getSimpleName(), cacheConfig.getIndexSize() > 0 ? cacheConfig.getIndexSize() : cacheConfig.getEntitySize(), concurrencyLevel);
 
 			Field cacheField1 = indexService.getClass().getDeclaredField(cacheProperty);
 			ReflectionUtils.makeAccessible(cacheField1);

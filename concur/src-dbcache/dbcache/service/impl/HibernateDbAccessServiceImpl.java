@@ -1,16 +1,17 @@
 package dbcache.service.impl;
 
-import java.io.Serializable;
-import java.util.Collection;
-
+import dbcache.service.DbAccessService;
 import org.hibernate.SessionFactory;
+import org.hibernate.criterion.DetachedCriteria;
 import org.hibernate.criterion.Projections;
 import org.hibernate.criterion.Restrictions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.orm.hibernate3.support.HibernateDaoSupport;
 import org.springframework.stereotype.Component;
 
-import dbcache.service.DbAccessService;
+import java.io.Serializable;
+import java.util.Collection;
+import java.util.List;
 
 /**
  * 数据库存储服务实现类
@@ -113,6 +114,32 @@ public class HibernateDbAccessServiceImpl extends HibernateDaoSupport implements
 				.add(Restrictions.eq(fieldName, fieldValue))
 				.setProjection(Projections.id())
 				.list();
+	}
+
+
+	/**
+	 * 查询DetachedCriteria
+	 * @param criteria DetachedCriteria
+	 * @return List
+	 */
+	public List getQueryResult(DetachedCriteria criteria) {
+		if (criteria != null) {
+			return criteria.getExecutableCriteria(getSession()).list();
+		}
+		return null;
+	}
+
+
+	/**
+	 * 查询DetachedCriteria
+	 * @param criteria DetachedCriteria
+	 * @return Object
+	 */
+	public Object getUniqueResult(DetachedCriteria criteria) {
+		if (criteria != null) {
+			return criteria.getExecutableCriteria(getSession()).uniqueResult();
+		}
+		return null;
 	}
 
 }

@@ -1,6 +1,5 @@
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 
 /**
  * Created by Administrator on 2014/11/19.
@@ -18,6 +17,7 @@ public class Test1 {
 //        List<Integer> list1 = new ArrayList<Integer>(list);
 
         new HashMap(new HashMap());
+
 
     }
 

@@ -1,21 +1,20 @@
 package dbcache.service.impl;
 
-import java.io.Serializable;
-import java.lang.ref.ReferenceQueue;
-//import java.lang.ref.WeakReference;
-//import java.util.concurrent.ConcurrentMap;
-
+import dbcache.service.Cache;
+import dbcache.service.DbRuleService;
 import dbcache.utils.CleanupThread;
 import dbcache.utils.ConcurrentLRUCache;
 import dbcache.utils.ConcurrentWeakHashMap;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.io.Serializable;
+import java.lang.ref.ReferenceQueue;
+
+//import java.lang.ref.WeakReference;
+//import java.util.concurrent.ConcurrentMap;
 //import com.googlecode.concurrentlinkedhashmap.ConcurrentLinkedHashMap;
 //import com.googlecode.concurrentlinkedhashmap.EvictionListener;
-
-import dbcache.service.Cache;
-import dbcache.service.DbRuleService;
 
 /**
  * Apache ConcurrentLRUCache缓存容器
@@ -41,6 +40,11 @@ public class ConcurrentLruHashMapCache implements Cache {
 	private static final int DEFAULT_MAX_CAPACITY_OF_ENTITY_CACHE = 100000;
 
 	/**
+	 * 缓存名称
+	 */
+	private String name;
+
+	/**
 	 * 空值的引用
 	 */
 	private static final ValueWrapper NULL_HOLDER = new NullHolder();
@@ -58,11 +62,13 @@ public class ConcurrentLruHashMapCache implements Cache {
 
 	/**
 	 * 初始化
+	 * @param name
 	 * @param entityCacheSize
 	 * @param concurrencyLevel
 	 */
-	public void init(int entityCacheSize, int concurrencyLevel) {
+	public void init(String name, int entityCacheSize, int concurrencyLevel) {
 
+		this.name = name;
 		this.evictions = new ConcurrentWeakHashMap<Object, Object>();
 
 		int size = (entityCacheSize * 4 + 3) / 3;
@@ -107,13 +113,22 @@ public class ConcurrentLruHashMapCache implements Cache {
 
 	@Override
 	public ValueWrapper put(Object key, Object value) {
-		return this.store.put(key, toStoreValue(SimpleValueWrapper.valueOf(value)));
+		return this.store.put(key, toStoreValue(value));
 	}
 
 
 	@Override
 	public ValueWrapper putIfAbsent(Object key, Object value) {
-		this.store.putIfAbsent(key, toStoreValue(SimpleValueWrapper.valueOf(value)));
+		ValueWrapper oldValueWrapper = this.store.putIfAbsent(key, toStoreValue(value));
+		if(oldValueWrapper == NULL_HOLDER) {
+			this.replace(key, null, value);
+		}
+		return this.get(key);
+	}
+
+	@Override
+	public ValueWrapper replace(Object key, Object oldValue, Object newValue) {
+		this.store.replace(key, toStoreValue(oldValue), toStoreValue(newValue));
 		return this.get(key);
 	}
 
@@ -151,11 +166,11 @@ public class ConcurrentLruHashMapCache implements Cache {
 	 * @param userValue the given user value
 	 * @return the value to store
 	 */
-	protected ValueWrapper toStoreValue(ValueWrapper userValue) {
+	protected ValueWrapper toStoreValue(Object userValue) {
 		if (userValue == null) {
 			return NULL_HOLDER;
 		}
-		return userValue;
+		return SimpleValueWrapper.valueOf(userValue);
 	}
 
 
@@ -166,6 +181,19 @@ public class ConcurrentLruHashMapCache implements Cache {
 		public Object get() {
 			return null;
 		}
+
+
+		@Override
+		public boolean equals(Object o) {
+			if (null == o) return true;
+			return false;
+		}
+
+		@Override
+		public int hashCode() {
+			return 0;
+		}
+
 	}
 
 
@@ -199,6 +227,23 @@ public class ConcurrentLruHashMapCache implements Cache {
 			return new SimpleValueWrapper(value);
 		}
 
+		@Override
+		public boolean equals(Object o) {
+			if (this == o) return true;
+			if (o == null || !(o instanceof ValueWrapper)) return false;
+
+			SimpleValueWrapper that = (SimpleValueWrapper) o;
+
+			if (value != null ? !value.equals(that.value) : that.value != null) return false;
+
+			return true;
+		}
+
+		@Override
+		public int hashCode() {
+			return value != null ? value.hashCode() : 0;
+		}
+
 		/**
 		 * 获取实体
 		 */
@@ -212,6 +257,11 @@ public class ConcurrentLruHashMapCache implements Cache {
 	@Override
 	public int getCachedSize() {
 		return store.size();
+	}
+
+	@Override
+	public String getName() {
+		return this.name;
 	}
 
 

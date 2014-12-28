@@ -59,6 +59,8 @@ public class ConcurrentLRUCache<K, V>
     private final EvictionListener<K, V> evictionListener;
     private CleanupThread cleanupThread;
 
+    private CacheEntry<K, V> NULL_ENTRY = new NullEntry();
+
     public ConcurrentLRUCache(int upperWaterMark, final int lowerWaterMark,
             int acceptableWatermark, int initialSize, boolean runCleanupThread,
             boolean runNewThreadForCleanup, int concurrencyLevel,
@@ -105,7 +107,7 @@ public class ConcurrentLRUCache<K, V>
     public V get(K key)
     {
         CacheEntry<K, V> e = map.get(key);
-        if (e == null)
+        if (e == null || e == NULL_ENTRY)
         {
             if (islive)
             {
@@ -123,7 +125,7 @@ public class ConcurrentLRUCache<K, V>
     public V remove(K key)
     {
         CacheEntry<K, V> cacheEntry = map.remove(key);
-        if (cacheEntry != null)
+        if (cacheEntry != null && cacheEntry != NULL_ENTRY)
         {
             stats.size.decrementAndGet();
             return cacheEntry.value;
@@ -133,15 +135,18 @@ public class ConcurrentLRUCache<K, V>
 
     public V put(K key, V val)
     {
+        CacheEntry<K, V> e;
         if (val == null)
         {
-            return null;
+            e = NULL_ENTRY;
+        } else {
+            e = new CacheEntry<K, V>(key, val,
+                    stats.accessCounter.incrementAndGet());
         }
-        CacheEntry<K, V> e = new CacheEntry<K, V>(key, val,
-                stats.accessCounter.incrementAndGet());
+
         CacheEntry<K, V> oldCacheEntry = map.put(key, e);
         int currentSize;
-        if (oldCacheEntry == null)
+        if (oldCacheEntry == null && oldCacheEntry == NULL_ENTRY)
         {
             currentSize = stats.size.incrementAndGet();
         }
@@ -196,15 +201,18 @@ public class ConcurrentLRUCache<K, V>
 
     public V putIfAbsent(K key, V val)
     {
+        CacheEntry<K, V> e;
         if (val == null)
         {
-            return null;
+            e = NULL_ENTRY;
+        } else {
+            e = new CacheEntry<K, V>(key, val,
+                    stats.accessCounter.incrementAndGet());
         }
-        CacheEntry<K, V> e = new CacheEntry<K, V>(key, val,
-                stats.accessCounter.incrementAndGet());
+
         CacheEntry<K, V> oldCacheEntry = map.putIfAbsent(key, e);
         int currentSize;
-        if (oldCacheEntry == null)
+        if (oldCacheEntry == null || oldCacheEntry == NULL_ENTRY)
         {
             currentSize = stats.size.incrementAndGet();
         }
@@ -254,6 +262,85 @@ public class ConcurrentLRUCache<K, V>
             }
         }
         return oldCacheEntry == null ? null : oldCacheEntry.value;
+    }
+
+
+
+    public boolean replace(K key, V oldVal, V newVal)
+    {
+        CacheEntry<K, V> e;
+        if(newVal == null) {
+            e = NULL_ENTRY;
+        } else {
+            e = new CacheEntry<K, V>(key, newVal,
+                    stats.accessCounter.incrementAndGet());
+        }
+
+        CacheEntry<K, V> eOld;
+        if(oldVal == null) {
+            eOld = NULL_ENTRY;
+        } else {
+            eOld = new CacheEntry<K, V>(key, oldVal,
+                    stats.accessCounter.get());
+        }
+
+        CacheEntry<K, V> oldCacheEntry;
+        if(map.replace(key, eOld, e)) {
+            oldCacheEntry = eOld;
+        } else {
+            return false;
+        }
+        int currentSize;
+        if (oldCacheEntry == null || oldCacheEntry == NULL_ENTRY)
+        {
+            currentSize = stats.size.incrementAndGet();
+        }
+        else
+        {
+            currentSize = stats.size.get();
+        }
+        if (islive)
+        {
+            stats.putCounter.incrementAndGet();
+        }
+        else
+        {
+            stats.nonLivePutCounter.incrementAndGet();
+        }
+
+        // Check if we need to clear out old entries from the cache.
+        // isCleaning variable is checked instead of markAndSweepLock.isLocked()
+        // for performance because every put invokation will check until
+        // the size is back to an acceptable level.
+        //
+        // There is a race between the check and the call to markAndSweep, but
+        // it's unimportant because markAndSweep actually aquires the lock or returns if it can't.
+        //
+        // Thread safety note: isCleaning read is piggybacked (comes after) other volatile reads
+        // in this method.
+        if (currentSize > upperWaterMark && !isCleaning)
+        {
+            if (newThreadForCleanup)
+            {
+                new Thread()
+                {
+                    @Override
+                    public void run()
+                    {
+                        markAndSweep();
+                    }
+                }.start();
+            }
+            else if (cleanupThread != null)
+            {
+                cleanupThread.wakeThread(this);
+            }
+            else
+            {
+                markAndSweep();
+            }
+        }
+        return true;
     }
 
 
@@ -689,6 +776,8 @@ public class ConcurrentLRUCache<K, V>
         volatile long lastAccessed = 0;
         long lastAccessedCopy = 0;
 
+        private CacheEntry(){}
+
         public CacheEntry(K key, V value, long lastAccessed)
         {
             this.key = key;
@@ -707,7 +796,7 @@ public class ConcurrentLRUCache<K, V>
             {
                 return 0;
             }
-            return this.lastAccessedCopy < that.lastAccessedCopy ? 1 : -1;
+            return -1;
         }
 
         @Override
@@ -727,6 +816,40 @@ public class ConcurrentLRUCache<K, V>
         {
             return "key: " + key + " value: " + value + " lastAccessed:"
                     + lastAccessed;
+        }
+    }
+
+
+    private static class NullEntry extends CacheEntry{
+        Object key;
+
+        public NullEntry()
+        {
+            this.key = new Object();
+        }
+
+        public int compareTo(NullEntry that)
+        {
+            return -1;
+        }
+
+        @Override
+        public int hashCode()
+        {
+            return 0;
+        }
+
+        @Override
+        public boolean equals(Object obj)
+        {
+            return obj == null;
+        }
+
+        @Override
+        public String toString()
+        {
+            return "key: " + key + " value: " + null + " lastAccessed:"
+                    + -1;
         }
     }
 

@@ -1,15 +1,15 @@
 package dbcache.annotation;
 
+import dbcache.conf.CacheType;
+import dbcache.conf.PersistType;
+
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import dbcache.conf.CacheType;
-import dbcache.conf.PersistType;
-
 /**
- * 缓存配置注解
+ * 实体缓存配置注解
  * 没有标注此注解的实体类则使用默认配置
  * @author Jake
  * @date 2014年9月13日下午1:38:22

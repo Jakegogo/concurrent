@@ -34,6 +34,15 @@ public interface Cache {
 	ValueWrapper putIfAbsent(Object key, Object value);
 
 	/**
+	 * 替换缓存内容
+	 * @param key 键
+	 * @param oldValue 旧值
+	 * @param newValue 新值
+	 * @return 最新的值
+	 */
+	ValueWrapper replace(Object key, Object oldValue, Object newValue);
+
+	/**
 	 * 清除缓存
 	 * @param key 对应的键
 	 * @return 移除的值
@@ -66,11 +75,18 @@ public interface Cache {
 
 
 	/**
+	 * 获取缓存单元名称
+	 * @return
+	 */
+	public String getName();
+
+	/**
 	 * 初始化
+	 * @param name 缓存名称
 	 * @param entityCacheSize 缓存上限大小
 	 * @param concurrencyLevel 并发线程数
 	 */
-	void init(int entityCacheSize, int concurrencyLevel);
+	void init(String name, int entityCacheSize, int concurrencyLevel);
 
 
 	/**
