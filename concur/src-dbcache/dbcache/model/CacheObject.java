@@ -1,7 +1,9 @@
 package dbcache.model;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -51,7 +53,12 @@ public class CacheObject<T extends IEntity<?>> {
 	 * 索引名 - 属性
 	 */
 	private Map<String, ValueGetter<T>> indexes = new HashMap<String, ValueGetter<T>>();
-
+	
+	/**
+	 * 索引属性值获取器列表
+	 */
+	private List<ValueGetter<T>> indexList = new ArrayList<ValueGetter<T>>();
+	
 	/**
 	 * 持久化状态
 	 */
@@ -104,6 +111,7 @@ public class CacheObject<T extends IEntity<?>> {
 		this.proxyEntity = proxyEntity;
 		this.indexes = indexes;
 		this.persistStatus = PersistStatus.TRANSIENT;
+		this.indexList = new ArrayList<ValueGetter<T>>(indexes.values());
 	}
 
 
@@ -168,4 +176,9 @@ public class CacheObject<T extends IEntity<?>> {
 	public void setUpdateProcessing(boolean updateProcessing) {
 		this.updateProcessing = updateProcessing;
 	}
+
+	public List<ValueGetter<T>> getIndexList() {
+		return indexList;
+	}
+
 }

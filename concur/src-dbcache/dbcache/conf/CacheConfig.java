@@ -52,8 +52,7 @@ public class CacheConfig<T> {
 
 	/** 索引信息  索引名 - 属性 */
 	private Map<String, ValueGetter<T>> indexes = new HashMap<String, ValueGetter<T>>();
-
-
+	
 	/**
 	 * 获取实例
 	 * @param entityClass 实体类
