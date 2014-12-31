@@ -5,7 +5,7 @@ package dbcache.annotation;
  * @use fast-json
  * @author Jake
  */
-public @interface Transform {
+public @interface JsonConvert {
 	
 	/**
 	 * 指定json串属性名
