@@ -3,7 +3,6 @@ package dbcache.service;
 import java.util.concurrent.ExecutorService;
 
 import dbcache.model.CacheObject;
-import dbcache.model.PersistAction;
 
 /**
  * 实体入库服务接口

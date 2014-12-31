@@ -35,11 +35,6 @@ public class ConcurrentLruHashMapCache implements Cache {
 	private DbRuleService dbRuleService;
 
 	/**
-	 * 缺省实体缓存最大容量
-	 */
-	private static final int DEFAULT_MAX_CAPACITY_OF_ENTITY_CACHE = 100000;
-
-	/**
 	 * 缓存名称
 	 */
 	private String name;

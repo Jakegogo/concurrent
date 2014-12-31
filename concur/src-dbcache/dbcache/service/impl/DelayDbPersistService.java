@@ -5,25 +5,24 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import dbcache.conf.PersistType;
-import dbcache.model.CacheObject;
-import dbcache.model.EntityInitializer;
-import dbcache.model.PersistStatus;
-import dbcache.service.Cache;
-import dbcache.service.DbAccessService;
-import dbcache.utils.JsonUtils;
+import javax.annotation.PostConstruct;
+
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import dbcache.model.CacheObject;
+import dbcache.model.EntityInitializer;
 import dbcache.model.PersistAction;
+import dbcache.model.PersistStatus;
+import dbcache.service.Cache;
+import dbcache.service.DbAccessService;
 import dbcache.service.DbPersistService;
 import dbcache.service.DbRuleService;
+import dbcache.utils.JsonUtils;
 import dbcache.utils.NamedThreadFactory;
-
-import javax.annotation.PostConstruct;
 
 
 /**

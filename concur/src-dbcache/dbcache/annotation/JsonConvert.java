@@ -2,6 +2,7 @@ package dbcache.annotation;
 
 /**
  * json属性转换注解
+ * 配合@Transient使用
  * @use fast-json
  * @author Jake
  */

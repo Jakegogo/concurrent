@@ -18,7 +18,7 @@ public class CacheUtils {
     /**
      * 所有通用缓存
      */
-    private static Map<String, CommonCache> COMMON_CACHE_MAP = new ConcurrentHashMap<String, CommonCache>();
+    private static Map<String, CommonCache<?>> COMMON_CACHE_MAP = new ConcurrentHashMap<String, CommonCache<?>>();
 
     /**
      * 使用Cache创建一个CacheBuilder
@@ -33,7 +33,7 @@ public class CacheUtils {
      * 获取索引的通用缓存
      * @return Map<String, CommonCache>
      */
-    public static Map<String, CommonCache> getCommonCaches() {
+    public static Map<String, CommonCache<?>> getCommonCaches() {
         return COMMON_CACHE_MAP;
     }
 
