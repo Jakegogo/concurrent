@@ -111,7 +111,9 @@ public class CacheObject<T extends IEntity<?>> {
 		this.proxyEntity = proxyEntity;
 		this.indexes = indexes;
 		this.persistStatus = PersistStatus.TRANSIENT;
-		this.indexList = new ArrayList<ValueGetter<T>>(indexes.values());
+		if(indexes != null) {
+			this.indexList = new ArrayList<ValueGetter<T>>(indexes.values());
+		}
 	}
 
 
