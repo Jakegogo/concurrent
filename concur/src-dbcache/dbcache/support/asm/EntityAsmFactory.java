@@ -1,16 +1,13 @@
-package dbcache.proxy.asm;
+package dbcache.support.asm;
 
-import java.io.IOException;
-import java.util.concurrent.ConcurrentHashMap;
-
+import dbcache.utils.AsmUtils;
 import org.apache.http.annotation.ThreadSafe;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.ClassWriter;
 
-import dbcache.proxy.AbstractAsmMethodAspect;
-import dbcache.support.asm.AsmClassLoader;
-import dbcache.utils.AsmUtils;
+import java.io.IOException;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * asm代理工厂 <br/>

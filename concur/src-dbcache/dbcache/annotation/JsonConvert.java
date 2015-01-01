@@ -1,17 +1,24 @@
 package dbcache.annotation;
 
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+
 /**
  * json属性转换注解
  * 配合@Transient使用
  * @use fast-json
  * @author Jake
  */
+@Target(ElementType.FIELD)
+@Retention(RetentionPolicy.RUNTIME)
 public @interface JsonConvert {
 	
 	/**
 	 * 指定json串属性名
 	 * @return
 	 */
-	public String property();
+	public String value();
 	
 }

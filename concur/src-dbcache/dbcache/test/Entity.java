@@ -1,11 +1,13 @@
 package dbcache.test;
 
 import dbcache.annotation.Cached;
+import dbcache.annotation.JsonConvert;
 import dbcache.annotation.UpdateIndex;
 import dbcache.conf.CacheType;
 import dbcache.conf.PersistType;
 import dbcache.model.EntityInitializer;
 import dbcache.model.IEntity;
+import org.apache.mina.util.ConcurrentHashSet;
 import org.hibernate.annotations.Index;
 
 import javax.persistence.Id;
@@ -31,12 +33,23 @@ public class Entity implements EntityInitializer, IEntity<Long> {
 
 	private String name;
 
+	private String friends = "[1,2,3]";
+
 	public byte[] a = new byte[100];
 
 	@Transient
-	public AtomicInteger idgenerator;
+	private AtomicInteger idgenerator;
+
+	public void setFriendSet(ConcurrentHashSet<Long> friendSet) {
+		this.friendSet = friendSet;
+	}
+
+	@Transient
+	@JsonConvert("friends")
+	private ConcurrentHashSet<Long> friendSet = new ConcurrentHashSet<Long>();
 
 	public Entity() {
+//		doAfterLoad();
 //		doAfterLoad();
 	}
 
@@ -132,5 +145,17 @@ public class Entity implements EntityInitializer, IEntity<Long> {
 
 	public void setName(String name) {
 		this.name = name;
+	}
+
+	public String getFriends() {
+		return friends;
+	}
+
+	public void setFriends(String friends) {
+		this.friends = friends;
+	}
+
+	public ConcurrentHashSet<Long> getFriendSet() {
+		return friendSet;
 	}
 }

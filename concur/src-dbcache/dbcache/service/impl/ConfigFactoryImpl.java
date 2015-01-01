@@ -2,15 +2,16 @@ package dbcache.service.impl;
 
 import dbcache.conf.CacheConfig;
 import dbcache.conf.CacheType;
+import dbcache.conf.JsonConverter;
 import dbcache.conf.PersistType;
 import dbcache.model.CacheObject;
 import dbcache.model.IEntity;
 import dbcache.model.WeakCacheEntity;
 import dbcache.model.WeakCacheObject;
-import dbcache.proxy.asm.EntityAsmFactory;
-import dbcache.proxy.asm.IndexMethodAspect;
 import dbcache.service.*;
 import dbcache.support.asm.AsmAccessHelper;
+import dbcache.support.asm.EntityAsmFactory;
+import dbcache.support.asm.IndexMethodAspect;
 import dbcache.support.asm.ValueGetter;
 import dbcache.utils.AsmUtils;
 import dbcache.utils.ThreadUtils;
@@ -30,7 +31,9 @@ import javax.management.*;
 import java.io.Serializable;
 import java.lang.management.ManagementFactory;
 import java.lang.reflect.Field;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
@@ -208,8 +211,11 @@ public class ConfigFactoryImpl implements ConfigFactory, DbCacheMBean {
 			cacheConfig = CacheConfig.valueOf(clz);
 
 			final Map<String, ValueGetter<?>> indexes = new HashMap<String, ValueGetter<?>>();
+			final Map<String, JsonConverter> jsonAutoConverters = new HashMap<String, JsonConverter>();
+
 			ReflectionUtils.doWithFields(clz, new FieldCallback() {
 				public void doWith(Field field) throws IllegalArgumentException, IllegalAccessException {
+					// 处理索引注解
 					if (field.isAnnotationPresent(org.hibernate.annotations.Index.class) ||
 							field.isAnnotationPresent(dbcache.annotation.Index.class)) {
 						String indexName = null;
@@ -228,9 +234,23 @@ public class ConfigFactoryImpl implements ConfigFactory, DbCacheMBean {
 							e.printStackTrace();
 						}
 					}
+
+					// 处理Json转换注解
+					if(field.isAnnotationPresent(dbcache.annotation.JsonConvert.class)) {
+						dbcache.annotation.JsonConvert jsonConvert = field.getAnnotation(dbcache.annotation.JsonConvert.class);
+						try {
+							jsonAutoConverters.put(jsonConvert.value(), JsonConverter.valueof(clz, field, jsonConvert.value()));
+						} catch (Exception e) {
+							logger.equals("获取实体配置出错:生成json属性自动转换失败(" + clz.getName() + "." + field.getName() + ").");
+							e.printStackTrace();
+						}
+					}
+
 				}
 			});
+
 			cacheConfig.setIndexes(indexes);
+			cacheConfig.setJsonAutoConverters(jsonAutoConverters);
 
 			cacheConfigMap.put(clz, cacheConfig);
 		}
@@ -260,7 +280,7 @@ public class ConfigFactoryImpl implements ConfigFactory, DbCacheMBean {
 
 	@SuppressWarnings("rawtypes")
 	@Override
-	public IEntity<?> createProxyEntity(IEntity<?> entity, Class<?> proxyClass, DbIndexService indexService, CacheConfig<?> cacheConfig) {
+	public <T extends IEntity<PK>, PK extends Comparable<PK> & Serializable> T createProxyEntity(T entity, Class<? extends IEntity> proxyClass, DbIndexService indexService, CacheConfig<T> cacheConfig) {
 		// 判断是否启用索引服务
 		if(cacheConfig == null || !cacheConfig.isEnableIndex()) {
 			return entity;
@@ -270,7 +290,7 @@ public class ConfigFactoryImpl implements ConfigFactory, DbCacheMBean {
 
 
 	@SuppressWarnings("unchecked")
-	private WeakCacheEntity<?, ?> wrapEntity(IEntity<?> entity, Class<?> entityClazz, Cache cache, Object key, CacheConfig<?> cacheConfig) {
+	private <T extends IEntity<PK>, PK extends Comparable<PK> & Serializable> WeakCacheEntity<T, ?> wrapEntity(T entity, Class<? extends IEntity> entityClazz, Cache cache, Object key, CacheConfig<T> cacheConfig) {
 		// 判断是否开启弱引用
 		if(cacheConfig == null || cacheConfig.getCacheType() != CacheType.WEEKMAP) {
 			return null;
@@ -286,26 +306,38 @@ public class ConfigFactoryImpl implements ConfigFactory, DbCacheMBean {
 			DbIndexService<?> indexService, Object key, Cache cache, CacheConfig<T> cacheConfig) {
 
 		// 创建索引属性表
-		Map<String, ValueGetter<T>> indexes = new HashMap<String, ValueGetter<T>>();
+		List<ValueGetter<T>> indexes = new ArrayList<ValueGetter<T>>();
+		// 创建Json属性自动转换表
+		List<JsonConverter> jsonAutoConverters = new ArrayList<JsonConverter>();
+
+		T proxyEntity = this.createProxyEntity(entity, cacheConfig.getProxyClazz(), indexService, cacheConfig);
+
+		// 弱引用方式
+		if(cacheConfig.getCacheType() == CacheType.WEEKMAP) {
+			entity = (T) this.wrapEntity(entity, entityClazz, cache, key, cacheConfig);
+			proxyEntity = (T) this.wrapEntity(proxyEntity, entityClazz, cache, key, cacheConfig);
+		}
+
+		// 添加索引属性
 		for(Entry<String, ValueGetter<T>> entry : cacheConfig.getIndexes().entrySet()) {
 			ValueGetter<T> instance = entry.getValue().clone();
 			instance.setTarget(entity);
-			indexes.put(entry.getKey(), instance);
+			indexes.add(instance);
 		}
 
-		// 判断是否开启弱引用
-		if(cacheConfig == null || cacheConfig.getCacheType() != CacheType.WEEKMAP) {
-			return new CacheObject(
-					entity, entity.getId(), entity.getClass(),
-					this.createProxyEntity(entity, cacheConfig.getProxyClazz(), indexService, cacheConfig), indexes);
+		// 添加jsonAutoConverters
+		for(Entry<String, JsonConverter> entry : cacheConfig.getJsonAutoConverters().entrySet()) {
+			JsonConverter instance = entry.getValue().clone();
+			instance.setTarget(entity);
+			jsonAutoConverters.add(instance);
 		}
 
-		// 创建弱引用缓存对象
-		return new WeakCacheObject(
-				this.wrapEntity(entity, entityClazz, cache, key, cacheConfig),
-				entity.getId(), entityClazz,
-				this.wrapEntity(this.createProxyEntity(entity, cacheConfig.getProxyClazz(), indexService, cacheConfig),
-						entityClazz, cache, key, cacheConfig), key, indexes);
+		if(cacheConfig.getCacheType() == CacheType.WEEKMAP) {
+			return new WeakCacheObject<T, WeakCacheEntity<T,?>>(entity, entity.getId(), (Class<T>) entityClazz, proxyEntity, key, indexes, jsonAutoConverters);
+		} else {
+			return new CacheObject<T>(entity, entity.getId(), (Class<T>) entityClazz, proxyEntity, indexes, jsonAutoConverters);
+		}
+
 	}
 
 

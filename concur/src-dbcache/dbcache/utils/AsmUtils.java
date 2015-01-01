@@ -1,5 +1,7 @@
 package dbcache.utils;
 
+import org.objectweb.asm.*;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -10,13 +12,6 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.LinkedHashMap;
 import java.util.Map;
-
-import org.objectweb.asm.ClassReader;
-import org.objectweb.asm.ClassVisitor;
-import org.objectweb.asm.Label;
-import org.objectweb.asm.MethodVisitor;
-import org.objectweb.asm.Opcodes;
-import org.objectweb.asm.Type;
 
 /**
  * 类操作的工具集
@@ -321,33 +316,49 @@ public class AsmUtils implements Opcodes {
 	 */
 	public static void withBoxingType(MethodVisitor mWriter, Type fieldType) {
 		switch (fieldType.getSort()) {
-		case Type.BOOLEAN:
-			mWriter.visitMethodInsn(INVOKESTATIC, "java/lang/Boolean", "valueOf", "(Z)Ljava/lang/Boolean;");
-			break;
-		case Type.BYTE:
-			mWriter.visitMethodInsn(INVOKESTATIC, "java/lang/Byte", "valueOf", "(B)Ljava/lang/Byte;");
-			break;
-		case Type.CHAR:
-			mWriter.visitMethodInsn(INVOKESTATIC, "java/lang/Character", "valueOf", "(C)Ljava/lang/Character;");
-			break;
-		case Type.SHORT:
-			mWriter.visitMethodInsn(INVOKESTATIC, "java/lang/Short", "valueOf", "(S)Ljava/lang/Short;");
-			break;
-		case Type.INT:
-			mWriter.visitMethodInsn(INVOKESTATIC, "java/lang/Integer", "valueOf", "(I)Ljava/lang/Integer;");
-			break;
-		case Type.FLOAT:
-			mWriter.visitMethodInsn(INVOKESTATIC, "java/lang/Float", "valueOf", "(F)Ljava/lang/Float;");
-			break;
-		case Type.LONG:
-			mWriter.visitMethodInsn(INVOKESTATIC, "java/lang/Long", "valueOf", "(J)Ljava/lang/Long;");
-			break;
-		case Type.DOUBLE:
-			mWriter.visitMethodInsn(INVOKESTATIC, "java/lang/Double", "valueOf", "(D)Ljava/lang/Double;");
-			break;
+			case Type.VOID:
+				break;
+			case Type.BOOLEAN:
+				mWriter.visitMethodInsn(INVOKESTATIC, "java/lang/Boolean", "valueOf", "(Z)Ljava/lang/Boolean;");
+				break;
+			case Type.BYTE:
+				mWriter.visitMethodInsn(INVOKESTATIC, "java/lang/Byte", "valueOf", "(B)Ljava/lang/Byte;");
+				break;
+			case Type.CHAR:
+				mWriter.visitMethodInsn(INVOKESTATIC, "java/lang/Character", "valueOf", "(C)Ljava/lang/Character;");
+				break;
+			case Type.SHORT:
+				mWriter.visitMethodInsn(INVOKESTATIC, "java/lang/Short", "valueOf", "(S)Ljava/lang/Short;");
+				break;
+			case Type.INT:
+				mWriter.visitMethodInsn(INVOKESTATIC, "java/lang/Integer", "valueOf", "(I)Ljava/lang/Integer;");
+				break;
+			case Type.FLOAT:
+				mWriter.visitMethodInsn(INVOKESTATIC, "java/lang/Float", "valueOf", "(F)Ljava/lang/Float;");
+				break;
+			case Type.LONG:
+				mWriter.visitMethodInsn(INVOKESTATIC, "java/lang/Long", "valueOf", "(J)Ljava/lang/Long;");
+				break;
+			case Type.DOUBLE:
+				mWriter.visitMethodInsn(INVOKESTATIC, "java/lang/Double", "valueOf", "(D)Ljava/lang/Double;");
+				break;
 		}
 	}
 
+
+	/**
+	 * 转换成拆箱类型
+	 * @param mWriter
+	 * @param fieldType
+	 */
+	public static void withUnBoxingType(MethodVisitor mWriter, Type fieldType) {
+		if(fieldType == Type.VOID_TYPE) {
+			;
+		} else if(fieldType == Type.INT_TYPE) {
+			mWriter.visitTypeInsn(CHECKCAST, "java/lang/Integer");
+			mWriter.visitMethodInsn(INVOKEVIRTUAL, "java/lang/Integer", "intValue", "()I");
+		}
+	}
 
 	/**
 	 *

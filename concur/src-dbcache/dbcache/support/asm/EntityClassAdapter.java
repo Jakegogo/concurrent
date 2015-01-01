@@ -1,18 +1,10 @@
-package dbcache.proxy.asm;
+package dbcache.support.asm;
+
+import dbcache.utils.AsmUtils;
+import org.objectweb.asm.*;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-
-import org.objectweb.asm.AnnotationVisitor;
-import org.objectweb.asm.ClassVisitor;
-import org.objectweb.asm.ClassWriter;
-import org.objectweb.asm.FieldVisitor;
-import org.objectweb.asm.MethodVisitor;
-import org.objectweb.asm.Opcodes;
-import org.objectweb.asm.Type;
-
-import dbcache.proxy.AbstractAsmMethodAspect;
-import dbcache.utils.AsmUtils;
 
 /**
  * (动态)生成静态代理类

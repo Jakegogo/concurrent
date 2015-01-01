@@ -1,11 +1,9 @@
 package dbcache.service.impl;
 
 import dbcache.service.Cache;
-import dbcache.service.DbRuleService;
 import dbcache.utils.CleanupThread;
 import dbcache.utils.ConcurrentLRUCache;
 import dbcache.utils.ConcurrentWeakHashMap;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.io.Serializable;
@@ -29,10 +27,6 @@ public class ConcurrentLruHashMapCache implements Cache {
 	 * LRU Cache清除线程(单线程)
 	 */
 	private static CleanupThread cleanupThread = new CleanupThread();
-
-
-	@Autowired
-	private DbRuleService dbRuleService;
 
 	/**
 	 * 缓存名称

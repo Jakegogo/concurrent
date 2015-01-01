@@ -3,7 +3,10 @@ package dbcache.service.impl;
 import dbcache.annotation.ThreadSafe;
 import dbcache.conf.CacheConfig;
 import dbcache.conf.Inject;
-import dbcache.model.*;
+import dbcache.model.CacheObject;
+import dbcache.model.IEntity;
+import dbcache.model.IndexValue;
+import dbcache.model.PersistStatus;
 import dbcache.service.*;
 import dbcache.support.asm.ValueGetter;
 import dbcache.utils.JsonUtils;
@@ -185,11 +188,6 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 
 				T entity = dbAccessService.get(clazz, key);
 				if (entity != null) {
-					// 调用初始化
-					if(entity instanceof EntityInitializer){
-						EntityInitializer entityInitializer = (EntityInitializer) entity;
-						entityInitializer.doAfterLoad();
-					}
 
 					// 创建缓存对象
 					cacheObject = configFactory.createCacheObject(entity, clazz, indexService, key, cache, cacheConfig);
@@ -198,10 +196,12 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 
 					if (wrapper != null && wrapper.get() != null) {
 						cacheObject = (CacheObject<T>) wrapper.get();
+						// 初始化
+						cacheObject.doInit();
 
 						// 更新索引 需要外层加锁
 						if(cacheConfig.isEnableIndex()) {
-							for(ValueGetter<T> indexGetter : cacheObject.getIndexList()) {
+							for (ValueGetter<T> indexGetter : cacheObject.getIndexList()) {
 								this.indexService.create(IndexValue.valueOf(indexGetter.getName(), indexGetter.get(), key));
 							}
 						}

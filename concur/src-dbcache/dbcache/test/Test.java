@@ -1,6 +1,6 @@
 package dbcache.test;
 
-import dbcache.proxy.asm.EntityAsmFactory;
+import dbcache.support.asm.EntityAsmFactory;
 import dbcache.service.Cache;
 import dbcache.service.DbCacheService;
 import dbcache.utils.*;
@@ -269,9 +269,9 @@ public class Test {
 
 		Entity entity = this.cacheService.get(1l);
 
-		entity.setNum(202);
+		entity.setNum(201);
 
-		List<Entity> list = this.cacheService.listByIndex(Entity.NUM_INDEX, 202);
+		List<Entity> list = this.cacheService.listByIndex(Entity.NUM_INDEX, 201);
 
 		assert list.size() == 1;
 

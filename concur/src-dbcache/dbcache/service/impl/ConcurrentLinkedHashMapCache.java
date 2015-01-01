@@ -3,9 +3,7 @@ package dbcache.service.impl;
 import com.googlecode.concurrentlinkedhashmap.ConcurrentLinkedHashMap;
 import com.googlecode.concurrentlinkedhashmap.EvictionListener;
 import dbcache.service.Cache;
-import dbcache.service.DbRuleService;
 import dbcache.utils.ConcurrentWeakHashMap;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.io.Serializable;
@@ -20,9 +18,6 @@ import java.util.concurrent.ConcurrentMap;
  */
 @Component("concurrentLinkedHashMapCache")
 public class ConcurrentLinkedHashMapCache implements Cache {
-
-	@Autowired
-	private DbRuleService dbRuleService;
 
 	/**
 	 * 缺省实体缓存最大容量

@@ -152,11 +152,8 @@ public class InTimeDbPersistService implements DbPersistService {
 					return;
 				}
 
-				//持久化前操作
-				if(entity instanceof EntityInitializer){
-					EntityInitializer entityInitializer = (EntityInitializer) entity;
-					entityInitializer.doBeforePersist();
-				}
+				// 持久化前的操作
+				cacheObject.doBeforePersist();
 
 				//缓存对象在提交之后被入库过
 				if(cacheObject.getDbVersion() > editVersion) {

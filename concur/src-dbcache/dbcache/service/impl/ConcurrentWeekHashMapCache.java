@@ -3,10 +3,8 @@ package dbcache.service.impl;
 import dbcache.model.WeakCacheEntity;
 import dbcache.model.WeakCacheObject;
 import dbcache.service.Cache;
-import dbcache.service.ConfigFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.io.Serializable;
@@ -64,10 +62,6 @@ public class ConcurrentWeekHashMapCache implements Cache {
 	 */
 	@SuppressWarnings("rawtypes")
 	private final FinalizableReferenceQueue referenceQueue = new FinalizableReferenceQueue();
-
-
-	@Autowired
-	private ConfigFactory configFactory;
 
 
 	static {

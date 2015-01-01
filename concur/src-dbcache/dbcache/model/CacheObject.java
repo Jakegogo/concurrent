@@ -1,13 +1,13 @@
 package dbcache.model;
 
+import dbcache.conf.JsonConverter;
+import dbcache.support.asm.ValueGetter;
+
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
-
-import dbcache.support.asm.ValueGetter;
 
 
 /**
@@ -47,17 +47,16 @@ public class CacheObject<T extends IEntity<?>> {
 	 * 入库版本号
 	 */
 	private AtomicLong dbVersion = new AtomicLong(editVersion.get());
-
-	/**
-	 * 索引信息
-	 * 索引名 - 属性
-	 */
-	private Map<String, ValueGetter<T>> indexes = new HashMap<String, ValueGetter<T>>();
 	
 	/**
 	 * 索引属性值获取器列表
 	 */
 	private List<ValueGetter<T>> indexList = new ArrayList<ValueGetter<T>>();
+
+	/**
+	 * Json 自动转换器
+	 */
+	private List<JsonConverter> jsonConverters = new ArrayList<JsonConverter>();
 	
 	/**
 	 * 持久化状态
@@ -67,7 +66,7 @@ public class CacheObject<T extends IEntity<?>> {
 	/**
 	 * 是否在更新处理中
 	 */
-	private volatile boolean updateProcessing = false;
+	private AtomicBoolean updateProcessing = new AtomicBoolean(false);
 
 
 	/**
@@ -91,7 +90,7 @@ public class CacheObject<T extends IEntity<?>> {
 	 *            类型
 	 */
 	public CacheObject(T entity, Serializable id, Class<T> clazz, T proxyEntity) {
-		this(entity, id, clazz, proxyEntity, null);
+		this(entity, id, clazz, proxyEntity, null, null);
 	}
 
 	/**
@@ -104,18 +103,50 @@ public class CacheObject<T extends IEntity<?>> {
 	 * @param clazz
 	 *            类型
 	 */
-	public CacheObject(T entity, Serializable id, Class<T> clazz, T proxyEntity, Map<String, ValueGetter<T>> indexes) {
+	public CacheObject(T entity, Serializable id, Class<T> clazz, T proxyEntity, List<ValueGetter<T>> indexes, List<JsonConverter> jsonConverters) {
 		this.entity = entity;
 		this.id = id;
 		this.clazz = clazz;
 		this.proxyEntity = proxyEntity;
-		this.indexes = indexes;
 		this.persistStatus = PersistStatus.TRANSIENT;
-		if(indexes != null) {
-			this.indexList = new ArrayList<ValueGetter<T>>(indexes.values());
+		this.indexList = indexes;
+		this.jsonConverters = jsonConverters;
+	}
+
+	/**
+	 * 初始化
+	 */
+	public void doInit() {
+		// 调用初始化
+		if(entity instanceof EntityInitializer){
+			EntityInitializer entityInitializer = (EntityInitializer) entity;
+			entityInitializer.doAfterLoad();
+		}
+
+		// 初始化json自动转换属性
+		if(!getJsonConverters().isEmpty()) {
+			for(JsonConverter jsonConverter : getJsonConverters()) {
+				jsonConverter.doConvert();
+			}
 		}
 	}
 
+	/**
+	 * 持久化之前的操作
+	 */
+	public void doBeforePersist() {
+		// 持久化前操作
+		if(entity instanceof EntityInitializer){
+			EntityInitializer entityInitializer = (EntityInitializer) entity;
+			entityInitializer.doBeforePersist();
+		}
+		// json持久化
+		if(!getJsonConverters().isEmpty()) {
+			for(JsonConverter jsonConverter : getJsonConverters()) {
+				jsonConverter.doPersist();
+			}
+		}
+	}
 
 	/**
 	 * 比较并更新入库版本号
@@ -158,11 +189,6 @@ public class CacheObject<T extends IEntity<?>> {
 		return dbVersion.get();
 	}
 
-	public Map<String, ValueGetter<T>> getIndexes() {
-		return indexes;
-	}
-
-
 	public PersistStatus getPersistStatus() {
 		return persistStatus;
 	}
@@ -171,16 +197,20 @@ public class CacheObject<T extends IEntity<?>> {
 		this.persistStatus = persistStatus;
 	}
 
-	public boolean isUpdateProcessing() {
-		return updateProcessing;
-	}
-
-	public void setUpdateProcessing(boolean updateProcessing) {
-		this.updateProcessing = updateProcessing;
-	}
-
 	public List<ValueGetter<T>> getIndexList() {
 		return indexList;
+	}
+
+	public boolean isUpdateProcessing() {
+		return this.updateProcessing.get();
+	}
+
+	public void setUpdateProcessing(boolean processing) {
+		this.updateProcessing.compareAndSet(!processing, processing);
+	}
+
+	public List<JsonConverter> getJsonConverters() {
+		return jsonConverters;
 	}
 
 }

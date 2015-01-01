@@ -23,7 +23,7 @@ public interface ConfigFactory {
 	 * @return
 	 */
 	@SuppressWarnings("rawtypes")
-	public IEntity<?> createProxyEntity(IEntity<?> entity, Class<?> proxyClass, DbIndexService indexService, CacheConfig<?> cacheConfig);
+	public <T extends IEntity<PK>, PK extends Comparable<PK> & Serializable> T createProxyEntity(T entity, Class<? extends IEntity> proxyClass, DbIndexService indexService, CacheConfig<T> cacheConfig);
 
 	/**
 	 * 创建缓存对象

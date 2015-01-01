@@ -1,10 +1,5 @@
 package dbcache.conf;
 
-import java.util.HashMap;
-import java.util.Map;
-
-import org.codehaus.jackson.map.annotate.JsonSerialize;
-
 import dbcache.annotation.Cached;
 import dbcache.annotation.EnableIndex;
 import dbcache.service.impl.ConcurrentLinkedHashMapCache;
@@ -12,6 +7,10 @@ import dbcache.support.asm.ValueGetter;
 import dbcache.support.jackson.ToStringJsonSerializer;
 import dbcache.utils.AnnotationUtils;
 import dbcache.utils.JsonUtils;
+import org.codehaus.jackson.map.annotate.JsonSerialize;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * 缓存配置
@@ -52,6 +51,9 @@ public class CacheConfig<T> {
 
 	/** 索引信息  索引名 - 属性 */
 	private Map<String, ValueGetter<T>> indexes = new HashMap<String, ValueGetter<T>>();
+
+	/** json属性自动转换信息 json串属性名 - 转换信息 */
+	private Map<String, JsonConverter> jsonAutoConverters = new HashMap<String, JsonConverter>();
 	
 	/**
 	 * 获取实例
@@ -117,7 +119,7 @@ public class CacheConfig<T> {
 		return defaultConfig;
 	}
 
-	public Class<?> getClazz() {
+	public Class<T> getClazz() {
 		return clazz;
 	}
 
@@ -125,7 +127,7 @@ public class CacheConfig<T> {
 		this.clazz = clazz;
 	}
 
-	public Class<?> getProxyClazz() {
+	public Class<T> getProxyClazz() {
 		return proxyClazz;
 	}
 
@@ -199,5 +201,11 @@ public class CacheConfig<T> {
 	}
 
 
+	public Map<String, JsonConverter> getJsonAutoConverters() {
+		return jsonAutoConverters;
+	}
 
+	public void setJsonAutoConverters(Map<String, JsonConverter> jsonAutoConverters) {
+		this.jsonAutoConverters = jsonAutoConverters;
+	}
 }

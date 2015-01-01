@@ -1,18 +1,5 @@
 package dbcache.service.impl;
 
-import java.util.Iterator;
-import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-
-import javax.annotation.PostConstruct;
-
-import org.apache.commons.lang.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-
 import dbcache.model.CacheObject;
 import dbcache.model.EntityInitializer;
 import dbcache.model.PersistAction;
@@ -23,6 +10,17 @@ import dbcache.service.DbPersistService;
 import dbcache.service.DbRuleService;
 import dbcache.utils.JsonUtils;
 import dbcache.utils.NamedThreadFactory;
+import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
+import javax.annotation.PostConstruct;
+import java.util.Iterator;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 
 /**
@@ -240,11 +238,8 @@ public class DelayDbPersistService implements DbPersistService {
 					return;
 				}
 
-				//持久化前操作
-				if(entity instanceof EntityInitializer){
-					EntityInitializer entityInitializer = (EntityInitializer) entity;
-					entityInitializer.doBeforePersist();
-				}
+				// 持久化前的操作
+				cacheObject.doBeforePersist();
 
 				//缓存对象在提交之后被入库过
 				if(cacheObject.getDbVersion() > editVersion) {

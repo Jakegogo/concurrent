@@ -1,8 +1,8 @@
 package dbcache.service;
 
-import java.util.concurrent.ExecutorService;
-
 import dbcache.model.CacheObject;
+
+import java.util.concurrent.ExecutorService;
 
 /**
  * 实体入库服务接口

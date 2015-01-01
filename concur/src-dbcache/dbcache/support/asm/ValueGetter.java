@@ -16,7 +16,6 @@ public interface ValueGetter<T> {
 
 	/**
 	 * 获取值
-	 * @param object 目标对象
 	 * @return 返回值
 	 */
 	public Object get();

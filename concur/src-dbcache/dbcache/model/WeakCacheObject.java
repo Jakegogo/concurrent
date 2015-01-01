@@ -1,10 +1,11 @@
 package dbcache.model;
 
+import dbcache.conf.JsonConverter;
+import dbcache.support.asm.ValueGetter;
+
 import java.io.Serializable;
 import java.lang.ref.WeakReference;
-import java.util.Map;
-
-import dbcache.support.asm.ValueGetter;
+import java.util.List;
 
 
 /**
@@ -39,8 +40,8 @@ public class WeakCacheObject<T extends IEntity<?>, R extends WeakCacheEntity<T,?
 	 *            类型
 	 */
 	@SuppressWarnings("unchecked")
-	public WeakCacheObject(WeakCacheEntity<?,?> entity, Serializable id, Class<T> clazz, WeakReference<?> proxyEntity) {
-		super((T) entity, id, clazz, (T) proxyEntity);
+	public WeakCacheObject(T entity, Serializable id, Class<T> clazz, WeakReference<?> proxyEntity) {
+		super(entity, id, clazz, (T) proxyEntity);
 	}
 
 	/**
@@ -54,8 +55,8 @@ public class WeakCacheObject<T extends IEntity<?>, R extends WeakCacheEntity<T,?
 	 *            类型
 	 */
 	@SuppressWarnings("unchecked")
-	public WeakCacheObject(WeakCacheEntity<T, ?> entity, Serializable id, Class<T> clazz, WeakCacheEntity<?,?> proxyEntity, Object key, Map<String, ValueGetter<T>> indexes) {
-		super((T) entity, id, clazz, (T) proxyEntity, indexes);
+	public WeakCacheObject(T entity, Serializable id, Class<T> clazz, T proxyEntity, Object key, List<ValueGetter<T>> indexes, List<JsonConverter> jsonConverters) {
+		super(entity, id, clazz, proxyEntity, indexes, jsonConverters);
 		this.hashCode = key.hashCode();
 	}
 

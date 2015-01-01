@@ -29,6 +29,6 @@ public abstract class AbstractFieldGetter<T> implements ValueGetter<T>, Cloneabl
 			e.printStackTrace();
 		}
 		return null;
-	};
+	}
 
 }
