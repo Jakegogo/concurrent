@@ -53,7 +53,7 @@ public class CacheConfig<T> {
 	private Map<String, ValueGetter<T>> indexes = new HashMap<String, ValueGetter<T>>();
 
 	/** json属性自动转换信息 json串属性名 - 转换信息 */
-	private Map<String, JsonConverter> jsonAutoConverters = new HashMap<String, JsonConverter>();
+	private Map<String, JsonConverter<T>> jsonAutoConverters = new HashMap<String, JsonConverter<T>>();
 	
 	/**
 	 * 获取实例
@@ -201,11 +201,11 @@ public class CacheConfig<T> {
 	}
 
 
-	public Map<String, JsonConverter> getJsonAutoConverters() {
+	public Map<String, JsonConverter<T>> getJsonAutoConverters() {
 		return jsonAutoConverters;
 	}
 
-	public void setJsonAutoConverters(Map<String, JsonConverter> jsonAutoConverters) {
+	public void setJsonAutoConverters(Map<String, JsonConverter<T>> jsonAutoConverters) {
 		this.jsonAutoConverters = jsonAutoConverters;
 	}
 }

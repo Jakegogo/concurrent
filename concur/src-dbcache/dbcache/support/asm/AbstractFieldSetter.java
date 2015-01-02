@@ -8,10 +8,7 @@ package dbcache.support.asm;
 public abstract class AbstractFieldSetter<T> implements ValueSetter<T>, Cloneable {
 
     @Override
-    public abstract void set(Object object);
-
-    @Override
-    public abstract void setTarget(T object);
+    public abstract void set(T target, Object object);
 
 
     @Override

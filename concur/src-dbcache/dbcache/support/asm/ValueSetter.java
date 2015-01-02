@@ -8,17 +8,12 @@ public interface ValueSetter<T> {
 
 
     /**
-     * 设置真实对象
-     * @param object
-     */
-    public void setTarget(T object);
-
-    /**
      * 设置值
+     * @param target 目标实体
      * @param object 目标值
      * @return 返回值
      */
-    public void set(Object object);
+    public void set(T target, Object object);
 
     /**
      * 获取值的名称

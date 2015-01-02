@@ -17,11 +17,11 @@ public class FieldSetterTest {
         entity.setNum(2);
 
         ValueSetter<Entity> getNum = AsmAccessHelper.createFieldSetter(Entity.class, Entity.class.getDeclaredField("friendSet"));
-        getNum.setTarget(entity);
+//        getNum.setTarget(entity);
 
         Set<Long> set = new ConcurrentHashSet<Long>();
         set.add(111l);
-        getNum.set(set);
+        getNum.set(entity, set);
 
         System.out.println(entity.getFriendSet());
 

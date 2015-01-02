@@ -9,16 +9,11 @@ package dbcache.support.asm;
 public interface ValueGetter<T> {
 
 	/**
-	 * 设置真实对象
-	 * @param object
-	 */
-	public void setTarget(T object);
-
-	/**
 	 * 获取值
+	 * @param target 目标实体
 	 * @return 返回值
 	 */
-	public Object get();
+	public Object get(T target);
 
 	/**
 	 * 获取值的名称

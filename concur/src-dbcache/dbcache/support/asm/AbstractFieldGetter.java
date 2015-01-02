@@ -9,11 +9,7 @@ package dbcache.support.asm;
 public abstract class AbstractFieldGetter<T> implements ValueGetter<T>, Cloneable {
 
 	@Override
-	public abstract Object get();
-
-
-	@Override
-	public abstract void setTarget(T object);
+	public abstract Object get(T target);
 
 
 	@Override

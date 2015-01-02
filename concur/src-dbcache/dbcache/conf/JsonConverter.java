@@ -66,16 +66,6 @@ public class JsonConverter<T> implements Cloneable {
 
 
     /**
-     * 设置目标对象
-     * @param target 目标对象
-     */
-    public void setTarget(T target) {
-        this.sourceGetter.setTarget(target);
-        this.targetSetter.setTarget(target);
-    }
-
-
-    /**
      * 克隆
      * @return
      */
@@ -94,13 +84,13 @@ public class JsonConverter<T> implements Cloneable {
     /**
      * 进行Json转换
      */
-    public void doConvert() {
-        Object jsonStr = sourceGetter.get();
+    public void doConvert(T target) {
+        Object jsonStr = sourceGetter.get(target);
         //TODO
     }
 
-    public void doPersist() {
-        Object object = targetGetter.get();
+    public void doPersist(T target) {
+        Object object = targetGetter.get(target);
         //TODO
     }
 

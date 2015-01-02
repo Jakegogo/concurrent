@@ -31,9 +31,6 @@ public class AsmAccessHelper implements Opcodes {
 	/** 设置的方法名 */
 	public static final String SETTER_METHOD_NAME = "set";
 
-	/** 获取的方法名 */
-	public static final String SET_TARGET_METHOD_NAME = "setTarget";
-
 	/** 获取值名称 */
 	public static final String GET_NAME_METHOD_NAME = "getName";
 
@@ -48,9 +45,6 @@ public class AsmAccessHelper implements Opcodes {
 
 	/** 分隔符 */
 	public static final String SPLITER = "_";
-
-	/** 真实对象引用 */
-	protected static final String REAL_OBJECT = "target";
 
 	/** 序号生成器 */
 	private static AtomicLong id = new AtomicLong(0);
@@ -97,11 +91,13 @@ public class AsmAccessHelper implements Opcodes {
 			//获取get方法
 			final Method getMethod = propertyDescriptor.getReadMethod();
 			final Type mt = Type.getType(getMethod);
+			final Type rt = Type.getReturnType(getMethod);
 
 			final String fieldGetterClassName = AsmUtils.toAsmCls(AbstractFieldGetter.class.getName());
 			final String entityTypeString = Type.getDescriptor(clazz);
 			final String fieldGetterTypeString = Type.getDescriptor(AbstractFieldGetter.class);
 			final String fieldGetterTypeString1 = fieldGetterTypeString.substring(0, fieldGetterTypeString.length() - 1);
+
 
 			final ClassWriter writer = new ClassWriter(ClassWriter.COMPUTE_MAXS);
 			ClassVisitor visitor = new ClassVisitor(Opcodes.ASM4, writer) {
@@ -118,35 +114,19 @@ public class AsmAccessHelper implements Opcodes {
 
 					if(name.equals(GETTER_METHOD_NAME)) {// get
 
-						MethodVisitor mv = writer.visitMethod(ACC_PUBLIC, name, desc, signature, exceptions);
+						MethodVisitor mv = writer.visitMethod(ACC_PUBLIC, name, "(" + entityTypeString + ")Ljava/lang/Object;", null, exceptions);
 						//获取this.target
-						mv.visitVarInsn(ALOAD, 0);
-						mv.visitFieldInsn(GETFIELD, AsmUtils.toAsmCls(enhancedClassName), REAL_OBJECT, entityTypeString);
+						mv.visitVarInsn(ALOAD, 1);
+//						mv.visitFieldInsn(GETFIELD, AsmUtils.toAsmCls(enhancedClassName), REAL_OBJECT, entityTypeString);
 
 						mv.visitMethodInsn(INVOKEVIRTUAL,
 								AsmUtils.toAsmCls(clazz.getName()), getMethod.getName(),
 								mt.toString());
 
 						// 处理返回值类型 到 Object类型
-						Type rt = Type.getReturnType(getMethod);
 						AsmUtils.withBoxingType(mv, rt);
 						mv.visitInsn(ARETURN);
 						mv.visitMaxs(1, 1);
-						mv.visitEnd();
-						return mv;
-
-					} else if(name.equals(SET_TARGET_METHOD_NAME)) {// setTarget
-
-						MethodVisitor mv = writer.visitMethod(ACC_PUBLIC, name, desc, signature, exceptions);
-						//调用this.target = object;
-						mv.visitVarInsn(ALOAD, 0);
-						mv.visitVarInsn(ALOAD, 1);
-						mv.visitTypeInsn(Opcodes.CHECKCAST, AsmUtils.toAsmCls(clazz.getName()));
-
-						mv.visitFieldInsn(Opcodes.PUTFIELD,
-								AsmUtils.toAsmCls(enhancedClassName), REAL_OBJECT, entityTypeString);
-						mv.visitInsn(RETURN);
-						mv.visitMaxs(2, 2);
 						mv.visitEnd();
 						return mv;
 
@@ -165,8 +145,16 @@ public class AsmAccessHelper implements Opcodes {
 				@Override
 				public void visitEnd() {
 
-					//添加this.target属性
-					writer.visitField(Opcodes.ACC_PROTECTED, REAL_OBJECT, entityTypeString, null, null);
+					// 基本类型方法桥接泛型方法
+					MethodVisitor mv = writer.visitMethod(ACC_PUBLIC + ACC_BRIDGE + ACC_SYNTHETIC, GETTER_METHOD_NAME, "(Ljava/lang/Object;)Ljava/lang/Object;", null, null);
+					mv.visitCode();
+					mv.visitVarInsn(ALOAD, 0);
+					mv.visitVarInsn(ALOAD, 1);
+					mv.visitTypeInsn(CHECKCAST, AsmUtils.toAsmCls(clazz.getName()));
+					mv.visitMethodInsn(INVOKEVIRTUAL, AsmUtils.toAsmCls(enhancedClassName), GETTER_METHOD_NAME, "(" + entityTypeString + ")Ljava/lang/Object;");
+					mv.visitInsn(ARETURN);
+					mv.visitMaxs(2, 2);
+					mv.visitEnd();
 
 					// 调用originalClassName的<init>方法，否则class不能实例化
 					MethodVisitor mvInit = writer.visitMethod(ACC_PUBLIC, INIT, "()V",
@@ -237,6 +225,7 @@ public class AsmAccessHelper implements Opcodes {
 			final Method setMethod = propertyDescriptor.getWriteMethod();
 			final Type[] mat = Type.getArgumentTypes(setMethod);
 			final Class<?>[] mpt = setMethod.getParameterTypes();
+			final Type rt = Type.getReturnType(setMethod);
 
 			final Type mrt = Type.getType(setMethod);
 
@@ -260,12 +249,12 @@ public class AsmAccessHelper implements Opcodes {
 
 					if(name.equals(SETTER_METHOD_NAME)) {// set
 
-						MethodVisitor mv = writer.visitMethod(ACC_PUBLIC, name, desc, signature, exceptions);
+						MethodVisitor mv = writer.visitMethod(ACC_PUBLIC, name, "(" + entityTypeString + "Ljava/lang/Object;)V", null, exceptions);
 						//获取this.target
-						mv.visitVarInsn(ALOAD, 0);
-						mv.visitFieldInsn(GETFIELD, AsmUtils.toAsmCls(enhancedClassName), REAL_OBJECT, entityTypeString);
-
 						mv.visitVarInsn(ALOAD, 1);
+//						mv.visitFieldInsn(GETFIELD, AsmUtils.toAsmCls(enhancedClassName), REAL_OBJECT, entityTypeString);
+
+						mv.visitVarInsn(ALOAD, 2);
 
 						if(mpt[0].isPrimitive()) {
 							// unBoxing
@@ -279,29 +268,13 @@ public class AsmAccessHelper implements Opcodes {
 								mrt.toString());
 
 						// 处理返回值类型 到 Object类型
-						Type rt = Type.getReturnType(setMethod);
 						AsmUtils.withBoxingType(mv, rt);
 						if (rt.getSort() == Type.VOID) {
 							mv.visitInsn(RETURN);
 						} else {
 							mv.visitInsn(ARETURN);
 						}
-						mv.visitMaxs(2, 2);
-						mv.visitEnd();
-						return mv;
-
-					} else if(name.equals(SET_TARGET_METHOD_NAME)) {// setTarget
-
-						MethodVisitor mv = writer.visitMethod(ACC_PUBLIC, name, desc, signature, exceptions);
-						//调用this.target = object;
-						mv.visitVarInsn(ALOAD, 0);
-							mv.visitVarInsn(ALOAD, 1);
-							mv.visitTypeInsn(Opcodes.CHECKCAST, AsmUtils.toAsmCls(clazz.getName()));
-
-							mv.visitFieldInsn(Opcodes.PUTFIELD,
-								AsmUtils.toAsmCls(enhancedClassName), REAL_OBJECT, entityTypeString);
-						mv.visitInsn(RETURN);
-						mv.visitMaxs(2, 2);
+						mv.visitMaxs(2, 3);
 						mv.visitEnd();
 						return mv;
 
@@ -320,8 +293,17 @@ public class AsmAccessHelper implements Opcodes {
 				@Override
 				public void visitEnd() {
 
-					//添加this.target属性
-					writer.visitField(Opcodes.ACC_PROTECTED, REAL_OBJECT, entityTypeString, null, null);
+					// 基本类型方法桥接泛型方法
+					MethodVisitor mv = writer.visitMethod(ACC_PUBLIC + ACC_BRIDGE + ACC_SYNTHETIC, SETTER_METHOD_NAME, "(Ljava/lang/Object;Ljava/lang/Object;)V", null, null);
+					mv.visitCode();
+					mv.visitVarInsn(ALOAD, 0);
+					mv.visitVarInsn(ALOAD, 1);
+					mv.visitTypeInsn(CHECKCAST, AsmUtils.toAsmCls(clazz.getName()));
+					mv.visitVarInsn(ALOAD, 2);
+					mv.visitMethodInsn(INVOKEVIRTUAL, AsmUtils.toAsmCls(enhancedClassName), SETTER_METHOD_NAME, "(" + entityTypeString + "Ljava/lang/Object;)V");
+					mv.visitInsn(RETURN);
+					mv.visitMaxs(3, 3);
+					mv.visitEnd();
 
 					// 调用originalClassName的<init>方法，否则class不能实例化
 					MethodVisitor mvInit = writer.visitMethod(ACC_PUBLIC, INIT, "()V",

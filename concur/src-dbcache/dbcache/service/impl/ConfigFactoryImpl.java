@@ -308,7 +308,7 @@ public class ConfigFactoryImpl implements ConfigFactory, DbCacheMBean {
 		// 创建索引属性表
 		List<ValueGetter<T>> indexes = new ArrayList<ValueGetter<T>>();
 		// 创建Json属性自动转换表
-		List<JsonConverter> jsonAutoConverters = new ArrayList<JsonConverter>();
+		List<JsonConverter<T>> jsonAutoConverters = new ArrayList<JsonConverter<T>>();
 
 		T proxyEntity = this.createProxyEntity(entity, cacheConfig.getProxyClazz(), indexService, cacheConfig);
 
@@ -320,16 +320,12 @@ public class ConfigFactoryImpl implements ConfigFactory, DbCacheMBean {
 
 		// 添加索引属性
 		for(Entry<String, ValueGetter<T>> entry : cacheConfig.getIndexes().entrySet()) {
-			ValueGetter<T> instance = entry.getValue().clone();
-			instance.setTarget(entity);
-			indexes.add(instance);
+			indexes.add(entry.getValue());
 		}
 
 		// 添加jsonAutoConverters
-		for(Entry<String, JsonConverter> entry : cacheConfig.getJsonAutoConverters().entrySet()) {
-			JsonConverter instance = entry.getValue().clone();
-			instance.setTarget(entity);
-			jsonAutoConverters.add(instance);
+		for(Entry<String, JsonConverter<T>> entry : cacheConfig.getJsonAutoConverters().entrySet()) {
+			jsonAutoConverters.add(entry.getValue());
 		}
 
 		if(cacheConfig.getCacheType() == CacheType.WEEKMAP) {

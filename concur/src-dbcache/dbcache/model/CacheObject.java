@@ -56,7 +56,7 @@ public class CacheObject<T extends IEntity<?>> {
 	/**
 	 * Json 自动转换器
 	 */
-	private List<JsonConverter> jsonConverters = new ArrayList<JsonConverter>();
+	private List<JsonConverter<T>> jsonConverters = new ArrayList<JsonConverter<T>>();
 	
 	/**
 	 * 持久化状态
@@ -103,7 +103,7 @@ public class CacheObject<T extends IEntity<?>> {
 	 * @param clazz
 	 *            类型
 	 */
-	public CacheObject(T entity, Serializable id, Class<T> clazz, T proxyEntity, List<ValueGetter<T>> indexes, List<JsonConverter> jsonConverters) {
+	public CacheObject(T entity, Serializable id, Class<T> clazz, T proxyEntity, List<ValueGetter<T>> indexes, List<JsonConverter<T>> jsonConverters) {
 		this.entity = entity;
 		this.id = id;
 		this.clazz = clazz;
@@ -126,7 +126,7 @@ public class CacheObject<T extends IEntity<?>> {
 		// 初始化json自动转换属性
 		if(!getJsonConverters().isEmpty()) {
 			for(JsonConverter jsonConverter : getJsonConverters()) {
-				jsonConverter.doConvert();
+				jsonConverter.doConvert(this.entity);
 			}
 		}
 	}
@@ -143,7 +143,7 @@ public class CacheObject<T extends IEntity<?>> {
 		// json持久化
 		if(!getJsonConverters().isEmpty()) {
 			for(JsonConverter jsonConverter : getJsonConverters()) {
-				jsonConverter.doPersist();
+				jsonConverter.doPersist(this.entity);
 			}
 		}
 	}
@@ -209,7 +209,7 @@ public class CacheObject<T extends IEntity<?>> {
 		this.updateProcessing.compareAndSet(!processing, processing);
 	}
 
-	public List<JsonConverter> getJsonConverters() {
+	public List<JsonConverter<T>> getJsonConverters() {
 		return jsonConverters;
 	}
 
