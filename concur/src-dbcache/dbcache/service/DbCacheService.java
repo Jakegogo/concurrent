@@ -127,4 +127,9 @@ public interface DbCacheService<T extends IEntity<PK>, PK extends Comparable<PK>
 	Cache getCache();
 
 
+	/**
+	 * 获取索引Service
+	 * @return
+	 */
+	DbIndexService<PK> getIndexService();
 }
