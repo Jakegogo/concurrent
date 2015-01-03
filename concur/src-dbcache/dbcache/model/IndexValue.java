@@ -16,8 +16,9 @@ public class IndexValue<PK extends Comparable<PK> & Serializable> extends IndexK
 
 	/**
 	 * 构造方法
+	 * @param name 索引名
+	 * @param value 索引值
 	 * @param id 实体Id
-	 * @param indexKey 索引键
 	 */
 	public IndexValue(String name, Object value, PK id) {
 		super(name, value);
@@ -26,8 +27,9 @@ public class IndexValue<PK extends Comparable<PK> & Serializable> extends IndexK
 
 	/**
 	 * 获取实例
+	 * @param name 索引名
+	 * @param value 索引值
 	 * @param id 实体Id
-	 * @param indexKey 索引键
 	 * @return
 	 */
 	public static <PK extends Comparable<PK> & Serializable> IndexValue<PK> valueOf(String name, Object value, PK id) {
