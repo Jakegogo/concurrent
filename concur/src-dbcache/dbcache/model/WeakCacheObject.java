@@ -5,7 +5,7 @@ import dbcache.support.asm.ValueGetter;
 
 import java.io.Serializable;
 import java.lang.ref.WeakReference;
-import java.util.List;
+import java.util.Collection;
 
 
 /**
@@ -55,7 +55,7 @@ public class WeakCacheObject<T extends IEntity<?>, R extends WeakCacheEntity<T,?
 	 *            类型
 	 */
 	@SuppressWarnings("unchecked")
-	public WeakCacheObject(T entity, Serializable id, Class<T> clazz, T proxyEntity, Object key, List<ValueGetter<T>> indexes, List<JsonConverter<T>> jsonConverters) {
+	public WeakCacheObject(T entity, Serializable id, Class<T> clazz, T proxyEntity, Object key, Collection<ValueGetter<T>> indexes, Collection<JsonConverter<T>> jsonConverters) {
 		super(entity, id, clazz, proxyEntity, indexes, jsonConverters);
 		this.hashCode = key.hashCode();
 	}

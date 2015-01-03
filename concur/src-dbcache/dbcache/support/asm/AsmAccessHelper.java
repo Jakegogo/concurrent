@@ -65,7 +65,7 @@ public class AsmAccessHelper implements Opcodes {
 	@SuppressWarnings("unchecked")
 	public static <T> ValueGetter<T> createFieldGetter(final Class<T> clazz, final Field field) throws Exception {
 
-		Class<T> enhancedClass = null;
+		Class<T> enhancedClass;
 		//代理类名
 		final String enhancedClassName = AbstractFieldGetter.class.getName()
 				+ SUFIX + SPLITER + clazz.getSimpleName() + SPLITER
@@ -198,7 +198,7 @@ public class AsmAccessHelper implements Opcodes {
 	@SuppressWarnings("unchecked")
 	public static <T> ValueSetter<T> createFieldSetter(final Class<T> clazz, final Field field) throws Exception {
 
-		Class<T> enhancedClass = null;
+		Class<T> enhancedClass;
 		//代理类名
 		final String enhancedClassName = AbstractFieldSetter.class.getName()
 				+ SUFIX1 + SPLITER + clazz.getSimpleName() + SPLITER

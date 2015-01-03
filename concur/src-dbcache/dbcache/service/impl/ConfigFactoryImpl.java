@@ -31,10 +31,7 @@ import javax.management.*;
 import java.io.Serializable;
 import java.lang.management.ManagementFactory;
 import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -305,11 +302,6 @@ public class ConfigFactoryImpl implements ConfigFactory, DbCacheMBean {
 			T entity, Class<? extends IEntity> entityClazz,
 			DbIndexService<?> indexService, Object key, Cache cache, CacheConfig<T> cacheConfig) {
 
-		// 创建索引属性表
-		List<ValueGetter<T>> indexes = new ArrayList<ValueGetter<T>>();
-		// 创建Json属性自动转换表
-		List<JsonConverter<T>> jsonAutoConverters = new ArrayList<JsonConverter<T>>();
-
 		T proxyEntity = this.createProxyEntity(entity, cacheConfig.getProxyClazz(), indexService, cacheConfig);
 
 		// 弱引用方式
@@ -318,20 +310,11 @@ public class ConfigFactoryImpl implements ConfigFactory, DbCacheMBean {
 			proxyEntity = (T) this.wrapEntity(proxyEntity, entityClazz, cache, key, cacheConfig);
 		}
 
-		// 添加索引属性
-		for(Entry<String, ValueGetter<T>> entry : cacheConfig.getIndexes().entrySet()) {
-			indexes.add(entry.getValue());
-		}
-
-		// 添加jsonAutoConverters
-		for(Entry<String, JsonConverter<T>> entry : cacheConfig.getJsonAutoConverters().entrySet()) {
-			jsonAutoConverters.add(entry.getValue());
-		}
-
+		// 生成CacheObject
 		if(cacheConfig.getCacheType() == CacheType.WEEKMAP) {
-			return new WeakCacheObject<T, WeakCacheEntity<T,?>>(entity, entity.getId(), (Class<T>) entityClazz, proxyEntity, key, indexes, jsonAutoConverters);
+			return new WeakCacheObject<T, WeakCacheEntity<T,?>>(entity, entity.getId(), (Class<T>) entityClazz, proxyEntity, key, cacheConfig.getIndexList(), cacheConfig.getJsonAutoConverterList());
 		} else {
-			return new CacheObject<T>(entity, entity.getId(), (Class<T>) entityClazz, proxyEntity, indexes, jsonAutoConverters);
+			return new CacheObject<T>(entity, entity.getId(), (Class<T>) entityClazz, proxyEntity, cacheConfig.getIndexList(), cacheConfig.getJsonAutoConverterList());
 		}
 
 	}

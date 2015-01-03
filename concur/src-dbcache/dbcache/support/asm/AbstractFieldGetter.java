@@ -8,6 +8,7 @@ package dbcache.support.asm;
  */
 public abstract class AbstractFieldGetter<T> implements ValueGetter<T>, Cloneable {
 
+	// asm重写
 	@Override
 	public abstract Object get(T target);
 

@@ -279,6 +279,9 @@ public class Test {
 			System.out.println(JsonUtils.object2JsonString(entity1));
 		}
 		System.out.println(entity.getNum());
+
+		entity.getFriendSet().add(4l);
+//		entity.getClass()
 		this.cacheService.submitUpdate(entity);
 	}
 
@@ -308,15 +311,15 @@ public class Test {
 	@org.junit.Test
 	public void t13() {
 
-		for(int i = 0;i < 100;i++) {
-			Long id = Long.valueOf(i + 100);
+//		for(int i = 0;i < 100;i++) {
+			Long id = Long.valueOf(100);
 			Entity entity = new Entity();
 			entity.setId(id);
 
 			this.cacheService.submitCreate(entity);
 
 			Assert.assertEquals(entity, this.cacheService.get(id));
-		}
+//		}
 
 	}
 

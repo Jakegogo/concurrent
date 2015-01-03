@@ -9,8 +9,7 @@ import dbcache.utils.AnnotationUtils;
 import dbcache.utils.JsonUtils;
 import org.codehaus.jackson.map.annotate.JsonSerialize;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 /**
  * 缓存配置
@@ -51,10 +50,14 @@ public class CacheConfig<T> {
 
 	/** 索引信息  索引名 - 属性 */
 	private Map<String, ValueGetter<T>> indexes = new HashMap<String, ValueGetter<T>>();
+	/** 索引信息  List */
+	private List<ValueGetter<T>> indexList = new ArrayList<ValueGetter<T>>();
 
 	/** json属性自动转换信息 json串属性名 - 转换信息 */
 	private Map<String, JsonConverter<T>> jsonAutoConverters = new HashMap<String, JsonConverter<T>>();
-	
+	/** json属性自动转换信息 List */
+	private List<JsonConverter<T>> jsonAutoConverterList = new ArrayList<JsonConverter<T>>();
+
 	/**
 	 * 获取实例
 	 * @param entityClass 实体类
@@ -190,6 +193,10 @@ public class CacheConfig<T> {
 
 	public void setIndexes(Map<String, ValueGetter<T>> indexes) {
 		this.indexes = indexes;
+
+		List<ValueGetter<T>> indexList = new ArrayList<ValueGetter<T>>(indexes.size());
+		indexList.addAll(indexes.values());
+		this.indexList = Collections.unmodifiableList(indexList);
 	}
 
 	public Class<?> getIndexCacheClass() {
@@ -207,5 +214,17 @@ public class CacheConfig<T> {
 
 	public void setJsonAutoConverters(Map<String, JsonConverter<T>> jsonAutoConverters) {
 		this.jsonAutoConverters = jsonAutoConverters;
+
+		List<JsonConverter<T>> jsonAutoConverterList = new ArrayList<JsonConverter<T>>(jsonAutoConverters.size());
+		jsonAutoConverterList.addAll(jsonAutoConverters.values());
+		this.jsonAutoConverterList = Collections.unmodifiableList(jsonAutoConverterList);
+	}
+
+	public List<ValueGetter<T>> getIndexList() {
+		return indexList;
+	}
+
+	public List<JsonConverter<T>> getJsonAutoConverterList() {
+		return jsonAutoConverterList;
 	}
 }

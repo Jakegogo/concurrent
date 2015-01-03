@@ -1,5 +1,6 @@
 package dbcache.conf;
 
+import com.alibaba.fastjson.JSON;
 import dbcache.support.asm.AsmAccessHelper;
 import dbcache.support.asm.ValueGetter;
 import dbcache.support.asm.ValueSetter;
@@ -9,6 +10,7 @@ import java.lang.reflect.Type;
 
 /**
  * Json属性自动转换信息
+ * @param T 实体类型
  * Created by Jake on 2015/1/1.
  */
 public class JsonConverter<T> implements Cloneable {
@@ -58,7 +60,7 @@ public class JsonConverter<T> implements Cloneable {
         JsonConverter jsonConvertConfig = new JsonConverter();
         jsonConvertConfig.sourceGetter = AsmAccessHelper.createFieldGetter(clz, clz.getDeclaredField(value));
         jsonConvertConfig.sourceSetter = AsmAccessHelper.createFieldSetter(clz, clz.getDeclaredField(value));
-        jsonConvertConfig.targetType = field.getType();
+        jsonConvertConfig.targetType = field.getGenericType();
         jsonConvertConfig.targetGetter = AsmAccessHelper.createFieldGetter(clz, field);
         jsonConvertConfig.targetSetter = AsmAccessHelper.createFieldSetter(clz, field);
         return jsonConvertConfig;
@@ -82,16 +84,37 @@ public class JsonConverter<T> implements Cloneable {
     }
 
     /**
-     * 进行Json转换
+     * 进行JsonString -> Object 转换
+     *  @param target 目标实体
      */
     public void doConvert(T target) {
-        Object jsonStr = sourceGetter.get(target);
-        //TODO
+        // 获取Json字符串
+        Object object = sourceGetter.get(target);
+        if (object == null) {
+            return;
+        }
+        String jsonString = object.toString();
+        // 转换Json
+        Object targetObject = JSON.parseObject(jsonString, this.targetType);
+        // 设值到目标属性
+        targetSetter.set(target, targetObject);
     }
 
+    /**
+     * 进行Object -> JsonString 转换
+     * @param target 目标实体
+     */
     public void doPersist(T target) {
+        // 获取属性值
         Object object = targetGetter.get(target);
-        //TODO
+        if(object == null) {
+            sourceSetter.set(target, null);
+            return;
+        }
+        // 转换成Json
+        Object jsonObject = JSON.toJSON(object);
+        // 设值到json串属性
+        sourceSetter.set(target, jsonObject == null ? null : jsonObject.toString());
     }
 
 

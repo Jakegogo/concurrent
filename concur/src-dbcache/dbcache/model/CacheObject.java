@@ -4,8 +4,7 @@ import dbcache.conf.JsonConverter;
 import dbcache.support.asm.ValueGetter;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Collection;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -34,11 +33,6 @@ public class CacheObject<T extends IEntity<?>> {
 	private final Serializable id;
 
 	/**
-	 * 实体类
-	 */
-	private final Class<T> clazz;
-
-	/**
 	 * 修改版本号
 	 */
 	private final AtomicLong editVersion = new AtomicLong(0L);
@@ -51,12 +45,12 @@ public class CacheObject<T extends IEntity<?>> {
 	/**
 	 * 索引属性值获取器列表
 	 */
-	private List<ValueGetter<T>> indexList = new ArrayList<ValueGetter<T>>();
+	private Collection<ValueGetter<T>> indexList;
 
 	/**
 	 * Json 自动转换器
 	 */
-	private List<JsonConverter<T>> jsonConverters = new ArrayList<JsonConverter<T>>();
+	private Collection<JsonConverter<T>> jsonConverters;
 	
 	/**
 	 * 持久化状态
@@ -75,7 +69,6 @@ public class CacheObject<T extends IEntity<?>> {
 	protected CacheObject() {
 		this.entity = null;
 		this.id = null;
-		this.clazz = null;
 		this.proxyEntity = null;
 	}
 
@@ -103,10 +96,9 @@ public class CacheObject<T extends IEntity<?>> {
 	 * @param clazz
 	 *            类型
 	 */
-	public CacheObject(T entity, Serializable id, Class<T> clazz, T proxyEntity, List<ValueGetter<T>> indexes, List<JsonConverter<T>> jsonConverters) {
+	public CacheObject(T entity, Serializable id, Class<T> clazz, T proxyEntity, Collection<ValueGetter<T>> indexes, Collection<JsonConverter<T>> jsonConverters) {
 		this.entity = entity;
 		this.id = id;
-		this.clazz = clazz;
 		this.proxyEntity = proxyEntity;
 		this.persistStatus = PersistStatus.TRANSIENT;
 		this.indexList = indexes;
@@ -124,8 +116,8 @@ public class CacheObject<T extends IEntity<?>> {
 		}
 
 		// 初始化json自动转换属性
-		if(!getJsonConverters().isEmpty()) {
-			for(JsonConverter jsonConverter : getJsonConverters()) {
+		if(!this.jsonConverters.isEmpty()) {
+			for(JsonConverter jsonConverter : this.jsonConverters) {
 				jsonConverter.doConvert(this.entity);
 			}
 		}
@@ -141,8 +133,8 @@ public class CacheObject<T extends IEntity<?>> {
 			entityInitializer.doBeforePersist();
 		}
 		// json持久化
-		if(!getJsonConverters().isEmpty()) {
-			for(JsonConverter jsonConverter : getJsonConverters()) {
+		if(!this.jsonConverters.isEmpty()) {
+			for(JsonConverter jsonConverter : this.jsonConverters) {
 				jsonConverter.doPersist(this.entity);
 			}
 		}
@@ -177,10 +169,6 @@ public class CacheObject<T extends IEntity<?>> {
 		return id;
 	}
 
-	public Class<T> getClazz() {
-		return clazz;
-	}
-
 	public long getEditVersion() {
 		return editVersion.get();
 	}
@@ -197,7 +185,7 @@ public class CacheObject<T extends IEntity<?>> {
 		this.persistStatus = persistStatus;
 	}
 
-	public List<ValueGetter<T>> getIndexList() {
+	public Collection<ValueGetter<T>> getIndexList() {
 		return indexList;
 	}
 
@@ -207,10 +195,6 @@ public class CacheObject<T extends IEntity<?>> {
 
 	public void setUpdateProcessing(boolean processing) {
 		this.updateProcessing.compareAndSet(!processing, processing);
-	}
-
-	public List<JsonConverter<T>> getJsonConverters() {
-		return jsonConverters;
 	}
 
 }
