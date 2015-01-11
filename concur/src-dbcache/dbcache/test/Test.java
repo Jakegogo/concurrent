@@ -49,7 +49,7 @@ public class Test {
 			DetachedCriteria dc = DetachedCriteria.forClass(Entity.class)
 					.add(Restrictions.eq("name", keys[0]))
 					.setProjection(Projections.id());
-			List list = dc.getExecutableCriteria(HibernateUtils.getSession()).list();
+			List list = dc.getExecutableCriteria(HibernateUtil.getSession()).list();
 			if (list != null && list.size() > 0) {
 				return new ConcurrentHashSet<Integer>(list);
 			} else {

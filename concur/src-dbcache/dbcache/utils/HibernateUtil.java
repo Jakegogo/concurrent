@@ -14,7 +14,7 @@ import org.springframework.stereotype.Component;
  * Created by Jake on 2014/12/28.
  */
 @Component
-public class HibernateUtils extends DaoSupport {
+public class HibernateUtil extends DaoSupport {
 
     // HibernateTemplate
     private static HibernateTemplate hibernateTemplate;
@@ -32,7 +32,7 @@ public class HibernateUtils extends DaoSupport {
      * as an alternative to specifying a SessionFactory.
      */
     public static final void setHibernateTemplate(HibernateTemplate hibernateTemplate) {
-        HibernateUtils.hibernateTemplate = hibernateTemplate;
+        HibernateUtil.hibernateTemplate = hibernateTemplate;
     }
 
     public static final HibernateTemplate getHibernateTemplate() {

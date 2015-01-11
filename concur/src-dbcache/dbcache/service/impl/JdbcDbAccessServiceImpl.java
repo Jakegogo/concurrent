@@ -1,19 +1,11 @@
 package dbcache.service.impl;
 
 import dbcache.service.DbAccessService;
-
-import org.hibernate.SessionFactory;
-import org.hibernate.criterion.Projections;
-import org.hibernate.criterion.Restrictions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.RowMapper;
-import org.springframework.orm.hibernate3.support.HibernateDaoSupport;
 import org.springframework.stereotype.Component;
 
 import java.io.Serializable;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.Collection;
 
 /**
@@ -23,8 +15,8 @@ import java.util.Collection;
  */
 @Component("jdbcDbAccessServiceImpl")
 public class JdbcDbAccessServiceImpl implements DbAccessService {
-	
-	
+
+
 	@Autowired
 	private JdbcTemplate jdbcTemplate;
 
@@ -36,14 +28,7 @@ public class JdbcDbAccessServiceImpl implements DbAccessService {
 	 */
 	@Override
 	public <T> T get(Class<T> entityClazz, Serializable id) {
-		return this.jdbcTemplate.queryForObject(sql, new RowMapper<T>() {
-
-			@Override
-			public T mapRow(ResultSet rs, int rowNum) throws SQLException {
-				return null;
-			}
-			
-		}, id);
+		return null;
 	}
 
 
@@ -53,7 +38,7 @@ public class JdbcDbAccessServiceImpl implements DbAccessService {
 	 */
 	@Override
 	public <T> void save(T entity) {
-		super.getHibernateTemplate().save(entity);
+
 	}
 
 
@@ -63,7 +48,7 @@ public class JdbcDbAccessServiceImpl implements DbAccessService {
 	 */
 	@Override
 	public <T> void update(T entity) {
-		super.getHibernateTemplate().update(entity);
+
 	}
 
 
@@ -74,7 +59,7 @@ public class JdbcDbAccessServiceImpl implements DbAccessService {
 	@Override
 	public <T> void delete(T entity) {
 		if (entity != null) {
-			super.getHibernateTemplate().delete(entity);
+
 		}
 	}
 
@@ -86,9 +71,7 @@ public class JdbcDbAccessServiceImpl implements DbAccessService {
 	 */
 	@Override
 	public Object loadMaxId(Class<?> entityClazz) {
-		return getSession().createCriteria(entityClazz)
-				.setProjection(Projections.max(Projections.id().toString()))
-				.uniqueResult();
+		return null;
 	}
 
 
@@ -101,11 +84,7 @@ public class JdbcDbAccessServiceImpl implements DbAccessService {
 	 */
 	@Override
 	public Object loadMaxId(Class<?> entityClazz, long minValue, long maxValue) {
-		return getSession()
-				.createCriteria(entityClazz)
-				.add(Restrictions.between(Projections.id().toString(), minValue, maxValue))
-				.setProjection(Projections.max(Projections.id().toString()))
-				.uniqueResult();
+		return null;
 	}
 
 
@@ -116,11 +95,7 @@ public class JdbcDbAccessServiceImpl implements DbAccessService {
 	public Collection<?> listIdByIndex(
 			Class<?> entityClazz, String fieldName,
 			Object fieldValue) {
-		return getSession()
-				.createCriteria(entityClazz)
-				.add(Restrictions.eq(fieldName, fieldValue))
-				.setProjection(Projections.id())
-				.list();
+		return null;
 	}
 
 
