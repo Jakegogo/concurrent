@@ -1,7 +1,5 @@
 package dbcache.utils;
 
-import java.lang.reflect.Type;
-
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.map.type.TypeFactory;
 import org.codehaus.jackson.type.JavaType;
@@ -9,9 +7,11 @@ import org.codehaus.jackson.type.TypeReference;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.lang.reflect.Type;
+
 /**
  * json工具类
- * 
+ * @use jackson
  * @author bingshan
  */
 public abstract class JsonUtils {

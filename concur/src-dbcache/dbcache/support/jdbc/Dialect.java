@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-package dbcache.support.jdbc.dialect;
+package dbcache.support.jdbc;
 
 
-import dbcache.support.jdbc.TableInfo;
+import dbcache.support.jdbc.dialect.MysqlDialect;
 
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
@@ -30,6 +30,7 @@ import java.util.Set;
  * Dialect.
  */
 public abstract class Dialect {
+
 	public abstract String forTableInfoBuilderDoBuildTableInfo(String tableName);
 	public abstract void forModelSave(TableInfo tableInfo, Map<String, Object> attrs, StringBuilder sql);
 	public abstract String forModelDeleteById(TableInfo tInfo);

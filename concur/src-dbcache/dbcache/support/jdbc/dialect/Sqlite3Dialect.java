@@ -16,6 +16,7 @@
 
 package dbcache.support.jdbc.dialect;
 
+import dbcache.support.jdbc.Dialect;
 import dbcache.support.jdbc.TableInfo;
 
 import java.util.Map;

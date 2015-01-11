@@ -18,7 +18,6 @@ package dbcache.support.jdbc;
 
 
 import dbcache.model.IEntity;
-import dbcache.support.jdbc.dialect.Dialect;
 import org.apache.commons.lang.StringUtils;
 
 import java.util.HashMap;
