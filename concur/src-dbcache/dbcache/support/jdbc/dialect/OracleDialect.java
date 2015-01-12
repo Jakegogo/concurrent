@@ -37,31 +37,22 @@ public class OracleDialect extends Dialect {
 	}
 	
 	// insert into table (id,name) values(seq.nextval, ？)
-	public void forSave(TableInfo tableInfo, Map<String, Object> attrs, StringBuilder sql) {
+	public void forModelSave(TableInfo tableInfo, StringBuilder sql) {
 		sql.append("insert into ").append(tableInfo.getTableName()).append("(");
 		StringBuilder temp = new StringBuilder(") values(");
-		String pKey = tableInfo.getPrimaryKey();
 		int count = 0;
-		for (Entry<String, Object> e: attrs.entrySet()) {
-			String colName = e.getKey();
-			if (tableInfo.hasColumnLabel(colName)) {
-				if (count++ > 0) {
-					sql.append(", ");
-					temp.append(", ");
-				}
-				sql.append(colName);
-				Object value = e.getValue();
-				if(value instanceof String && colName.equalsIgnoreCase(pKey) && ((String)value).endsWith(".nextval")) {
-				    temp.append(value);
-				}else{
-				    temp.append("?");
-				}
+		for (String colName : tableInfo.getColumnNames()) {
+			if (count++ > 0) {
+				sql.append(", ");
+				temp.append(", ");
 			}
+			sql.append(colName);
+			temp.append("?");
 		}
 		sql.append(temp.toString()).append(")");
 	}
 	
-	public String forDeleteById(TableInfo tInfo) {
+	public String forModelDeleteById(TableInfo tInfo) {
 		String pKey = tInfo.getPrimaryKey();
 		StringBuilder sql = new StringBuilder(45);
 		sql.append("delete from ");
@@ -70,7 +61,25 @@ public class OracleDialect extends Dialect {
 		return sql.toString();
 	}
 	
-	public void forUpdate(TableInfo tableInfo, Map<String, Object> attrs, Set<String> modifyFlag, String pKey, StringBuilder sql) {
+	public void forModelUpdate(TableInfo tableInfo, String pKey, StringBuilder sql) {
+		sql.append("update ").append(tableInfo.getTableName()).append(" set ");
+		boolean first = true;
+		for (String colName : tableInfo.getColumnNames()) {
+			if (!pKey.equalsIgnoreCase(colName)) {
+				if (!first) {
+					sql.append(", ");
+				} else {
+					first = false;
+				}
+				sql.append(colName).append(" = ? ");
+			}
+		}
+		sql.append(" where ").append(pKey).append(" = ?");
+	}
+	
+	@Override
+	public void forDbUpdate(TableInfo tableInfo, Map<String, Object> attrs,
+			Set<String> modifyFlag, String pKey, StringBuilder sql) {
 		sql.append("update ").append(tableInfo.getTableName()).append(" set ");
 		boolean first = true;
 		for (Entry<String, Object> e : attrs.entrySet()) {
@@ -87,7 +96,7 @@ public class OracleDialect extends Dialect {
 		sql.append(" where ").append(pKey).append(" = ?");
 	}
 	
-	public String forFindById(TableInfo tInfo, String columns) {
+	public String forModelFindById(TableInfo tInfo, String columns) {
 		StringBuilder sql = new StringBuilder("select ");
 		if (columns.trim().equals("*")) {
 			sql.append(columns);
@@ -107,7 +116,7 @@ public class OracleDialect extends Dialect {
 	}
 	
 	@Override
-	public String forFindByColumn(TableInfo tInfo, String columns,
+	public String forModelFindByColumn(TableInfo tInfo, String columns,
 			String columnName) {
 		StringBuilder sql = new StringBuilder("select ");
 		if (columns.trim().equals("*")) {
@@ -163,5 +172,6 @@ public class OracleDialect extends Dialect {
 	public String getDefaultPrimaryKey() {
 		return "ID";
 	}
+
 
 }

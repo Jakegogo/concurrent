@@ -33,26 +33,23 @@ public class PostgreSqlDialect extends Dialect {
 		return "select * from \"" + tableName + "\" where 1 = 2";
 	}
 	
-	public void forSave(TableInfo tableInfo, Map<String, Object> attrs, StringBuilder sql) {
+	public void forModelSave(TableInfo tableInfo, StringBuilder sql) {
 		sql.append("insert into \"").append(tableInfo.getTableName()).append("\"(");
 		StringBuilder temp = new StringBuilder(") values(");
 		boolean first = true;
-		for (Entry<String, Object> e: attrs.entrySet()) {
-			String colName = e.getKey();
-			if (tableInfo.hasColumnLabel(colName)) {
-				if (!first) {
-					sql.append(", ");
-				} else {
-					first = false;
-				}
-				sql.append("\"").append(colName).append("\"");
-				temp.append("?");
+		for (String colName : tableInfo.getColumnNames()) {
+			if (!first) {
+				sql.append(", ");
+			} else {
+				first = false;
 			}
+			sql.append("\"").append(colName).append("\"");
+			temp.append("?");
 		}
 		sql.append(temp.toString()).append(")");
 	}
 	
-	public String forDeleteById(TableInfo tInfo) {
+	public String forModelDeleteById(TableInfo tInfo) {
 		String primaryKey = tInfo.getPrimaryKey();
 		StringBuilder sql = new StringBuilder(45);
 		sql.append("delete from \"");
@@ -61,7 +58,25 @@ public class PostgreSqlDialect extends Dialect {
 		return sql.toString();
 	}
 	
-	public void forUpdate(TableInfo tableInfo, Map<String, Object> attrs, Set<String> modifyFlag, String primaryKey, StringBuilder sql) {
+	public void forModelUpdate(TableInfo tableInfo, String primaryKey, StringBuilder sql) {
+		sql.append("update \"").append(tableInfo.getTableName()).append("\" set ");
+		boolean first = true;
+		for (String colName : tableInfo.getColumnNames()) {
+			if (!primaryKey.equalsIgnoreCase(colName)) {
+				if (!first) {
+					sql.append(", ");
+				} else {
+					first = false;
+				}
+				sql.append("\"").append(colName).append("\" = ? ");
+			}
+		}
+		sql.append(" where \"").append(primaryKey).append("\" = ?");
+	}
+	
+	@Override
+	public void forDbUpdate(TableInfo tableInfo, Map<String, Object> attrs,
+			Set<String> modifyFlag, String primaryKey, StringBuilder sql) {
 		sql.append("update \"").append(tableInfo.getTableName()).append("\" set ");
 		boolean first = true;
 		for (Entry<String, Object> e : attrs.entrySet()) {
@@ -78,7 +93,7 @@ public class PostgreSqlDialect extends Dialect {
 		sql.append(" where \"").append(primaryKey).append("\" = ?");
 	}
 	
-	public String forFindById(TableInfo tInfo, String columns) {
+	public String forModelFindById(TableInfo tInfo, String columns) {
 		StringBuilder sql = new StringBuilder("select ");
 		if (columns.trim().equals("*")) {
 			sql.append(columns);
@@ -99,7 +114,7 @@ public class PostgreSqlDialect extends Dialect {
 	
 	
 	@Override
-	public String forFindByColumn(TableInfo tInfo, String columns,
+	public String forModelFindByColumn(TableInfo tInfo, String columns,
 			String columnName) {
 		StringBuilder sql = new StringBuilder("select ");
 		if (columns.trim().equals("*")) {
@@ -126,5 +141,6 @@ public class PostgreSqlDialect extends Dialect {
 		sql.append(sqlExceptSelect);
 		sql.append(" limit ").append(pageSize).append(" offset ").append(offset);
 	}
+
 
 }

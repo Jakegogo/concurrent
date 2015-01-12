@@ -18,9 +18,14 @@ package dbcache.support.jdbc;
 
 
 import dbcache.model.IEntity;
+
 import org.apache.commons.lang.StringUtils;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -33,7 +38,7 @@ public class TableInfo {
 	private String secondaryKey = null;
 	
 	@SuppressWarnings("unchecked")
-	private Map<String, Class<?>> columnTypeMap = new HashMap<String, Class<?>>();	//	new HashMap<String, Class<?>>();
+	private Map<String, Class<?>> columnTypeMap = new LinkedHashMap<String, Class<?>>();	//	new HashMap<String, Class<?>>();
 	
 	public String getTableName() {
 		return tableName;
@@ -53,6 +58,11 @@ public class TableInfo {
 	 */
 	public boolean hasColumnLabel(String columnLabel) {
 		return columnTypeMap.containsKey(columnLabel);
+	}
+	
+	// 获取字段列表
+	public List<String> getColumnNames() {
+		return new ArrayList<String>(columnTypeMap.keySet());
 	}
 	
 	/**
@@ -81,6 +91,10 @@ public class TableInfo {
 		this.modelClass = modelClass;
 	}
 	
+	public Map<String, Class<?>> getColumnTypeMap() {
+		return columnTypeMap;
+	}
+
 	private void setPrimaryKey(String primaryKey) {
 		String[] keyArr = primaryKey.split(",");
 		if (keyArr.length > 1) {

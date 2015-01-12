@@ -32,11 +32,12 @@ import java.util.Set;
 public abstract class Dialect {
 
 	public abstract String forTableInfoBuilderDoBuildTableInfo(String tableName);
-	public abstract void forSave(TableInfo tableInfo, Map<String, Object> attrs, StringBuilder sql);
-	public abstract String forDeleteById(TableInfo tInfo);
-	public abstract void forUpdate(TableInfo tableInfo, Map<String, Object> attrs, Set<String> modifyFlag, String pKey, StringBuilder sql);
-	public abstract String forFindById(TableInfo tInfo, String columns);
-	public abstract String forFindByColumn(TableInfo tInfo, String columns, String columnName);
+	public abstract void forModelSave(TableInfo tableInfo, StringBuilder sql);
+	public abstract String forModelDeleteById(TableInfo tInfo);
+	public abstract void forModelUpdate(TableInfo tableInfo, String pKey, StringBuilder sql);
+	public abstract void forDbUpdate(TableInfo tableInfo, Map<String, Object> attrs, Set<String> modifyFlag, String pKey, StringBuilder sql);
+	public abstract String forModelFindById(TableInfo tInfo, String columns);
+	public abstract String forModelFindByColumn(TableInfo tInfo, String columns, String columnName);
 	public abstract void forPaginate(StringBuilder sql, int pageNumber, int pageSize, String select, String sqlExceptSelect);
 	
 	public boolean isOracle() {
