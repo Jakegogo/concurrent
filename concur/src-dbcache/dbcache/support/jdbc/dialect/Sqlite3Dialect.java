@@ -33,7 +33,7 @@ public class Sqlite3Dialect extends Dialect {
 		return "select * from " + tableName + " where 1 = 2";
 	}
 	
-	public void forModelSave(TableInfo tableInfo, Map<String, Object> attrs, StringBuilder sql) {
+	public void forSave(TableInfo tableInfo, Map<String, Object> attrs, StringBuilder sql) {
 		sql.append("insert into ").append(tableInfo.getTableName()).append("(");
 		StringBuilder temp = new StringBuilder(") values(");
 		boolean first = true;
@@ -52,7 +52,7 @@ public class Sqlite3Dialect extends Dialect {
 		sql.append(temp.toString()).append(")");
 	}
 	
-	public String forModelDeleteById(TableInfo tInfo) {
+	public String forDeleteById(TableInfo tInfo) {
 		String pKey = tInfo.getPrimaryKey();
 		StringBuilder sql = new StringBuilder(45);
 		sql.append("delete from ");
@@ -61,7 +61,7 @@ public class Sqlite3Dialect extends Dialect {
 		return sql.toString();
 	}
 	
-	public void forModelUpdate(TableInfo tableInfo, Map<String, Object> attrs, Set<String> modifyFlag, String pKey, StringBuilder sql) {
+	public void forUpdate(TableInfo tableInfo, Map<String, Object> attrs, Set<String> modifyFlag, String pKey, StringBuilder sql) {
 		sql.append("update ").append(tableInfo.getTableName()).append(" set ");
 		boolean first = true;
 		for (Entry<String, Object> e : attrs.entrySet()) {
@@ -78,7 +78,7 @@ public class Sqlite3Dialect extends Dialect {
 		sql.append(" where ").append(pKey).append(" = ?");
 	}
 	
-	public String forModelFindById(TableInfo tInfo, String columns) {
+	public String forFindById(TableInfo tInfo, String columns) {
 		StringBuilder sql = new StringBuilder("select ");
 		if (columns.trim().equals("*")) {
 			sql.append(columns);
@@ -97,6 +97,26 @@ public class Sqlite3Dialect extends Dialect {
 		return sql.toString();
 	}
 	
+	@Override
+	public String forFindByColumn(TableInfo tInfo, String columns,
+			String columnName) {
+		StringBuilder sql = new StringBuilder("select ");
+		if (columns.trim().equals("*")) {
+			sql.append(columns);
+		}
+		else {
+			String[] columnsArray = columns.split(",");
+			for (int i=0; i<columnsArray.length; i++) {
+				if (i > 0)
+					sql.append(", ");
+				sql.append(columnsArray[i].trim());
+			}
+		}
+		sql.append(" from ");
+		sql.append(tInfo.getTableName());
+		sql.append(" where ").append(columnName).append(" = ?");
+		return sql.toString();
+	}
 
 	public void forPaginate(StringBuilder sql, int pageNumber, int pageSize, String select, String sqlExceptSelect) {
 		int offset = pageSize * (pageNumber - 1);
@@ -104,4 +124,5 @@ public class Sqlite3Dialect extends Dialect {
 		sql.append(sqlExceptSelect);
 		sql.append(" limit ").append(offset).append(", ").append(pageSize);
 	}
+
 }
