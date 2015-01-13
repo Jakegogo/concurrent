@@ -34,10 +34,10 @@ public abstract class Dialect {
 	public abstract String forTableInfoBuilderDoBuildTableInfo(String tableName);
 	public abstract void forModelSave(TableInfo tableInfo, StringBuilder sql);
 	public abstract String forModelDeleteById(TableInfo tInfo);
-	public abstract void forModelUpdate(TableInfo tableInfo, String pKey, StringBuilder sql);
+	public abstract void forModelUpdate(TableInfo tableInfo, StringBuilder sql);
 	public abstract void forDbUpdate(TableInfo tableInfo, Map<String, Object> attrs, Set<String> modifyFlag, String pKey, StringBuilder sql);
-	public abstract String forModelFindById(TableInfo tInfo, String columns);
-	public abstract String forModelFindByColumn(TableInfo tInfo, String columns, String columnName);
+	public abstract String forModelFindById(TableInfo tInfo);
+	public abstract String forModelFindByColumn(TableInfo tInfo, String columnName);
 	public abstract void forPaginate(StringBuilder sql, int pageNumber, int pageSize, String select, String sqlExceptSelect);
 	
 	public boolean isOracle() {
@@ -52,7 +52,7 @@ public abstract class Dialect {
 	}
 	
 	public void fillStatement(PreparedStatement pst, Object... paras) throws SQLException {
-		for (int i=0; i<paras.length; i++) {
+		for (int i=0; i < paras.length; i++) {
 			pst.setObject(i + 1, paras[i]);
 		}
 	}

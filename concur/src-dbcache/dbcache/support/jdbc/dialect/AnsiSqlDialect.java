@@ -61,11 +61,11 @@ public class AnsiSqlDialect extends Dialect {
 		return sql.toString();
 	}
 	
-	public void forModelUpdate(TableInfo tableInfo, String pKey, StringBuilder sql) {
+	public void forModelUpdate(TableInfo tableInfo, StringBuilder sql) {
 		sql.append("update ").append(tableInfo.getTableName()).append(" set ");
 		boolean first = true;
 		for (String colName : tableInfo.getColumnNames()) {
-			if (!pKey.equalsIgnoreCase(colName)) {
+			if (!tableInfo.getPrimaryKey().equalsIgnoreCase(colName)) {
 				if (!first) {
 					sql.append(", ");
 				} else {
@@ -74,7 +74,7 @@ public class AnsiSqlDialect extends Dialect {
 				sql.append(colName).append(" = ? ");
 			}
 		}
-		sql.append(" where ").append(pKey).append(" = ?");
+		sql.append(" where ").append(tableInfo.getPrimaryKey()).append(" = ?");
 	}
 	
 	@Override
@@ -96,18 +96,16 @@ public class AnsiSqlDialect extends Dialect {
 		sql.append(" where ").append(pKey).append(" = ?");
 	}
 	
-	public String forModelFindById(TableInfo tInfo, String columns) {
+	public String forModelFindById(TableInfo tInfo) {
 		StringBuilder sql = new StringBuilder("select ");
-		if (columns.trim().equals("*")) {
-			sql.append(columns);
-		}
-		else {
-			String[] columnsArray = columns.split(",");
-			for (int i=0; i<columnsArray.length; i++) {
-				if (i > 0)
-					sql.append(", ");
-				sql.append(columnsArray[i].trim());
+		boolean first = true;
+		for (String column : tInfo.getColumnTypeMap().keySet()) {
+			if (!first) {
+				sql.append(", ");
+			} else {
+				first = false;
 			}
+			sql.append(column.trim());
 		}
 		sql.append(" from ");
 		sql.append(tInfo.getTableName());
@@ -116,19 +114,19 @@ public class AnsiSqlDialect extends Dialect {
 	}
 	
 	@Override
-	public String forModelFindByColumn(TableInfo tInfo, String columns,
-			String columnName) {
-		StringBuilder sql = new StringBuilder("select ");
-		if (columns.trim().equals("*")) {
-			sql.append(columns);
+	public String forModelFindByColumn(TableInfo tInfo, String columnName) {
+		if(!tInfo.hasColumnLabel(columnName)) {
+			throw new IllegalArgumentException("column [" + columnName + "] not found in " + tInfo.getTableName());
 		}
-		else {
-			String[] columnsArray = columns.split(",");
-			for (int i=0; i<columnsArray.length; i++) {
-				if (i > 0)
-					sql.append(", ");
-				sql.append(columnsArray[i].trim());
+		StringBuilder sql = new StringBuilder("select ");
+		boolean first = true;
+		for (String column : tInfo.getColumnTypeMap().keySet()) {
+			if (!first) {
+				sql.append(", ");
+			} else {
+				first = false;
 			}
+			sql.append(column.trim());
 		}
 		sql.append(" from ");
 		sql.append(tInfo.getTableName());

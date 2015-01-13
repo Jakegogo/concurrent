@@ -2,20 +2,18 @@ package dbcache.support.jdbc;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
-import javax.persistence.Transient;
-import javax.sql.DataSource;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.util.ReflectionUtils;
 import org.springframework.util.ReflectionUtils.FieldCallback;
-
-import com.sun.xml.internal.stream.Entity;
 
 import dbcache.utils.StringUtils;
 
@@ -26,14 +24,46 @@ import dbcache.utils.StringUtils;
 @Component
 public class JdbcSupport {
 
-
-    @Autowired
-    private DataSource dataSource;
+	@Autowired
+    private Config config;
 
     /** 实体信息缓存 */
     private ConcurrentMap<Class<?>, ModelInfo> modelInfoCache = new ConcurrentHashMap<Class<?>, ModelInfo>();
 
 
+    /**
+     * 根据Id获取实体
+     * @param clzz 实体类
+     * @param id 主键
+     * @return
+     */
+    @SuppressWarnings("unchecked")
+	public <T> T get(final Class<T> clzz, Object id) {
+    	
+    	ModelInfo modelInfo = getOrCreateModelInfo(clzz);
+    	String sql = modelInfo.getOrCreateSelectSql(config.dialect);
+    	
+    	Connection conn = null;
+    	PreparedStatement pst = null;
+    	ResultSet rs = null;
+    	try {
+	    	conn = config.getConnection();
+	    	
+			pst = conn.prepareStatement(sql);
+			config.dialect.fillStatement(pst, id);
+			
+			rs = pst.executeQuery();
+			return (T) modelInfo.generateEntity(rs);
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			config.close(rs, pst, conn);
+		}
+    	
+    	return null;
+    }
+    
+    
     /**
      * 获取或创建实体信息
      * @param clzz 实体类
@@ -48,6 +78,7 @@ public class JdbcSupport {
     	
     	// 创建实体信息
     	modelInfo = new ModelInfo();
+    	modelInfo.setClzz(clzz);
     	
     	String tableName = null;
     	// 获取类Meta信息
@@ -62,7 +93,7 @@ public class JdbcSupport {
     	modelInfo.setTableInfo(tableInfo);
     	
     	final Map<String, Class<?>> columnTypeMap = new LinkedHashMap<String, Class<?>>();
-    	final Map<String, ColumnInfo<?>> attrTypeMap = new LinkedHashMap<String, ColumnInfo<?>>();
+    	final Map<String, ColumnInfo> attrTypeMap = new LinkedHashMap<String, ColumnInfo>();
     	// 遍历属性信息
     	ReflectionUtils.doWithFields(clzz, new FieldCallback() {
 			public void doWith(Field field) throws IllegalArgumentException, IllegalAccessException {
@@ -97,7 +128,7 @@ public class JdbcSupport {
     
     
     public static void main(String[] args) {
-		String sql = new JdbcSupport().getOrCreateModelInfo(dbcache.test.Entity.class).getOrCreateSelectSql(Dialect.getDefaultDialect());
+		String sql = new JdbcSupport().getOrCreateModelInfo(dbcache.test.Entity.class).getOrCreateFindByColumnSql(Dialect.getDefaultDialect(), "num");
 		System.out.println(sql);
 	}
     
