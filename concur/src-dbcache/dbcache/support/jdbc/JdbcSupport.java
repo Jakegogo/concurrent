@@ -93,7 +93,8 @@ public class JdbcSupport {
     	modelInfo.setTableInfo(tableInfo);
     	
     	final Map<String, Class<?>> columnTypeMap = new LinkedHashMap<String, Class<?>>();
-    	final Map<String, ColumnInfo> attrTypeMap = new LinkedHashMap<String, ColumnInfo>();
+    	@SuppressWarnings("rawtypes")
+		final Map<String, ColumnInfo> attrTypeMap = new LinkedHashMap<String, ColumnInfo>();
     	// 遍历属性信息
     	ReflectionUtils.doWithFields(clzz, new FieldCallback() {
 			public void doWith(Field field) throws IllegalArgumentException, IllegalAccessException {
