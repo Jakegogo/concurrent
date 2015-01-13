@@ -193,8 +193,13 @@ public class CacheObject<T extends IEntity<?>> {
 		return this.updateProcessing.get();
 	}
 
-	public void setUpdateProcessing(boolean processing) {
-		this.updateProcessing.compareAndSet(!processing, processing);
+	/**
+	 * 改变状态
+	 * @param processing 目标状态
+	 * @return 是否改变成功
+	 */
+	public boolean setUpdateProcessing(boolean processing) {
+		return this.updateProcessing.compareAndSet(!processing, processing);
 	}
 
 }
