@@ -1,11 +1,19 @@
 package dbcache.support.jdbc;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-
-import javax.sql.DataSource;
+import java.lang.reflect.Field;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+
+import javax.sql.DataSource;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+import org.springframework.util.ReflectionUtils;
+import org.springframework.util.ReflectionUtils.FieldCallback;
+
+import dbcache.utils.StringUtils;
 
 /**
  * Jdbc Dao支持
@@ -19,7 +27,7 @@ public class JdbcSupport {
     private DataSource dataSource;
 
     /** 实体信息缓存 */
-    private Map<Class<?>, ModelInfo> modelInfoCache = new ConcurrentHashMap<Class<?>, ModelInfo>();
+    private ConcurrentMap<Class<?>, ModelInfo> modelInfoCache = new ConcurrentHashMap<Class<?>, ModelInfo>();
 
 
     /**
@@ -27,9 +35,49 @@ public class JdbcSupport {
      * @param clzz 实体类
      * @return
      */
-    public ModelInfo getOrCreateModelInfo(Class<?> clzz) {
-
-        return null;
+    public ModelInfo getOrCreateModelInfo(final Class<?> clzz) {
+    	
+    	ModelInfo modelInfo = modelInfoCache.get(clzz);
+    	if(modelInfo != null) {
+    		return modelInfo;
+    	}
+    	
+    	// 创建实体信息
+    	modelInfo = new ModelInfo();
+    	
+    	String tableName = null;
+    	// 获取类Meta信息
+    	if (clzz.isAnnotationPresent(javax.persistence.Table.class)) {
+    		javax.persistence.Table tableAnno = clzz.getAnnotation(javax.persistence.Table.class);
+    		tableName = tableAnno.name();
+    	} else {
+    		tableName = StringUtils.getLString(clzz.getSimpleName());
+    	}
+    	// 创建TableInfo对象
+    	TableInfo tableInfo = new TableInfo(tableName, clzz);
+    	modelInfo.setTableInfo(tableInfo);
+    	
+    	
+    	final Map<String, Class<?>> columnTypeMap = new LinkedHashMap<String, Class<?>>();
+    	final Map<String, ColumnInfo<?>> attrTypeMap = new LinkedHashMap<String, ColumnInfo<?>>();
+    	// 遍历属性信息
+    	ReflectionUtils.doWithFields(clzz, new FieldCallback() {
+			public void doWith(Field field) throws IllegalArgumentException, IllegalAccessException {
+				columnTypeMap.put(field.getName(), field.getType());
+				try {
+					attrTypeMap.put(field.getName(), ColumnInfo.valueOf(clzz, field));
+				} catch (Exception e) {
+					e.printStackTrace();
+					throw new IllegalAccessException("无法创建Jdbc表字段信息:ColumnInfo");
+				}
+			}
+		});
+    	
+    	modelInfo.setAttrTypeMap(attrTypeMap);
+    	tableInfo.setColumnTypeMap(columnTypeMap);
+    	ModelInfo oldModelInfo = modelInfoCache.putIfAbsent(clzz, modelInfo);
+    	
+        return oldModelInfo == null ? modelInfo : oldModelInfo;
     }
 
 

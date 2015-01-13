@@ -17,16 +17,12 @@
 package dbcache.support.jdbc;
 
 
-import dbcache.model.IEntity;
-
-import org.apache.commons.lang.StringUtils;
-
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+
+import org.apache.commons.lang.StringUtils;
 
 /**
  * TableInfo save the table info like column name and column type.
@@ -72,13 +68,13 @@ public class TableInfo {
 		return primaryKey;
 	}
 	
-	private Class<? extends IEntity<?>> modelClass;
+	private Class<?> modelClass;
 	
-	public TableInfo(String tableName, Class<? extends IEntity<?>> modelClass) {
+	public TableInfo(String tableName, Class<?> modelClass) {
 		this(tableName, Dialect.getDefaultDialect().getDefaultPrimaryKey(), modelClass);
 	}
 	
-	public TableInfo(String tableName, String primaryKey, Class<? extends IEntity<?>> modelClass) {
+	public TableInfo(String tableName, String primaryKey, Class<?> modelClass) {
 		if (StringUtils.isBlank(tableName))
 			throw new IllegalArgumentException("Table name can not be blank.");
 		if (StringUtils.isBlank(primaryKey))
@@ -112,7 +108,11 @@ public class TableInfo {
 		return secondaryKey;
 	}
 	
-	public Class<? extends IEntity<?>> getModelClass() {
+	public void setColumnTypeMap(Map<String, Class<?>> columnTypeMap) {
+		this.columnTypeMap = columnTypeMap;
+	}
+
+	public Class<?> getModelClass() {
 		return modelClass;
 	}
 }

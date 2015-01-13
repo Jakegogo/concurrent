@@ -13,9 +13,22 @@ public class ModelInfo {
     private TableInfo tableInfo;
 
     // 属性信息
-    private Map<String, ColumnInfo> attrTypeMap = new LinkedHashMap<String, ColumnInfo>();
+    private Map<String, ColumnInfo<?>> attrTypeMap = new LinkedHashMap<String, ColumnInfo<?>>();
 
-    
+	public TableInfo getTableInfo() {
+		return tableInfo;
+	}
 
+	public void setTableInfo(TableInfo tableInfo) {
+		this.tableInfo = tableInfo;
+	}
+
+	public Map<String, ColumnInfo<?>> getAttrTypeMap() {
+		return attrTypeMap;
+	}
+
+	public void setAttrTypeMap(Map<String, ColumnInfo<?>> attrTypeMap) {
+		this.attrTypeMap = attrTypeMap;
+	}
 
 }
