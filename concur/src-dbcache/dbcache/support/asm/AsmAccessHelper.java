@@ -85,7 +85,7 @@ public class AsmAccessHelper implements Opcodes {
 			try {
 				propertyDescriptor = new PropertyDescriptor(field.getName(), clazz);
 			} catch (IntrospectionException e) {
-				logger.error("无法获取get方法:" + clazz.getModifiers() + "(" + field.getName() + ")");
+				logger.error("无法获取get方法:" + clazz.getName() + "(" + field.getName() + ")");
 				e.printStackTrace();
 			}
 			//获取get方法
@@ -218,7 +218,7 @@ public class AsmAccessHelper implements Opcodes {
 			try {
 				propertyDescriptor = new PropertyDescriptor(field.getName(), clazz);
 			} catch (IntrospectionException e) {
-				logger.error("无法获取set方法:" + clazz.getModifiers() + "(" + field.getName() + ")");
+				logger.error("无法获取set方法:" + clazz.getName() + "(" + field.getName() + ")");
 				e.printStackTrace();
 			}
 			//获取set方法

@@ -1,20 +1,24 @@
 package dbcache.service.impl;
 
-import dbcache.conf.CacheConfig;
-import dbcache.conf.CacheType;
-import dbcache.conf.JsonConverter;
-import dbcache.conf.PersistType;
-import dbcache.model.CacheObject;
-import dbcache.model.IEntity;
-import dbcache.model.WeakCacheEntity;
-import dbcache.model.WeakCacheObject;
-import dbcache.service.*;
-import dbcache.support.asm.AsmAccessHelper;
-import dbcache.support.asm.EntityAsmFactory;
-import dbcache.support.asm.IndexMethodAspect;
-import dbcache.support.asm.ValueGetter;
-import dbcache.utils.AsmUtils;
-import dbcache.utils.ThreadUtils;
+import java.io.Serializable;
+import java.lang.management.ManagementFactory;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+
+import javax.annotation.PostConstruct;
+import javax.management.InstanceAlreadyExistsException;
+import javax.management.MBeanRegistrationException;
+import javax.management.MBeanServer;
+import javax.management.MalformedObjectNameException;
+import javax.management.NotCompliantMBeanException;
+import javax.management.ObjectName;
+import javax.management.StandardMBean;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.helpers.FormattingTuple;
@@ -26,15 +30,25 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.ReflectionUtils;
 import org.springframework.util.ReflectionUtils.FieldCallback;
 
-import javax.annotation.PostConstruct;
-import javax.management.*;
-import java.io.Serializable;
-import java.lang.management.ManagementFactory;
-import java.lang.reflect.Field;
-import java.util.*;
-import java.util.Map.Entry;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
+import dbcache.conf.CacheConfig;
+import dbcache.conf.CacheType;
+import dbcache.conf.JsonConverter;
+import dbcache.conf.PersistType;
+import dbcache.model.CacheObject;
+import dbcache.model.IEntity;
+import dbcache.model.WeakCacheEntity;
+import dbcache.model.WeakCacheObject;
+import dbcache.service.Cache;
+import dbcache.service.ConfigFactory;
+import dbcache.service.DbCacheMBean;
+import dbcache.service.DbCacheService;
+import dbcache.service.DbIndexService;
+import dbcache.service.DbPersistService;
+import dbcache.support.asm.AsmAccessHelper;
+import dbcache.support.asm.EntityAsmFactory;
+import dbcache.support.asm.IndexMethodAspect;
+import dbcache.support.asm.ValueGetter;
+import dbcache.utils.ThreadUtils;
 
 /**
  * DbCached缓存模块配置服务实现
@@ -282,11 +296,11 @@ public class ConfigFactoryImpl implements ConfigFactory, DbCacheMBean {
 		if(cacheConfig == null || !cacheConfig.isEnableIndex()) {
 			return entity;
 		}
-		return AsmUtils.getProxyEntity(proxyClass, entity, indexService);
+		return this.getProxyEntity(proxyClass, entity, indexService);
 	}
 
 
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	private <T extends IEntity<PK>, PK extends Comparable<PK> & Serializable> WeakCacheEntity<T, ?> wrapEntity(T entity, Class<? extends IEntity> entityClazz, Cache cache, Object key, CacheConfig<T> cacheConfig) {
 		// 判断是否开启弱引用
 		if(cacheConfig == null || cacheConfig.getCacheType() != CacheType.WEEKMAP) {
@@ -325,6 +339,57 @@ public class ConfigFactoryImpl implements ConfigFactory, DbCacheMBean {
 	public void registerDbCacheServiceBean(Class<? extends IEntity> clz,
 			DbCacheService dbCacheService) {
 		dbCacheServiceBeanMap.put(clz, dbCacheService);
+	}
+
+	/**
+	 * 获取代理对象
+	 * @param proxyClass 代理类
+	 * @param entity 被代理实体
+	 */
+	@SuppressWarnings({ "unchecked", "unused" })
+	private <T> T getProxyEntity(Class<?> proxyClass, T entity) {
+		Class<?>[] paramTypes = { entity.getClass() };
+		Object[] params = { entity };
+		Constructor<?> con;
+		try {
+			con = proxyClass.getConstructor(paramTypes);
+			return (T) con.newInstance(params);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
+
+
+	/**
+	 * 获取代理对象
+	 * @param proxyClass 代理类
+	 * @param entity 被代理实体
+	 * @param constructParams 构造方法的参数
+	 */
+	@SuppressWarnings("unchecked")
+	private <T> T getProxyEntity(Class<?> proxyClass, T entity, Object... constructParams) {
+
+		Class<?>[] paramTypes = new Class<?>[constructParams.length + 1];
+		paramTypes[0] = entity.getClass();
+		for(int i = 1; i < constructParams.length + 1;i ++) {
+			paramTypes[i] = constructParams[i - 1].getClass().getInterfaces()[0];
+		}
+
+		Object[] params = new Object[constructParams.length + 1];
+		params[0] = entity;
+		for(int i = 1; i < constructParams.length + 1;i ++) {
+			params[i] = constructParams[i - 1];
+		}
+
+		Constructor<?> con;
+		try {
+			con = proxyClass.getConstructor(paramTypes);
+			return (T) con.newInstance(params);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return null;
 	}
 
 

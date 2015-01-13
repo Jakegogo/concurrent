@@ -42,6 +42,7 @@ public class AnsiSqlDialect extends Dialect {
 		for (String colName : tableInfo.getColumnNames()) {
 			if (!first) {
 				sql.append(", ");
+				temp.append(", ");
 			} else {
 				first = false;
 			}

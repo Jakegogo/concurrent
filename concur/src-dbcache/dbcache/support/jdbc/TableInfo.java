@@ -91,7 +91,7 @@ public class TableInfo {
 		return columnTypeMap;
 	}
 
-	private void setPrimaryKey(String primaryKey) {
+	public void setPrimaryKey(String primaryKey) {
 		String[] keyArr = primaryKey.split(",");
 		if (keyArr.length > 1) {
 			if (StringUtils.isBlank(keyArr[0]) || StringUtils.isBlank(keyArr[1]))

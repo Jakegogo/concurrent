@@ -1,17 +1,21 @@
 package dbcache.support.jdbc;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
+import javax.persistence.Transient;
 import javax.sql.DataSource;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.util.ReflectionUtils;
 import org.springframework.util.ReflectionUtils.FieldCallback;
+
+import com.sun.xml.internal.stream.Entity;
 
 import dbcache.utils.StringUtils;
 
@@ -54,15 +58,25 @@ public class JdbcSupport {
     		tableName = StringUtils.getLString(clzz.getSimpleName());
     	}
     	// 创建TableInfo对象
-    	TableInfo tableInfo = new TableInfo(tableName, clzz);
+    	final TableInfo tableInfo = new TableInfo(tableName, clzz);
     	modelInfo.setTableInfo(tableInfo);
-    	
     	
     	final Map<String, Class<?>> columnTypeMap = new LinkedHashMap<String, Class<?>>();
     	final Map<String, ColumnInfo<?>> attrTypeMap = new LinkedHashMap<String, ColumnInfo<?>>();
     	// 遍历属性信息
     	ReflectionUtils.doWithFields(clzz, new FieldCallback() {
 			public void doWith(Field field) throws IllegalArgumentException, IllegalAccessException {
+				// 忽略静态属性和临时属性
+				if(Modifier.isTransient(field.getModifiers()) || Modifier.isStatic(field.getModifiers()) ||
+						field.isAnnotationPresent(javax.persistence.Transient.class)) {
+					return;
+				}
+				
+				// 主键
+				if(field.isAnnotationPresent(javax.persistence.Id.class)) {
+					tableInfo.setPrimaryKey(field.getName());
+				}
+				
 				columnTypeMap.put(field.getName(), field.getType());
 				try {
 					attrTypeMap.put(field.getName(), ColumnInfo.valueOf(clzz, field));
@@ -80,6 +94,12 @@ public class JdbcSupport {
         return oldModelInfo == null ? modelInfo : oldModelInfo;
     }
 
-
+    
+    
+    public static void main(String[] args) {
+		String sql = new JdbcSupport().getOrCreateModelInfo(dbcache.test.Entity.class).getOrCreateSelectSql(Dialect.getDefaultDialect());
+		System.out.println(sql);
+	}
+    
 
 }

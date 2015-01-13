@@ -21,58 +21,29 @@ import java.util.Map;
  */
 public class AsmUtils implements Opcodes {
 
-
+	
 	/**
-	 * 获取代理对象
-	 * @param proxyClass 代理类
-	 * @param entity 被代理实体
+	 * 获取get方法名
+	 * @param field 属性
+	 * @return
 	 */
-	@SuppressWarnings("unchecked")
-	public static <T> T getProxyEntity(Class<?> proxyClass, T entity) {
-		Class<?>[] paramTypes = { entity.getClass() };
-		Object[] params = { entity };
-		Constructor<?> con;
-		try {
-			con = proxyClass.getConstructor(paramTypes);
-			return (T) con.newInstance(params);
-		} catch (Exception e) {
-			e.printStackTrace();
+	public static String getGetterMethodName(Field field) {
+		if(field.getType() == boolean.class) {
+			return "is" + StringUtils.getUString(field.getName());
 		}
-		return null;
+		return "get" + StringUtils.getUString(field.getName());
 	}
-
-
+	
+	
 	/**
-	 * 获取代理对象
-	 * @param proxyClass 代理类
-	 * @param entity 被代理实体
-	 * @param constructParams 构造方法的参数
+	 * 获取set方法名
+	 * @param field 属性
+	 * @return
 	 */
-	@SuppressWarnings("unchecked")
-	public static <T> T getProxyEntity(Class<?> proxyClass, T entity, Object... constructParams) {
-
-		Class<?>[] paramTypes = new Class<?>[constructParams.length + 1];
-		paramTypes[0] = entity.getClass();
-		for(int i = 1; i < constructParams.length + 1;i ++) {
-			paramTypes[i] = constructParams[i - 1].getClass().getInterfaces()[0];
-		}
-
-		Object[] params = new Object[constructParams.length + 1];
-		params[0] = entity;
-		for(int i = 1; i < constructParams.length + 1;i ++) {
-			params[i] = constructParams[i - 1];
-		}
-
-		Constructor<?> con;
-		try {
-			con = proxyClass.getConstructor(paramTypes);
-			return (T) con.newInstance(params);
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		return null;
+	public static String getSetterMethodName(Field field) {
+		return "set" + StringUtils.getUString(field.getName());
 	}
-
+	
 
 	/**
 	 * 把类名中的"."替换为"/"
@@ -353,10 +324,31 @@ public class AsmUtils implements Opcodes {
 	 */
 	public static void withUnBoxingType(MethodVisitor mWriter, Type fieldType) {
 		if(fieldType == Type.VOID_TYPE) {
-			;
+			return;
 		} else if(fieldType == Type.INT_TYPE) {
 			mWriter.visitTypeInsn(CHECKCAST, "java/lang/Integer");
 			mWriter.visitMethodInsn(INVOKEVIRTUAL, "java/lang/Integer", "intValue", "()I");
+		} else if(fieldType == Type.BOOLEAN_TYPE) {
+			mWriter.visitTypeInsn(CHECKCAST, "java/lang/Boolean");
+			mWriter.visitMethodInsn(INVOKEVIRTUAL, "java/lang/Boolean", "booleanValue", "()Z");
+		} else if(fieldType == Type.BYTE_TYPE) {
+			mWriter.visitTypeInsn(CHECKCAST, "java/lang/Byte");
+			mWriter.visitMethodInsn(INVOKEVIRTUAL, "java/lang/Byte", "byteValue", "()B");
+		} else if(fieldType == Type.CHAR_TYPE) {
+			mWriter.visitTypeInsn(CHECKCAST, "java/lang/Character");
+			mWriter.visitMethodInsn(INVOKEVIRTUAL, "java/lang/Character", "charValue", "()C");
+		} else if(fieldType == Type.SHORT_TYPE) {
+			mWriter.visitTypeInsn(CHECKCAST, "java/lang/Short");
+			mWriter.visitMethodInsn(INVOKEVIRTUAL, "java/lang/Short", "shortValue", "()S");
+		} else if(fieldType == Type.FLOAT_TYPE) {
+			mWriter.visitTypeInsn(CHECKCAST, "java/lang/Float");
+			mWriter.visitMethodInsn(INVOKEVIRTUAL, "java/lang/Float", "floatValue", "()F");
+		} else if(fieldType == Type.LONG_TYPE) {
+			mWriter.visitTypeInsn(CHECKCAST, "java/lang/Long");
+			mWriter.visitMethodInsn(INVOKEVIRTUAL, "java/lang/Long", "longValue", "()J");
+		} else if(fieldType == Type.DOUBLE_TYPE) {
+			mWriter.visitTypeInsn(CHECKCAST, "java/lang/Double");
+			mWriter.visitMethodInsn(INVOKEVIRTUAL, "java/lang/Double", "doubleValue", "()D");
 		}
 	}
 
