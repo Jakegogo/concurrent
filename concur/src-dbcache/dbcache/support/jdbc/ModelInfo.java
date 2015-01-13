@@ -2,9 +2,7 @@ package dbcache.support.jdbc;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Entity信息
@@ -21,6 +19,9 @@ public class ModelInfo {
     // 属性信息
     @SuppressWarnings("rawtypes")
 	private Map<String, ColumnInfo> attrTypeMap = new LinkedHashMap<String, ColumnInfo>();
+
+	// 属性列表
+	private List<ColumnInfo> columnInfos;
     
     // 查询语句
     private String selectSql;
@@ -129,15 +130,18 @@ public class ModelInfo {
      */
     @SuppressWarnings("unchecked")
 	public Object generateEntity(ResultSet rs) throws InstantiationException, IllegalAccessException, SQLException {
-    	Object instance = clzz.newInstance();
+		if (rs.next()) {
+			Object instance = clzz.newInstance();
+
+			int columnIndex = 1;
+			for (ColumnInfo<Object> columnInfo : this.columnInfos) {
+				columnInfo.setValue(instance, rs.getObject(columnIndex));
+				columnIndex++;
+			}
+			return instance;
+		}
     	
-    	int columnIndex = 1;
-    	for(ColumnInfo<Object> columnInfo : this.attrTypeMap.values()) {
-    		columnInfo.setValue(instance, rs.getObject(columnIndex));
-    		columnIndex ++;
-    	}
-    	
-		return instance;
+		return null;
 	}
     
 
@@ -168,6 +172,7 @@ public class ModelInfo {
 	public void setAttrTypeMap(Map<String, ColumnInfo> attrTypeMap) {
 		this.attrTypeMap = attrTypeMap;
 		this.findByColumnSqlMap = new HashMap<String, String>(attrTypeMap.size());
+		this.columnInfos = new ArrayList<ColumnInfo>(attrTypeMap.values());
 	}
 
 	public String getSelectSql() {

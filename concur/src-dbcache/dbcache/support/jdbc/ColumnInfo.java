@@ -1,16 +1,18 @@
 package dbcache.support.jdbc;
 
-import java.lang.reflect.Field;
-
 import dbcache.support.asm.AsmAccessHelper;
 import dbcache.support.asm.ValueGetter;
 import dbcache.support.asm.ValueSetter;
+
+import java.lang.reflect.Field;
 
 /**
  * 字段信息 
  * Created by Jake on 2015/1/12.
  */
 public class ColumnInfo<T> {
+
+	private String name;
 
 	private ValueGetter<T> attrGetter;
 
@@ -26,9 +28,18 @@ public class ColumnInfo<T> {
 	 */
 	public static <T> ColumnInfo<T> valueOf(Class<T> clazz, Field field) throws Exception {
 		ColumnInfo<T> columnInfo = new ColumnInfo<T>();
+		columnInfo.name = field.getName();
 		columnInfo.attrGetter = AsmAccessHelper.createFieldGetter(clazz, field);
 		columnInfo.attrSetter = AsmAccessHelper.createFieldSetter(clazz, field);
 		return columnInfo;
+	}
+
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
 	}
 
 	public ValueGetter<T> getAttrGetter() {

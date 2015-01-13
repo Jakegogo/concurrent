@@ -1,8 +1,8 @@
 package dbcache.service.impl;
 
 import dbcache.service.DbAccessService;
+import dbcache.support.jdbc.JdbcSupport;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 
 import java.io.Serializable;
@@ -18,7 +18,7 @@ public class JdbcDbAccessServiceImpl implements DbAccessService {
 
 
 	@Autowired
-	private JdbcTemplate jdbcTemplate;
+	private JdbcSupport jdbcSupport;
 
 	/**
 	 * 根据主键id取得实体对象
@@ -28,7 +28,7 @@ public class JdbcDbAccessServiceImpl implements DbAccessService {
 	 */
 	@Override
 	public <T> T get(Class<T> entityClazz, Serializable id) {
-		return null;
+		return jdbcSupport.get(entityClazz, id);
 	}
 
 
