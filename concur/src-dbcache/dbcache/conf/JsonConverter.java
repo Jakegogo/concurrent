@@ -1,6 +1,7 @@
 package dbcache.conf;
 
 import com.alibaba.fastjson.JSON;
+
 import dbcache.support.asm.AsmAccessHelper;
 import dbcache.support.asm.ValueGetter;
 import dbcache.support.asm.ValueSetter;
@@ -56,8 +57,8 @@ public class JsonConverter<T> implements Cloneable {
      * @param value json串属性名
      * @return
      */
-    public static <T> JsonConverter valueof(Class<T> clz, Field field, String value) throws Exception {
-        JsonConverter jsonConvertConfig = new JsonConverter();
+    public static <T> JsonConverter<T> valueof(Class<T> clz, Field field, String value) throws Exception {
+        JsonConverter<T> jsonConvertConfig = new JsonConverter<T>();
         jsonConvertConfig.sourceGetter = AsmAccessHelper.createFieldGetter(clz, clz.getDeclaredField(value));
         jsonConvertConfig.sourceSetter = AsmAccessHelper.createFieldSetter(clz, clz.getDeclaredField(value));
         jsonConvertConfig.targetType = field.getGenericType();
@@ -73,7 +74,8 @@ public class JsonConverter<T> implements Cloneable {
      */
     public JsonConverter<T> clone() {
         try {
-            JsonConverter<T> instance = (JsonConverter<T>) super.clone();
+            @SuppressWarnings("unchecked")
+			JsonConverter<T> instance = (JsonConverter<T>) super.clone();
             instance.sourceGetter = this.sourceGetter.clone();
             instance.targetSetter = this.targetSetter.clone();
             return instance;

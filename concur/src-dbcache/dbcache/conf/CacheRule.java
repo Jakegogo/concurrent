@@ -1,6 +1,5 @@
 package dbcache.conf;
 
-import java.io.Serializable;
 
 /**
  * 缓存规则合集

@@ -117,7 +117,7 @@ public class CacheObject<T extends IEntity<?>> {
 
 		// 初始化json自动转换属性
 		if(!this.jsonConverters.isEmpty()) {
-			for(JsonConverter jsonConverter : this.jsonConverters) {
+			for(JsonConverter<T> jsonConverter : this.jsonConverters) {
 				jsonConverter.doConvert(this.entity);
 			}
 		}
@@ -134,7 +134,7 @@ public class CacheObject<T extends IEntity<?>> {
 		}
 		// json持久化
 		if(!this.jsonConverters.isEmpty()) {
-			for(JsonConverter jsonConverter : this.jsonConverters) {
+			for(JsonConverter<T> jsonConverter : this.jsonConverters) {
 				jsonConverter.doPersist(this.entity);
 			}
 		}

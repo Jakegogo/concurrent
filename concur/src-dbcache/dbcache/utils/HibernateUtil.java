@@ -60,7 +60,7 @@ public class HibernateUtil extends DaoSupport {
 
     @Override
     protected final void checkDaoConfig() {
-        if (this.hibernateTemplate == null) {
+        if (hibernateTemplate == null) {
             throw new IllegalArgumentException("'sessionFactory' or 'hibernateTemplate' is required");
         }
     }
