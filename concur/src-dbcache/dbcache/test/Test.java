@@ -266,12 +266,12 @@ public class Test {
 
 	@org.junit.Test
 	public void t10() {
-
+		long t1 = System.currentTimeMillis();
 		Entity entity = this.cacheService.get(1l);
 
-		entity.setNum(201);
+		entity.setNum(202);
 
-		List<Entity> list = this.cacheService.listByIndex(Entity.NUM_INDEX, 201);
+		List<Entity> list = this.cacheService.listByIndex(Entity.NUM_INDEX, 202);
 
 		assert list.size() == 1;
 
@@ -283,6 +283,7 @@ public class Test {
 		entity.getFriendSet().add(4l);
 //		entity.getClass()
 		this.cacheService.submitUpdate(entity);
+		System.out.println("use time :" + (System.currentTimeMillis() - t1));
 	}
 
 

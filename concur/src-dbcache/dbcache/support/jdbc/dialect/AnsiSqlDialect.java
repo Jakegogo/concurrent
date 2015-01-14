@@ -31,8 +31,21 @@ import java.util.Set;
  */
 public class AnsiSqlDialect extends Dialect {
 	
-	public String forTableInfoBuilderDoBuildTableInfo(String tableName) {
-		return "select * from " + tableName + " where 1 = 2";
+	public String forTableInfoBuilderDoBuildTableInfo(TableInfo tInfo, String tableName) {
+		StringBuilder sql = new StringBuilder("select ");
+		boolean first = true;
+		for (String column : tInfo.getColumnTypeMap().keySet()) {
+			if (!first) {
+				sql.append(", ");
+			} else {
+				first = false;
+			}
+			sql.append(column.trim());
+		}
+		sql.append(" from ");
+		sql.append(tInfo.getTableName());
+		sql.append(" where 1 = 2");
+		return sql.toString();
 	}
 	
 	public void forModelSave(TableInfo tableInfo, StringBuilder sql) {
@@ -134,6 +147,19 @@ public class AnsiSqlDialect extends Dialect {
 		return sql.toString();
 	}
 	
+	@Override
+	public String forModelFindIdByColumn(TableInfo tInfo, String columnName) {
+		if(!tInfo.hasColumnLabel(columnName)) {
+			throw new IllegalArgumentException("column [" + columnName + "] not found in " + tInfo.getTableName());
+		}
+		StringBuilder sql = new StringBuilder("select ");
+		sql.append(tInfo.getPrimaryKey().trim());
+		sql.append(" from ");
+		sql.append(tInfo.getTableName());
+		sql.append(" where ").append(columnName).append(" = ?");
+		return sql.toString();
+	}
+	
 
 	/**
 	 * SELECT * FROM subject t1 WHERE (SELECT count(*) FROM subject t2 WHERE t2.id < t1.id AND t2.key = '123') > = 10 AND (SELECT count(*) FROM subject t2 WHERE t2.id < t1.id AND t2.key = '123') < 20 AND t1.key = '123'
@@ -144,6 +170,19 @@ public class AnsiSqlDialect extends Dialect {
 	
 	public boolean isTakeOverDbPaginate() {
 		return true;
+	}
+
+	@Override
+	public String forModelSelectMax(TableInfo tInfo, String columnName) {
+		if(!tInfo.hasColumnLabel(columnName)) {
+			throw new IllegalArgumentException("column [" + columnName + "] not found in " + tInfo.getTableName());
+		}
+		StringBuilder sql = new StringBuilder("select ");
+		sql.append("max(").append(columnName.trim()).append(")");
+		sql.append(" from ");
+		sql.append(tInfo.getTableName());
+		sql.append(" where ").append(columnName).append(" >= ? and ").append(columnName).append(" < ?");
+		return sql.toString();
 	}
 
 	

@@ -7,30 +7,57 @@ import dbcache.support.asm.ValueSetter;
 import java.lang.reflect.Field;
 
 /**
- * 字段信息 
+ * 实体属性信息 
  * Created by Jake on 2015/1/12.
  */
-public class ColumnInfo<T> {
-
+public class AttributeInfo<T> {
+	
+	/**
+	 * 属性名
+	 */
 	private String name;
-
-	private ValueGetter<T> attrGetter;
-
-	private ValueSetter<T> attrSetter;
+	
+	/**
+	 * 字段名
+	 */
+	private String columnName;
 
 	/**
-	 * 获取实例
-	 * 
-	 * @param field
-	 *            属性
-	 * @return
-	 * @throws Exception 
+	 * 属性获值器
 	 */
-	public static <T> ColumnInfo<T> valueOf(Class<T> clazz, Field field) throws Exception {
-		ColumnInfo<T> columnInfo = new ColumnInfo<T>();
+	private ValueGetter<T> attrGetter;
+	
+	/**
+	 * 属性设值器
+	 */
+	private ValueSetter<T> attrSetter;
+	
+	/**
+	 * 序号
+	 */
+	private int index;
+	
+	/**
+	 * sql字段类型
+	 */
+	private int sqlType;
+	
+	/**
+	 * 获取实例
+	 * @param clazz 实体类
+	 * @param field 属性
+	 * @param columnName 表字段名
+	 * @param index 序号
+	 * @return
+	 * @throws Exception
+	 */
+	public static <T> AttributeInfo<T> valueOf(Class<T> clazz, Field field, String columnName, int index) throws Exception {
+		AttributeInfo<T> columnInfo = new AttributeInfo<T>();
 		columnInfo.name = field.getName();
+		columnInfo.setColumnName(columnName);
 		columnInfo.attrGetter = AsmAccessHelper.createFieldGetter(clazz, field);
 		columnInfo.attrSetter = AsmAccessHelper.createFieldSetter(clazz, field);
+		columnInfo.index = index;
 		return columnInfo;
 	}
 
@@ -66,6 +93,30 @@ public class ColumnInfo<T> {
 	 */
 	public void setValue(T object, Object value) {
 		this.attrSetter.set(object, value);
+	}
+
+	public String getColumnName() {
+		return columnName;
+	}
+
+	public void setColumnName(String columnName) {
+		this.columnName = columnName;
+	}
+
+	public int getIndex() {
+		return index;
+	}
+
+	public void setIndex(int index) {
+		this.index = index;
+	}
+
+	public int getSqlType() {
+		return sqlType;
+	}
+
+	public void setSqlType(int sqlType) {
+		this.sqlType = sqlType;
 	}
 
 }

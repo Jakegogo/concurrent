@@ -23,7 +23,7 @@ public class Config {
 	
 	int transactionLevel = Connection.TRANSACTION_READ_COMMITTED;
 	
-	boolean showSql = false;
+	boolean showSql = true;
 	boolean devMode = false;
 	Dialect dialect = Dialect.getDefaultDialect();
 	

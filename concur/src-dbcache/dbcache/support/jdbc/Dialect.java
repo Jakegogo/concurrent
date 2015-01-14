@@ -31,14 +31,16 @@ import java.util.Set;
  */
 public abstract class Dialect {
 
-	public abstract String forTableInfoBuilderDoBuildTableInfo(String tableName);
+	public abstract String forTableInfoBuilderDoBuildTableInfo(TableInfo tInfo, String tableName);
 	public abstract void forModelSave(TableInfo tableInfo, StringBuilder sql);
 	public abstract String forModelDeleteById(TableInfo tInfo);
 	public abstract void forModelUpdate(TableInfo tableInfo, StringBuilder sql);
 	public abstract void forDbUpdate(TableInfo tableInfo, Map<String, Object> attrs, Set<String> modifyFlag, String pKey, StringBuilder sql);
 	public abstract String forModelFindById(TableInfo tInfo);
 	public abstract String forModelFindByColumn(TableInfo tInfo, String columnName);
+	public abstract String forModelFindIdByColumn(TableInfo tInfo, String columnName);
 	public abstract void forPaginate(StringBuilder sql, int pageNumber, int pageSize, String select, String sqlExceptSelect);
+	public abstract String forModelSelectMax(TableInfo tInfo, String columnName);
 	
 	public boolean isOracle() {
 		return false;

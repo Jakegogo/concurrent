@@ -38,7 +38,7 @@ public class JdbcDbAccessServiceImpl implements DbAccessService {
 	 */
 	@Override
 	public <T> void save(T entity) {
-
+		jdbcSupport.save(entity);
 	}
 
 
@@ -48,7 +48,7 @@ public class JdbcDbAccessServiceImpl implements DbAccessService {
 	 */
 	@Override
 	public <T> void update(T entity) {
-
+		jdbcSupport.update(entity);
 	}
 
 
@@ -59,7 +59,7 @@ public class JdbcDbAccessServiceImpl implements DbAccessService {
 	@Override
 	public <T> void delete(T entity) {
 		if (entity != null) {
-
+			jdbcSupport.delete(entity);
 		}
 	}
 
@@ -71,7 +71,7 @@ public class JdbcDbAccessServiceImpl implements DbAccessService {
 	 */
 	@Override
 	public Object loadMaxId(Class<?> entityClazz) {
-		return null;
+		return jdbcSupport.getMaxPrimaryKey(entityClazz, 0l, Long.MAX_VALUE);
 	}
 
 
@@ -84,7 +84,7 @@ public class JdbcDbAccessServiceImpl implements DbAccessService {
 	 */
 	@Override
 	public Object loadMaxId(Class<?> entityClazz, long minValue, long maxValue) {
-		return null;
+		return jdbcSupport.getMaxPrimaryKey(entityClazz, minValue, maxValue);
 	}
 
 
@@ -95,7 +95,7 @@ public class JdbcDbAccessServiceImpl implements DbAccessService {
 	public Collection<?> listIdByIndex(
 			Class<?> entityClazz, String fieldName,
 			Object fieldValue) {
-		return null;
+		return jdbcSupport.listIdByAttr(entityClazz, fieldName, fieldValue);
 	}
 
 

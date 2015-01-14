@@ -32,8 +32,21 @@ import java.util.Set;
  */
 public class OracleDialect extends Dialect {
 	
-	public String forTableInfoBuilderDoBuildTableInfo(String tableName) {
-		return "select * from " + tableName + " where rownum = 0";
+	public String forTableInfoBuilderDoBuildTableInfo(TableInfo tInfo, String tableName) {
+		StringBuilder sql = new StringBuilder("select ");
+		boolean first = true;
+		for (String column : tInfo.getColumnTypeMap().keySet()) {
+			if (!first) {
+				sql.append(", ");
+			} else {
+				first = false;
+			}
+			sql.append(column.trim());
+		}
+		sql.append(" from ");
+		sql.append(tInfo.getTableName());
+		sql.append(" where rownum = 0");
+		return sql.toString();
 	}
 	
 	// insert into table (id,name) values(seq.nextval, ？)
@@ -133,6 +146,19 @@ public class OracleDialect extends Dialect {
 		sql.append(" where ").append(columnName).append(" = ?");
 		return sql.toString();
 	}
+	
+	@Override
+	public String forModelFindIdByColumn(TableInfo tInfo, String columnName) {
+		if(!tInfo.hasColumnLabel(columnName)) {
+			throw new IllegalArgumentException("column [" + columnName + "] not found in " + tInfo.getTableName());
+		}
+		StringBuilder sql = new StringBuilder("select ");
+		sql.append(tInfo.getPrimaryKey().trim());
+		sql.append(" from ");
+		sql.append(tInfo.getTableName());
+		sql.append(" where ").append(columnName).append(" = ?");
+		return sql.toString();
+	}
 
 	public void forPaginate(StringBuilder sql, int pageNumber, int pageSize, String select, String sqlExceptSelect) {
 		int satrt = (pageNumber - 1) * pageSize + 1;
@@ -169,6 +195,19 @@ public class OracleDialect extends Dialect {
 	
 	public String getDefaultPrimaryKey() {
 		return "ID";
+	}
+
+	@Override
+	public String forModelSelectMax(TableInfo tInfo, String columnName) {
+		if(!tInfo.hasColumnLabel(columnName)) {
+			throw new IllegalArgumentException("column [" + columnName + "] not found in " + tInfo.getTableName());
+		}
+		StringBuilder sql = new StringBuilder("select ");
+		sql.append("max(").append(columnName.trim()).append(")");
+		sql.append(" from ");
+		sql.append(tInfo.getTableName());
+		sql.append(" where ").append(columnName).append(" >= ? and ").append(columnName).append(" < ?");
+		return sql.toString();
 	}
 
 
