@@ -1,11 +1,13 @@
 package dbcache.test;
 
 import dbcache.support.asm.EntityAsmFactory;
+import dbcache.support.jdbc.JdbcSupport;
 import dbcache.service.Cache;
 import dbcache.service.DbCacheService;
 import dbcache.utils.*;
 import javassist.CannotCompileException;
 import javassist.NotFoundException;
+
 import org.apache.mina.util.ConcurrentHashSet;
 import org.hibernate.criterion.DetachedCriteria;
 import org.hibernate.criterion.Projections;
@@ -18,6 +20,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import javax.annotation.Resource;
+
 import java.io.Serializable;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
@@ -32,6 +35,9 @@ public class Test {
 
 	@Autowired
 	private DbCacheService<Entity, Long> cacheService;
+	
+	@Autowired
+	private JdbcSupport jdbcSupport;
 
 	public void setCacheService(DbCacheService<Entity, Long> cacheService) {
 		this.cacheService = cacheService;
@@ -270,6 +276,7 @@ public class Test {
 		Entity entity = this.cacheService.get(1l);
 
 		entity.setNum(202);
+		entity.setA(new byte[100]);
 
 		List<Entity> list = this.cacheService.listByIndex(Entity.NUM_INDEX, 202);
 
@@ -364,5 +371,12 @@ public class Test {
 		System.out.println(userNameCache.get("test"));
 	}
 
+	
+	@org.junit.Test
+	public void t18() {
+		List<List> list = jdbcSupport.listBySql(List.class, "select * from entity");
+		System.out.println(list);
+	}
+	
 
 }

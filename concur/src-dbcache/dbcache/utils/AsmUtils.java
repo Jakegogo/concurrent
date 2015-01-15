@@ -1,17 +1,21 @@
 package dbcache.utils;
 
-import org.objectweb.asm.*;
-
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.LinkedHashMap;
 import java.util.Map;
+
+import org.objectweb.asm.ClassReader;
+import org.objectweb.asm.ClassVisitor;
+import org.objectweb.asm.Label;
+import org.objectweb.asm.MethodVisitor;
+import org.objectweb.asm.Opcodes;
+import org.objectweb.asm.Type;
 
 /**
  * 类操作的工具集
@@ -21,6 +25,33 @@ import java.util.Map;
  */
 public class AsmUtils implements Opcodes {
 
+	
+	/**
+	 * 是否为基本类型的包装类
+	 * @param clz 目标类型
+	 * @return
+	 */
+	public static boolean isWrapClass(Class<?> clz) {
+		if(clz.isPrimitive()) {
+			return false;
+		}
+        try { 
+        	return ((Class<?>) clz.getField("TYPE").get(null)).isPrimitive();
+        } catch (Exception e) { 
+        	return false; 
+        } 
+    }
+	
+	
+	/**
+	 * 是否基本类型(包括包装类型)
+	 * @param clzz 目标类型
+	 * @return
+	 */
+	public static boolean isBaseType(Class<?> clzz) {
+		return clzz.isPrimitive() || clzz == Object.class || isWrapClass(clzz);
+	}
+	
 	
 	/**
 	 * 获取get方法名

@@ -1,12 +1,6 @@
 package dbcache.support.jdbc;
 
-import dbcache.utils.StringUtils;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-import org.springframework.util.ReflectionUtils;
-import org.springframework.util.ReflectionUtils.FieldCallback;
-
+import java.lang.reflect.Array;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.sql.Connection;
@@ -14,15 +8,24 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+import org.springframework.util.ReflectionUtils;
+import org.springframework.util.ReflectionUtils.FieldCallback;
+
+import dbcache.utils.AsmUtils;
+import dbcache.utils.StringUtils;
+
 /**
  * Jdbc Dao支持
- * <br/> 支持javax.persistence.*注解
+ * <br/> 支持javax.persistence部分注解
  * Created by Jake on 2015/1/10.
  */
 @Component
@@ -57,6 +60,7 @@ public class JdbcSupport {
 			config.dialect.fillStatement(pst, id);
 			
 			rs = pst.executeQuery();
+			
 			return (T) modelInfo.generateEntity(rs);
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -87,6 +91,7 @@ public class JdbcSupport {
 			config.dialect.fillStatement(pst, params);
 			
 			int result = pst.executeUpdate();
+			
 			return result > 0;
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -117,6 +122,7 @@ public class JdbcSupport {
 			config.dialect.fillStatement(pst, params);
 			
 			int result = pst.executeUpdate();
+			
 			return result > 0;
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -147,6 +153,7 @@ public class JdbcSupport {
 			config.dialect.fillStatement(pst, param);
 			
 			int result = pst.executeUpdate();
+			
 			return result > 0;
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -179,6 +186,7 @@ public class JdbcSupport {
 			config.dialect.fillStatement(pst, attrValue);
 			
 			rs = pst.executeQuery();
+			
 			return (List<T>) modelInfo.generateEntityList(rs);
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -212,6 +220,7 @@ public class JdbcSupport {
 			config.dialect.fillStatement(pst, attrValue);
 			
 			rs = pst.executeQuery();
+			
 			return (List<T>) modelInfo.generateIdList(rs);
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -244,6 +253,7 @@ public class JdbcSupport {
 			config.dialect.fillStatement(pst, minValue, maxValue);
 			
 			rs = pst.executeQuery();
+			
 			return modelInfo.generateUniqueResult(rs);
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -277,6 +287,7 @@ public class JdbcSupport {
 			config.dialect.fillStatement(pst, params);
 			
 			rs = pst.executeQuery();
+			
 			return (List<T>) modelInfo.generateEntityList(rs);
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -289,14 +300,139 @@ public class JdbcSupport {
     
     
     /**
+     * 根据Sql查询对象列表
+     * @param clzz 实体类
+     * @param sql SQL语句
+     * @param params 参数列表
+     * @param <T> 类泛型
+     * @return
+     */
+    public <T> List<T> listBySql(final Class<T> clzz, String sql, Object... params) {
+    	// 非基本类型
+    	if (!AsmUtils.isBaseType(clzz) && !clzz.isArray() && !List.class.isAssignableFrom(clzz)) {
+    		return this.listEntityBySql(clzz, sql, params);
+    	}
+    	
+    	Connection conn = null;
+    	PreparedStatement pst = null;
+    	ResultSet rs = null;
+    	try {
+	    	conn = config.getConnection();
+	    	
+			pst = conn.prepareStatement(sql);
+			config.dialect.fillStatement(pst, params);
+			
+			rs = pst.executeQuery();
+			
+			return (List<T>) this.generateObjectList(rs, clzz);
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			config.close(rs, pst, conn);
+		}
+    	
+    	return null;
+    }
+    
+    
+    /**
+     * 根据Sql查询对象列表
+     * @param clzz 实体类
+     * @param sql SQL语句
+     * @param params 参数列表
+     * @param <T> 类泛型
+     * @return
+     */
+    public <T> List<T> listBySql(String sql, RowMapper<T> rowMapper, Object... params) {
+    	
+    	Connection conn = null;
+    	PreparedStatement pst = null;
+    	ResultSet rs = null;
+    	try {
+	    	conn = config.getConnection();
+	    	
+			pst = conn.prepareStatement(sql);
+			config.dialect.fillStatement(pst, params);
+			
+			rs = pst.executeQuery();
+			
+			return this.generateObjectList(rs, rowMapper);
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			config.close(rs, pst, conn);
+		}
+    	
+    	return null;
+    }
+    
+    
+    /**
+     * 生成查询结果列表
+     * @param rs ResultSet
+     * @param clzz Class<?>
+     * @return
+     * @throws SQLException 
+     */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
+	private <T> List<T> generateObjectList(ResultSet rs, Class<T> clzz) throws SQLException {
+    	List list = new ArrayList();
+    	
+    	if (clzz.isArray()) {
+    		int colAmount = rs.getMetaData().getColumnCount();
+    		Class<?> elementType = clzz.getComponentType();
+    		while (rs.next()) {
+    			Object[] row = (Object[]) Array.newInstance(elementType, colAmount);
+    			for (int i = 1; i <= colAmount;i++) {
+    				row[i - 1] = rs.getObject(i);
+    			}
+    			list.add(row);
+    		}
+    	} else if(List.class.isAssignableFrom(clzz)) {
+    		int colAmount = rs.getMetaData().getColumnCount();
+    		while (rs.next()) {
+    			List row = new ArrayList(colAmount);
+    			for (int i = 1; i <= colAmount;i++) {
+    				row.add(rs.getObject(i));
+    			}
+    			list.add(row);
+    		}
+    	} else {
+    		while (rs.next()) {
+    			list.add(rs.getObject(1));
+    		}
+    	}
+    	
+		return list;
+	}
+    
+    
+    /**
+     * 生成查询结果列表
+     * @param rs ResultSet
+     * @param rowMapper RowMapper<T>
+     * @return
+     * @throws SQLException
+     */
+    private <T> List<T> generateObjectList(ResultSet rs, RowMapper<T> rowMapper) throws SQLException {
+    	List<T> results = new ArrayList<T>();
+		int rowNum = 0;
+		while (rs.next()) {
+			results.add(rowMapper.mapRow(rs, rowNum++));
+		}
+		return results;
+    }
+    
+
+	/**
      * 获取或创建实体信息
      * @param clzz 实体类
      * @return
      */
     public ModelInfo getOrCreateModelInfo(final Class<?> clzz) {
     	// 基本类型
-    	if(clzz.isPrimitive()) {
-    		
+    	if (AsmUtils.isBaseType(clzz)) {
+    		throw new IllegalArgumentException("类型:" + clzz + "为基本类型,无法映射数据库.");
     	}
     	
     	ModelInfo modelInfoCached = modelInfoCache.get(clzz);
@@ -328,8 +464,10 @@ public class JdbcSupport {
     	
     	// 遍历属性信息
     	ReflectionUtils.doWithFields(clzz, new FieldCallback() {
+    		
 			@SuppressWarnings("unchecked")
 			public void doWith(Field field) throws IllegalArgumentException, IllegalAccessException {
+				
 				// 忽略静态属性和临时属性
 				if(Modifier.isTransient(field.getModifiers()) || Modifier.isStatic(field.getModifiers()) ||
 						field.isAnnotationPresent(javax.persistence.Transient.class)) {
