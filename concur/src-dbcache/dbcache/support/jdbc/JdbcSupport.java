@@ -64,11 +64,10 @@ public class JdbcSupport {
 			return (T) modelInfo.generateEntity(rs);
 		} catch (Exception e) {
 			e.printStackTrace();
+			throw new JdbcExecuteException(e);
 		} finally {
 			config.close(rs, pst, conn);
 		}
-    	
-    	return null;
     }
     
     
@@ -95,10 +94,10 @@ public class JdbcSupport {
 			return result > 0;
 		} catch (Exception e) {
 			e.printStackTrace();
+			throw new JdbcExecuteException(e);
 		} finally {
 			config.close(pst, conn);
 		}
-    	return false;
     }
     
     
@@ -126,10 +125,10 @@ public class JdbcSupport {
 			return result > 0;
 		} catch (Exception e) {
 			e.printStackTrace();
+			throw new JdbcExecuteException(e);
 		} finally {
 			config.close(pst, conn);
 		}
-    	return false;
     }
     
     
@@ -157,10 +156,10 @@ public class JdbcSupport {
 			return result > 0;
 		} catch (Exception e) {
 			e.printStackTrace();
+			throw new JdbcExecuteException(e);
 		} finally {
 			config.close(pst, conn);
 		}
-    	return false;
     }
     
     
@@ -190,11 +189,11 @@ public class JdbcSupport {
 			return (List<T>) modelInfo.generateEntityList(rs);
 		} catch (Exception e) {
 			e.printStackTrace();
+			throw new JdbcExecuteException(e);
 		} finally {
 			config.close(rs, pst, conn);
 		}
-    	
-    	return null;
+
     }
     
     
@@ -205,8 +204,7 @@ public class JdbcSupport {
      * @param attrValue 属性值
      * @return
      */
-    @SuppressWarnings("unchecked")
-	public <T> List<T> listIdByAttr(final Class<T> clzz, String attrName, Object attrValue) {
+    public List<?> listIdByAttr(final Class<?> clzz, String attrName, Object attrValue) {
     	ModelInfo modelInfo = getOrCreateModelInfo(clzz);
     	String sql = modelInfo.getOrCreateFindIdByAttributeSql(config.dialect, attrName);
     	
@@ -221,14 +219,14 @@ public class JdbcSupport {
 			
 			rs = pst.executeQuery();
 			
-			return (List<T>) modelInfo.generateIdList(rs);
+			return modelInfo.generateIdList(rs);
 		} catch (Exception e) {
 			e.printStackTrace();
+			throw new JdbcExecuteException(e);
 		} finally {
 			config.close(rs, pst, conn);
 		}
     	
-    	return null;
     }
     
     
@@ -257,11 +255,11 @@ public class JdbcSupport {
 			return modelInfo.generateUniqueResult(rs);
 		} catch (Exception e) {
 			e.printStackTrace();
+			throw new JdbcExecuteException(e);
 		} finally {
 			config.close(rs, pst, conn);
 		}
-    	
-    	return null;
+
     }
     
     
@@ -291,11 +289,11 @@ public class JdbcSupport {
 			return (List<T>) modelInfo.generateEntityList(rs);
 		} catch (Exception e) {
 			e.printStackTrace();
+			throw new JdbcExecuteException(e);
 		} finally {
 			config.close(rs, pst, conn);
 		}
     	
-    	return null;
     }
     
     
@@ -327,11 +325,11 @@ public class JdbcSupport {
 			return (List<T>) this.generateObjectList(rs, clzz);
 		} catch (Exception e) {
 			e.printStackTrace();
+			throw new JdbcExecuteException(e);
 		} finally {
 			config.close(rs, pst, conn);
 		}
     	
-    	return null;
     }
     
     
@@ -359,11 +357,11 @@ public class JdbcSupport {
 			return this.generateObjectList(rs, rowMapper);
 		} catch (Exception e) {
 			e.printStackTrace();
+			throw new JdbcExecuteException(e);
 		} finally {
 			config.close(rs, pst, conn);
 		}
     	
-    	return null;
     }
     
     
@@ -540,6 +538,7 @@ public class JdbcSupport {
 			buildTypes(rsmd, attrTypeMap);
 		} catch (Exception e) {
 			e.printStackTrace();
+			throw new JdbcExecuteException(e);
 		} finally {
 			config.close(rs, pst, conn);
 		}

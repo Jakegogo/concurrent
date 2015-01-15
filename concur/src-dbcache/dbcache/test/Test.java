@@ -50,12 +50,10 @@ public class Test {
 
 	// 用户名 - ID 缓存
 	private CommonCache<ConcurrentHashSet<Integer>> userNameCache = CacheUtils.cacheBuilder(new CacheQuerier<ConcurrentHashSet<Integer>>() {
+		@SuppressWarnings("unchecked")
 		@Override
 		public ConcurrentHashSet<Integer> query(Object... keys) {
-			DetachedCriteria dc = DetachedCriteria.forClass(Entity.class)
-					.add(Restrictions.eq("name", keys[0]))
-					.setProjection(Projections.id());
-			List list = dc.getExecutableCriteria(HibernateUtil.getSession()).list();
+			List list = JdbcUtil.listIdByAttr(Entity.class, "name", keys[0]);
 			if (list != null && list.size() > 0) {
 				return new ConcurrentHashSet<Integer>(list);
 			} else {
