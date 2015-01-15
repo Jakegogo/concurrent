@@ -1,28 +1,25 @@
 package dbcache.test;
 
-import java.io.*;
-import java.lang.reflect.*;
+import sun.misc.JavaNetAccess;
+import sun.misc.Resource;
+import sun.misc.SharedSecrets;
+import sun.misc.URLClassPath;
+
+import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.nio.ByteBuffer;
-import java.security.AccessControlContext;
-import java.security.AccessController;
 import java.security.CodeSigner;
 import java.security.CodeSource;
-import java.security.PermissionCollection;
-import java.security.PrivilegedAction;
 import java.security.SecureClassLoader;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
-
-import sun.misc.JavaNetAccess;
-import sun.misc.Resource;
-import sun.misc.SharedSecrets;
-import sun.misc.URLClassPath;
 
 /**
  * The class loader used for loading from java.class.path. runs in a restricted
