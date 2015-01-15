@@ -10,7 +10,8 @@ import java.lang.annotation.Target;
 
 /**
  * 实体缓存配置注解
- * 没有标注此注解的实体类则使用默认配置
+ * <br/>没有标注此注解的实体类则使用默认配置(取default值)
+ * <br/>实体自增Id使用包装类型:Long.class,DbCacheService将会自动生成并注入
  * @author Jake
  * @date 2014年9月13日下午1:38:22
  */
@@ -34,7 +35,8 @@ public @interface Cached {
 
 
 	/**
-	 * 实体缓存大小上限,默认值100000
+	 * 实体缓存大小上限
+	 * 默认值100000
 	 * @return
 	 */
 	public int entitySize() default 100000;
@@ -42,12 +44,14 @@ public @interface Cached {
 
 	/**
 	 * 索引缓存大小,不设置则用entityCache同一个缓存的entitySize
+	 * 默认值读配置文件
 	 * @return
 	 */
 	public int indexSize() default 0;
 
 	/**
-	 * 并发线程数,默认为运行时CPU核数
+	 * 并发线程数
+	 * 默认为运行时CPU核数
 	 * @return
 	 */
 	public int concurrencyLevel() default 0;

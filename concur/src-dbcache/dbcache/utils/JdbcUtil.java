@@ -35,8 +35,7 @@ public class JdbcUtil implements ApplicationContextAware {
      * @param id 主键
      * @return
      */
-    @SuppressWarnings("unchecked")
-	public static <T> T get(final Class<T> clzz, Object id) {
+    public static <T> T get(final Class<T> clzz, Object id) {
     	return jdbcSupport.get(clzz, id);
     }
     

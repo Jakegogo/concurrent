@@ -7,11 +7,13 @@ import dbcache.conf.CacheType;
 import dbcache.conf.PersistType;
 import dbcache.model.EntityInitializer;
 import dbcache.model.IEntity;
+
 import org.apache.mina.util.ConcurrentHashSet;
 import org.hibernate.annotations.Index;
 
 import javax.persistence.Id;
 import javax.persistence.Transient;
+
 import java.lang.reflect.Method;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -114,6 +116,13 @@ public class Entity implements EntityInitializer, IEntity<Long> {
 	@Override
 	public int hashCode() {
 		return 305668771 + 1793910479 * this.getId().hashCode();
+	}
+	
+	
+
+	@Override
+	public String toString() {
+		return "测试";
 	}
 
 	@Override

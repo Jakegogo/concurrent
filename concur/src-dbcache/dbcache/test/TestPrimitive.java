@@ -5,7 +5,7 @@ public static void main(String[] args) throws Exception {
         System.out.println(isWrapClass(Long.class));
         System.out.println(isWrapClass(Integer.class));
         System.out.println(isWrapClass(String.class)); 
-        System.out.println(isWrapClass(Test.class));
+        System.out.println(isWrapClass(TestCL.class));
         System.out.println(long.class.isPrimitive());
         System.out.println(Long.class.isPrimitive());
         System.out.println(isWrapClass(long.class));
@@ -15,7 +15,7 @@ public static void main(String[] args) throws Exception {
         try { 
            return ((Class) clz.getField("TYPE").get(null)).isPrimitive();
         } catch (Exception e) { 
-        	e.printStackTrace();
+//        	e.printStackTrace();
             return false; 
         } 
     } 
