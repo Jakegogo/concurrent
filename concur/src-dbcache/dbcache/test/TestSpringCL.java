@@ -2,7 +2,7 @@ package dbcache.test;
 
 
 
-
+//-Djava.system.class.loader=dbcache.test.HotSwapClassLoader
 public class TestSpringCL {
 	
 	static HotSwapClassLoader clLoader = new HotSwapClassLoader();
@@ -31,14 +31,14 @@ public class TestSpringCL {
 		Thread t = new Thread(server, "test");
 	    t.setContextClassLoader(clLoader);
 		t.start();
-		
+		t.setContextClassLoader(clLoader);
 		
 		
 		Thread.sleep(5000);
 		
 		clLoader.loadClassByMe("C:\\Entity.class", "dbcache.test.Entity");
 		System.out.println("reload class");
-		
+
 		t.join();
 	}
 
