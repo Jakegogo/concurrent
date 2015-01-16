@@ -1,23 +1,7 @@
 package dbcache.service.impl;
 
-import static dbcache.conf.CfgConstants.KEY_DB_POOL_CAPACITY;
-import static dbcache.conf.CfgConstants.KEY_SERVER_ID_SET;
-import static dbcache.conf.CfgConstants.MAX_QUEUE_SIZE_BEFORE_PERSIST;
-import static dbcache.conf.CfgConstants.DELAY_WAITTIMMER;
-import static dbcache.conf.CfgConstants.SPLIT;
-
-import java.io.IOException;
-import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Properties;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-
-import javax.annotation.PostConstruct;
-import javax.persistence.Entity;
+import dbcache.key.ServerEntityIdRule;
+import dbcache.service.DbRuleService;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,18 +12,17 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Component;
-import org.springframework.util.ReflectionUtils;
 
-import dbcache.key.IdGenerator;
-import dbcache.key.LongGenerator;
-import dbcache.key.ServerEntityIdRule;
-import dbcache.key.annotation.Id;
-import dbcache.key.annotation.IdGenerate;
-import dbcache.service.DbAccessService;
-import dbcache.service.DbRuleService;
-import dbcache.utils.GenericsUtils;
-import dbcache.utils.PackageScanner;
-import dbcache.utils.ReflectionUtility;
+import javax.annotation.PostConstruct;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Properties;
+
+import static dbcache.conf.CfgConstants.*;
 
 /**
  * 数据库规则服务接口实现类
@@ -58,17 +41,6 @@ public class DbRuleServiceImpl implements DbRuleService {
 
 	@Autowired
 	private ApplicationContext applicationContext;
-
-
-	@Autowired
-	@Qualifier("jdbcDbAccessServiceImpl")
-	private DbAccessService dbAccessService;
-
-
-	/**
-	 * 实体主键ID生成map {服ID ： {实体类： 主键id生成器} }
-	 */
-	private final ConcurrentMap<Integer, ConcurrentMap<Class<?>, IdGenerator<?>>>  SERVER_ENTITY_IDGENERATOR_MAP = new ConcurrentHashMap<Integer, ConcurrentMap<Class<?>, IdGenerator<?>>> ();
 
 
 	/**
@@ -248,120 +220,6 @@ public class DbRuleServiceImpl implements DbRuleService {
 		}
 		this.delayWaitTimmer = this.delayWaitTimmer > 0? this.delayWaitTimmer : delayWaitTimmer;
 
-
-		//初始化主键Id生成器
-		if (this.serverIdList == null || this.serverIdList.size() == 0) {
-			return;
-		}
-
-		Collection<Class<?>> clzList = PackageScanner.scanPackages(entityPackages);
-		if (clzList == null || clzList.size() <= 0) {
-			return;
-		}
-
-		for (Class<?> clz: clzList) {
-			//非实体
-			if (!clz.isAnnotationPresent(IdGenerate.class) && !clz.isAnnotationPresent(Entity.class)) {
-				continue;
-			}
-
-			//获取可用主键类型
-			Class<?> idType = GenericsUtils.getSuperClassGenricType(clz, 0);
-			if (idType == null || idType != Long.class) {
-
-				@SuppressWarnings("unchecked")
-				Field[] fields = ReflectionUtility.getDeclaredFieldsWith(clz, Id.class, javax.persistence.Id.class);
-
-				if(fields != null && fields.length == 1) {
-					ReflectionUtils.makeAccessible(fields[0]);
-					if (fields[0].getType() != Long.class) {
-						continue;
-					}
-				} else {
-					continue;
-				}
-			}
-
-			//配置的服
-			for (int serverId: serverIdList) {
-
-				ConcurrentMap<Class<?>, IdGenerator<?>> classIdGeneratorMap = this.getClassIdGeneratorMap(serverId);
-
-				//已经注册了主键id生成器
-				if (classIdGeneratorMap.containsKey(clz)) {
-					continue;
-				}
-
-				long minValue = ServerEntityIdRule.getMinValueOfEntityId(serverId);
-				long maxValue = ServerEntityIdRule.getMaxValueOfEntityId(serverId);
-
-				//当前最大id
-				long currMaxId = minValue;
-				Object resultId = dbAccessService.loadMaxId(clz, minValue, maxValue);
-				if (resultId != null) {
-					currMaxId = (Long) resultId;
-				}
-
-				LongGenerator idGenerator = new LongGenerator(currMaxId);
-				classIdGeneratorMap.putIfAbsent(clz, idGenerator);
-
-				if (logger.isInfoEnabled()) {
-					logger.info("服{}： {} 的当前自动增值ID：{}", new Object[] {serverId, clz.getName(), currMaxId});
-				}
-			}
-		}
-
-	}
-
-
-	@Override
-	public Object getIdAutoGenerateValue(Class<?> clazz) {
-		int serverId = this.getFirstServerId();
-		return this.getIdAutoGenerateValue(serverId, clazz);
-	}
-
-
-	@Override
-	public Object getIdAutoGenerateValue(int serverId, Class<?> clazz) {
-		if (!containsServerId(serverId)) {
-			return null;
-		}
-
-		ConcurrentMap<Class<?>, IdGenerator<?>> classIdGeneratorMap = getClassIdGeneratorMap(serverId);
-		IdGenerator<?> idGenerator = classIdGeneratorMap.get(clazz);
-		if (idGenerator != null) {
-			return idGenerator.generateId();
-		}
-
-		return null;
-	}
-
-
-	/**
-	 * 取得服所对应的实体主键id生成器Map(不存在就创建)
-	 * @param serverId 服标识
-	 * @return ConcurrentMap<Class<?>, IdGenerator<?>>
-	 */
-	private ConcurrentMap<Class<?>, IdGenerator<?>> getClassIdGeneratorMap(int serverId) {
-		ConcurrentMap<Class<?>, IdGenerator<?>> classIdGeneratorMap = SERVER_ENTITY_IDGENERATOR_MAP.get(serverId);
-		if (classIdGeneratorMap == null) {
-			classIdGeneratorMap = new ConcurrentHashMap<Class<?>, IdGenerator<?>>();
-			SERVER_ENTITY_IDGENERATOR_MAP.putIfAbsent(serverId, classIdGeneratorMap);
-		}
-
-		return SERVER_ENTITY_IDGENERATOR_MAP.get(serverId);
-	}
-
-
-	@Override
-	public void registerEntityIdGenerator(int serverId, Class<?> clazz, IdGenerator<?> idGenerator) {
-		ConcurrentMap<Class<?>, IdGenerator<?>> classIdGeneratorMap = getClassIdGeneratorMap(serverId);
-
-		if (idGenerator == null) {
-			classIdGeneratorMap.remove(clazz);
-		} else {
-			classIdGeneratorMap.put(clazz, idGenerator);
-		}
 	}
 
 
@@ -432,19 +290,16 @@ public class DbRuleServiceImpl implements DbRuleService {
 	@Override
 	public List<Integer> getServerIdList() {
 		if (this.serverIdList == null) {
-			return Collections.emptyList();
+			return Arrays.asList(Integer.valueOf(1));
 		}
 		return Collections.unmodifiableList(serverIdList);
 	}
 
 
-	/**
-	 * 获取第一个服Id
-	 * @return
-	 */
-	private int getFirstServerId() {
+	@Override
+	public Integer getDefaultServerId() {
 		if (this.serverIdList == null || this.serverIdList.size() == 0) {
-			return 0;
+			return Integer.valueOf(1);
 		}
 		return this.serverIdList.get(0);
 	}

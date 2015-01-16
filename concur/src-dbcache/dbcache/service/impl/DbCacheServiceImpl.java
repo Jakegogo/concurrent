@@ -89,9 +89,6 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 	private Cache cache;
 
 
-	@Autowired
-	private DbRuleService dbRuleService;
-
 	/**
 	 * 默认的持久化服务
 	 */
@@ -319,7 +316,7 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 		//生成主键
 		if (entity.getId() == null) {
 
-			Object id = this.dbRuleService.getIdAutoGenerateValue(entity.getClass());
+			Object id = cacheConfig.getIdAutoGenerateValue();
 			if (id == null) {
 				String msg = "提交新建实体到更新队列参数错：未能识别主键类型";
 				logger.error(msg);

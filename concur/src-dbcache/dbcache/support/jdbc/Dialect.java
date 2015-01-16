@@ -48,14 +48,18 @@ public abstract class Dialect {
 	
 
 	public void fillStatement(PreparedStatement pst, List<Object> paras) throws SQLException {
-		for (int i=0, size=paras.size(); i<size; i++) {
-			pst.setObject(i + 1, paras.get(i));
+		if (paras != null) {
+			for (int i = 0, size = paras.size(); i < size; i++) {
+				pst.setObject(i + 1, paras.get(i));
+			}
 		}
 	}
 	
 	public void fillStatement(PreparedStatement pst, Object... paras) throws SQLException {
-		for (int i=0; i < paras.length; i++) {
-			pst.setObject(i + 1, paras[i]);
+		if (paras != null) {
+			for (int i = 0; i < paras.length; i++) {
+				pst.setObject(i + 1, paras[i]);
+			}
 		}
 	}
 	

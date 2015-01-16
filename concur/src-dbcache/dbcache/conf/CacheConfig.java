@@ -2,6 +2,7 @@ package dbcache.conf;
 
 import dbcache.annotation.Cached;
 import dbcache.annotation.EnableIndex;
+import dbcache.key.IdGenerator;
 import dbcache.service.impl.ConcurrentLinkedHashMapCache;
 import dbcache.support.asm.ValueGetter;
 import dbcache.support.jackson.ToStringJsonSerializer;
@@ -57,6 +58,14 @@ public class CacheConfig<T> {
 	private Map<String, JsonConverter<T>> jsonAutoConverters = new HashMap<String, JsonConverter<T>>();
 	/** json属性自动转换信息 List */
 	private List<JsonConverter<T>> jsonAutoConverterList = new ArrayList<JsonConverter<T>>();
+	/**
+	 * 实体主键ID生成map {类别ID : {实体类： 主键id生成器} }
+	 * <br/>category - IdGenerator
+	 */
+	private Map<Integer, IdGenerator<?>> idGenerators = new IdentityHashMap<Integer, IdGenerator<?>> ();
+
+	/**  默认主键id生成器  */
+	private IdGenerator<?> defaultIdGenerator;
 
 	/**
 	 * 获取实例
@@ -112,6 +121,30 @@ public class CacheConfig<T> {
 		cacheConfig.setConcurrencyLevel(cachedAnno.concurrencyLevel());
 		return defaultConfig = cacheConfig;
 	}
+
+
+	/**
+	 * 生成自增长Id
+	 * @return
+	 */
+	public Object getIdAutoGenerateValue() {
+		return this.defaultIdGenerator;
+	}
+
+
+	/**
+	 * 生成自增长Id
+	 * @param category 服Id
+	 * @return
+	 */
+	public Object getIdAutoGenerateValue(int category) {
+		IdGenerator<?> idGenerator = idGenerators.get(category);
+		if (idGenerator != null) {
+			return idGenerator.generateId();
+		}
+		return null;
+	}
+
 
 	@Override
 	public String toString() {
@@ -226,5 +259,21 @@ public class CacheConfig<T> {
 
 	public List<JsonConverter<T>> getJsonAutoConverterList() {
 		return jsonAutoConverterList;
+	}
+
+	public Map<Integer, IdGenerator<?>> getIdGenerators() {
+		return idGenerators;
+	}
+
+	public void setIdGenerators(Map<Integer, IdGenerator<?>> idGenerators) {
+		this.idGenerators = idGenerators;
+	}
+
+	public IdGenerator<?> getDefaultIdGenerator() {
+		return defaultIdGenerator;
+	}
+
+	public void setDefaultIdGenerator(IdGenerator<?> defaultIdGenerator) {
+		this.defaultIdGenerator = defaultIdGenerator;
 	}
 }

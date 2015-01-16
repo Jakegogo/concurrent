@@ -7,16 +7,16 @@ import dbcache.support.asm.ValueSetter;
 import java.lang.reflect.Field;
 
 /**
- * 实体属性信息 
+ * 实体属性信息
  * Created by Jake on 2015/1/12.
  */
 public class AttributeInfo<T> {
-	
+
 	/**
 	 * 属性名
 	 */
 	private String name;
-	
+
 	/**
 	 * 字段名
 	 */
@@ -26,22 +26,27 @@ public class AttributeInfo<T> {
 	 * 属性获值器
 	 */
 	private ValueGetter<T> attrGetter;
-	
+
 	/**
 	 * 属性设值器
 	 */
 	private ValueSetter<T> attrSetter;
-	
+
 	/**
 	 * 序号
 	 */
 	private int index;
-	
+
 	/**
 	 * sql字段类型
 	 */
 	private int sqlType;
-	
+
+	/**
+	 * 是否为主键
+	 */
+	private boolean isPrimaryKey = false;
+
 	/**
 	 * 获取实例
 	 * @param clazz 实体类
@@ -76,7 +81,7 @@ public class AttributeInfo<T> {
 	public ValueSetter<T> getAttrSetter() {
 		return attrSetter;
 	}
-	
+
 	/**
 	 * 获取属性值
 	 * @param object 实体
@@ -85,7 +90,7 @@ public class AttributeInfo<T> {
 	public Object getValue(T object) {
 		return this.attrGetter.get(object);
 	}
-	
+
 	/**
 	 * 设置属性值
 	 * @param object 实体
@@ -117,6 +122,14 @@ public class AttributeInfo<T> {
 
 	public void setSqlType(int sqlType) {
 		this.sqlType = sqlType;
+	}
+
+	public boolean isPrimaryKey() {
+		return isPrimaryKey;
+	}
+
+	public void setPrimaryKey(boolean isPrimaryKey) {
+		this.isPrimaryKey = isPrimaryKey;
 	}
 
 }

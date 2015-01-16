@@ -1,6 +1,7 @@
 package dbcache.service;
 
 import dbcache.conf.CacheConfig;
+import dbcache.key.IdGenerator;
 import dbcache.model.CacheObject;
 import dbcache.model.IEntity;
 
@@ -25,6 +26,7 @@ public interface ConfigFactory {
 	@SuppressWarnings("rawtypes")
 	public <T extends IEntity<PK>, PK extends Comparable<PK> & Serializable> T createProxyEntity(T entity, Class<? extends IEntity> proxyClass, DbIndexService indexService, CacheConfig<T> cacheConfig);
 
+
 	/**
 	 * 创建缓存对象
 	 * @param entity 实体
@@ -36,6 +38,7 @@ public interface ConfigFactory {
 	 */
 	@SuppressWarnings("rawtypes")
 	public <T extends IEntity<PK>, PK extends Comparable<PK> & Serializable> CacheObject<T> createCacheObject(T entity, Class<? extends IEntity> class1, DbIndexService<?> indexService, Object key, Cache cache, CacheConfig<T> cacheConfig);
+
 
 	/**
 	 * 获取DbCacheServiceBean
@@ -54,6 +57,15 @@ public interface ConfigFactory {
 	 */
 	@SuppressWarnings("rawtypes")
 	public void registerDbCacheServiceBean(Class<? extends IEntity> clz, DbCacheService dbCacheService);
+
+
+	/**
+	 * 注册实体主键id生成器
+	 * @param serverId 服标识
+	 * @param clazz  实体类型
+	 * @param idGenerator 主键id生成器接口
+	 */
+	public void registerEntityIdGenerator(int serverId, Class<?> clazz, IdGenerator<?> idGenerator);
 
 
 	/**
