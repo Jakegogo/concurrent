@@ -46,7 +46,7 @@ import dbcache.service.DbIndexService;
 import dbcache.service.DbPersistService;
 import dbcache.support.asm.AsmAccessHelper;
 import dbcache.support.asm.EntityAsmFactory;
-import dbcache.support.asm.IndexMethodAspect;
+import dbcache.support.asm.IndexMethodProxyAspect;
 import dbcache.support.asm.ValueGetter;
 import dbcache.utils.ThreadUtils;
 
@@ -78,7 +78,7 @@ public class ConfigFactoryImpl implements ConfigFactory, DbCacheMBean {
 	private ApplicationContext applicationContext;
 
 	@Autowired
-	private IndexMethodAspect methodAspect;
+	private IndexMethodProxyAspect methodAspect;
 
 	/**
 	 * 即时持久化服务

@@ -1,5 +1,6 @@
 package dbcache.support.asm;
 
+import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 
@@ -17,10 +18,19 @@ public abstract class AbstractAsmMethodAspect implements Opcodes {
 	 * 初始化类的切面信息
 	 * @param enhancedClassName 代理类类名
 	 */
-	public void initClass(Class<?> clazz, String enhancedClassName) {
+	public void initClassMetaInfo(Class<?> clazz, String enhancedClassName) {
 		//do nothing
 	}
-
+	
+	
+	/**
+	 * 初始化类
+	 * @param classWriter ClassWriter
+	 * @param originalClass 源类
+	 * @param enhancedClassName 代理类名
+	 */
+	public void doInitClass(ClassWriter classWriter, Class<?> originalClass, String enhancedClassName){};
+	
 	/**
 	 * 方法执行前执行
 	 * @param mWriter MethodVisitor

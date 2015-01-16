@@ -15,6 +15,7 @@ public class TestSpringCL {
 	public static void main(String[] args) throws InterruptedException, InstantiationException, IllegalAccessException, ClassNotFoundException {
 		
 		clLoader.loadClassByMe("C:\\Entity.class", "dbcache.test.Entity");
+		clLoader.loadClassByMe("C:\\Entity.class", "dbcache.test.Entity");
 		clLoader.loadClassByMe("dbcache.test.AppRunner");
 		
 		//将当前的应用加载器设置为线程上下文加载器

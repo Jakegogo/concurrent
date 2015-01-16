@@ -114,7 +114,7 @@ public class EntityAsmFactory {
 			ClassWriter writer = new ClassWriter(ClassWriter.COMPUTE_MAXS);
 
 			// 初始化实体类的方法切面信息
-			methodAspect.initClass(clazz, enhancedClassName);
+			methodAspect.initClassMetaInfo(clazz, enhancedClassName);
 			ClassVisitor visitor = new EntityClassAdapter(enhancedClassName, clazz,
 					writer, methodAspect);
 			reader.accept(visitor, 0);

@@ -2,6 +2,8 @@ package dbcache.support.asm;
 
 import dbcache.service.DbIndexService;
 import dbcache.utils.AsmUtils;
+
+import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
@@ -22,12 +24,12 @@ import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * 默认方法切面处理
+ * 默认方法切面代理处理
  * @author Jake
  * @date 2014年9月7日下午6:51:36
  */
 @Component("defaultMethodAspect")
-public class IndexMethodAspect extends AbstractAsmMethodAspect {
+public class IndexMethodProxyAspect extends AbstractAsmMethodAspect {
 
 
 	/**
@@ -45,7 +47,78 @@ public class IndexMethodAspect extends AbstractAsmMethodAspect {
 
 
 	@Override
-	public void initClass(final Class<?> clazz, final String enhancedClassName) {
+	public void doInitClass(ClassWriter classWriter, Class<?> originalClass,
+			String enhancedClassName) {
+		
+		// 增加原实体类型的属性(真实类)
+		classWriter.visitField(Opcodes.ACC_PROTECTED, EntityClassAdapter.REAL_OBJECT,
+				Type.getDescriptor(originalClass), null, null);
+
+		// 增加切面处理对象
+		classWriter.visitField(Opcodes.ACC_PROTECTED, EntityClassAdapter.HANDLER_OBJECT,
+				Type.getDescriptor(getAspectHandleClass()), null, null);
+
+		// 调用originalClassName的<init>方法，否则class不能实例化
+		MethodVisitor mvInit = classWriter.visitMethod(ACC_PUBLIC, EntityClassAdapter.INIT, "()V",
+				null, null);
+		mvInit.visitVarInsn(ALOAD, 0);
+		mvInit.visitMethodInsn(INVOKESPECIAL,
+				AsmUtils.toAsmCls(originalClass.getName()), EntityClassAdapter.INIT, "()V");
+		mvInit.visitInsn(RETURN);
+		mvInit.visitMaxs(0, 0);
+		mvInit.visitEnd();
+
+		// 添加带参构造方法,用真实类对象作为参数
+		MethodVisitor mvInit1 = classWriter.visitMethod(ACC_PUBLIC, EntityClassAdapter.INIT, "("
+				+ Type.getDescriptor(originalClass) + ")V", null, null);
+		mvInit1.visitVarInsn(Opcodes.ALOAD, 0);
+
+		mvInit1.visitMethodInsn(INVOKESPECIAL,
+				AsmUtils.toAsmCls(originalClass.getName()), EntityClassAdapter.INIT, "()V");
+
+		mvInit1.visitVarInsn(Opcodes.ALOAD, 0);
+		mvInit1.visitVarInsn(Opcodes.ALOAD, 1);
+
+		mvInit1.visitFieldInsn(Opcodes.PUTFIELD,
+				AsmUtils.toAsmCls(enhancedClassName), EntityClassAdapter.REAL_OBJECT,
+				Type.getDescriptor(originalClass));
+
+		mvInit1.visitInsn(RETURN);
+		mvInit1.visitMaxs(3, 2);
+		mvInit1.visitEnd();
+
+
+		// 添加真实对象和切面处理对象构造方法,用真实类对象作为参数
+		MethodVisitor mvInit2 = classWriter.visitMethod(ACC_PUBLIC, EntityClassAdapter.INIT, "("
+				+ Type.getDescriptor(originalClass)
+				+ Type.getDescriptor(getAspectHandleClass()) + ")V", null, null);
+		mvInit2.visitVarInsn(Opcodes.ALOAD, 0);
+
+		mvInit2.visitMethodInsn(INVOKESPECIAL,
+				AsmUtils.toAsmCls(originalClass.getName()), EntityClassAdapter.INIT, "()V");
+
+		mvInit2.visitVarInsn(Opcodes.ALOAD, 0);
+		mvInit2.visitVarInsn(Opcodes.ALOAD, 1);
+
+		mvInit2.visitFieldInsn(Opcodes.PUTFIELD,
+				AsmUtils.toAsmCls(enhancedClassName), EntityClassAdapter.REAL_OBJECT,
+				Type.getDescriptor(originalClass));
+
+		mvInit2.visitVarInsn(Opcodes.ALOAD, 0);
+		mvInit2.visitVarInsn(Opcodes.ALOAD, 2);
+
+		mvInit2.visitFieldInsn(Opcodes.PUTFIELD,
+				AsmUtils.toAsmCls(enhancedClassName), EntityClassAdapter.HANDLER_OBJECT,
+				Type.getDescriptor(getAspectHandleClass()));
+
+		mvInit2.visitInsn(RETURN);
+		mvInit2.visitMaxs(3, 2);
+		mvInit2.visitEnd();
+				
+	}
+
+	@Override
+	public void initClassMetaInfo(final Class<?> clazz, final String enhancedClassName) {
 
 		final ClassIndexesMetaData indexesMetaData = new ClassIndexesMetaData();
 		final Map<Method, Set<MethodMetaData>> methodsMap = indexesMetaData.changeIndexValueMethods;

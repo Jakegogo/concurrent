@@ -520,6 +520,26 @@ public class JdbcSupport {
     }
     
     
+    /**
+     * 注册代理类
+     * @param cls 实体类
+     * @param proxyCls 对应的代理类
+     */
+    public void registerProxyClass(Class<?> cls, Class<?> proxyCls) {
+    	ModelInfo modelInfo = getOrCreateModelInfo(cls);
+    	modelInfo.setProxyClzz(proxyCls);
+    	modelInfoCache.put(proxyCls, modelInfo);
+    }
+    
+    
+    /**
+     * 关闭JDBC服务
+     */
+    public void close() {
+    	modelInfoCache.clear();
+    }
+    
+    
     @SuppressWarnings("rawtypes")
 	private void initAttributeSqlTypes(TableInfo tableInfo, Map<String, AttributeInfo> attrTypeMap) {
     	// 初始化数据模型

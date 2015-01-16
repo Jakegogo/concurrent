@@ -74,15 +74,15 @@ public class HotSwapClassLoader extends ClassLoader {
     protected Class loadClass(String name, boolean resolve)
             throws ClassNotFoundException {
         Class<?> cls = null;
-//        if(dynaclazns.containsKey(name)) {
-//        	ClassLoader cl = dynaclazns.get(name);
-//        	if(cl instanceof InstanceClassLoader) {
-//	        	cls = ((InstanceClassLoader)cl).dofindLoadedClass(name);
-//	        	if(cls != null) {
-//	        		return cls;
-//	        	}
-//        	}
-//        }
+        if(dynaclazns.containsKey(name)) {
+        	ClassLoader cl = dynaclazns.get(name);
+        	if(cl instanceof InstanceClassLoader) {
+	        	cls = ((InstanceClassLoader)cl).dofindLoadedClass(name);
+	        	if(cls != null) {
+	        		return cls;
+	        	}
+        	}
+        }
         cls = findLoadedClass(name);
         if (cls == null)
             cls = getSystemClassLoader().loadClass(name);
