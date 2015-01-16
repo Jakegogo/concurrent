@@ -5,10 +5,6 @@ import dbcache.conf.CacheType;
 import dbcache.conf.JsonConverter;
 import dbcache.conf.PersistType;
 import dbcache.key.IdGenerator;
-import dbcache.key.LongGenerator;
-import dbcache.key.ServerEntityIdRule;
-import dbcache.key.annotation.Id;
-import dbcache.key.annotation.IdGenerate;
 import dbcache.model.CacheObject;
 import dbcache.model.IEntity;
 import dbcache.model.WeakCacheEntity;
@@ -18,8 +14,6 @@ import dbcache.support.asm.AsmAccessHelper;
 import dbcache.support.asm.EntityAsmFactory;
 import dbcache.support.asm.IndexMethodProxyAspect;
 import dbcache.support.asm.ValueGetter;
-import dbcache.utils.GenericsUtils;
-import dbcache.utils.ReflectionUtility;
 import dbcache.utils.ThreadUtils;
 
 import org.slf4j.Logger;
@@ -35,15 +29,12 @@ import org.springframework.util.ReflectionUtils.FieldCallback;
 
 import javax.annotation.PostConstruct;
 import javax.management.*;
-import javax.persistence.Entity;
 
 import java.io.Serializable;
 import java.lang.management.ManagementFactory;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.util.HashMap;
-import java.util.IdentityHashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
@@ -98,13 +89,6 @@ public class ConfigFactoryImpl implements ConfigFactory, DbCacheMBean {
 	@Autowired
 	@Qualifier("delayDbPersistService")
 	private DbPersistService delayDbPersistService;
-
-	/**
-	 * 数据库存储服务
-	 */
-	@Autowired
-	@Qualifier("jdbcDbAccessServiceImpl")
-	private DbAccessService dbAccessService;
 
 
 	/**
@@ -211,62 +195,9 @@ public class ConfigFactoryImpl implements ConfigFactory, DbCacheMBean {
 			Field cacheConfigField1 = indexService.getClass().getDeclaredField(proxyCacheConfigProperty);
 			inject(indexService, cacheConfigField1, cacheConfig);
 
+			// 初始化Id生成器
+			dbRuleService.initIdGenerators(clz, cacheConfig);
 
-			// 初始化主键id生成器
-			if (clz.isAnnotationPresent(IdGenerate.class) || clz.isAnnotationPresent(Entity.class)) {
-
-				boolean validId = true;
-				//获取可用主键类型
-				Class<?> idType = GenericsUtils.getSuperClassGenricType(clz, 0);
-				if (idType == null || idType != Long.class) {
-
-					Field[] fields = ReflectionUtility.getDeclaredFieldsWith(clz, Id.class, javax.persistence.Id.class);
-
-					if(fields != null && fields.length == 1) {
-						ReflectionUtils.makeAccessible(fields[0]);
-						if (fields[0].getType() != Long.class) {
-							validId = false;
-						}
-					} else {
-						validId = false;
-					}
-				}
-
-				if (validId) {
-					//初始化主键Id生成器
-					Map<Integer, IdGenerator<?>>  idGenerators = new IdentityHashMap<Integer, IdGenerator<?>> ();
-
-					List<Integer> serverIdList = dbRuleService.getServerIdList();
-					if (serverIdList != null && serverIdList.size() > 0) {//配置的服
-
-						for (int serverId: serverIdList) {
-
-							long minValue = ServerEntityIdRule.getMinValueOfEntityId(serverId);
-							long maxValue = ServerEntityIdRule.getMaxValueOfEntityId(serverId);
-
-							//当前最大id
-							long currMaxId = minValue;
-							Object resultId = dbAccessService.loadMaxId(clz, minValue, maxValue);
-							if (resultId != null) {
-								currMaxId = (Long) resultId;
-							}
-
-							LongGenerator idGenerator = new LongGenerator(currMaxId);
-							idGenerators.put(serverId, idGenerator);
-
-							if (logger.isInfoEnabled()) {
-								logger.info("服{}： {} 的当前自动增值ID：{}", new Object[] {serverId, clz.getName(), currMaxId});
-							}
-						}
-					}
-					// 设置主键id生成器
-					cacheConfig.setIdGenerators(idGenerators);
-					// 默认的服Id
-					Integer defaultSereverId = dbRuleService.getDefaultServerId();
-					IdGenerator<?> defaultIdGenerator = idGenerators.get(defaultSereverId);
-					cacheConfig.setDefaultIdGenerator(defaultIdGenerator); // 默认Id主键生成器
-				}
-			}
 
 			// 初始化DbCache服务
 			service.init();
@@ -277,7 +208,6 @@ public class ConfigFactoryImpl implements ConfigFactory, DbCacheMBean {
 
 		return service;
 	}
-
 
 
 	@Override

@@ -1,8 +1,17 @@
 package dbcache.service.impl;
 
+import dbcache.conf.CacheConfig;
+import dbcache.key.IdGenerator;
+import dbcache.key.LongGenerator;
 import dbcache.key.ServerEntityIdRule;
+import dbcache.key.annotation.Id;
+import dbcache.key.annotation.IdGenerate;
+import dbcache.model.IEntity;
+import dbcache.service.DbAccessService;
 import dbcache.service.DbRuleService;
 
+import dbcache.utils.GenericsUtils;
+import dbcache.utils.ReflectionUtility;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.helpers.FormattingTuple;
@@ -12,15 +21,14 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Component;
+import org.springframework.util.ReflectionUtils;
 
 import javax.annotation.PostConstruct;
+import javax.persistence.Entity;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Properties;
+import java.lang.reflect.Field;
+import java.util.*;
 
 import static dbcache.conf.CfgConstants.*;
 
@@ -42,6 +50,12 @@ public class DbRuleServiceImpl implements DbRuleService {
 	@Autowired
 	private ApplicationContext applicationContext;
 
+	/**
+	 * 数据库存储服务
+	 */
+	@Autowired
+	@Qualifier("jdbcDbAccessServiceImpl")
+	private DbAccessService dbAccessService;
 
 	/**
 	 * 入库线程池大小
@@ -223,6 +237,66 @@ public class DbRuleServiceImpl implements DbRuleService {
 	}
 
 
+	@Override
+	public void initIdGenerators(Class<? extends IEntity> clz, CacheConfig cacheConfig) {
+		// 初始化主键id生成器
+		if (clz.isAnnotationPresent(IdGenerate.class) || clz.isAnnotationPresent(Entity.class)) {
+
+			boolean validId = true;
+			//获取可用主键类型
+			Class<?> idType = GenericsUtils.getSuperClassGenricType(clz, 0);
+			if (idType == null || idType != Long.class) {
+
+				Field[] fields = ReflectionUtility.getDeclaredFieldsWith(clz, Id.class, javax.persistence.Id.class);
+
+				if(fields != null && fields.length == 1) {
+					ReflectionUtils.makeAccessible(fields[0]);
+					if (fields[0].getType() != Long.class) {
+						validId = false;
+					}
+				} else {
+					validId = false;
+				}
+			}
+
+			if (validId) {
+				//初始化主键Id生成器
+				Map<Integer, IdGenerator<?>> idGenerators = new IdentityHashMap<Integer, IdGenerator<?>>();
+
+				List<Integer> serverIdList = getServerIdList();
+				if (serverIdList != null && serverIdList.size() > 0) {//配置的服
+
+					for (int serverId: serverIdList) {
+
+						long minValue = ServerEntityIdRule.getMinValueOfEntityId(serverId);
+						long maxValue = ServerEntityIdRule.getMaxValueOfEntityId(serverId);
+
+						//当前最大id
+						long currMaxId = minValue;
+						Object resultId = this.dbAccessService.loadMaxId(clz, minValue, maxValue);
+						if (resultId != null) {
+							currMaxId = (Long) resultId;
+						}
+
+						LongGenerator idGenerator = new LongGenerator(currMaxId);
+						idGenerators.put(serverId, idGenerator);
+
+						if (logger.isInfoEnabled()) {
+							logger.info("服{}： {} 的当前自动增值ID：{}", new Object[] {serverId, clz.getName(), currMaxId});
+						}
+					}
+				}
+				// 设置主键id生成器
+				cacheConfig.setIdGenerators(idGenerators);
+				// 默认的服Id
+				Integer defaultSereverId = getDefaultServerId();
+				IdGenerator<?> defaultIdGenerator = idGenerators.get(defaultSereverId);
+				cacheConfig.setDefaultIdGenerator(defaultIdGenerator); // 默认Id主键生成器
+			}
+		}
+	}
+
+
 	/**
 	 * 判断是否是合法的服标识
 	 * @param serverId 服标识id
@@ -335,4 +409,4 @@ public class DbRuleServiceImpl implements DbRuleService {
 		return delayWaitTimmer;
 	}
 
-}
+	}

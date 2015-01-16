@@ -1,28 +1,23 @@
 package dbcache.support.jdbc;
 
+import dbcache.key.IdGenerator;
+import dbcache.utils.AsmUtils;
+import dbcache.utils.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+import org.springframework.util.ReflectionUtils;
+import org.springframework.util.ReflectionUtils.FieldCallback;
+
 import java.lang.reflect.Array;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-import org.springframework.util.ReflectionUtils;
-import org.springframework.util.ReflectionUtils.FieldCallback;
-
-import dbcache.key.IdGenerator;
-import dbcache.utils.AsmUtils;
-import dbcache.utils.StringUtils;
 
 /**
  * Jdbc Dao支持
@@ -135,7 +130,7 @@ public class JdbcSupport {
     /**
      * 使用Id生成器保存实体
      * @param entity 实体对象
-     * @param category 分段类别
+     * @param category 分段/类别
      */
     public boolean saveWithAutoId(Object entity, int category) {
     	ModelInfo modelInfo = getOrCreateModelInfo(entity.getClass());
@@ -397,7 +392,6 @@ public class JdbcSupport {
 
     /**
      * 根据Sql查询对象列表
-     * @param clzz 实体类
      * @param sql SQL语句
      * @param params 参数列表
      * @param <T> 类泛型
