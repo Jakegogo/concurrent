@@ -117,6 +117,7 @@ public class EntityClassAdapter extends ClassVisitor implements Opcodes {
 		// 获取所有方法，并重写(main方法 和 Object的方法除外)
 		Method[] methods = originalClass.getMethods();
 		for (Method m : methods) {
+			
 			if (!AsmUtils.needOverride(m)) {
 				continue;
 			}
