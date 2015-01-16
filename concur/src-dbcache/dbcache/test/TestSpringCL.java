@@ -2,7 +2,7 @@ package dbcache.test;
 
 
 
-
+//-Djava.system.class.loader=dbcache.test.HotSwapClassLoader
 public class TestSpringCL {
 	
 	static HotSwapClassLoader clLoader = new HotSwapClassLoader();
@@ -11,7 +11,7 @@ public class TestSpringCL {
 		//将当前的应用加载器设置为线程上下文加载器
 		Thread.currentThread().setContextClassLoader(clLoader);
 	}
-	
+	 
 	public static void main(String[] args) throws InterruptedException, InstantiationException, IllegalAccessException, ClassNotFoundException {
 		
 		clLoader.loadClassByMe("C:\\Entity.class", "dbcache.test.Entity");
@@ -31,14 +31,14 @@ public class TestSpringCL {
 		Thread t = new Thread(server, "test");
 	    t.setContextClassLoader(clLoader);
 		t.start();
-		
+		t.setContextClassLoader(clLoader);
 		
 		
 		Thread.sleep(5000);
 		
 		clLoader.loadClassByMe("C:\\Entity.class", "dbcache.test.Entity");
 		System.out.println("reload class");
-		
+
 		t.join();
 	}
 
