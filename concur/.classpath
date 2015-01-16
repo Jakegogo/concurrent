@@ -8,12 +8,13 @@
 	<classpathentry kind="src" path="src-mis"/>
 	<classpathentry kind="src" path="src-game"/>
 	<classpathentry kind="src" path="src-socket"/>
+	<classpathentry kind="src" path="src-utils"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/4"/>
 	<classpathentry kind="con" path="org.eclipse.m2e.MAVEN2_CLASSPATH_CONTAINER">
 		<attributes>
 			<attribute name="maven.pomderived" value="true"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/jdk1.6.0_38"/>
 	<classpathentry kind="output" path="target/classes"/>
 </classpath>
