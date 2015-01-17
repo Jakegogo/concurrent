@@ -27,7 +27,7 @@ public class EntityClassProxyAdapter extends ClassVisitor implements Opcodes {
 	/**
 	 * 切面方法重写器
 	 */
-	private AbstractAsmMethodAspect methodAspect;
+	private AbstractAsmMethodProxyAspect methodAspect;
 
 	/**
 	 * ClassWriter
@@ -53,7 +53,7 @@ public class EntityClassProxyAdapter extends ClassVisitor implements Opcodes {
 	 */
 	public EntityClassProxyAdapter(String enhancedClassName, Class<?> targetClass,
 			ClassWriter writer) {
-		this(enhancedClassName, targetClass, writer, new AbstractAsmMethodAspect() {});
+		this(enhancedClassName, targetClass, writer, new AbstractAsmMethodProxyAspect() {});
 	}
 
 	/**
@@ -64,7 +64,7 @@ public class EntityClassProxyAdapter extends ClassVisitor implements Opcodes {
 	 * @param methodAspect 方法切面修改器
 	 */
 	public EntityClassProxyAdapter(String enhancedClassName, Class<?> targetClass,
-			ClassWriter writer, AbstractAsmMethodAspect methodAspect) {
+			ClassWriter writer, AbstractAsmMethodProxyAspect methodAspect) {
 		super(Opcodes.ASM4, writer);
 		this.classWriter = writer;
 		this.enhancedClassName = enhancedClassName;

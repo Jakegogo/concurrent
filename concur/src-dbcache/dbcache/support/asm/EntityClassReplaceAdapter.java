@@ -30,7 +30,7 @@ public class EntityClassReplaceAdapter extends ClassVisitor implements Opcodes {
 	/**
 	 * 切面方法重写器
 	 */
-	private AbstractAsmMethodAspect methodAspect;
+	private AbstractAsmMethodReplaceAspect methodAspect;
 
 	/**
 	 * ClassWriter
@@ -56,7 +56,7 @@ public class EntityClassReplaceAdapter extends ClassVisitor implements Opcodes {
 	 */
 	public EntityClassReplaceAdapter(String enhancedClassName, Class<?> targetClass,
 			ClassWriter writer) {
-		this(enhancedClassName, targetClass, writer, new AbstractAsmMethodAspect() {});
+		this(enhancedClassName, targetClass, writer, new AbstractAsmMethodReplaceAspect() {});
 	}
 
 	/**
@@ -67,7 +67,7 @@ public class EntityClassReplaceAdapter extends ClassVisitor implements Opcodes {
 	 * @param methodAspect 方法切面修改器
 	 */
 	public EntityClassReplaceAdapter(String enhancedClassName, Class<?> targetClass,
-			ClassWriter writer, AbstractAsmMethodAspect methodAspect) {
+			ClassWriter writer, AbstractAsmMethodReplaceAspect methodAspect) {
 		super(Opcodes.ASM4, writer);
 		this.classWriter = writer;
 		this.enhancedClassName = enhancedClassName;
@@ -106,10 +106,9 @@ public class EntityClassReplaceAdapter extends ClassVisitor implements Opcodes {
 		MethodVisitor mWriter = super.visitMethod(access, name, desc, signature, exceptions);
 		
 		
-		int locals = 0;
-		locals = this.methodAspect.doBefore(originalClass, mWriter, null, 1, name, access, desc);
+		mWriter = this.methodAspect.doBefore(originalClass, mWriter, null, 1, name, access, desc);
 		
-		this.methodAspect.doAfter(originalClass, mWriter, null, locals, name, access, desc);
+		this.methodAspect.doAfter(originalClass, mWriter, null, 1, name, access, desc);
 		
 		return mWriter;
 	}

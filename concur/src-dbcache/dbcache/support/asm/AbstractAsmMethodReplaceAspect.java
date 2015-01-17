@@ -11,7 +11,7 @@ import java.lang.reflect.Method;
  * @author Jake
  * @date 2014年9月7日下午6:40:52
  */
-public abstract class AbstractAsmMethodAspect implements Opcodes {
+public abstract class AbstractAsmMethodReplaceAspect implements Opcodes {
 
 
 	/**
@@ -42,9 +42,9 @@ public abstract class AbstractAsmMethodAspect implements Opcodes {
 	 * @param desc 描述
 	 * @return
 	 */
-	public int doBefore(Class<?> entityClass, MethodVisitor mWriter, Method method, int locals, String name, int acc, String desc) {
+	public MethodVisitor doBefore(Class<?> entityClass, MethodVisitor mWriter, Method method, int locals, String name, int acc, String desc) {
 		//do nothing
-		return locals;
+		return null;
 	}
 
 	/**

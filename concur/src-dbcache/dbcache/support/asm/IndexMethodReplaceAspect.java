@@ -31,7 +31,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * @date 2014年9月7日下午6:51:36
  */
 @Component
-public class IndexMethodReplaceAspect extends AbstractAsmMethodAspect {
+public class IndexMethodReplaceAspect extends AbstractAsmMethodReplaceAspect {
 
 
 	/**
@@ -157,20 +157,20 @@ public class IndexMethodReplaceAspect extends AbstractAsmMethodAspect {
 
 
 	@Override
-	public int doBefore(final Class<?> entityClass, MethodVisitor mWriter, Method method, int locals, String name, int acc, String desc) {
+	public MethodVisitor doBefore(final Class<?> entityClass, MethodVisitor mWriter, Method method, int locals, String name, int acc, String desc) {
 		//获取类信息
 		final ClassIndexesMetaData classIndexesMetaData = CLASS_INDEX_INFO.get(entityClass);
 		if(classIndexesMetaData == null) {
-			return locals;
+			return mWriter;
 		}
 		//获取需要拦截的方法列表
 		final Map<String, Set<MethodMetaData>> methodsMap = classIndexesMetaData.changeIndexValueMethods;
 		if(!methodsMap.containsKey(name)) {
-			return locals;
+			return mWriter;
 		}
 		final Set<MethodMetaData> methodMetaDatas = methodsMap.get(name);
 		if (methodMetaDatas.size() == 0) {
-			return locals;
+			return mWriter;
 		}
 		
 		//获取索引属性
@@ -295,47 +295,11 @@ public class IndexMethodReplaceAspect extends AbstractAsmMethodAspect {
 			
 			
 		};
-		
-		adviceAdapter.visitCode();
-		adviceAdapter.visitEnd();
 
-		return localsCounter.get();
+		return adviceAdapter;
 	}
 
-	@Override
-	public int doAfter(final Class<?> entityClass, MethodVisitor mWriter, Method method, int locals, String name, int acc, String desc) {
-//		//获取类信息
-//		final ClassIndexesMetaData classIndexesMetaData = CLASS_INDEX_INFO.get(entityClass);
-//		if(classIndexesMetaData == null) {
-//			return locals;
-//		}
-//		//获取需要拦截的方法列表
-//		final Map<String, Set<MethodMetaData>> methodsMap = classIndexesMetaData.changeIndexValueMethods;
-//		if(!methodsMap.containsKey(name)) {
-//			return locals;
-//		}
-//		final Set<MethodMetaData> methodMetaDatas = methodsMap.get(name);
-//		//获取索引属性
-//		final Map<String, Field> fieldsMap = classIndexesMetaData.indexFields;
-//		
-//		// 计数器
-//    	final MutableInteger localsCounter = new MutableInteger(locals);
-//    	
-//    	// 添加方法体后调用
-//    	AdviceAdapter adviceAdapter = new AdviceAdapter(Opcodes.ASM4, mWriter, acc, desc, desc) {
-//
-//			
-//    		
-//    	};
-//    	
-//    	adviceAdapter.visitCode();
-//		adviceAdapter.visitEnd();
-
-		return locals;
-	}
-
-
-
+	
 	@Override
 	public Class<?> getAspectHandleClass() {
 		return DbIndexService.class;

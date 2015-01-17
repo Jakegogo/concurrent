@@ -29,7 +29,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * @date 2014年9月7日下午6:51:36
  */
 @Component("defaultMethodAspect")
-public class IndexMethodProxyAspect extends AbstractAsmMethodAspect {
+public class IndexMethodProxyAspect extends AbstractAsmMethodProxyAspect {
 
 
 	/**
