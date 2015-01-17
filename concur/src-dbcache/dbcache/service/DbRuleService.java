@@ -2,6 +2,7 @@ package dbcache.service;
 
 import dbcache.conf.CacheConfig;
 import dbcache.model.IEntity;
+import dbcache.support.jdbc.ModelInfo;
 
 import java.util.List;
 
@@ -68,6 +69,14 @@ public interface DbRuleService {
 	 * @param clz 实体类
 	 * @param cacheConfig 实体配置
 	 */
+	@SuppressWarnings("rawtypes")
 	void initIdGenerators(Class<? extends IEntity> clz, CacheConfig cacheConfig);
+	
+	/**
+	 * 初始化Id生成器
+	 * @param cls 实体类
+	 * @param modelInfo 实体信息对象
+	 */
+	void initIdGenerators(Class<?> cls, ModelInfo modelInfo);
 
 }

@@ -51,36 +51,36 @@ public class IndexMethodProxyAspect extends AbstractAsmMethodAspect {
 			String enhancedClassName) {
 		
 		// 增加原实体类型的属性(真实类)
-		classWriter.visitField(Opcodes.ACC_PROTECTED, EntityClassAdapter.REAL_OBJECT,
+		classWriter.visitField(Opcodes.ACC_PROTECTED, EntityClassProxyAdapter.REAL_OBJECT,
 				Type.getDescriptor(originalClass), null, null);
 
 		// 增加切面处理对象
-		classWriter.visitField(Opcodes.ACC_PROTECTED, EntityClassAdapter.HANDLER_OBJECT,
+		classWriter.visitField(Opcodes.ACC_PROTECTED, EntityClassProxyAdapter.HANDLER_OBJECT,
 				Type.getDescriptor(getAspectHandleClass()), null, null);
 
 		// 调用originalClassName的<init>方法，否则class不能实例化
-		MethodVisitor mvInit = classWriter.visitMethod(ACC_PUBLIC, EntityClassAdapter.INIT, "()V",
+		MethodVisitor mvInit = classWriter.visitMethod(ACC_PUBLIC, EntityClassProxyAdapter.INIT, "()V",
 				null, null);
 		mvInit.visitVarInsn(ALOAD, 0);
 		mvInit.visitMethodInsn(INVOKESPECIAL,
-				AsmUtils.toAsmCls(originalClass.getName()), EntityClassAdapter.INIT, "()V");
+				AsmUtils.toAsmCls(originalClass.getName()), EntityClassProxyAdapter.INIT, "()V");
 		mvInit.visitInsn(RETURN);
 		mvInit.visitMaxs(0, 0);
 		mvInit.visitEnd();
 
 		// 添加带参构造方法,用真实类对象作为参数
-		MethodVisitor mvInit1 = classWriter.visitMethod(ACC_PUBLIC, EntityClassAdapter.INIT, "("
+		MethodVisitor mvInit1 = classWriter.visitMethod(ACC_PUBLIC, EntityClassProxyAdapter.INIT, "("
 				+ Type.getDescriptor(originalClass) + ")V", null, null);
 		mvInit1.visitVarInsn(Opcodes.ALOAD, 0);
 
 		mvInit1.visitMethodInsn(INVOKESPECIAL,
-				AsmUtils.toAsmCls(originalClass.getName()), EntityClassAdapter.INIT, "()V");
+				AsmUtils.toAsmCls(originalClass.getName()), EntityClassProxyAdapter.INIT, "()V");
 
 		mvInit1.visitVarInsn(Opcodes.ALOAD, 0);
 		mvInit1.visitVarInsn(Opcodes.ALOAD, 1);
 
 		mvInit1.visitFieldInsn(Opcodes.PUTFIELD,
-				AsmUtils.toAsmCls(enhancedClassName), EntityClassAdapter.REAL_OBJECT,
+				AsmUtils.toAsmCls(enhancedClassName), EntityClassProxyAdapter.REAL_OBJECT,
 				Type.getDescriptor(originalClass));
 
 		mvInit1.visitInsn(RETURN);
@@ -89,26 +89,26 @@ public class IndexMethodProxyAspect extends AbstractAsmMethodAspect {
 
 
 		// 添加真实对象和切面处理对象构造方法,用真实类对象作为参数
-		MethodVisitor mvInit2 = classWriter.visitMethod(ACC_PUBLIC, EntityClassAdapter.INIT, "("
+		MethodVisitor mvInit2 = classWriter.visitMethod(ACC_PUBLIC, EntityClassProxyAdapter.INIT, "("
 				+ Type.getDescriptor(originalClass)
 				+ Type.getDescriptor(getAspectHandleClass()) + ")V", null, null);
 		mvInit2.visitVarInsn(Opcodes.ALOAD, 0);
 
 		mvInit2.visitMethodInsn(INVOKESPECIAL,
-				AsmUtils.toAsmCls(originalClass.getName()), EntityClassAdapter.INIT, "()V");
+				AsmUtils.toAsmCls(originalClass.getName()), EntityClassProxyAdapter.INIT, "()V");
 
 		mvInit2.visitVarInsn(Opcodes.ALOAD, 0);
 		mvInit2.visitVarInsn(Opcodes.ALOAD, 1);
 
 		mvInit2.visitFieldInsn(Opcodes.PUTFIELD,
-				AsmUtils.toAsmCls(enhancedClassName), EntityClassAdapter.REAL_OBJECT,
+				AsmUtils.toAsmCls(enhancedClassName), EntityClassProxyAdapter.REAL_OBJECT,
 				Type.getDescriptor(originalClass));
 
 		mvInit2.visitVarInsn(Opcodes.ALOAD, 0);
 		mvInit2.visitVarInsn(Opcodes.ALOAD, 2);
 
 		mvInit2.visitFieldInsn(Opcodes.PUTFIELD,
-				AsmUtils.toAsmCls(enhancedClassName), EntityClassAdapter.HANDLER_OBJECT,
+				AsmUtils.toAsmCls(enhancedClassName), EntityClassProxyAdapter.HANDLER_OBJECT,
 				Type.getDescriptor(getAspectHandleClass()));
 
 		mvInit2.visitInsn(RETURN);
@@ -186,8 +186,7 @@ public class IndexMethodProxyAspect extends AbstractAsmMethodAspect {
 
 
 	@Override
-	public int doBefore(MethodVisitor mWriter, Method method, int locals) {
-		Class<?> entityClass = method.getDeclaringClass();
+	public int doBefore(Class<?> entityClass, MethodVisitor mWriter, Method method, int locals, String name, int acc, String desc) {
 		//获取类信息
 		ClassIndexesMetaData classIndexesMetaData = CLASS_INDEX_INFO.get(entityClass);
 		if(classIndexesMetaData == null) {
@@ -207,7 +206,7 @@ public class IndexMethodProxyAspect extends AbstractAsmMethodAspect {
 			final Field field = fieldsMap.get(methodMetaData.indexName);
 			//获取this.obj.fieldName
 			mWriter.visitVarInsn(Opcodes.ALOAD, 0);
-			mWriter.visitFieldInsn(Opcodes.GETFIELD,AsmUtils.toAsmCls(classIndexesMetaData.enhancedClassName), EntityClassAdapter.REAL_OBJECT, Type.getDescriptor(entityClass));
+			mWriter.visitFieldInsn(Opcodes.GETFIELD,AsmUtils.toAsmCls(classIndexesMetaData.enhancedClassName), EntityClassProxyAdapter.REAL_OBJECT, Type.getDescriptor(entityClass));
 
 			PropertyDescriptor propertyDescriptor = null;
 			try {
@@ -240,8 +239,7 @@ public class IndexMethodProxyAspect extends AbstractAsmMethodAspect {
 	}
 
 	@Override
-	public int doAfter(MethodVisitor mWriter, Method method, int locals) {
-		Class<?> entityClass = method.getDeclaringClass();
+	public int doAfter(Class<?> entityClass, MethodVisitor mWriter, Method method, int locals, String name, int acc, String desc) {
 		//获取类信息
 		ClassIndexesMetaData classIndexesMetaData = CLASS_INDEX_INFO.get(entityClass);
 		if(classIndexesMetaData == null) {
@@ -262,7 +260,7 @@ public class IndexMethodProxyAspect extends AbstractAsmMethodAspect {
 			final Field field = fieldsMap.get(methodMetaData.indexName);
 			//获取this.obj.getFieldName
 			mWriter.visitVarInsn(Opcodes.ALOAD, 0);
-			mWriter.visitFieldInsn(Opcodes.GETFIELD,AsmUtils.toAsmCls(classIndexesMetaData.enhancedClassName), EntityClassAdapter.REAL_OBJECT, Type.getDescriptor(entityClass));
+			mWriter.visitFieldInsn(Opcodes.GETFIELD,AsmUtils.toAsmCls(classIndexesMetaData.enhancedClassName), EntityClassProxyAdapter.REAL_OBJECT, Type.getDescriptor(entityClass));
 
 			PropertyDescriptor propertyDescriptor = null;
 			try {
@@ -288,11 +286,11 @@ public class IndexMethodProxyAspect extends AbstractAsmMethodAspect {
 			//调用 changeIndex(Object entity, String indexName, Object oldValue, Object newValue)
 			//获取this.handler
 			mWriter.visitVarInsn(Opcodes.ALOAD, 0);
-			mWriter.visitFieldInsn(Opcodes.GETFIELD, AsmUtils.toAsmCls(classIndexesMetaData.enhancedClassName), EntityClassAdapter.HANDLER_OBJECT, Type.getDescriptor(this.getAspectHandleClass()));
+			mWriter.visitFieldInsn(Opcodes.GETFIELD, AsmUtils.toAsmCls(classIndexesMetaData.enhancedClassName), EntityClassProxyAdapter.HANDLER_OBJECT, Type.getDescriptor(this.getAspectHandleClass()));
 
 			//获取this.obj
 			mWriter.visitVarInsn(Opcodes.ALOAD, 0);
-			mWriter.visitFieldInsn(Opcodes.GETFIELD,AsmUtils.toAsmCls(classIndexesMetaData.enhancedClassName), EntityClassAdapter.REAL_OBJECT, Type.getDescriptor(entityClass));
+			mWriter.visitFieldInsn(Opcodes.GETFIELD,AsmUtils.toAsmCls(classIndexesMetaData.enhancedClassName), EntityClassProxyAdapter.REAL_OBJECT, Type.getDescriptor(entityClass));
 
 			//load indexName
 			mWriter.visitLdcInsn(methodMetaData.indexName);

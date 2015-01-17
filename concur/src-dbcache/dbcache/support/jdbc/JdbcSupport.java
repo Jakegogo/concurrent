@@ -2,7 +2,9 @@ package dbcache.support.jdbc;
 
 import dbcache.key.IdGenerator;
 import dbcache.utils.AsmUtils;
+import dbcache.utils.MutableInteger;
 import dbcache.utils.StringUtils;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.util.ReflectionUtils;
@@ -356,7 +358,7 @@ public class JdbcSupport {
 
     /**
      * 根据Sql查询对象列表
-     * @param clzz 实体类
+     * @param clzz 查询结果类型
      * @param sql SQL语句
      * @param params 参数列表
      * @param <T> 类泛型
@@ -393,6 +395,7 @@ public class JdbcSupport {
     /**
      * 根据Sql查询对象列表
      * @param sql SQL语句
+     * @param rowMapper 行映射
      * @param params 参数列表
      * @param <T> 类泛型
      * @return
@@ -687,32 +690,6 @@ public class JdbcSupport {
 			attributeInfo.setSqlType(rsmd.getColumnType(i));
 			i++;
 		}
-	}
-
-	// 可变Integer
-    public static final class MutableInteger{
-        private int val;
-        public MutableInteger(int val){
-            this.val = val;
-        }
-        public int get(){
-            return this.val;
-        }
-        public void set(int val){
-            this.val = val;
-        }
-        public int incrementAndGet() {
-        	return ++ this.val;
-        }
-        // 为了方便打印
-        public String toString() {
-            return Integer.toString(val);
-        }
-    }
-
-    public static void main(String[] args) {
-		String sql = new JdbcSupport().getOrCreateModelInfo(dbcache.test.Entity.class).getOrCreateFindIdByAttributeSql(Dialect.getDefaultDialect(), "num");
-		System.out.println(sql);
 	}
 
 

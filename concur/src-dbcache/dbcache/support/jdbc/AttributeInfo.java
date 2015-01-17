@@ -46,6 +46,11 @@ public class AttributeInfo<T> {
 	 * 是否为主键
 	 */
 	private boolean isPrimaryKey = false;
+	
+	/**
+	 * 属性类型
+	 */
+	private Class<?> type;
 
 	/**
 	 * 获取实例
@@ -63,6 +68,7 @@ public class AttributeInfo<T> {
 		columnInfo.attrGetter = AsmAccessHelper.createFieldGetter(clazz, field);
 		columnInfo.attrSetter = AsmAccessHelper.createFieldSetter(clazz, field);
 		columnInfo.index = index;
+		columnInfo.type = field.getDeclaringClass();
 		return columnInfo;
 	}
 
@@ -130,6 +136,14 @@ public class AttributeInfo<T> {
 
 	public void setPrimaryKey(boolean isPrimaryKey) {
 		this.isPrimaryKey = isPrimaryKey;
+	}
+
+	public Class<?> getType() {
+		return type;
+	}
+
+	public void setType(Class<?> type) {
+		this.type = type;
 	}
 
 }

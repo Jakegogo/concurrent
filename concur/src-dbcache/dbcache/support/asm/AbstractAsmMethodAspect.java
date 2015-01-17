@@ -33,24 +33,32 @@ public abstract class AbstractAsmMethodAspect implements Opcodes {
 	
 	/**
 	 * 方法执行前执行
+	 * @param entityClass TODO
 	 * @param mWriter MethodVisitor
 	 * @param method 方法
 	 * @param locals 本地变量数量
+	 * @param name 方法名
+	 * @param acc 访问权限
+	 * @param desc 描述
 	 * @return
 	 */
-	public int doBefore(MethodVisitor mWriter, Method method, int locals) {
+	public int doBefore(Class<?> entityClass, MethodVisitor mWriter, Method method, int locals, String name, int acc, String desc) {
 		//do nothing
 		return locals;
 	}
 
 	/**
 	 * 方法执行后执行
+	 * @param entityClass TODO
 	 * @param mWriter MethodVisitor
 	 * @param method 方法
 	 * @param locals 本地变量数量
+	 * @param name TODO
+	 * @param acc TODO
+	 * @param desc TODO
 	 * @return
 	 */
-	public int doAfter(MethodVisitor mWriter, Method method, int locals) {
+	public int doAfter(Class<?> entityClass, MethodVisitor mWriter, Method method, int locals, String name, int acc, String desc) {
 		//do nothing
 		return 0;
 	}

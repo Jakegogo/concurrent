@@ -13,6 +13,7 @@ import dbcache.service.*;
 import dbcache.support.asm.AsmAccessHelper;
 import dbcache.support.asm.EntityAsmFactory;
 import dbcache.support.asm.IndexMethodProxyAspect;
+import dbcache.support.asm.IndexMethodReplaceAspect;
 import dbcache.support.asm.ValueGetter;
 import dbcache.utils.ThreadUtils;
 
@@ -68,7 +69,7 @@ public class ConfigFactoryImpl implements ConfigFactory, DbCacheMBean {
 	private ApplicationContext applicationContext;
 
 	@Autowired
-	private IndexMethodProxyAspect methodAspect;
+	private IndexMethodReplaceAspect methodAspect;
 
 	/**
 	 * 数据库入库规则服务
@@ -145,7 +146,7 @@ public class ConfigFactoryImpl implements ConfigFactory, DbCacheMBean {
 
 
 			//初始化代理类
-			Class<?> proxyClazz = EntityAsmFactory.getEntityEnhancedClass(clz, methodAspect);
+			Class<?> proxyClazz = EntityAsmFactory.getEntityReplacedClass(clz, methodAspect);
 			cacheConfig.setProxyClazz(proxyClazz);
 
 			Field cacheConfigField = DbCacheServiceImpl.class.getDeclaredField(proxyCacheConfigProperty);

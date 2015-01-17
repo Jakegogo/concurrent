@@ -13,7 +13,7 @@ import java.lang.reflect.Modifier;
  * @author Jake
  * @date 2014年9月6日上午12:06:47
  */
-public class EntityClassAdapter extends ClassVisitor implements Opcodes {
+public class EntityClassProxyAdapter extends ClassVisitor implements Opcodes {
 
 	/** 构造方法名常量 */
 	public static final String INIT = "<init>";
@@ -40,11 +40,6 @@ public class EntityClassAdapter extends ClassVisitor implements Opcodes {
 	private Class<?> originalClass;
 
 	/**
-	 * 原始类名
-	 */
-	private String originalClassName;
-
-	/**
 	 * 代理类名
 	 */
 	private String enhancedClassName;
@@ -56,7 +51,7 @@ public class EntityClassAdapter extends ClassVisitor implements Opcodes {
 	 * @param targetClass 被代理类
 	 * @param writer  ClassWriter
 	 */
-	public EntityClassAdapter(String enhancedClassName, Class<?> targetClass,
+	public EntityClassProxyAdapter(String enhancedClassName, Class<?> targetClass,
 			ClassWriter writer) {
 		this(enhancedClassName, targetClass, writer, new AbstractAsmMethodAspect() {});
 	}
@@ -68,11 +63,10 @@ public class EntityClassAdapter extends ClassVisitor implements Opcodes {
 	 * @param writer ClassWriter
 	 * @param methodAspect 方法切面修改器
 	 */
-	public EntityClassAdapter(String enhancedClassName, Class<?> targetClass,
+	public EntityClassProxyAdapter(String enhancedClassName, Class<?> targetClass,
 			ClassWriter writer, AbstractAsmMethodAspect methodAspect) {
 		super(Opcodes.ASM4, writer);
 		this.classWriter = writer;
-		this.originalClassName = targetClass.getName();
 		this.enhancedClassName = enhancedClassName;
 		this.originalClass = targetClass;
 		this.methodAspect = methodAspect;
@@ -144,8 +138,9 @@ public class EntityClassAdapter extends ClassVisitor implements Opcodes {
 			}
 
 			// insert code here (before)
-			int aspectBeforeLocalNum = this.methodAspect.doBefore(mWriter, m, i);
+			int aspectBeforeLocalNum = this.methodAspect.doBefore(originalClass, mWriter, m, i, m.getName(), Opcodes.ACC_PUBLIC, null);
 
+			// 调用被代理对象源方法
 			// 如果不是静态方法 load this.obj对象
 			if (!Modifier.isStatic(m.getModifiers())) {
 				mWriter.visitVarInsn(Opcodes.ALOAD, 0);
@@ -178,7 +173,7 @@ public class EntityClassAdapter extends ClassVisitor implements Opcodes {
 			Type rt = Type.getReturnType(m);
 			// 没有返回值
 			if (rt.toString().equals("V")) {
-				aspectAfterLocalNum = this.methodAspect.doAfter(mWriter, m, i);
+				aspectAfterLocalNum = this.methodAspect.doAfter(originalClass, mWriter, m, i, m.getName(), Opcodes.ACC_PUBLIC, null);
 				mWriter.visitInsn(RETURN);
 			}
 			// 把return xxx() 转变成 ： Object o = xxx(); return o;
@@ -188,7 +183,7 @@ public class EntityClassAdapter extends ClassVisitor implements Opcodes {
 				int returnCode = AsmUtils.rtCode(rt);
 
 				mWriter.visitVarInsn(storeCode, i);
-				aspectAfterLocalNum = this.methodAspect.doAfter(mWriter, m, i);
+				aspectAfterLocalNum = this.methodAspect.doAfter(originalClass, mWriter, m, i, m.getName(), Opcodes.ACC_PUBLIC, null);
 				mWriter.visitVarInsn(loadCode, i);
 				mWriter.visitInsn(returnCode);
 			}

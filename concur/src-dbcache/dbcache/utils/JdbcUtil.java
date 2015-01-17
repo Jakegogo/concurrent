@@ -1,8 +1,5 @@
 package dbcache.utils;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.util.List;
 
 import org.springframework.beans.BeansException;
@@ -11,7 +8,6 @@ import org.springframework.context.ApplicationContextAware;
 import org.springframework.stereotype.Component;
 
 import dbcache.support.jdbc.JdbcSupport;
-import dbcache.support.jdbc.ModelInfo;
 import dbcache.support.jdbc.RowMapper;
 
 /**
@@ -38,36 +34,7 @@ public class JdbcUtil implements ApplicationContextAware {
     public static <T> T get(final Class<T> clzz, Object id) {
     	return jdbcSupport.get(clzz, id);
     }
-    
-    
-    /**
-     * 保存实体
-     * @param entity 实体对象
-     */
-    public static boolean save(Object entity) {
-    	return jdbcSupport.save(entity);
-    }
-    
-    
-    /**
-     * 更新实体
-     * @param entity 实体对象
-     * @return
-     */
-    public static boolean update(Object entity) {
-    	return jdbcSupport.update(entity);
-    }
-    
-    
-    /**
-     * 删除实体
-     * @param entity 实体
-     * @return
-     */
-    public static boolean delete(Object entity) {
-    	return jdbcSupport.delete(entity);
-    }
-    
+      
     
     /**
      * 根据属性查询实体列表
@@ -108,7 +75,7 @@ public class JdbcUtil implements ApplicationContextAware {
     
     /**
      * 根据Sql查询对象列表
-     * @param clzz 实体类
+     * @param clzz 查询结果类型
      * @param sql SQL语句
      * @param params 参数列表
      * @param <T> 类泛型
@@ -121,8 +88,8 @@ public class JdbcUtil implements ApplicationContextAware {
     
     /**
      * 根据Sql查询对象列表
-     * @param clzz 实体类
      * @param sql SQL语句
+     * @param rowMapper 行映射
      * @param params 参数列表
      * @param <T> 类泛型
      * @return

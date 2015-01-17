@@ -9,9 +9,10 @@ import dbcache.key.annotation.IdGenerate;
 import dbcache.model.IEntity;
 import dbcache.service.DbAccessService;
 import dbcache.service.DbRuleService;
-
+import dbcache.support.jdbc.ModelInfo;
 import dbcache.utils.GenericsUtils;
 import dbcache.utils.ReflectionUtility;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.helpers.FormattingTuple;
@@ -237,16 +238,18 @@ public class DbRuleServiceImpl implements DbRuleService {
 	}
 
 
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	@Override
 	public void initIdGenerators(Class<? extends IEntity> clz, CacheConfig cacheConfig) {
+		
 		// 初始化主键id生成器
 		if (clz.isAnnotationPresent(IdGenerate.class) || clz.isAnnotationPresent(Entity.class)) {
 
 			boolean validId = true;
 			//获取可用主键类型
 			Class<?> idType = GenericsUtils.getSuperClassGenricType(clz, 0);
+			
 			if (idType == null || idType != Long.class) {
-
 				Field[] fields = ReflectionUtility.getDeclaredFieldsWith(clz, Id.class, javax.persistence.Id.class);
 
 				if(fields != null && fields.length == 1) {
@@ -286,8 +289,10 @@ public class DbRuleServiceImpl implements DbRuleService {
 						}
 					}
 				}
+				
 				// 设置主键id生成器
 				cacheConfig.setIdGenerators(idGenerators);
+				
 				// 默认的服Id
 				Integer defaultSereverId = getDefaultServerId();
 				IdGenerator<?> defaultIdGenerator = idGenerators.get(defaultSereverId);
@@ -295,7 +300,51 @@ public class DbRuleServiceImpl implements DbRuleService {
 			}
 		}
 	}
+	
+	
+	@Override
+	public void initIdGenerators(Class<?> cls, ModelInfo modelInfo) {
+		
+		if(Long.class == modelInfo.getPrimaryKeyInfo().getType()) {
+			
+			//初始化主键Id生成器
+			Map<Integer, IdGenerator<?>> idGenerators = new IdentityHashMap<Integer, IdGenerator<?>>();
 
+			List<Integer> serverIdList = getServerIdList();
+			if (serverIdList != null && serverIdList.size() > 0) {//配置的服
+
+				for (int serverId: serverIdList) {
+
+					long minValue = ServerEntityIdRule.getMinValueOfEntityId(serverId);
+					long maxValue = ServerEntityIdRule.getMaxValueOfEntityId(serverId);
+
+					//当前最大id
+					long currMaxId = minValue;
+					Object resultId = this.dbAccessService.loadMaxId(cls, minValue, maxValue);
+					if (resultId != null) {
+						currMaxId = (Long) resultId;
+					}
+
+					LongGenerator idGenerator = new LongGenerator(currMaxId);
+					idGenerators.put(serverId, idGenerator);
+
+					if (logger.isInfoEnabled()) {
+						logger.info("服{}： {} 的当前自动增值ID：{}", new Object[] {serverId, cls.getName(), currMaxId});
+					}
+				}
+			}
+			
+			// 设置主键id生成器
+			modelInfo.setIdGenerators(idGenerators);
+			
+			// 默认的服Id
+			Integer defaultSereverId = getDefaultServerId();
+			IdGenerator<?> defaultIdGenerator = idGenerators.get(defaultSereverId);
+			modelInfo.setDefaultIdGenerator(defaultIdGenerator); // 默认Id主键生成器
+		}
+		
+	}
+	
 
 	/**
 	 * 判断是否是合法的服标识
@@ -409,4 +458,5 @@ public class DbRuleServiceImpl implements DbRuleService {
 		return delayWaitTimmer;
 	}
 
-	}
+
+}
