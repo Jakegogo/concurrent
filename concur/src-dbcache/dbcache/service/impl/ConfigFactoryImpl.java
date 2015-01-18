@@ -69,7 +69,7 @@ public class ConfigFactoryImpl implements ConfigFactory, DbCacheMBean {
 	private ApplicationContext applicationContext;
 
 	@Autowired
-	private IndexMethodReplaceAspect methodAspect;
+	private IndexMethodProxyAspect methodAspect;
 
 	/**
 	 * 数据库入库规则服务
@@ -146,7 +146,7 @@ public class ConfigFactoryImpl implements ConfigFactory, DbCacheMBean {
 
 
 			//初始化代理类
-			Class<?> proxyClazz = EntityAsmFactory.getEntityReplacedClass(clz, methodAspect);
+			Class<?> proxyClazz = EntityAsmFactory.getEntityEnhancedClass(clz, methodAspect);
 			cacheConfig.setProxyClazz(proxyClazz);
 
 			Field cacheConfigField = DbCacheServiceImpl.class.getDeclaredField(proxyCacheConfigProperty);
