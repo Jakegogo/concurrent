@@ -1,17 +1,13 @@
 package dbcache.test;
 
-import dbcache.support.asm.EntityAsmFactory;
-import dbcache.support.jdbc.JdbcSupport;
 import dbcache.service.Cache;
 import dbcache.service.DbCacheService;
+import dbcache.support.asm.EntityAsmFactory;
+import dbcache.support.jdbc.JdbcSupport;
 import dbcache.utils.*;
 import javassist.CannotCompileException;
 import javassist.NotFoundException;
-
 import org.apache.mina.util.ConcurrentHashSet;
-import org.hibernate.criterion.DetachedCriteria;
-import org.hibernate.criterion.Projections;
-import org.hibernate.criterion.Restrictions;
 import org.junit.Assert;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,7 +16,6 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import javax.annotation.Resource;
-
 import java.io.Serializable;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
@@ -375,6 +370,12 @@ public class Test {
 		List<List> list = jdbcSupport.listBySql(List.class, "select * from entity");
 		System.out.println(list);
 	}
-	
+
+
+	@org.junit.Test
+	public void t19() {
+		t10();
+		t10();
+	}
 
 }
