@@ -5,10 +5,8 @@ import dbcache.annotation.EnableIndex;
 import dbcache.key.IdGenerator;
 import dbcache.service.impl.ConcurrentLinkedHashMapCache;
 import dbcache.support.asm.ValueGetter;
-import dbcache.support.jackson.ToStringJsonSerializer;
 import dbcache.utils.AnnotationUtils;
 import dbcache.utils.JsonUtils;
-import org.codehaus.jackson.map.annotate.JsonSerialize;
 
 import java.util.*;
 
@@ -219,7 +217,6 @@ public class CacheConfig<T> {
 		this.enableIndex = enableIndex;
 	}
 
-	@JsonSerialize(using = ToStringJsonSerializer.class)
 	public Map<String, ValueGetter<T>> getIndexes() {
 		return indexes;
 	}
