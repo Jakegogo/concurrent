@@ -4,7 +4,7 @@ import java.lang.ref.ReferenceQueue;
 
 
 /**
- * 缓存容器接口
+ * 缓存单元接口
  * @author jake
  * @date 2014-7-31-下午8:31:25
  */

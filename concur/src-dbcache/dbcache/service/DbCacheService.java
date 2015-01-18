@@ -1,16 +1,18 @@
 package dbcache.service;
 
+import dbcache.key.IdGenerator;
+import dbcache.model.IEntity;
+
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 
-import dbcache.key.IdGenerator;
-import dbcache.model.IEntity;
-
 
 /**
  * 数据库缓存接口
+ * <br/>已经集成Cache,调用接口将同时修改缓存并同步到数据库
+ * <br/>已经集成DbIndexService,需要修改数据索引,需启用dbcache.annotation.Cached#enableIndex(),直接调用实体更改的方法即可
  * @author jake
  * @date 2014-7-31-下午6:06:15
  */
@@ -67,8 +69,7 @@ public interface DbCacheService<T extends IEntity<PK>, PK extends Comparable<PK>
 	/**
 	 * 根据索引获取实体列表
 	 * <br/>内部已维护索引表
-	 * @see dbcache.service.IndexService<PK>
-	 * @see dbcache.model.Sortable<PK>
+	 * @see dbcache.service.DbIndexService<PK>
 	 * @param indexName 索引名
 	 * @param indexValue 索引值
 	 * @return
@@ -79,8 +80,7 @@ public interface DbCacheService<T extends IEntity<PK>, PK extends Comparable<PK>
 	/**
 	 * 根据索引获取实体Id列表
 	 * <br/>内部已维护索引表
-	 * @see dbcache.service.IndexService<PK>
-	 * @see dbcache.model.Sortable<PK>
+	 * @see dbcache.service.DbIndexService<PK>
 	 * @param indexName 索引名
 	 * @param indexValue 索引值
 	 * @return
@@ -91,8 +91,7 @@ public interface DbCacheService<T extends IEntity<PK>, PK extends Comparable<PK>
 	/**
 	 * 根据索引获取实体列表
 	 * <br/>内部已维护索引表
-	 * @see dbcache.service.IndexService<PK>
-	 * @see dbcache.model.Sortable<PK>
+	 * @see dbcache.service.DbIndexService<PK>
 	 * @param indexName 索引名
 	 * @param indexValue 索引值
 	 * @param page 页码
@@ -122,7 +121,9 @@ public interface DbCacheService<T extends IEntity<PK>, PK extends Comparable<PK>
 
 
 	/**
-	 * 获取缓存
+	 * 获取缓存单元
+	 * <br/>对缓存单元的操作将不会同步到数据库
+	 * <br/>
 	 * @return
 	 */
 	Cache getCache();
@@ -130,6 +131,8 @@ public interface DbCacheService<T extends IEntity<PK>, PK extends Comparable<PK>
 
 	/**
 	 * 获取索引Service
+	 * <br/>对DbIndexService的操作将不会同步到数据库
+	 * <br/>需要修改数据索引,需启用dbcache.annotation.Cached#enableIndex(),直接调用实体更改的方法即可
 	 * @return
 	 */
 	DbIndexService<PK> getIndexService();
