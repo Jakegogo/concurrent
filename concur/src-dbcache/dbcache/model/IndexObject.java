@@ -2,8 +2,7 @@ package dbcache.model;
 
 import java.io.Serializable;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.locks.ReadWriteLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * 索引缓存对象
@@ -21,17 +20,17 @@ public class IndexObject<PK extends Comparable<PK> & Serializable> {
 	/**
 	 * 索引键更新状态
 	 */
-	private volatile PersistStatus updateStatus = PersistStatus.TRANSIENT;
+	private AtomicReference<PersistStatus> updateStatus = new AtomicReference<PersistStatus>(PersistStatus.TRANSIENT);
+
+	/**
+	 * 是否持久状态
+	 */
+	private volatile boolean doPersist = false;
 
 	/**
 	 * 索引区域缓存
 	 */
 	private ConcurrentHashMap<PK, Boolean> indexValues = new ConcurrentHashMap<PK, Boolean>();
-
-	/**
-	 * 索引缓存持有锁
-	 */
-	private ReadWriteLock lock = new ReentrantReadWriteLock();
 
 
 	/**
@@ -54,7 +53,7 @@ public class IndexObject<PK extends Comparable<PK> & Serializable> {
 	public static <PK extends Comparable<PK> & Serializable> IndexObject<PK> valueOf(IndexKey indexKey, PersistStatus updateStatus) {
 		IndexObject<PK> indexObject = new IndexObject<PK>();
 		indexObject.indexKey = indexKey;
-		indexObject.updateStatus = updateStatus;
+		indexObject.updateStatus.set(updateStatus);
 		return indexObject;
 	}
 
@@ -68,11 +67,11 @@ public class IndexObject<PK extends Comparable<PK> & Serializable> {
 	}
 
 	public PersistStatus getUpdateStatus() {
-		return updateStatus;
+		return updateStatus.get();
 	}
 
-	public void setUpdateStatus(PersistStatus updateStatus) {
-		this.updateStatus = updateStatus;
+	public boolean compareAndSetUpdateStatus(PersistStatus preUpdateStatus, PersistStatus updateStatus) {
+		return this.updateStatus.compareAndSet(preUpdateStatus, updateStatus);
 	}
 
 	public ConcurrentHashMap<PK, Boolean> getIndexValues() {
@@ -83,13 +82,12 @@ public class IndexObject<PK extends Comparable<PK> & Serializable> {
 		this.indexValues = indexValues;
 	}
 
-	public ReadWriteLock getLock() {
-		return lock;
+
+	public boolean isDoPersist() {
+		return doPersist;
 	}
 
-	public void setLock(ReadWriteLock lock) {
-		this.lock = lock;
+	public void setDoPersist(boolean doPersist) {
+		this.doPersist = doPersist;
 	}
-
-
 }
