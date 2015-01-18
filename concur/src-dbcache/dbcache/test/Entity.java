@@ -116,8 +116,8 @@ public class Entity implements EntityInitializer, IEntity<Long> {
 	public int hashCode() {
 		return 305668771 + 1793910479 * this.getId().hashCode();
 	}
-	
-	
+
+
 
 	@Override
 	public String toString() {

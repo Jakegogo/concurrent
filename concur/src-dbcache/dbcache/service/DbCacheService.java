@@ -13,6 +13,8 @@ import java.util.concurrent.ExecutorService;
  * 数据库缓存接口
  * <br/>已经集成Cache,调用接口将同时修改缓存并同步到数据库
  * <br/>已经集成DbIndexService,需要修改数据索引,需启用dbcache.annotation.Cached#enableIndex(),直接调用实体更改的方法即可
+ * <br/>仅采用Hibernate的自动建表工具,数据库交互使用Jdbc,@see {@link dbcache.support.jdbc.JdbcSupport}
+ * <br/>数据库交互不使用事务,需要业务逻辑维护缓存的事务性
  * @author jake
  * @date 2014-7-31-下午6:06:15
  */

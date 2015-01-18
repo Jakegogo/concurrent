@@ -73,9 +73,6 @@ public class EntityClassReplaceAdapter extends ClassVisitor implements Opcodes {
 		this.enhancedClassName = enhancedClassName;
 		this.originalClass = targetClass;
 		this.methodAspect = methodAspect;
-		
-		// 初始化类信息
-		this.methodAspect.doInitClass(classWriter, originalClass, enhancedClassName);
 	}
 
 

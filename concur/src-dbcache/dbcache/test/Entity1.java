@@ -32,4 +32,22 @@ public class Entity1 extends Entity {
 	    indexService.update(this.obj, "uid_idx", localInteger1, localInteger2);
 	  }
 
+	  @Override
+	  public boolean equals(Object paramObject)
+	  {
+		  if(paramObject.getClass() == this.getClass()) {
+			  return this.obj.equals(((EnhancedEntity)paramObject).obj);
+		  }
+	    return this.obj.equals(paramObject);
+	  }
+
+	  public boolean test(int i) {
+		  if(i == 1) {
+			  if( i == 2) {
+			  return true;
+			  }
+		  }
+		  return false;
+	  }
+
 }

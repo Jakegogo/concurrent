@@ -378,7 +378,10 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 
 		}
 
-		return (T) this.get(entity.getId());
+		if (cacheObject != null && cacheObject.getPersistStatus() != PersistStatus.DELETED) {
+			return cacheObject.getProxyEntity();
+		}
+		return null;
 	}
 
 

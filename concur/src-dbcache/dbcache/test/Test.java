@@ -315,12 +315,12 @@ public class Test {
 	public void t13() {
 
 //		for(int i = 0;i < 100;i++) {
-			Long id = Long.valueOf(100);
+			Long id = Long.valueOf(104);
 			Entity entity = new Entity();
 			entity.setId(id);
 
-			this.cacheService.submitCreate(entity);
-
+			entity = this.cacheService.submitCreate(entity);
+//			Assert.assertEquals(this.cacheService.get(id), entity);
 			Assert.assertEquals(entity, this.cacheService.get(id));
 //		}
 

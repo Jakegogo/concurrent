@@ -115,8 +115,11 @@ public class EntityAsmFactory {
 
 			// 初始化实体类的方法切面信息
 			methodAspect.initClassMetaInfo(clazz, enhancedClassName);
+
 			ClassVisitor visitor = new EntityClassProxyAdapter(enhancedClassName, clazz,
 					writer, methodAspect);
+			methodAspect.doInitClass(writer, clazz, enhancedClassName);
+
 			reader.accept(visitor, 0);
 			byte[] byteCodes = writer.toByteArray();
 			AsmUtils.writeClazz(enhancedClassName, byteCodes);
