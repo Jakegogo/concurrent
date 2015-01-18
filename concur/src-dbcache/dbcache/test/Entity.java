@@ -7,18 +7,17 @@ import dbcache.conf.CacheType;
 import dbcache.conf.PersistType;
 import dbcache.model.EntityInitializer;
 import dbcache.model.IEntity;
-
 import org.apache.mina.util.ConcurrentHashSet;
 import org.hibernate.annotations.Index;
 
 import javax.persistence.Id;
 import javax.persistence.Transient;
-
 import java.lang.reflect.Method;
 import java.util.concurrent.atomic.AtomicInteger;
 
 @Cached(persistType=PersistType.INTIME, enableIndex = true, cacheType=CacheType.LRU, entitySize = 2)
 @javax.persistence.Entity
+//@MappedSuperclass
 public class Entity implements EntityInitializer, IEntity<Long> {
 
 	public static final String NUM_INDEX = "num_idx";

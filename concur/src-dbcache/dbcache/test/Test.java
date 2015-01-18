@@ -14,10 +14,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.util.ReflectionUtils;
 
 import javax.annotation.Resource;
 import java.io.Serializable;
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.List;
@@ -376,6 +378,18 @@ public class Test {
 	public void t19() {
 		t10();
 		t10();
+	}
+
+
+	@org.junit.Test
+	public void t20() {
+		ReflectionUtils.doWithFields(SubEntity.class, new ReflectionUtils.FieldCallback() {
+
+			@Override
+			public void doWith(Field field) throws IllegalArgumentException, IllegalAccessException {
+				System.out.println("field:" + field.getName());
+			}
+		});
 	}
 
 }
