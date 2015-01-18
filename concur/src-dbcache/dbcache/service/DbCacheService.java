@@ -5,6 +5,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 
+import dbcache.key.IdGenerator;
 import dbcache.model.IEntity;
 
 
@@ -132,4 +133,20 @@ public interface DbCacheService<T extends IEntity<PK>, PK extends Comparable<PK>
 	 * @return
 	 */
 	DbIndexService<PK> getIndexService();
+
+
+	/**
+	 * 注册实体默认的主键id生成器
+	 * @param idGenerator 主键id生成器接口
+	 */
+	void registerEntityIdGenerator(IdGenerator<?> idGenerator);
+
+
+	/**
+	 * 注册实体主键id生成器
+	 * @param serverId 服标识
+	 * @param idGenerator 主键id生成器接口
+	 */
+	void registerEntityIdGenerator(int serverId, IdGenerator<?> idGenerator);
+
 }

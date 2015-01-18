@@ -3,6 +3,7 @@ package dbcache.service.impl;
 import dbcache.annotation.ThreadSafe;
 import dbcache.conf.CacheConfig;
 import dbcache.conf.Inject;
+import dbcache.key.IdGenerator;
 import dbcache.model.CacheObject;
 import dbcache.model.IEntity;
 import dbcache.model.IndexValue;
@@ -456,6 +457,16 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 	@Override
 	public DbIndexService<PK> getIndexService() {
 		return indexService;
+	}
+
+	@Override
+	public void registerEntityIdGenerator(IdGenerator<?> idGenerator) {
+		configFactory.registerEntityIdGenerator(this.clazz, idGenerator);
+	}
+
+	@Override
+	public void registerEntityIdGenerator(int serverId, IdGenerator<?> idGenerator) {
+		configFactory.registerEntityIdGenerator(serverId, this.clazz, idGenerator);
 	}
 
 	@Override

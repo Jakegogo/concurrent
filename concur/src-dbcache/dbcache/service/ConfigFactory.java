@@ -60,6 +60,14 @@ public interface ConfigFactory {
 
 
 	/**
+	 * 注册实体默认的主键id生成器
+	 * @param clazz  实体类型
+	 * @param idGenerator 主键id生成器接口
+	 */
+	public void registerEntityIdGenerator(Class<?> clazz, IdGenerator<?> idGenerator);
+
+
+	/**
 	 * 注册实体主键id生成器
 	 * @param serverId 服标识
 	 * @param clazz  实体类型
