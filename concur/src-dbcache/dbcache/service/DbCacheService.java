@@ -1,15 +1,20 @@
 package dbcache.service;
 
+import dbcache.key.IdGenerator;
+import dbcache.model.IEntity;
+
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 
-import dbcache.model.IEntity;
-
 
 /**
  * 数据库缓存接口
+ * <br/>已经集成Cache,调用接口将同时修改缓存并同步到数据库
+ * <br/>已经集成DbIndexService,需要修改数据索引,需启用dbcache.annotation.Cached#enableIndex(),直接调用实体更改的方法即可
+ * <br/>仅采用Hibernate的自动建表工具,数据库交互使用Jdbc,@see {@link dbcache.support.jdbc.JdbcSupport}
+ * <br/>数据库交互不使用事务,需要业务逻辑维护缓存的事务性
  * @author jake
  * @date 2014-7-31-下午6:06:15
  */
@@ -66,8 +71,7 @@ public interface DbCacheService<T extends IEntity<PK>, PK extends Comparable<PK>
 	/**
 	 * 根据索引获取实体列表
 	 * <br/>内部已维护索引表
-	 * @see dbcache.service.IndexService<PK>
-	 * @see dbcache.model.Sortable<PK>
+	 * @see dbcache.service.DbIndexService<PK>
 	 * @param indexName 索引名
 	 * @param indexValue 索引值
 	 * @return
@@ -78,8 +82,7 @@ public interface DbCacheService<T extends IEntity<PK>, PK extends Comparable<PK>
 	/**
 	 * 根据索引获取实体Id列表
 	 * <br/>内部已维护索引表
-	 * @see dbcache.service.IndexService<PK>
-	 * @see dbcache.model.Sortable<PK>
+	 * @see dbcache.service.DbIndexService<PK>
 	 * @param indexName 索引名
 	 * @param indexValue 索引值
 	 * @return
@@ -90,8 +93,7 @@ public interface DbCacheService<T extends IEntity<PK>, PK extends Comparable<PK>
 	/**
 	 * 根据索引获取实体列表
 	 * <br/>内部已维护索引表
-	 * @see dbcache.service.IndexService<PK>
-	 * @see dbcache.model.Sortable<PK>
+	 * @see dbcache.service.DbIndexService<PK>
 	 * @param indexName 索引名
 	 * @param indexValue 索引值
 	 * @param page 页码
@@ -121,7 +123,9 @@ public interface DbCacheService<T extends IEntity<PK>, PK extends Comparable<PK>
 
 
 	/**
-	 * 获取缓存
+	 * 获取缓存单元
+	 * <br/>对缓存单元的操作将不会同步到数据库
+	 * <br/>
 	 * @return
 	 */
 	Cache getCache();
@@ -129,7 +133,25 @@ public interface DbCacheService<T extends IEntity<PK>, PK extends Comparable<PK>
 
 	/**
 	 * 获取索引Service
+	 * <br/>对DbIndexService的操作将不会同步到数据库
+	 * <br/>需要修改数据索引,需启用dbcache.annotation.Cached#enableIndex(),直接调用实体更改的方法即可
 	 * @return
 	 */
 	DbIndexService<PK> getIndexService();
+
+
+	/**
+	 * 注册实体默认的主键id生成器
+	 * @param idGenerator 主键id生成器接口
+	 */
+	void registerEntityIdGenerator(IdGenerator<?> idGenerator);
+
+
+	/**
+	 * 注册实体主键id生成器
+	 * @param serverId 服标识
+	 * @param idGenerator 主键id生成器接口
+	 */
+	void registerEntityIdGenerator(int serverId, IdGenerator<?> idGenerator);
+
 }

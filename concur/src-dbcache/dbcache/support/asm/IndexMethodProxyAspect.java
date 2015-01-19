@@ -201,7 +201,7 @@ public class IndexMethodProxyAspect extends AbstractAsmMethodProxyAspect {
 		//获取索引属性
 		final Map<String, Field> fieldsMap = classIndexesMetaData.indexFields;
 
-		for(MethodMetaData methodMetaData : methodMetaDatas) {
+		for (MethodMetaData methodMetaData : methodMetaDatas) {
 			//获取属性
 			final Field field = fieldsMap.get(methodMetaData.indexName);
 			//获取this.obj.fieldName
@@ -309,6 +309,20 @@ public class IndexMethodProxyAspect extends AbstractAsmMethodProxyAspect {
 		return locals;
 	}
 
+	@Override
+	public boolean needOverride(Class<?> entityClass, Method method) {
+		//获取类信息
+		ClassIndexesMetaData classIndexesMetaData = CLASS_INDEX_INFO.get(entityClass);
+		if(classIndexesMetaData == null) {
+			return false;
+		}
+		//获取需要拦截的方法列表
+		final Map<Method, Set<MethodMetaData>> methodsMap = classIndexesMetaData.changeIndexValueMethods;
+		if(!methodsMap.containsKey(method)) {
+			return false;
+		}
+		return true;
+	}
 
 
 	@Override

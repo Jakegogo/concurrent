@@ -95,7 +95,7 @@ public class EntityAsmFactory {
 	 */
 	@SuppressWarnings("unchecked")
 	public static <T> Class<T> getEntityEnhancedClass(Class<T> clazz,
-			AbstractAsmMethodReplaceAspect methodAspect) {
+			AbstractAsmMethodProxyAspect methodAspect) {
 		// 从缓存这获取
 		if (ENHANCED_CLASS_CACHE.containsKey(clazz)) {
 			return (Class<T>) ENHANCED_CLASS_CACHE.get(clazz);
@@ -115,8 +115,11 @@ public class EntityAsmFactory {
 
 			// 初始化实体类的方法切面信息
 			methodAspect.initClassMetaInfo(clazz, enhancedClassName);
-			ClassVisitor visitor = new EntityClassReplaceAdapter(enhancedClassName, clazz,
+
+			ClassVisitor visitor = new EntityClassProxyAdapter(enhancedClassName, clazz,
 					writer, methodAspect);
+			methodAspect.doInitClass(writer, clazz, enhancedClassName);
+
 			reader.accept(visitor, 0);
 			byte[] byteCodes = writer.toByteArray();
 			AsmUtils.writeClazz(enhancedClassName, byteCodes);

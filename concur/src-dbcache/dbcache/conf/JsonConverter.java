@@ -113,10 +113,8 @@ public class JsonConverter<T> implements Cloneable {
             sourceSetter.set(target, null);
             return;
         }
-        // 转换成Json
-        Object jsonObject = JSON.toJSON(object);
         // 设值到json串属性
-        sourceSetter.set(target, jsonObject == null ? null : jsonObject.toString());
+        sourceSetter.set(target, JSON.toJSONString(object));
     }
 
 

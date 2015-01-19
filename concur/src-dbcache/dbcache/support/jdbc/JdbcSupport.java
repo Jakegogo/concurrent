@@ -4,7 +4,6 @@ import dbcache.key.IdGenerator;
 import dbcache.utils.AsmUtils;
 import dbcache.utils.MutableInteger;
 import dbcache.utils.StringUtils;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.util.ReflectionUtils;
@@ -23,7 +22,13 @@ import java.util.concurrent.ConcurrentMap;
 
 /**
  * Jdbc Dao支持
- * <br/> 支持javax.persistence部分注解
+ * <br/> 支持部分javax.persistence注解
+ * @see javax.persistence.Table
+ * @see javax.persistence.Id
+ * @see javax.persistence.Column
+ * @see javax.persistence.Transient
+ * @see javax.persistence.Entity
+ * @see javax.persistence.MappedSuperclass //TODO
  * Created by Jake on 2015/1/10.
  */
 @Component
@@ -535,7 +540,13 @@ public class JdbcSupport {
     	if (clzz.isAnnotationPresent(javax.persistence.Table.class)) {
     		javax.persistence.Table tableAnno = clzz.getAnnotation(javax.persistence.Table.class);
     		tableName = tableAnno.name();
-    	} else {
+    	} else if(clzz.isAnnotationPresent(javax.persistence.Entity.class)) {
+			javax.persistence.Entity entityAnno = clzz.getAnnotation(javax.persistence.Entity.class);
+			if (!StringUtils.isEmpty(entityAnno.name())) {
+				tableName = StringUtils.getLString(entityAnno.name());
+			}
+		}
+		if (StringUtils.isEmpty(tableName)) {
     		tableName = StringUtils.getLString(clzz.getSimpleName());
     	}
     	// 创建TableInfo对象

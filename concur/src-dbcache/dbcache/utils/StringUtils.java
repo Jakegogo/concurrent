@@ -15,6 +15,9 @@ public class StringUtils {
 	 * @return 替换后的字符串
 	 */
 	public static String getLString(String str) {
+		if(str == null || str.length() == 0) {
+			return str;
+		}
 		char c = str.charAt(0);
 		if (c >= 'A' && c <= 'Z') {
 			c = (char) (c + 32); 
@@ -35,6 +38,9 @@ public class StringUtils {
 	 * @return 替换后的字符串
 	 */
 	public static String getUString(String str) {
+		if(str == null || str.length() == 0) {
+			return str;
+		}
 		char c = str.charAt(0);
 		if (c >= 'a' && c <= 'z') {
 			c = (char) (c - 32); 
@@ -47,6 +53,15 @@ public class StringUtils {
 		chars[0] = c;
  		return new String(chars);
 	}
-	
+
+
+	/**
+	 * 判断字符串是否为空
+	 * @param str 目标字符串
+	 * @return
+	 */
+	public static boolean isEmpty(String str) {
+		return str == null || str.trim().length() == 0;
+	}
 
 }

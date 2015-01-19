@@ -1,28 +1,25 @@
 package dbcache.test;
 
-import dbcache.support.asm.EntityAsmFactory;
-import dbcache.support.jdbc.JdbcSupport;
 import dbcache.service.Cache;
 import dbcache.service.DbCacheService;
+import dbcache.support.asm.EntityAsmFactory;
+import dbcache.support.jdbc.JdbcSupport;
 import dbcache.utils.*;
 import javassist.CannotCompileException;
 import javassist.NotFoundException;
-
 import org.apache.mina.util.ConcurrentHashSet;
-import org.hibernate.criterion.DetachedCriteria;
-import org.hibernate.criterion.Projections;
-import org.hibernate.criterion.Restrictions;
 import org.junit.Assert;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.util.ReflectionUtils;
 
 import javax.annotation.Resource;
-
 import java.io.Serializable;
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.List;
@@ -318,12 +315,12 @@ public class Test {
 	public void t13() {
 
 //		for(int i = 0;i < 100;i++) {
-			Long id = Long.valueOf(100);
+			Long id = Long.valueOf(104);
 			Entity entity = new Entity();
 			entity.setId(id);
 
-			this.cacheService.submitCreate(entity);
-
+			entity = this.cacheService.submitCreate(entity);
+//			Assert.assertEquals(this.cacheService.get(id), entity);
 			Assert.assertEquals(entity, this.cacheService.get(id));
 //		}
 
@@ -375,6 +372,24 @@ public class Test {
 		List<List> list = jdbcSupport.listBySql(List.class, "select * from entity");
 		System.out.println(list);
 	}
-	
+
+
+	@org.junit.Test
+	public void t19() {
+		t10();
+		t10();
+	}
+
+
+	@org.junit.Test
+	public void t20() {
+		ReflectionUtils.doWithFields(SubEntity.class, new ReflectionUtils.FieldCallback() {
+
+			@Override
+			public void doWith(Field field) throws IllegalArgumentException, IllegalAccessException {
+				System.out.println("field:" + field.getName());
+			}
+		});
+	}
 
 }

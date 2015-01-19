@@ -24,6 +24,9 @@ public class EntityClassProxyAdapter extends ClassVisitor implements Opcodes {
 	/** 处理类对象的属性名 */
 	public static final String HANDLER_OBJECT = "handler";
 
+	/** equals方法名 */
+	public static final String EQUALS_METHOD = "equals";
+
 	/**
 	 * 切面方法重写器
 	 */
@@ -105,8 +108,6 @@ public class EntityClassProxyAdapter extends ClassVisitor implements Opcodes {
 
 	@Override
 	public void visitEnd() {
-		
-		methodAspect.doInitClass(classWriter, originalClass, enhancedClassName);
 
 		// 获取所有方法，并重写(main方法 和 Object的方法除外)
 		Method[] methods = originalClass.getMethods();
@@ -115,6 +116,13 @@ public class EntityClassProxyAdapter extends ClassVisitor implements Opcodes {
 			if (!AsmUtils.needOverride(m)) {
 				continue;
 			}
+
+			// 覆盖equals方法
+			if (EQUALS_METHOD.equals(m.getName())) {
+				this.buildEqualsMethod(m);
+				continue;
+			}
+
 			Type mt = Type.getType(m);
 
 			// 方法是被哪个类定义的
@@ -168,28 +176,39 @@ public class EntityClassProxyAdapter extends ClassVisitor implements Opcodes {
 			//doBefore 累加方法访问的本地变量数
 			i = aspectBeforeLocalNum;
 
-			int aspectAfterLocalNum = 0;
 			// 处理返回值类型
 			Type rt = Type.getReturnType(m);
-			// 没有返回值
-			if (rt.toString().equals("V")) {
-				aspectAfterLocalNum = this.methodAspect.doAfter(originalClass, mWriter, m, i, m.getName(), Opcodes.ACC_PUBLIC, null);
-				mWriter.visitInsn(RETURN);
-			}
-			// 把return xxx() 转变成 ： Object o = xxx(); return o;
-			else {
-				int storeCode = AsmUtils.storeCode(rt);
-				int loadCode = AsmUtils.loadCode(rt);
-				int returnCode = AsmUtils.rtCode(rt);
+			// 需要重写
+			if (this.methodAspect.needOverride(originalClass, m)) {
+				int aspectAfterLocalNum = 0;
 
-				mWriter.visitVarInsn(storeCode, i);
-				aspectAfterLocalNum = this.methodAspect.doAfter(originalClass, mWriter, m, i, m.getName(), Opcodes.ACC_PUBLIC, null);
-				mWriter.visitVarInsn(loadCode, i);
-				mWriter.visitInsn(returnCode);
-			}
+				// 没有返回值
+				if (rt.toString().equals("V")) {
+					aspectAfterLocalNum = this.methodAspect.doAfter(originalClass, mWriter, m, i, m.getName(), Opcodes.ACC_PUBLIC, null);
+					mWriter.visitInsn(RETURN);
+				}
+				// 把return xxx() 转变成 ： Object o = xxx(); return o;
+				else {
+					int storeCode = AsmUtils.storeCode(rt);
+					int loadCode = AsmUtils.loadCode(rt);
+					int returnCode = AsmUtils.rtCode(rt);
 
-			//doBefore 累加方法访问的本地变量数
-			i = aspectAfterLocalNum;
+					mWriter.visitVarInsn(storeCode, i);
+					aspectAfterLocalNum = this.methodAspect.doAfter(originalClass, mWriter, m, i, m.getName(), Opcodes.ACC_PUBLIC, null);
+					mWriter.visitVarInsn(loadCode, i);
+					mWriter.visitInsn(returnCode);
+				}
+
+				//doBefore 累加方法访问的本地变量数
+				i = aspectAfterLocalNum;
+			} else {
+				// 没有返回值
+				if (rt.toString().equals("V")) {
+					mWriter.visitInsn(RETURN);
+				} else {
+					mWriter.visitInsn(AsmUtils.rtCode(rt));
+				}
+			}
 
 			// 已设置了自动计算，但还是要调用一下，不然会报错
 			mWriter.visitMaxs(i, ++i);
@@ -197,6 +216,77 @@ public class EntityClassProxyAdapter extends ClassVisitor implements Opcodes {
 		}
 		cv.visitEnd();
 		
+	}
+
+	// 构建equals方法
+	private void buildEqualsMethod(Method m) {
+
+		Type mt = Type.getType(m);
+
+		// 方法是被哪个类定义的
+		String declaringCls = AsmUtils.toAsmCls(m.getDeclaringClass()
+				.getName());
+
+		// 方法 description
+		MethodVisitor mWriter = classWriter.visitMethod(ACC_PUBLIC,
+				m.getName(), mt.toString(), null, null);
+
+		// 处理返回值类型
+		Type rt = Type.getReturnType(m);
+		int returnCode = AsmUtils.rtCode(rt);
+
+//		public boolean equals(Object paramObject)
+//		{
+//			if(paramObject.getClass() == EnhancedEntity.class) {
+//				return this.obj.equals(((EnhancedEntity)paramObject).obj);
+//			}
+
+		mWriter.visitVarInsn(ALOAD, 1);
+		mWriter.visitMethodInsn(INVOKEVIRTUAL, "java/lang/Object", "getClass", "()Ljava/lang/Class;", false);
+		mWriter.visitVarInsn(ALOAD, 0);
+		mWriter.visitMethodInsn(INVOKEVIRTUAL, "java/lang/Object", "getClass", "()Ljava/lang/Class;", false);
+		Label l1 = new Label();
+		mWriter.visitJumpInsn(IF_ACMPNE, l1);
+		mWriter.visitVarInsn(ALOAD, 0);
+		mWriter.visitFieldInsn(GETFIELD, AsmUtils.toAsmCls(enhancedClassName), REAL_OBJECT, Type.getDescriptor(originalClass));
+		mWriter.visitVarInsn(ALOAD, 1);
+		mWriter.visitTypeInsn(CHECKCAST, AsmUtils.toAsmCls(enhancedClassName));
+		mWriter.visitFieldInsn(GETFIELD, AsmUtils.toAsmCls(enhancedClassName), REAL_OBJECT, Type.getDescriptor(originalClass));
+		mWriter.visitMethodInsn(INVOKEVIRTUAL, AsmUtils.toAsmCls(originalClass.getName()), "equals", "(Ljava/lang/Object;)Z", false);
+		mWriter.visitInsn(returnCode);
+		mWriter.visitLabel(l1);
+
+		//			return this.obj.equals(paramObject);
+//		}
+
+		mWriter.visitFrame(Opcodes.F_SAME, 0, null, 0, null);
+
+		mWriter.visitVarInsn(Opcodes.ALOAD, 0);
+		mWriter.visitFieldInsn(Opcodes.GETFIELD,
+				AsmUtils.toAsmCls(enhancedClassName), REAL_OBJECT,
+				Type.getDescriptor(originalClass));
+
+		int i = 1;
+		// load 出方法的所有参数
+		for (Class<?> tCls : m.getParameterTypes()) {
+			Type t = Type.getType(tCls);
+			mWriter.visitVarInsn(AsmUtils.loadCode(t), i++);
+			// long和double 用64位表示，要后移一个位置，否则会报错
+			if (t.getSort() == Type.LONG || t.getSort() == Type.DOUBLE) {
+				i++;
+			}
+		}
+
+		// this.obj.xxx();
+		mWriter.visitMethodInsn(INVOKEVIRTUAL,
+				AsmUtils.toAsmCls(declaringCls), m.getName(),
+				mt.toString());
+
+		mWriter.visitInsn(returnCode);
+
+		// 已设置了自动计算，但还是要调用一下，不然会报错
+		mWriter.visitMaxs(i, ++i);
+		mWriter.visitEnd();
 	}
 
 }

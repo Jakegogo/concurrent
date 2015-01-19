@@ -13,10 +13,8 @@ import dbcache.service.*;
 import dbcache.support.asm.AsmAccessHelper;
 import dbcache.support.asm.EntityAsmFactory;
 import dbcache.support.asm.IndexMethodProxyAspect;
-import dbcache.support.asm.IndexMethodReplaceAspect;
 import dbcache.support.asm.ValueGetter;
 import dbcache.utils.ThreadUtils;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.helpers.FormattingTuple;
@@ -30,7 +28,6 @@ import org.springframework.util.ReflectionUtils.FieldCallback;
 
 import javax.annotation.PostConstruct;
 import javax.management.*;
-
 import java.io.Serializable;
 import java.lang.management.ManagementFactory;
 import java.lang.reflect.Constructor;
@@ -69,7 +66,7 @@ public class ConfigFactoryImpl implements ConfigFactory, DbCacheMBean {
 	private ApplicationContext applicationContext;
 
 	@Autowired
-	private IndexMethodReplaceAspect methodAspect;
+	private IndexMethodProxyAspect methodAspect;
 
 	/**
 	 * 数据库入库规则服务
@@ -146,7 +143,7 @@ public class ConfigFactoryImpl implements ConfigFactory, DbCacheMBean {
 
 
 			//初始化代理类
-			Class<?> proxyClazz = EntityAsmFactory.getEntityReplacedClass(clz, methodAspect);
+			Class<?> proxyClazz = EntityAsmFactory.getEntityEnhancedClass(clz, methodAspect);
 			cacheConfig.setProxyClazz(proxyClazz);
 
 			Field cacheConfigField = DbCacheServiceImpl.class.getDeclaredField(proxyCacheConfigProperty);
@@ -212,9 +209,24 @@ public class ConfigFactoryImpl implements ConfigFactory, DbCacheMBean {
 
 
 	@Override
+	public void registerEntityIdGenerator(Class<?> clazz, IdGenerator<?> idGenerator) {
+		//获取缓存配置
+		CacheConfig<?> cacheConfig = this.getCacheConfig(clazz);
+		if(cacheConfig == null) {
+			throw new IllegalArgumentException("找不到类:" + clazz.getName() + "配置.");
+		}
+
+		cacheConfig.setDefaultIdGenerator(idGenerator);
+	}
+
+
+	@Override
 	public void registerEntityIdGenerator(int serverId, Class<?> clazz, IdGenerator<?> idGenerator) {
 		//获取缓存配置
 		CacheConfig<?> cacheConfig = this.getCacheConfig(clazz);
+		if(cacheConfig == null) {
+			throw new IllegalArgumentException("找不到类:" + clazz.getName() + "配置.");
+		}
 
 		Map<Integer, IdGenerator<?>> classIdGeneratorMap = cacheConfig.getIdGenerators();
 		if (idGenerator == null) {

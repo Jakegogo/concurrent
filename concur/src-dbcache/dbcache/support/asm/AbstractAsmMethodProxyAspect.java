@@ -65,6 +65,17 @@ public abstract class AbstractAsmMethodProxyAspect implements Opcodes {
 
 
 	/**
+	 * 判断是否需要重写
+	 * @param entityClass 实体类
+	 * @param method 方法
+	 * @return
+	 */
+	public boolean needOverride(Class<?> entityClass, Method method) {
+		return false;
+	}
+
+
+	/**
 	 * 获取切面处理类
 	 * @return
 	 */
