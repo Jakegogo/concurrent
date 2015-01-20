@@ -1,5 +1,6 @@
 package dbcache.support.asm;
 
+import dbcache.model.EnhancedEntity;
 import dbcache.utils.AsmUtils;
 
 import org.objectweb.asm.*;
@@ -29,6 +30,9 @@ public class EntityClassProxyAdapter extends ClassVisitor implements Opcodes {
 
 	/** equals方法名 */
 	public static final String EQUALS_METHOD = "equals";
+	
+	/** EnhancedEntity.getEntity()方法方法名 */
+	public static final String GET_ENTITY_METHOD = "getEntity";
 
 	/**
 	 * 切面方法重写器
@@ -54,6 +58,11 @@ public class EntityClassProxyAdapter extends ClassVisitor implements Opcodes {
 	 * 代理类名
 	 */
 	private String enhancedClassName;
+	
+	/**
+	 * 代理增强接口类
+	 */
+	private Class<?> enhanceInterface = EnhancedEntity.class;
 
 	/**
 	 * 构造方法
@@ -94,7 +103,18 @@ public class EntityClassProxyAdapter extends ClassVisitor implements Opcodes {
 	@Override
 	public void visit(int version, int access, String name, String signature,
 			String superName, String[] interfaces) {
-		cv.visit(version, Opcodes.ACC_PUBLIC,
+		if (interfaces != null) {
+			String[] interfaces1 = new String[interfaces.length + 1];
+			System.arraycopy(interfaces, 0, interfaces1, 0, interfaces.length);
+			interfaces1[interfaces.length] = AsmUtils.toAsmCls(enhanceInterface.getName());
+			interfaces = interfaces1;
+		} else {
+			interfaces = new String[] {AsmUtils.toAsmCls(enhanceInterface.getName())};
+		}
+		
+		signature += Type.getType(enhanceInterface).toString();
+		
+ 		cv.visit(version, Opcodes.ACC_PUBLIC,
 				AsmUtils.toAsmCls(enhancedClassName), signature, name,
 				interfaces);
 	}
@@ -129,6 +149,9 @@ public class EntityClassProxyAdapter extends ClassVisitor implements Opcodes {
 	@Override
 	public void visitEnd() {
 
+		// 实现dbcache.model.EnhancedEntity.getEntity()方法
+		this.buildRealObjectMethod();
+		
 		// 获取所有方法，并重写(main方法 和 Object的方法除外)
 		Method[] methods = originalClass.getMethods();
 		for (Method m : methods) {
@@ -239,6 +262,40 @@ public class EntityClassProxyAdapter extends ClassVisitor implements Opcodes {
 		}
 		cv.visitEnd();
 		
+	}
+
+	// 实现dbcache.model.EnhancedEntity.getEntity()方法
+	private void buildRealObjectMethod() {
+		
+		// 获取接口方法EnhancedEntity.getEntity()
+		Method getEntityMethod = null;
+		try {
+			getEntityMethod = enhanceInterface.getMethod(GET_ENTITY_METHOD);
+		} catch (SecurityException e) {
+			e.printStackTrace();
+		} catch (NoSuchMethodException e) {
+			e.printStackTrace();
+		}
+		if(getEntityMethod == null) {
+			return;
+		}
+		
+		Type mt = Type.getType(getEntityMethod);
+		// 方法 description
+		MethodVisitor mWriter = classWriter.visitMethod(ACC_PUBLIC,
+				getEntityMethod.getName(), mt.toString(), null, null);
+		
+		// 处理返回值类型
+		Type rt = Type.getReturnType(getEntityMethod);
+		int returnCode = AsmUtils.rtCode(rt);
+		
+		mWriter.visitVarInsn(ALOAD, 0);
+		mWriter.visitFieldInsn(GETFIELD, AsmUtils.toAsmCls(enhancedClassName), REAL_OBJECT, Type.getDescriptor(originalClass));
+		
+		mWriter.visitInsn(returnCode);
+		
+		mWriter.visitMaxs(1, 1);
+		mWriter.visitEnd();
 	}
 
 	// 构建equals方法

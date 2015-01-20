@@ -1,5 +1,6 @@
 package dbcache.test;
 
+import dbcache.model.EnhancedEntity;
 import dbcache.service.Cache;
 import dbcache.service.DbCacheService;
 import dbcache.support.asm.EntityAsmFactory;
@@ -7,6 +8,7 @@ import dbcache.support.jdbc.JdbcSupport;
 import dbcache.utils.*;
 import javassist.CannotCompileException;
 import javassist.NotFoundException;
+
 import org.apache.mina.util.ConcurrentHashSet;
 import org.junit.Assert;
 import org.junit.runner.RunWith;
@@ -17,6 +19,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.util.ReflectionUtils;
 
 import javax.annotation.Resource;
+
 import java.io.Serializable;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
@@ -286,6 +289,9 @@ public class Test {
 		entity.getFriendSet().add(4l);
 //		entity.getClass()
 		this.cacheService.submitUpdate(entity);
+		if (entity instanceof EnhancedEntity) {
+			System.out.println(((EnhancedEntity)entity).getEntity());
+		}
 		System.out.println("use time :" + (System.currentTimeMillis() - t1));
 	}
 
