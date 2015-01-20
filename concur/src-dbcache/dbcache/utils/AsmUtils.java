@@ -105,6 +105,10 @@ public class AsmUtils implements Opcodes {
 		if (m.getDeclaringClass().getName().equals(Object.class.getName())) {
 			return false;
 		}
+		// 复合方法
+		if (m.isSynthetic()) {
+			return false;
+		}
 		// "main" 方法不做重写
 		if (Modifier.isPublic(m.getModifiers())
 				&& Modifier.isStatic(m.getModifiers())

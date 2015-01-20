@@ -202,6 +202,7 @@ public class Test {
 		map.put(32, "32");
 		String str = map.get(32);
 		System.out.println(str);
+		System.out.println('_'+1);
 	}
 
 

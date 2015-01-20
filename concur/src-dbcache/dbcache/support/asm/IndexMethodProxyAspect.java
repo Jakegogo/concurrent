@@ -187,16 +187,19 @@ public class IndexMethodProxyAspect extends AbstractAsmMethodProxyAspect {
 
 	@Override
 	public int doBefore(Class<?> entityClass, MethodVisitor mWriter, Method method, int locals, String name, int acc, String desc) {
+		
 		//获取类信息
 		ClassIndexesMetaData classIndexesMetaData = CLASS_INDEX_INFO.get(entityClass);
 		if(classIndexesMetaData == null) {
 			return locals;
 		}
+		
 		//获取需要拦截的方法列表
 		final Map<Method, Set<MethodMetaData>> methodsMap = classIndexesMetaData.changeIndexValueMethods;
 		if(!methodsMap.containsKey(method)) {
 			return locals;
 		}
+		
 		Set<MethodMetaData> methodMetaDatas = methodsMap.get(method);
 		//获取索引属性
 		final Map<String, Field> fieldsMap = classIndexesMetaData.indexFields;
@@ -206,7 +209,7 @@ public class IndexMethodProxyAspect extends AbstractAsmMethodProxyAspect {
 			final Field field = fieldsMap.get(methodMetaData.indexName);
 			//获取this.obj.fieldName
 			mWriter.visitVarInsn(Opcodes.ALOAD, 0);
-			mWriter.visitFieldInsn(Opcodes.GETFIELD,AsmUtils.toAsmCls(classIndexesMetaData.enhancedClassName), EntityClassProxyAdapter.REAL_OBJECT, Type.getDescriptor(entityClass));
+			mWriter.visitFieldInsn(Opcodes.GETFIELD, AsmUtils.toAsmCls(classIndexesMetaData.enhancedClassName), EntityClassProxyAdapter.REAL_OBJECT, Type.getDescriptor(entityClass));
 
 			PropertyDescriptor propertyDescriptor = null;
 			try {
@@ -240,6 +243,7 @@ public class IndexMethodProxyAspect extends AbstractAsmMethodProxyAspect {
 
 	@Override
 	public int doAfter(Class<?> entityClass, MethodVisitor mWriter, Method method, int locals, String name, int acc, String desc) {
+		
 		//获取类信息
 		ClassIndexesMetaData classIndexesMetaData = CLASS_INDEX_INFO.get(entityClass);
 		if(classIndexesMetaData == null) {
@@ -250,6 +254,7 @@ public class IndexMethodProxyAspect extends AbstractAsmMethodProxyAspect {
 		if(!methodsMap.containsKey(method)) {
 			return locals;
 		}
+		
 		Set<MethodMetaData> methodMetaDatas = methodsMap.get(method);
 		//获取索引属性
 		final Map<String, Field> fieldsMap = classIndexesMetaData.indexFields;
@@ -260,7 +265,7 @@ public class IndexMethodProxyAspect extends AbstractAsmMethodProxyAspect {
 			final Field field = fieldsMap.get(methodMetaData.indexName);
 			//获取this.obj.getFieldName
 			mWriter.visitVarInsn(Opcodes.ALOAD, 0);
-			mWriter.visitFieldInsn(Opcodes.GETFIELD,AsmUtils.toAsmCls(classIndexesMetaData.enhancedClassName), EntityClassProxyAdapter.REAL_OBJECT, Type.getDescriptor(entityClass));
+			mWriter.visitFieldInsn(Opcodes.GETFIELD, AsmUtils.toAsmCls(classIndexesMetaData.enhancedClassName), EntityClassProxyAdapter.REAL_OBJECT, Type.getDescriptor(entityClass));
 
 			PropertyDescriptor propertyDescriptor = null;
 			try {

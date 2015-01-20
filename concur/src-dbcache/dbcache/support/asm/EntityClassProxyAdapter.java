@@ -1,10 +1,13 @@
 package dbcache.support.asm;
 
 import dbcache.utils.AsmUtils;
+
 import org.objectweb.asm.*;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * (动态)生成静态代理类
@@ -31,6 +34,11 @@ public class EntityClassProxyAdapter extends ClassVisitor implements Opcodes {
 	 * 切面方法重写器
 	 */
 	private AbstractAsmMethodProxyAspect methodAspect;
+	
+	/**
+	 * 方法信息Map
+	 */
+	private Map<String, MethodInfo> methodInfoMap = new HashMap<String, MethodInfo>();
 
 	/**
 	 * ClassWriter
@@ -101,10 +109,22 @@ public class EntityClassProxyAdapter extends ClassVisitor implements Opcodes {
 	@Override
 	public MethodVisitor visitMethod(int access, String name, String desc,
 			String signature, String[] exceptions) {
+		MethodInfo methodInfo = new MethodInfo();
+		methodInfo.access = access;
+		methodInfo.name = name;
+		methodInfo.desc = desc;
+		methodInfo.signature = signature;
+		methodInfo.exceptions = exceptions;
+		
+		methodInfoMap.put(getMethodInfoKey(name, desc), methodInfo);
 		// 清除所有方法
 		return null;
 	}
 
+	// 获取方法信息Key
+	private String getMethodInfoKey(String name, String desc) {
+		return name + "_" + desc;
+	}
 
 	@Override
 	public void visitEnd() {
@@ -128,10 +148,13 @@ public class EntityClassProxyAdapter extends ClassVisitor implements Opcodes {
 			// 方法是被哪个类定义的
 			String declaringCls = AsmUtils.toAsmCls(m.getDeclaringClass()
 					.getName());
-
+			
+			// 获取方法字节码信息
+			MethodInfo methodInfo = methodInfoMap.get(getMethodInfoKey(m.getName(), mt.toString()));
+			
 			// 方法 description
-			MethodVisitor mWriter = classWriter.visitMethod(ACC_PUBLIC,
-					m.getName(), mt.toString(), null, null);
+			MethodVisitor mWriter = classWriter.visitMethod(methodInfo.access,
+					m.getName(), mt.toString(), methodInfo.signature, methodInfo.exceptions);
 
 			//统计当前maxLocals
 			int i = 1;
@@ -288,5 +311,25 @@ public class EntityClassProxyAdapter extends ClassVisitor implements Opcodes {
 		mWriter.visitMaxs(i, ++i);
 		mWriter.visitEnd();
 	}
+	
+	
+	/**
+	 * 方法信息
+	 * @author jake
+	 */
+	static class MethodInfo {
+		
+		int access;
+		
+		String name;
+		
+		String desc;
+		
+		String signature;
+		
+		String[] exceptions;
+		
+	}
+	
 
 }
