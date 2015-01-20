@@ -1,6 +1,7 @@
 package dbcache.support.asm;
 
 import dbcache.utils.AsmUtils;
+
 import org.objectweb.asm.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -10,6 +11,8 @@ import java.beans.PropertyDescriptor;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 
 
@@ -53,7 +56,11 @@ public class AsmAccessHelper implements Opcodes {
 	 * 字节码类加载器
 	 */
 	public static AsmClassLoader classLoader = new AsmClassLoader();
-
+		
+	//fieldGetter缓存
+	private static Map<Field , ValueGetter<?>> fieldGetterCache = new ConcurrentHashMap<Field , ValueGetter<?>>();
+	//fieldSetter缓存
+	private static Map<Field , ValueSetter<?>> fieldSetterCache = new ConcurrentHashMap<Field , ValueSetter<?>>();
 
 	/**
 	 * 创建属性获取器
@@ -64,7 +71,11 @@ public class AsmAccessHelper implements Opcodes {
 	 */
 	@SuppressWarnings("unchecked")
 	public static <T> ValueGetter<T> createFieldGetter(final Class<T> clazz, final Field field) throws Exception {
-
+		// 查找缓存的
+		if (fieldGetterCache.containsKey(field)) {
+			return (ValueGetter<T>) fieldGetterCache.get(field);
+		}
+		
 		Class<T> enhancedClass;
 		//代理类名
 		final String enhancedClassName = AbstractFieldGetter.class.getName()
@@ -179,7 +190,9 @@ public class AsmAccessHelper implements Opcodes {
 		}
 
 		try {
-			return (ValueGetter<T>) enhancedClass.newInstance();
+			ValueGetter<T> valueGetter = (ValueGetter<T>) enhancedClass.newInstance();
+			fieldGetterCache.put(field, valueGetter);
+			return valueGetter;
 		} catch (Exception e) {
 			logger.error("无法创建代理类对象:" + enhancedClassName);
 			throw e;
@@ -198,6 +211,11 @@ public class AsmAccessHelper implements Opcodes {
 	@SuppressWarnings("unchecked")
 	public static <T> ValueSetter<T> createFieldSetter(final Class<T> clazz, final Field field) throws Exception {
 
+		// 查找缓存的
+		if (fieldSetterCache.containsKey(field)) {
+			return (ValueSetter<T>) fieldSetterCache.get(field);
+		}
+		
 		Class<T> enhancedClass;
 		//代理类名
 		final String enhancedClassName = AbstractFieldSetter.class.getName()
@@ -328,7 +346,9 @@ public class AsmAccessHelper implements Opcodes {
 		}
 
 		try {
-			return (ValueSetter<T>) enhancedClass.newInstance();
+			ValueSetter<T> valueSetter = (ValueSetter<T>) enhancedClass.newInstance();
+			fieldSetterCache.put(field, valueSetter);
+			return valueSetter;
 		} catch (Exception e) {
 			logger.error("无法创建代理类对象:" + enhancedClassName);
 			throw e;
