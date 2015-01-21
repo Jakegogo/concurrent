@@ -2,8 +2,10 @@ package dbcache.support.jdbc;
 
 import dbcache.key.IdGenerator;
 import dbcache.utils.AsmUtils;
+import dbcache.utils.IdentityHashMap;
 import dbcache.utils.MutableInteger;
 import dbcache.utils.StringUtils;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.util.ReflectionUtils;
@@ -17,8 +19,6 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 
 /**
  * Jdbc Dao支持
@@ -38,7 +38,7 @@ public class JdbcSupport {
     private Config config;
 
     /** 实体信息缓存 */
-    private ConcurrentMap<Class<?>, ModelInfo> modelInfoCache = new ConcurrentHashMap<Class<?>, ModelInfo>();
+    private IdentityHashMap<Class<?>, ModelInfo> modelInfoCache = new IdentityHashMap<Class<?>, ModelInfo>();
 
 
     /**

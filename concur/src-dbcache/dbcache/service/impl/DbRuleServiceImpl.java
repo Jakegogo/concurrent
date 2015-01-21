@@ -308,7 +308,7 @@ public class DbRuleServiceImpl implements DbRuleService {
 		if(Long.class == modelInfo.getPrimaryKeyInfo().getType()) {
 			
 			//初始化主键Id生成器
-			Map<Integer, IdGenerator<?>> idGenerators = new IdentityHashMap<Integer, IdGenerator<?>>();
+			Map<Integer, IdGenerator<?>> idGenerators = new HashMap<Integer, IdGenerator<?>>();
 
 			List<Integer> serverIdList = getServerIdList();
 			if (serverIdList != null && serverIdList.size() > 0) {//配置的服

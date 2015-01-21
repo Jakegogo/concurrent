@@ -66,6 +66,27 @@ public class IdentityHashMap<K, V> {
 
         return false;
     }
+    
+    // 保证唯一必须统一且只调此方法进行put
+    public V putIfAbsent(K key, V value) {
+    	final int hash = System.identityHashCode(key);
+        final int bucket = hash & indexMask;
+        
+        synchronized (this) {
+	        for (Entry<K, V> entry = buckets[bucket]; entry != null; entry = entry.next) {
+	            if (key == entry.key) {
+	            	V oldValue = entry.value;
+	                entry.value = value;
+	                return oldValue;
+	            }
+	        }
+	
+	        Entry<K, V> entry = new Entry<K, V>(key, value, hash, buckets[bucket]);
+	        buckets[bucket] = entry;
+        }
+
+        return value;
+	}
 
     public int size() {
         int size = 0;
@@ -76,6 +97,12 @@ public class IdentityHashMap<K, V> {
         }
         return size;
     }
+    
+    public void clear() {
+		for( int i = 0; i < DEFAULT_TABLE_SIZE;i++) {
+			buckets[i] = null;
+		}
+	}
 
     protected static final class Entry<K, V> {
 

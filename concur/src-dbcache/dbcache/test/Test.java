@@ -398,5 +398,13 @@ public class Test {
 			}
 		});
 	}
+	
+	
+	@org.junit.Test
+	public void t21() {
+		for( int i = 0;i < 1000;i++) {
+			t10();
+		}
+	}
 
 }
