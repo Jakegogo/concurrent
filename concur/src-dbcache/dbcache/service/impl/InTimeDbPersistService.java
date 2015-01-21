@@ -123,38 +123,33 @@ public class InTimeDbPersistService implements DbPersistService {
 	@Override
 	public void handleUpdate(final CacheObject<?> cacheObject, final DbAccessService dbAccessService) {
 		// 改变更新状态
-		if (!cacheObject.setUpdateProcessing(true)) {
+		if (!cacheObject.swapUpdateProcessing(true)) {
 			return;
 		}
 
 		//最新修改版本号
 		final long editVersion = cacheObject.increseEditVersion();
-		final long dbVersion = cacheObject.getDbVersion();
 
 		this.handlePersist(new PersistAction() {
 
 			@Override
 			public void run() {
-
-				//缓存对象在提交之后被修改过
-				if (editVersion < cacheObject.getEditVersion()) {
-					return;
-				}
-
-
 				// 改变更新状态
-				if (cacheObject.setUpdateProcessing(false)) {
-
-					//比较并更新入库版本号
-					if (!cacheObject.compareAndUpdateDbSync(dbVersion, editVersion)) {
+				if (cacheObject.swapUpdateProcessing(false)) {
+					//缓存对象在提交之后被修改过
+					if (editVersion < cacheObject.getEditVersion()) {
 						return;
 					}
+
+					// 更新入库版本号
+					cacheObject.setDbVersion(editVersion);
 
 					// 持久化前的操作
 					cacheObject.doBeforePersist();
 
-					//缓存对象在提交之后被入库过
-					if (cacheObject.getDbVersion() > editVersion) {
+
+					// 缓存对象在提交之后被入库过
+					if(cacheObject.getDbVersion() > editVersion) {
 						return;
 					}
 
@@ -195,16 +190,6 @@ public class InTimeDbPersistService implements DbPersistService {
 
 				// 缓存对象在提交之后被修改过
 				if(editVersion < cacheObject.getEditVersion()) {
-					return;
-				}
-
-				// 比较并更新入库版本号
-				if (!cacheObject.compareAndUpdateDbSync(dbVersion, editVersion)) {
-					return;
-				}
-
-				// 缓存对象在提交之后被入库过
-				if(cacheObject.getDbVersion() > editVersion) {
 					return;
 				}
 

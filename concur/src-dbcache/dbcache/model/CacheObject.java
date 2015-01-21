@@ -40,7 +40,7 @@ public class CacheObject<T extends IEntity<?>> {
 	/**
 	 * 入库版本号
 	 */
-	private AtomicLong dbVersion = new AtomicLong(editVersion.get());
+	private volatile long dbVersion = editVersion.get();
 	
 	/**
 	 * 索引属性值获取器列表
@@ -140,15 +140,6 @@ public class CacheObject<T extends IEntity<?>> {
 		}
 	}
 
-	/**
-	 * 比较并更新入库版本号
-	 * @param dbVersion 已入库的版本号
-	 * @param editVersion 编辑的版本号
-	 * @return
-	 */
-	public boolean compareAndUpdateDbSync(long dbVersion, long editVersion) {
-		return this.dbVersion.compareAndSet(dbVersion, editVersion);
-	}
 
 	/**
 	 * 更新修改版本号
@@ -173,10 +164,6 @@ public class CacheObject<T extends IEntity<?>> {
 		return editVersion.get();
 	}
 
-	public long getDbVersion() {
-		return dbVersion.get();
-	}
-
 	public PersistStatus getPersistStatus() {
 		return persistStatus;
 	}
@@ -198,8 +185,15 @@ public class CacheObject<T extends IEntity<?>> {
 	 * @param processing 目标状态
 	 * @return 是否改变成功
 	 */
-	public boolean setUpdateProcessing(boolean processing) {
+	public boolean swapUpdateProcessing(boolean processing) {
 		return this.updateProcessing.compareAndSet(!processing, processing);
 	}
 
+	public long getDbVersion() {
+		return dbVersion;
+	}
+
+	public void setDbVersion(long dbVersion) {
+		this.dbVersion = dbVersion;
+	}
 }

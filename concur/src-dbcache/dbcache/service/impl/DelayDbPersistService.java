@@ -208,7 +208,7 @@ public class DelayDbPersistService implements DbPersistService {
 	public void handleUpdate(final CacheObject<?> cacheObject, final DbAccessService dbAccessService) {
 
 		// 改变更新状态
-		if (!cacheObject.setUpdateProcessing(true)) {
+		if (!cacheObject.swapUpdateProcessing(true)) {
 			return;
 		}
 
@@ -227,13 +227,11 @@ public class DelayDbPersistService implements DbPersistService {
 				}
 
 				// 改变更新状态
-				if (cacheObject.setUpdateProcessing(false)) {
+				if (cacheObject.swapUpdateProcessing(false)) {
 
 
-					//比较并更新入库版本号
-					if (!cacheObject.compareAndUpdateDbSync(dbVersion, editVersion)) {
-						return;
-					}
+					// 更新入库版本号
+					cacheObject.setDbVersion(editVersion);
 
 					// 持久化前的操作
 					cacheObject.doBeforePersist();
@@ -280,11 +278,6 @@ public class DelayDbPersistService implements DbPersistService {
 
 				// 缓存对象在提交之后被修改过
 				if(editVersion < cacheObject.getEditVersion()) {
-					return;
-				}
-
-				// 比较并更新入库版本号
-				if (!cacheObject.compareAndUpdateDbSync(dbVersion, editVersion)) {
 					return;
 				}
 
