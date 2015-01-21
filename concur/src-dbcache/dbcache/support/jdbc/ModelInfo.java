@@ -210,7 +210,7 @@ public class ModelInfo {
 
 			int columnIndex = 1;
 			for (AttributeInfo<Object> columnInfo : this.columnInfos) {
-				columnInfo.setValue(instance, this.getRsVal(rs, columnIndex, columnInfo.getSqlType()));
+				columnInfo.setValue(instance, this.getRsVal(rs, columnIndex, columnInfo.getSqlType(), columnInfo));
 				columnIndex++;
 			}
 			return instance;
@@ -238,7 +238,7 @@ public class ModelInfo {
 
 			int columnIndex = 1;
 			for (AttributeInfo<Object> columnInfo : this.columnInfos) {
-				columnInfo.setValue(instance, this.getRsVal(rs, columnIndex, columnInfo.getSqlType()));
+				columnInfo.setValue(instance, this.getRsVal(rs, columnIndex, columnInfo.getSqlType(), columnInfo));
 				columnIndex++;
 			}
 			list.add(instance);
@@ -369,9 +369,15 @@ public class ModelInfo {
 	}
 
 
-    private Object getRsVal(ResultSet rs, int i, int type) throws SQLException {
+    @SuppressWarnings("rawtypes")
+	private Object getRsVal(ResultSet rs, int i, int type, AttributeInfo columnInfo) throws SQLException {
     	Object value = null;
-    	if (type < Types.BLOB)
+    	if (columnInfo.getType() == java.util.Date.class) {
+    		java.sql.Date typeDate = rs.getDate(i);
+    		if (typeDate != null) {
+    			value = new Date(typeDate.getTime());
+    		}
+		} else if (type < Types.BLOB)
 			value = rs.getObject(i);
 		else if (type == Types.CLOB)
 			value = handleClob(rs.getClob(i));

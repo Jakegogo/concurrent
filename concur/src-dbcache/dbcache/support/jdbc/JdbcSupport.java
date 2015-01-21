@@ -370,14 +370,10 @@ public class JdbcSupport {
      * @return
      */
     public <T> List<T> listBySql(final Class<T> clzz, String sql, Object... params) {
-    	// 非基本类型
-    	if (!AsmUtils.isBaseType(clzz) && !clzz.isArray() && !List.class.isAssignableFrom(clzz)) {
-    		return this.listEntityBySql(clzz, sql, params);
-    	}
-
     	Connection conn = null;
     	PreparedStatement pst = null;
     	ResultSet rs = null;
+    	
     	try {
 	    	conn = config.getConnection();
 
