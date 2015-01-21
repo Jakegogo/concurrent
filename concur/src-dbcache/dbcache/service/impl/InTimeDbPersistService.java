@@ -77,7 +77,6 @@ public class InTimeDbPersistService implements DbPersistService {
 	public void handleSave(final CacheObject<?> cacheObject, final DbAccessService dbAccessService) {
 		this.handlePersist(new PersistAction() {
 
-			Object entity = cacheObject.getEntity();
 
 			@Override
 			public void run() {
@@ -86,6 +85,8 @@ public class InTimeDbPersistService implements DbPersistService {
 				if(!this.valid()) {
 					return;
 				}
+
+				Object entity = cacheObject.getEntity();
 
 				// 持久化前操作
 				if(entity instanceof EntityInitializer){
@@ -132,34 +133,34 @@ public class InTimeDbPersistService implements DbPersistService {
 
 		this.handlePersist(new PersistAction() {
 
-			Object entity = cacheObject.getEntity();
-
 			@Override
 			public void run() {
 
-				// 改变更新状态
-				cacheObject.setUpdateProcessing(false);
-
 				//缓存对象在提交之后被修改过
-				if(editVersion < cacheObject.getEditVersion()) {
+				if (editVersion < cacheObject.getEditVersion()) {
 					return;
 				}
 
-				//比较并更新入库版本号
-				if (!cacheObject.compareAndUpdateDbSync(dbVersion, editVersion)) {
-					return;
+
+				// 改变更新状态
+				if (cacheObject.setUpdateProcessing(false)) {
+
+					//比较并更新入库版本号
+					if (!cacheObject.compareAndUpdateDbSync(dbVersion, editVersion)) {
+						return;
+					}
+
+					// 持久化前的操作
+					cacheObject.doBeforePersist();
+
+					//缓存对象在提交之后被入库过
+					if (cacheObject.getDbVersion() > editVersion) {
+						return;
+					}
+
+					//持久化
+					dbAccessService.update(cacheObject.getEntity());
 				}
-
-				// 持久化前的操作
-				cacheObject.doBeforePersist();
-
-				//缓存对象在提交之后被入库过
-				if(cacheObject.getDbVersion() > editVersion) {
-					return;
-				}
-
-				//持久化
-				dbAccessService.update(entity);
 			}
 
 			@Override
@@ -189,8 +190,6 @@ public class InTimeDbPersistService implements DbPersistService {
 
 		this.handlePersist(new PersistAction() {
 
-			Object entity = cacheObject.getEntity();
-
 			@Override
 			public void run() {
 
@@ -210,7 +209,7 @@ public class InTimeDbPersistService implements DbPersistService {
 				}
 
 				// 持久化
-				dbAccessService.delete(entity);
+				dbAccessService.delete(cacheObject.getEntity());
 
 				// 从缓存中移除
 				cache.put(key, null);

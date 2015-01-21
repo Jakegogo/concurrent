@@ -86,7 +86,7 @@ public class Test {
 
 		for(int i = 0;i <= 100000000;i++) {
 			Entity entity = this.cacheService.get(1l);
-//			entity.increseNum();
+			entity.increseNum();
 //			if(i % 1000000 == 0) {
 //				entity.addNum(1);
 //			}
@@ -94,7 +94,7 @@ public class Test {
 
 //			entity.setNum(i);
 
-			entity.setUid(i);
+//			entity.setUid(i);
 
 //			if(i%100 == 0) {
 //			Thread.sleep(10);
@@ -406,5 +406,55 @@ public class Test {
 			t10();
 		}
 	}
+
+
+
+	@org.junit.Test
+	public void t22() throws InterruptedException {
+
+
+		for(int j = 2;j < 100;j++) {
+			Long id = Long.valueOf(j);
+			Entity entity = new Entity();
+			entity.doAfterLoad();
+			entity.setId(id);
+
+			entity = this.cacheService.submitCreate(entity);
+			//			Assert.assertEquals(this.cacheService.get(id), entity);
+//			Assert.assertEquals(entity, this.cacheService.get(id));
+
+
+			for (int i = 0; i < 1000000; i++) {
+				entity = this.cacheService.get(id);
+
+				entity.increseNum();
+
+
+				this.cacheService.submitUpdate(entity);
+				if (i % 10000000 == 0) {
+					System.out.println(ThreadUtils.dumpThreadPool("入库线程池", this.cacheService.getThreadPool()));
+				}
+
+				if (i % 1000000 == 0) {
+					Thread.sleep(10);
+				}
+
+				entity = null;
+				//			System.gc();
+			}
+		}
+
+		while(true) {
+			try {
+				System.out.println(ThreadUtils.dumpThreadPool("入库线程池", this.cacheService.getThreadPool()));
+				Thread.sleep(1000);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+
+	}
+
 
 }
