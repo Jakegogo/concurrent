@@ -1,11 +1,14 @@
 package dbcache.utils;
 
+import java.lang.ref.WeakReference;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.concurrent.ConcurrentLinkedQueue;
+
 import org.apache.mina.util.ConcurrentHashSet;
 
-import java.lang.ref.WeakReference;
-
 /**
-* Created by Administrator on 2014/11/14.
+* Created by Jake on 2014/11/14.
 */
 public class CleanupThread extends Thread
 {
@@ -14,14 +17,11 @@ public class CleanupThread extends Thread
             caches = new ConcurrentHashSet<WeakReference<ConcurrentLRUCache>>();
 
     // 需要Clean的Cache队列
-    private ConcurrentHashSet<ConcurrentLRUCache>
-            cleanQueue = new ConcurrentHashSet<ConcurrentLRUCache>();
+    private ConcurrentLinkedQueue<ConcurrentLRUCache>
+            cleanQueue = new ConcurrentLinkedQueue<ConcurrentLRUCache>();
 
     // 是否停止线程
     private volatile boolean stop = false;
-
-    // 正在markAndSweep
-    private volatile boolean sweeping = false;
 
     // 是否已经start Thread
     private boolean started = false;
@@ -57,54 +57,66 @@ public class CleanupThread extends Thread
     @Override
     public void run()
     {
+
         while (true)
         {
-            synchronized (this)
-            {
-                if (stop)
-                {
-                    break;
-                }
-                try
-                {
-                    this.wait();
-                }
-                catch (InterruptedException e)
-                {
-                }
-            }
+        	ConcurrentLRUCache c = null;
+        	if (cleanQueue.peek() == null) {
+	            synchronized (this)
+	            {
+	                if (stop)
+	                {
+	                    break;
+	                }
+	                try
+	                {
+	                    this.wait();
+	                }
+	                catch (InterruptedException e)
+	                {
+	                }
+	            }
+        	}
             if (stop)
             {
                 break;
             }
-            sweeping = true;
 
-            ConcurrentLRUCache c = null;
+            Set<ConcurrentLRUCache> cleaningQueue = new HashSet<ConcurrentLRUCache>();
+            while ((c = cleanQueue.poll()) != null) {
+            	cleaningQueue.add(c);
+            }
+            
+            for(ConcurrentLRUCache c1 : cleaningQueue) {
+//            	long ct1 = System.currentTimeMillis();
+//            	int cs1 = c1.size();
+                c1.markAndSweep();
+//				System.out.println("ConcurrentLRUCache回收对象:"
+//						+ (System.currentTimeMillis() - ct1) + "毫秒,回收前大小:"
+//						+ cs1 + ",回收后大小:" + c1.size());
+            }
+            
+            
             for(WeakReference<ConcurrentLRUCache> cache : caches) {
-
                 c = cache.get();
                 if (c == null) {
                     caches.remove(cache);
                     continue;
                 }
-                if(cleanQueue.remove(c)) {
-                    c.markAndSweep();
-                }
             }
-            sweeping = false;
         }
     }
 
 
     void wakeThread(ConcurrentLRUCache target)
     {
-        if(sweeping) {
-            cleanQueue.add(target);
+    	boolean isWatting = cleanQueue.peek() == null;
+    	cleanQueue.add(target);
+    	if (!isWatting) {
             return;
         }
         synchronized (this)
         {
-            cleanQueue.add(target);
             this.notify();
         }
     }
