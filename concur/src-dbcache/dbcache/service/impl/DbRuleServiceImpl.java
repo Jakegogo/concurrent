@@ -1,17 +1,24 @@
 package dbcache.service.impl;
 
-import dbcache.conf.CacheConfig;
-import dbcache.key.IdGenerator;
-import dbcache.key.LongGenerator;
-import dbcache.key.ServerEntityIdRule;
-import dbcache.key.annotation.Id;
-import dbcache.key.annotation.IdGenerate;
-import dbcache.model.IEntity;
-import dbcache.service.DbAccessService;
-import dbcache.service.DbRuleService;
-import dbcache.support.jdbc.ModelInfo;
-import dbcache.utils.GenericsUtils;
-import dbcache.utils.ReflectionUtility;
+import static dbcache.conf.CfgConstants.DELAY_WAITTIMMER;
+import static dbcache.conf.CfgConstants.KEY_DB_POOL_CAPACITY;
+import static dbcache.conf.CfgConstants.KEY_SERVER_ID_SET;
+import static dbcache.conf.CfgConstants.MAX_QUEUE_SIZE_BEFORE_PERSIST;
+import static dbcache.conf.CfgConstants.SPLIT;
+
+import java.io.IOException;
+import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.IdentityHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+
+import javax.annotation.PostConstruct;
+import javax.persistence.Entity;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,14 +31,16 @@ import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Component;
 import org.springframework.util.ReflectionUtils;
 
-import javax.annotation.PostConstruct;
-import javax.persistence.Entity;
-
-import java.io.IOException;
-import java.lang.reflect.Field;
-import java.util.*;
-
-import static dbcache.conf.CfgConstants.*;
+import dbcache.conf.CacheConfig;
+import dbcache.key.IdGenerator;
+import dbcache.key.LongGenerator;
+import dbcache.key.ServerEntityIdRule;
+import dbcache.model.IEntity;
+import dbcache.service.DbAccessService;
+import dbcache.service.DbRuleService;
+import dbcache.support.jdbc.ModelInfo;
+import dbcache.utils.GenericsUtils;
+import dbcache.utils.ReflectionUtility;
 
 /**
  * 数据库规则服务接口实现类
@@ -243,14 +252,14 @@ public class DbRuleServiceImpl implements DbRuleService {
 	public void initIdGenerators(Class<? extends IEntity> clz, CacheConfig cacheConfig) {
 		
 		// 初始化主键id生成器
-		if (clz.isAnnotationPresent(IdGenerate.class) || clz.isAnnotationPresent(Entity.class)) {
+		if (clz.isAnnotationPresent(Entity.class)) {
 
 			boolean validId = true;
 			//获取可用主键类型
 			Class<?> idType = GenericsUtils.getSuperClassGenricType(clz, 0);
 			
 			if (idType == null || idType != Long.class) {
-				Field[] fields = ReflectionUtility.getDeclaredFieldsWith(clz, Id.class, javax.persistence.Id.class);
+				Field[] fields = ReflectionUtility.getDeclaredFieldsWith(clz, javax.persistence.Id.class);
 
 				if(fields != null && fields.length == 1) {
 					ReflectionUtils.makeAccessible(fields[0]);

@@ -656,12 +656,12 @@ public class ConcurrentLRUCache<K, V>
         {
             return;
         }
-        stats.size.decrementAndGet();
-        stats.evictionCounter.incrementAndGet();
         if (evictionListener != null)
         {
             evictionListener.evictedEntry(o.key, o.value);
         }
+        stats.size.decrementAndGet();
+        stats.evictionCounter.incrementAndGet();
     }
 
     /**
