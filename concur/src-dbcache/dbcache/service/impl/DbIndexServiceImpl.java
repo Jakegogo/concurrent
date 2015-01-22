@@ -1,26 +1,29 @@
 package dbcache.service.impl;
 
-import dbcache.annotation.ThreadSafe;
-import dbcache.conf.CacheConfig;
-import dbcache.conf.CacheRule;
-import dbcache.conf.Inject;
-import dbcache.model.*;
-import dbcache.service.Cache;
-import dbcache.service.DbAccessService;
-import dbcache.service.DbIndexService;
-import dbcache.support.asm.ValueGetter;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.stereotype.Component;
-
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentMap;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.stereotype.Component;
+
+import dbcache.annotation.ThreadSafe;
+import dbcache.conf.CacheConfig;
+import dbcache.conf.CacheRule;
+import dbcache.conf.Inject;
+import dbcache.model.IEntity;
+import dbcache.model.IndexKey;
+import dbcache.model.IndexObject;
+import dbcache.model.IndexValue;
+import dbcache.model.PersistStatus;
+import dbcache.service.Cache;
+import dbcache.service.DbAccessService;
+import dbcache.service.DbIndexService;
+import dbcache.support.asm.ValueGetter;
 
 /**
  * 实体索引服务实现类
@@ -247,7 +250,7 @@ public class DbIndexServiceImpl<PK extends Comparable<PK> & Serializable>
 					while (i.hasNext() && 
 							((next = i.next()) == null || !next.getValue().booleanValue()));
 					this.next = next;
-					return next != null;
+					return next != null && next.getValue().booleanValue();
 				}
 
 				public E next() {
