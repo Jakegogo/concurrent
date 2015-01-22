@@ -25,7 +25,7 @@ public class IndexObject<PK extends Comparable<PK> & Serializable> {
 	/**
 	 * 是否持久状态
 	 */
-	private volatile boolean doPersist = false;
+	private boolean doPersist = false;
 
 	/**
 	 * 索引区域缓存

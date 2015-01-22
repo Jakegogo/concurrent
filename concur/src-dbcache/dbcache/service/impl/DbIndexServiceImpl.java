@@ -9,6 +9,7 @@ import dbcache.service.Cache;
 import dbcache.service.DbAccessService;
 import dbcache.service.DbIndexService;
 import dbcache.support.asm.ValueGetter;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
@@ -16,7 +17,9 @@ import org.springframework.stereotype.Component;
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentMap;
 
 /**
@@ -61,7 +64,7 @@ public class DbIndexServiceImpl<PK extends Comparable<PK> & Serializable>
 			return Collections.emptyList();
 		}
 
-		return Collections.unmodifiableCollection(indexValues.keySet());
+		return new UnmodifiableKeySet<PK>(indexValues);
 	}
 
 
@@ -85,14 +88,14 @@ public class DbIndexServiceImpl<PK extends Comparable<PK> & Serializable>
 		ConcurrentMap<PK, Boolean> indexValues = indexObject.getIndexValues();
 
 		// 持久态则返回结果
-		if(indexObject.isDoPersist()) {
+		if (indexObject.isDoPersist()) {
 			return indexObject.getIndexValues();
 		}
 
 		synchronized (indexObject) {
 
 			// 持久态则返回结果
-			if(indexObject.isDoPersist()) {
+			if (indexObject.isDoPersist()) {
 				return indexObject.getIndexValues();
 			}
 
@@ -102,16 +105,18 @@ public class DbIndexServiceImpl<PK extends Comparable<PK> & Serializable>
 			Collection<PK> ids = (Collection<PK>) dbAccessService.listIdByIndex(cacheConfig.getClazz(), indexField.getName(), indexValue);
 
 			// 设置缓存状态
-			indexObject.compareAndSetUpdateStatus(PersistStatus.TRANSIENT, PersistStatus.PERSIST);
+			if (indexObject.compareAndSetUpdateStatus(PersistStatus.TRANSIENT, PersistStatus.PERSIST)) {
 
-			if (ids != null) {
-				// 需要外层加锁
-				for (PK id : ids) {
-					Boolean oldStatus = indexValues.putIfAbsent(id, true);
-					if (oldStatus != null && !oldStatus) {
-						indexValues.remove(id);
+				if (ids != null) {
+					// 需要外层加锁
+					for (PK id : ids) {
+						Boolean oldStatus = indexValues.putIfAbsent(id, true);
+						if (oldStatus != null && !oldStatus) {
+							indexValues.remove(id);
+						}
 					}
 				}
+			
 			}
 
 			// 设置持久化状态
@@ -129,6 +134,7 @@ public class DbIndexServiceImpl<PK extends Comparable<PK> & Serializable>
 	 */
 	@SuppressWarnings("unchecked")
 	private IndexObject<PK> getTransient(String indexName, Object indexValue) {
+		
 		final Object key = CacheRule.getIndexIdKey(indexName, indexValue);
 
 		Cache.ValueWrapper wrapper = (Cache.ValueWrapper) cache.get(key);
@@ -186,9 +192,11 @@ public class DbIndexServiceImpl<PK extends Comparable<PK> & Serializable>
 
 	@Override
 	public void update(IEntity<PK> entity, String indexName, Object oldValue, Object newValue) {
+		
 		if(oldValue != null && oldValue.equals(newValue)) {
 			return;
 		}
+		
 		// 从旧的索引队列中移除
 		this.remove(IndexValue.valueOf(indexName, oldValue, entity.getId()));
 		// 添加到新的索引队列
@@ -204,5 +212,98 @@ public class DbIndexServiceImpl<PK extends Comparable<PK> & Serializable>
 	public CacheConfig<?> getCacheConfig() {
 		return cacheConfig;
 	}
+	
+	
+	static class UnmodifiableKeySet<E> implements Collection<E>,
+			Serializable {
+		// use serialVersionUID from JDK 1.2.2 for interoperability
+		private static final long serialVersionUID = 1820017752578914078L;
+
+		final Map<E, Boolean> c;
+
+		UnmodifiableKeySet(Map<E, Boolean> c) {
+			if (c == null)
+				throw new NullPointerException();
+			this.c = c;
+		}
+
+		public boolean contains(Object o) {
+			Boolean val = c.get(o);
+			return val != null && val.booleanValue();
+		}
+
+		public String toString() {
+			return c.keySet().toString();
+		}
+
+		public Iterator<E> iterator() {
+			return new Iterator<E>() {
+				Map.Entry<E, Boolean> next = null;
+				
+				Iterator<Map.Entry<E, Boolean>> i = c.entrySet().iterator();
+
+				public boolean hasNext() {
+					Map.Entry<E, Boolean> next = null;
+					while (i.hasNext() && 
+							((next = i.next()) == null || !next.getValue().booleanValue()));
+					this.next = next;
+					return next != null;
+				}
+
+				public E next() {
+					return next.getKey();
+				}
+
+				public void remove() {
+					throw new UnsupportedOperationException();
+				}
+			};
+		}
+		
+		public int size() {
+			return c.size();
+		}
+
+		public boolean isEmpty() {
+			return c.isEmpty();
+		}
+		
+		public Object[] toArray() {
+			return c.keySet().toArray();
+		}
+
+		public <T> T[] toArray(T[] a) {
+			return c.keySet().toArray(a);
+		}
+
+		public boolean add(E e) {
+			throw new UnsupportedOperationException();
+		}
+
+		public boolean remove(Object o) {
+			throw new UnsupportedOperationException();
+		}
+
+		public boolean containsAll(Collection<?> coll) {
+			return c.keySet().containsAll(coll);
+		}
+
+		public boolean addAll(Collection<? extends E> coll) {
+			throw new UnsupportedOperationException();
+		}
+
+		public boolean removeAll(Collection<?> coll) {
+			throw new UnsupportedOperationException();
+		}
+
+		public boolean retainAll(Collection<?> coll) {
+			throw new UnsupportedOperationException();
+		}
+
+		public void clear() {
+			throw new UnsupportedOperationException();
+		}
+	}
+	
 
 }
