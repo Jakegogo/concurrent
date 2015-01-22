@@ -219,9 +219,8 @@ public class DbIndexServiceImpl<PK extends Comparable<PK> & Serializable>
 	
 	static class UnmodifiableKeySet<E> implements Collection<E>,
 			Serializable {
-		// use serialVersionUID from JDK 1.2.2 for interoperability
-		private static final long serialVersionUID = 1820017752578914078L;
-
+		private static final long serialVersionUID = 5203572468382523850L;
+		
 		final Map<E, Boolean> c;
 
 		UnmodifiableKeySet(Map<E, Boolean> c) {
