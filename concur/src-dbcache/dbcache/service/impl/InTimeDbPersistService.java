@@ -89,10 +89,7 @@ public class InTimeDbPersistService implements DbPersistService {
 				Object entity = cacheObject.getEntity();
 
 				// 持久化前操作
-				if(entity instanceof EntityInitializer){
-					EntityInitializer entityInitializer = (EntityInitializer) entity;
-					entityInitializer.doBeforePersist();
-				}
+				cacheObject.doBeforePersist();
 
 				// 持久化
 				dbAccessService.save(entity);

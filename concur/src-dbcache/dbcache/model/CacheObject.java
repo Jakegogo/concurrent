@@ -103,23 +103,34 @@ public class CacheObject<T extends IEntity<?>> {
 		this.persistStatus = PersistStatus.TRANSIENT;
 		this.indexList = indexes;
 		this.jsonConverters = jsonConverters;
+		
+		// 将进入持久化状态
+		this.doBeforePersist();
 	}
 
 	/**
 	 * 初始化
 	 */
 	public void doInit() {
-		// 调用初始化
-		if(entity instanceof EntityInitializer){
-			EntityInitializer entityInitializer = (EntityInitializer) entity;
-			entityInitializer.doAfterLoad();
-		}
-
 		// 初始化json自动转换属性
 		if(!this.jsonConverters.isEmpty()) {
 			for(JsonConverter<T> jsonConverter : this.jsonConverters) {
 				jsonConverter.doConvert(this.entity);
 			}
+		}
+				
+		// 加载回调
+		this.doAfterLoad();
+	}
+	
+	/**
+	 * 调用加载回调
+	 */
+	public void doAfterLoad() {
+		// 调用初始化
+		if(entity instanceof EntityInitializer){
+			EntityInitializer entityInitializer = (EntityInitializer) entity;
+			entityInitializer.doAfterLoad();
 		}
 	}
 
@@ -127,16 +138,16 @@ public class CacheObject<T extends IEntity<?>> {
 	 * 持久化之前的操作
 	 */
 	public void doBeforePersist() {
-		// 持久化前操作
-		if(entity instanceof EntityInitializer){
-			EntityInitializer entityInitializer = (EntityInitializer) entity;
-			entityInitializer.doBeforePersist();
-		}
 		// json持久化
 		if(!this.jsonConverters.isEmpty()) {
 			for(JsonConverter<T> jsonConverter : this.jsonConverters) {
 				jsonConverter.doPersist(this.entity);
 			}
+		}
+		// 持久化前操作
+		if(entity instanceof EntityInitializer){
+			EntityInitializer entityInitializer = (EntityInitializer) entity;
+			entityInitializer.doBeforePersist();
 		}
 	}
 
