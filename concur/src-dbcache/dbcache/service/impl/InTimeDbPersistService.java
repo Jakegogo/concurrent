@@ -181,7 +181,6 @@ public class InTimeDbPersistService implements DbPersistService {
 	public void handleDelete(final CacheObject<?> cacheObject, final DbAccessService dbAccessService, final Object key, final Cache cache) {
 		// 最新修改版本号
 		final long editVersion = cacheObject.increseEditVersion();
-		final long dbVersion = cacheObject.getDbVersion();
 
 		this.handlePersist(new PersistAction() {
 
