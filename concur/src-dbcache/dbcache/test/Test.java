@@ -273,12 +273,14 @@ public class Test {
 	public void t10() {
 		long t1 = System.currentTimeMillis();
 		Entity entity = this.cacheService.get(1l);
-
+//		System.out.println("use time0 :" + (System.currentTimeMillis() - t1));
 		entity.setNum(202);
 		entity.setA(new byte[100]);
 
 		List<Entity> list = this.cacheService.listByIndex(Entity.NUM_INDEX, 202);
-
+//		System.out.println("use time1 :" + (System.currentTimeMillis() - t1));
+		
+		
 		assert list.size() == 1;
 
 		for(Entity entity1 : list) {

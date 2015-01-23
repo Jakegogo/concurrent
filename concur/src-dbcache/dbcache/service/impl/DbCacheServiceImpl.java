@@ -10,7 +10,9 @@ import dbcache.model.IndexValue;
 import dbcache.model.PersistStatus;
 import dbcache.service.*;
 import dbcache.support.asm.ValueGetter;
+import dbcache.utils.ConcurrentHashMap;
 import dbcache.utils.JsonUtils;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,7 +23,6 @@ import org.springframework.stereotype.Component;
 
 import java.io.Serializable;
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.locks.Lock;
@@ -187,17 +188,16 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 
 				T entity = dbAccessService.get(clazz, key);
 				if (entity != null) {
-
 					// 创建缓存对象
 					cacheObject = configFactory.createCacheObject(entity, clazz, indexService, key, cache, cacheConfig);
 
 					wrapper = cache.putIfAbsent(key, cacheObject);
-
 					if (wrapper != null && wrapper.get() != null) {
+						
 						cacheObject = (CacheObject<T>) wrapper.get();
 						// 初始化
 						cacheObject.doInit();
-
+						
 						// 更新索引 需要外层加锁
 						if(cacheConfig.isEnableIndex()) {
 							for (ValueGetter<T> indexGetter : cacheObject.getIndexList()) {
@@ -205,6 +205,7 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 							}
 						}
 					}
+					
 				} else {
 					// 缓存NULL value
 					wrapper = cache.putIfAbsent(key, null);

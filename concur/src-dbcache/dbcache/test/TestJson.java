@@ -17,6 +17,7 @@ public class TestJson {
         Type type = new TypeReference<ConcurrentMap<String, Object>>(){}.getType();
 
         System.out.println(type);
+        
     }
 
 }

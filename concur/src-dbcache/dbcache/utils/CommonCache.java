@@ -5,7 +5,6 @@ import dbcache.service.DbCacheService;
 import dbcache.service.impl.ConcurrentLruHashMapCache;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
