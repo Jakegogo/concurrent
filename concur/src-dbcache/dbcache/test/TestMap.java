@@ -18,7 +18,7 @@ public class TestMap {
 		long t1 = System.currentTimeMillis();
 		for(int i = 1; i <= 10000;i++) {
 			
-			for(int k = 0;k < 5;k++) {
+			for(int k = 0;k < 1;k++) {
 				map.putIfAbsent(i, i);
 			}
 //			map.put(i, i);
@@ -44,7 +44,7 @@ public class TestMap {
 		t1 = System.currentTimeMillis();
 		for(int i = 1; i <= 10000;i++) {
 			
-			for(int k = 0;k < 5;k++) {
+			for(int k = 0;k < 1;k++) {
 				map1.putIfAbsent(i, i);
 			}
 //			map1.put(i, i);
@@ -71,7 +71,7 @@ public class TestMap {
 		t1 = System.currentTimeMillis();
 		for(int i = 1; i <= 10000;i++) {
 
-			for(int k = 0;k < 5;k++) {
+			for(int k = 0;k < 1;k++) {
 				map2.putIfAbsent(i, i);
 			}
 //			map2.put(i, i);
