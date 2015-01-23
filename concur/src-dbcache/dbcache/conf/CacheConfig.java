@@ -126,7 +126,7 @@ public class CacheConfig<T> {
 	 * @return
 	 */
 	public Object getIdAutoGenerateValue() {
-		return this.defaultIdGenerator;
+		return this.defaultIdGenerator.generateId();
 	}
 
 
