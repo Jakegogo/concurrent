@@ -33,7 +33,7 @@
  * All rights reserved.
  */
 
-package dbcache.utils;
+package dbcache.utils.concurrent;
 
 import java.util.*;
 

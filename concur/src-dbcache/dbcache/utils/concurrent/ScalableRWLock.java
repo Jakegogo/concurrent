@@ -1,4 +1,4 @@
-package dbcache.utils;
+package dbcache.utils.concurrent;
 
 /******************************************************************************
  * Copyright (c) 2012, Pedro Ramalhete

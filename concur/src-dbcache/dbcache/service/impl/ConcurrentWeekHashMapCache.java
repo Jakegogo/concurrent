@@ -3,7 +3,7 @@ package dbcache.service.impl;
 import dbcache.model.WeakCacheEntity;
 import dbcache.model.WeakCacheObject;
 import dbcache.service.Cache;
-import dbcache.utils.ConcurrentHashMap;
+import dbcache.utils.concurrent.ConcurrentHashMap;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

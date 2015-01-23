@@ -4,8 +4,8 @@ import java.io.Serializable;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicReference;
 
-import dbcache.utils.ConcurrentHashMap;
-import dbcache.utils.ConcurrentLinkedHashMap8;
+import dbcache.utils.concurrent.ConcurrentHashMap;
+import dbcache.utils.concurrent.ConcurrentLinkedHashMap8;
 
 /**
  * 索引缓存对象

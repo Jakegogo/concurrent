@@ -3,7 +3,7 @@ package dbcache.test;
 import java.util.Map;
 import java.util.concurrent.ConcurrentMap;
 
-import dbcache.utils.ConcurrentHashMap;
+import dbcache.utils.concurrent.ConcurrentHashMap;
 
 public class TestMap {
 

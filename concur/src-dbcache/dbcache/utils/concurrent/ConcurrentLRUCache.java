@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package dbcache.utils;
+package dbcache.utils.concurrent;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -26,6 +26,8 @@ import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.ReentrantLock;
+
+import dbcache.utils.PriorityQueue;
 
 /**
  * A LRU cache implementation based upon ConcurrentHashMap and other techniques to reduce

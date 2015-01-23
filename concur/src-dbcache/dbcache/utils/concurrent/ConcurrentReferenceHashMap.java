@@ -54,7 +54,7 @@
  *  limitations under the License.
  */
 
-package dbcache.utils;
+package dbcache.utils.concurrent;
 
 import java.io.IOException;
 import java.io.Serializable;
@@ -892,7 +892,7 @@ public class ConcurrentReferenceHashMap<K, V> extends AbstractMap<K, V>
      * Creates a new, empty map with the specified initial
      * capacity, reference types, load factor and concurrency level.
      *
-     * Behavioral changing options such as {@link dbcache.utils.ConcurrentReferenceHashMap.Option#IDENTITY_COMPARISONS}
+     * Behavioral changing options such as {@link dbcache.utils.concurrent.ConcurrentReferenceHashMap.Option#IDENTITY_COMPARISONS}
      * can also be specified.
      *
      * @param initialCapacity the initial capacity. The implementation

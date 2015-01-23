@@ -2,8 +2,10 @@ package dbcache.service.impl;
 
 import com.googlecode.concurrentlinkedhashmap.ConcurrentLinkedHashMap;
 import com.googlecode.concurrentlinkedhashmap.EvictionListener;
+
 import dbcache.service.Cache;
-import dbcache.utils.ConcurrentWeakHashMap;
+import dbcache.utils.concurrent.ConcurrentWeakHashMap;
+
 import org.springframework.stereotype.Component;
 
 import java.io.Serializable;

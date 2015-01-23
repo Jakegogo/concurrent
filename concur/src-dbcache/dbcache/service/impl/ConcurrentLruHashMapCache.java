@@ -1,9 +1,10 @@
 package dbcache.service.impl;
 
 import dbcache.service.Cache;
-import dbcache.utils.CleanupThread;
-import dbcache.utils.ConcurrentLRUCache;
-import dbcache.utils.ConcurrentWeakHashMap;
+import dbcache.utils.concurrent.CleanupThread;
+import dbcache.utils.concurrent.ConcurrentLRUCache;
+import dbcache.utils.concurrent.ConcurrentWeakHashMap;
+
 import org.springframework.stereotype.Component;
 
 import java.io.Serializable;

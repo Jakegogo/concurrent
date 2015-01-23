@@ -3,6 +3,8 @@ package dbcache.utils;
 import dbcache.service.Cache;
 import dbcache.service.DbCacheService;
 import dbcache.service.impl.ConcurrentLruHashMapCache;
+import dbcache.utils.concurrent.ConcurrentHashMap;
+
 import org.apache.commons.lang.builder.HashCodeBuilder;
 
 import java.util.concurrent.ConcurrentMap;

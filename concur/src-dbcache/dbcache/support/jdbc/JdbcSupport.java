@@ -2,9 +2,9 @@ package dbcache.support.jdbc;
 
 import dbcache.key.IdGenerator;
 import dbcache.utils.AsmUtils;
-import dbcache.utils.IdentityHashMap;
 import dbcache.utils.MutableInteger;
 import dbcache.utils.StringUtils;
+import dbcache.utils.concurrent.IdentityHashMap;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;

@@ -44,7 +44,7 @@ import java.util.NoSuchElementException;
  * @see <a href="http://code.google.com/p/concurrentlinkedhashmap/">
  *      http://code.google.com/p/concurrentlinkedhashmap/</a>
  */
-final class LinkedDeque<E extends Linked<E>> extends AbstractCollection<E> implements Deque<E> {
+public final class LinkedDeque<E extends Linked<E>> extends AbstractCollection<E> implements Deque<E> {
 
   // This class provides a doubly-linked list that is optimized for the virtual
   // machine. The first and last elements are manipulated instead of a slightly

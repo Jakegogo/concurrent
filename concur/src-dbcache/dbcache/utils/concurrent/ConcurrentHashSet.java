@@ -30,7 +30,7 @@
  * limitations under the License.
  */
 
-package dbcache.utils;
+package dbcache.utils.concurrent;
 
 import java.util.Collection;
 import java.util.Iterator;

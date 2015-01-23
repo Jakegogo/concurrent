@@ -38,7 +38,7 @@
  * All rights reserved.
  */
 
-package dbcache.utils;
+package dbcache.utils.concurrent;
 
 import java.io.*;
 import java.util.concurrent.atomic.*;

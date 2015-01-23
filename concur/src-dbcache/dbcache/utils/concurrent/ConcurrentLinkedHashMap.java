@@ -30,7 +30,7 @@
  * limitations under the License.
  */
 
-package dbcache.utils;
+package dbcache.utils.concurrent;
 
 import java.io.Serializable;
 import java.util.AbstractMap;
@@ -45,7 +45,7 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
 
-import dbcache.utils.ConcurrentLinkedHashMap.Node.State;
+import dbcache.utils.concurrent.ConcurrentLinkedHashMap.Node.State;
 
 // 支持FIFO,LRU,SECOND_CHANCE
 

@@ -1,6 +1,6 @@
 package dbcache.test;
 
-import dbcache.utils.ConcurrentHashMap;
+import dbcache.utils.concurrent.ConcurrentHashMap;
 
 //class TestMap2 {
 //

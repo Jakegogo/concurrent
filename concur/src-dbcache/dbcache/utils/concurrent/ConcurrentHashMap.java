@@ -3,7 +3,7 @@
  * Expert Group and released to the public domain, as explained at
  * http://creativecommons.org/publicdomain/zero/1.0/
  */
-package dbcache.utils;
+package dbcache.utils.concurrent;
 
 import java.io.ObjectStreamField;
 import java.io.Serializable;

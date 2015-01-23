@@ -38,7 +38,7 @@
  * All rights reserved.
  */
 
-package dbcache.utils;
+package dbcache.utils.concurrent;
 
 
 
@@ -46,7 +46,8 @@ import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.locks.*;
 
-import static dbcache.utils.ConcurrentLinkedHashMap8.QueuePolicy.*;
+import dbcache.utils.LinkedDeque;
+import static dbcache.utils.concurrent.ConcurrentLinkedHashMap8.QueuePolicy.*;
 
 // 从jdk8移植的ConcurrentLinkedHashMap
 

@@ -6,6 +6,7 @@ import dbcache.service.DbCacheService;
 import dbcache.support.asm.EntityAsmFactory;
 import dbcache.support.jdbc.JdbcSupport;
 import dbcache.utils.*;
+import dbcache.utils.concurrent.ConcurrentWeakHashMap;
 import javassist.CannotCompileException;
 import javassist.NotFoundException;
 

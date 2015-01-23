@@ -4,7 +4,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CountDownLatch;
 
-import dbcache.utils.ConcurrentHashMap;
+import dbcache.utils.concurrent.ConcurrentHashMap;
 
 public class TestMap1 {
 
