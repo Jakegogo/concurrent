@@ -1,9 +1,11 @@
 package dbcache.model;
 
 import java.io.Serializable;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicReference;
 
 import dbcache.utils.ConcurrentHashMap;
+import dbcache.utils.ConcurrentLinkedHashMap8;
 
 /**
  * 索引缓存对象
@@ -31,7 +33,7 @@ public class IndexObject<PK extends Comparable<PK> & Serializable> {
 	/**
 	 * 索引区域缓存
 	 */
-	private ConcurrentHashMap<PK, Boolean> indexValues = new ConcurrentHashMap<PK, Boolean>();
+	private ConcurrentMap<PK, Boolean> indexValues = new ConcurrentLinkedHashMap8<PK, Boolean>();
 
 
 	/**
@@ -75,11 +77,11 @@ public class IndexObject<PK extends Comparable<PK> & Serializable> {
 		return this.updateStatus.compareAndSet(preUpdateStatus, updateStatus);
 	}
 
-	public ConcurrentHashMap<PK, Boolean> getIndexValues() {
+	public ConcurrentMap<PK, Boolean> getIndexValues() {
 		return indexValues;
 	}
 
-	public void setIndexValues(ConcurrentHashMap<PK, Boolean> indexValues) {
+	public void setIndexValues(ConcurrentMap<PK, Boolean> indexValues) {
 		this.indexValues = indexValues;
 	}
 
