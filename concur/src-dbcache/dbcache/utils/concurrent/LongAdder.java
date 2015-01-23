@@ -142,6 +142,14 @@ public class LongAdder extends Striped64 implements Serializable {
     }
 
     /**
+     * set the variables
+     * @param x
+     */
+    public void set(long x) {
+        internalReset(x);
+    }
+
+    /**
      * Resets variables maintaining the sum to zero.  This method may
      * be a useful alternative to creating a new adder, but is only
      * effective if there are no concurrent updates.  Because this

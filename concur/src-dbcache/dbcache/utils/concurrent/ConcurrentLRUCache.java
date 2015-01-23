@@ -112,13 +112,14 @@ public class ConcurrentLRUCache<K, V>
         {
             if (islive)
             {
-                stats.missCounter.incrementAndGet();
+                stats.missCounter.increment();
             }
             return null;
         }
         if (islive)
         {
-            e.lastAccessed = stats.accessCounter.incrementAndGet();
+            stats.accessCounter.increment();
+            e.lastAccessed = stats.accessCounter.longValue();
         }
         return e.value;
     }
@@ -128,7 +129,7 @@ public class ConcurrentLRUCache<K, V>
         CacheEntry<K, V> cacheEntry = map.remove(key);
         if (cacheEntry != null && cacheEntry != NULL_ENTRY)
         {
-            stats.size.decrementAndGet();
+            stats.size.decrement();
             return cacheEntry.value;
         }
         return null;
@@ -141,27 +142,28 @@ public class ConcurrentLRUCache<K, V>
         {
             e = NULL_ENTRY;
         } else {
+            stats.accessCounter.increment();
             e = new CacheEntry<K, V>(key, val,
-                    stats.accessCounter.incrementAndGet());
+                    stats.accessCounter.longValue());
         }
 
         CacheEntry<K, V> oldCacheEntry = map.put(key, e);
         int currentSize;
-        if (oldCacheEntry == null && oldCacheEntry == NULL_ENTRY)
-        {
-            currentSize = stats.size.incrementAndGet();
+        if (oldCacheEntry == null && oldCacheEntry == NULL_ENTRY) {
+            stats.size.increment();
+            currentSize = stats.size.intValue();
         }
         else
         {
-            currentSize = stats.size.get();
+            currentSize = stats.size.intValue();
         }
         if (islive)
         {
-            stats.putCounter.incrementAndGet();
+            stats.putCounter.increment();
         }
         else
         {
-            stats.nonLivePutCounter.incrementAndGet();
+            stats.nonLivePutCounter.increment();
         }
 
         // Check if we need to clear out old entries from the cache.
@@ -207,27 +209,29 @@ public class ConcurrentLRUCache<K, V>
         {
             e = NULL_ENTRY;
         } else {
+            stats.accessCounter.increment();
             e = new CacheEntry<K, V>(key, val,
-                    stats.accessCounter.incrementAndGet());
+                    stats.accessCounter.longValue());
         }
 
         CacheEntry<K, V> oldCacheEntry = map.putIfAbsent(key, e);
         int currentSize;
         if (oldCacheEntry == null || oldCacheEntry == NULL_ENTRY)
         {
-            currentSize = stats.size.incrementAndGet();
+            stats.size.increment();
+            currentSize = stats.size.intValue();
         }
         else
         {
-            currentSize = stats.size.get();
+            currentSize = stats.size.intValue();
         }
         if (islive)
         {
-            stats.putCounter.incrementAndGet();
+            stats.putCounter.increment();
         }
         else
         {
-            stats.nonLivePutCounter.incrementAndGet();
+            stats.nonLivePutCounter.increment();
         }
 
         // Check if we need to clear out old entries from the cache.
@@ -273,8 +277,9 @@ public class ConcurrentLRUCache<K, V>
         if(newVal == null) {
             e = NULL_ENTRY;
         } else {
+            stats.accessCounter.increment();
             e = new CacheEntry<K, V>(key, newVal,
-                    stats.accessCounter.incrementAndGet());
+                    stats.accessCounter.longValue());
         }
 
         CacheEntry<K, V> eOld;
@@ -282,7 +287,7 @@ public class ConcurrentLRUCache<K, V>
             eOld = NULL_ENTRY;
         } else {
             eOld = new CacheEntry<K, V>(key, oldVal,
-                    stats.accessCounter.get());
+                    stats.accessCounter.longValue());
         }
 
         CacheEntry<K, V> oldCacheEntry;
@@ -294,19 +299,20 @@ public class ConcurrentLRUCache<K, V>
         int currentSize;
         if (oldCacheEntry == null || oldCacheEntry == NULL_ENTRY)
         {
-            currentSize = stats.size.incrementAndGet();
+            stats.size.increment();
+            currentSize = stats.size.intValue();
         }
         else
         {
-            currentSize = stats.size.get();
+            currentSize = stats.size.intValue();
         }
         if (islive)
         {
-            stats.putCounter.incrementAndGet();
+            stats.putCounter.increment();
         }
         else
         {
-            stats.nonLivePutCounter.incrementAndGet();
+            stats.nonLivePutCounter.increment();
         }
 
         // Check if we need to clear out old entries from the cache.
@@ -377,8 +383,8 @@ public class ConcurrentLRUCache<K, V>
             isCleaning = true;
             this.oldestEntry = oldestEntry; // volatile write to make isCleaning visible
 
-            long timeCurrent = stats.accessCounter.get();
-            int sz = stats.size.get();
+            long timeCurrent = stats.accessCounter.longValue();
+            int sz = stats.size.intValue();
 
             int numRemoved = 0;
             int numKept = 0;
@@ -661,8 +667,8 @@ public class ConcurrentLRUCache<K, V>
         {
             evictionListener.evictedEntry(o.key, o.value);
         }
-        stats.size.decrementAndGet();
-        stats.evictionCounter.incrementAndGet();
+        stats.size.decrement();
+        stats.evictionCounter.increment();
     }
 
     /**
@@ -756,7 +762,7 @@ public class ConcurrentLRUCache<K, V>
 
     public int size()
     {
-        return stats.size.get();
+        return stats.size.intValue();
     }
 
     public void clear()
@@ -878,58 +884,58 @@ public class ConcurrentLRUCache<K, V>
 
     public static class Stats
     {
-        private final AtomicLong accessCounter = new AtomicLong(0);
-        private final AtomicLong putCounter = new AtomicLong(0);
-        private final AtomicLong nonLivePutCounter = new AtomicLong(0);
-        private final AtomicLong missCounter = new AtomicLong();
-        private final AtomicInteger size = new AtomicInteger();
-        private AtomicLong evictionCounter = new AtomicLong();
+        private final LongAdder accessCounter = new LongAdder();
+        private final LongAdder putCounter = new LongAdder();
+        private final LongAdder nonLivePutCounter = new LongAdder();
+        private final LongAdder missCounter = new LongAdder();
+        private final LongAdder size = new LongAdder();// int
+        private LongAdder evictionCounter = new LongAdder();
 
         public long getCumulativeLookups()
         {
-            return (accessCounter.get() - putCounter.get() - nonLivePutCounter
-                    .get()) + missCounter.get();
+            return (accessCounter.longValue() - putCounter.longValue() - nonLivePutCounter
+                    .longValue()) + missCounter.longValue();
         }
 
         public long getCumulativeHits()
         {
-            return accessCounter.get() - putCounter.get()
-                    - nonLivePutCounter.get();
+            return accessCounter.longValue() - putCounter.longValue()
+                    - nonLivePutCounter.longValue();
         }
 
         public long getCumulativePuts()
         {
-            return putCounter.get();
+            return putCounter.longValue();
         }
 
         public long getCumulativeEvictions()
         {
-            return evictionCounter.get();
+            return evictionCounter.longValue();
         }
 
         public int getCurrentSize()
         {
-            return size.get();
+            return size.intValue();
         }
 
         public long getCumulativeNonLivePuts()
         {
-            return nonLivePutCounter.get();
+            return nonLivePutCounter.longValue();
         }
 
         public long getCumulativeMisses()
         {
-            return missCounter.get();
+            return missCounter.longValue();
         }
 
         public void add(Stats other)
         {
-            accessCounter.addAndGet(other.accessCounter.get());
-            putCounter.addAndGet(other.putCounter.get());
-            nonLivePutCounter.addAndGet(other.nonLivePutCounter.get());
-            missCounter.addAndGet(other.missCounter.get());
-            evictionCounter.addAndGet(other.evictionCounter.get());
-            size.set(Math.max(size.get(), other.size.get()));
+            accessCounter.add(other.accessCounter.longValue());
+            putCounter.add(other.putCounter.longValue());
+            nonLivePutCounter.add(other.nonLivePutCounter.longValue());
+            missCounter.add(other.missCounter.longValue());
+            evictionCounter.add(other.evictionCounter.longValue());
+            size.set(Math.max(size.intValue(), other.size.intValue()));
         }
     }
 
