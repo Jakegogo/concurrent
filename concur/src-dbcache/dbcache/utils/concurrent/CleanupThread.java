@@ -1,11 +1,11 @@
 package dbcache.utils.concurrent;
 
+import org.apache.mina.util.ConcurrentHashSet;
+
 import java.lang.ref.WeakReference;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
-
-import org.apache.mina.util.ConcurrentHashSet;
 
 /**
 * Created by Jake on 2014/11/14.
@@ -88,12 +88,12 @@ public class CleanupThread extends Thread
             }
             
             for(ConcurrentLRUCache c1 : cleaningQueue) {
-//            	long ct1 = System.currentTimeMillis();
-//            	int cs1 = c1.size();
+            	long ct1 = System.currentTimeMillis();
+            	int cs1 = c1.size();
                 c1.markAndSweep();
-//				System.out.println("ConcurrentLRUCache回收对象:"
-//						+ (System.currentTimeMillis() - ct1) + "毫秒,回收前大小:"
-//						+ cs1 + ",回收后大小:" + c1.size());
+				System.out.println("ConcurrentLRUCache回收对象:"
+						+ (System.currentTimeMillis() - ct1) + "毫秒,回收前大小:"
+						+ cs1 + ",回收后大小:" + c1.size());
             }
             
             

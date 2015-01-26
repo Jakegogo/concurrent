@@ -373,7 +373,7 @@ public class JdbcSupport {
     	Connection conn = null;
     	PreparedStatement pst = null;
     	ResultSet rs = null;
-    	
+
     	try {
 	    	conn = config.getConnection();
 
@@ -517,14 +517,15 @@ public class JdbcSupport {
      * @return
      */
     public ModelInfo getOrCreateModelInfo(final Class<?> clzz) {
-    	// 基本类型
-    	if (AsmUtils.isBaseType(clzz)) {
-    		throw new IllegalArgumentException("类型:" + clzz + "为基本类型,无法映射数据库.");
-    	}
 
     	ModelInfo modelInfoCached = modelInfoCache.get(clzz);
     	if(modelInfoCached != null) {
     		return modelInfoCached;
+    	}
+
+    	// 基本类型
+    	if (AsmUtils.isBaseType(clzz)) {
+    		throw new IllegalArgumentException("类型:" + clzz + "为基本类型,无法映射数据库.");
     	}
 
     	// 创建实体信息

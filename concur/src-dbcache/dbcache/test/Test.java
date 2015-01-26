@@ -444,7 +444,7 @@ public class Test {
 	public void t22() throws InterruptedException {
 
 
-		for(int j = 2;j < 100;j++) {
+		for(int j = 3;j < 1000;j++) {
 			Long id = Long.valueOf(j);
 			Entity entity = new Entity();
 			entity.doAfterLoad();
@@ -455,24 +455,24 @@ public class Test {
 //			Assert.assertEquals(entity, this.cacheService.get(id));
 
 
-			for (int i = 0; i < 1000000; i++) {
-				entity = this.cacheService.get(id);
-
-				entity.increseNum();
-
-
-				this.cacheService.submitUpdate(entity);
-				if (i % 10000000 == 0) {
-					System.out.println(ThreadUtils.dumpThreadPool("入库线程池", this.cacheService.getThreadPool()));
-				}
-
-				if (i % 1000000 == 0) {
-					Thread.sleep(10);
-				}
-
-				entity = null;
-				//			System.gc();
-			}
+//			for (int i = 0; i < 1000000; i++) {
+//				entity = this.cacheService.get(id);
+//
+//				entity.increseNum();
+//
+//
+//				this.cacheService.submitUpdate(entity);
+//				if (i % 10000000 == 0) {
+//					System.out.println(ThreadUtils.dumpThreadPool("入库线程池", this.cacheService.getThreadPool()));
+//				}
+//
+//				if (i % 1000000 == 0) {
+//					Thread.sleep(10);
+//				}
+//
+//				entity = null;
+//				//			System.gc();
+//			}
 		}
 
 		while(true) {
@@ -486,6 +486,66 @@ public class Test {
 		}
 
 	}
+
+
+
+	@org.junit.Test
+	public void t23() throws InterruptedException {
+
+
+		for(int i = 0;i <= 100000;i++) {
+			for(long j = 1;j < 1000;j++) {
+				Entity entity = this.cacheService.get(j);
+				entity.increseNum();
+//			if(i % 1000000 == 0) {
+//				entity.addNum(1);
+//			}
+
+
+//			entity.setNum(i);
+
+//			entity.setUid(i);
+
+//			if(i%100 == 0) {
+//			Thread.sleep(10);
+//			}
+
+				this.cacheService.submitUpdate(entity);
+				if (i % 10000000 == 0) {
+					System.out.println(ThreadUtils.dumpThreadPool("入库线程池", this.cacheService.getThreadPool()));
+				}
+
+				if (i % 1000000 == 0) {
+					Thread.sleep(10);
+				}
+				entity = null;
+			}
+
+
+//			System.gc();
+		}
+//		System.out.println(entity.num);
+
+//		this.cacheService.flushAllEntity();
+
+//		try {
+//			Thread.sleep(500);
+//		} catch (InterruptedException e) {
+//			e.printStackTrace();
+//		}
+
+		while(true) {
+			try {
+				System.out.println(ThreadUtils.dumpThreadPool("入库线程池", this.cacheService.getThreadPool()));
+				Thread.sleep(1000);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+
+	}
+
 
 
 }

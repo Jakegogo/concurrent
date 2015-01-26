@@ -18,16 +18,10 @@
  */
 package dbcache.utils.concurrent;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.TreeSet;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicLong;
-import java.util.concurrent.locks.ReentrantLock;
-
 import dbcache.utils.PriorityQueue;
+
+import java.util.*;
+import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * A LRU cache implementation based upon ConcurrentHashMap and other techniques to reduce
@@ -40,7 +34,6 @@ import dbcache.utils.PriorityQueue;
  *
  *
  * @since solr 1.4
- * @see org.apache.solr.util.ConcurrentLRUCache
  */
 public class ConcurrentLRUCache<K, V>
 {
@@ -658,7 +651,7 @@ public class ConcurrentLRUCache<K, V>
 
     private void evictEntry(K key)
     {
-        CacheEntry<K, V> o = map.remove(key);
+        CacheEntry<K, V> o = map.get(key);
         if (o == null)
         {
             return;
@@ -667,6 +660,7 @@ public class ConcurrentLRUCache<K, V>
         {
             evictionListener.evictedEntry(o.key, o.value);
         }
+        map.remove(key);
         stats.size.decrement();
         stats.evictionCounter.increment();
     }

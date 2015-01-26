@@ -400,8 +400,8 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 		if (cacheObject != null) {
 			// 验证缓存操作原子性(缓存实体必须唯一)
 			if(cacheObject.getProxyEntity() != entity) {
-				String msg = "实体使用期间缓存对象CacheObject被修改过:无法保证原子性和实体唯一,请重试[current:"
-						+ JsonUtils.object2JsonString(entity) + ", remote:" + JsonUtils.object2JsonString(cacheObject.getProxyEntity()) + "]";
+				String msg = "实体使用期间缓存对象CacheObject被修改过:无法保证原子性和实体唯一,请重试[user:"
+						+ JsonUtils.object2JsonString(entity) + ", current:" + JsonUtils.object2JsonString(cacheObject.getProxyEntity()) + "]";
 				logger.error(msg);
 				throw new IllegalStateException(msg);
 			}
