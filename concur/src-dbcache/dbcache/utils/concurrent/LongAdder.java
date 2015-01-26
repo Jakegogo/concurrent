@@ -44,6 +44,7 @@ import java.io.*;
 import java.util.concurrent.atomic.*;
 
 //从jdk8移植的LongAdder
+// 适用于不需要自增唯一,仅对数量进行统计的情形
 
 /**
  * One or more variables that together maintain an initially zero
@@ -139,6 +140,14 @@ public class LongAdder extends Striped64 implements Serializable {
             }
         }
         return sum;
+    }
+
+    /**
+     * set the variables
+     * @param x
+     */
+    public void set(long x) {
+        internalReset(x);
     }
 
     /**

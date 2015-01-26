@@ -1,11 +1,10 @@
 package dbcache.model;
 
+import dbcache.utils.concurrent.ConcurrentLinkedHashMap8;
+
 import java.io.Serializable;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicReference;
-
-import dbcache.utils.concurrent.ConcurrentHashMap;
-import dbcache.utils.concurrent.ConcurrentLinkedHashMap8;
 
 /**
  * 索引缓存对象

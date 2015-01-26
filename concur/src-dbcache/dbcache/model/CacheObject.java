@@ -2,11 +2,11 @@ package dbcache.model;
 
 import dbcache.conf.JsonConverter;
 import dbcache.support.asm.ValueGetter;
+import dbcache.utils.concurrent.LongAdder;
 
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicLong;
 
 
 /**
@@ -35,12 +35,12 @@ public class CacheObject<T extends IEntity<?>> {
 	/**
 	 * 修改版本号
 	 */
-	private final AtomicLong editVersion = new AtomicLong(0L);
+	private final LongAdder editVersion = new LongAdder();
 
 	/**
 	 * 入库版本号
 	 */
-	private volatile long dbVersion = editVersion.get();
+	private volatile long dbVersion = editVersion.intValue();
 	
 	/**
 	 * 索引属性值获取器列表
@@ -156,7 +156,8 @@ public class CacheObject<T extends IEntity<?>> {
 	 * 更新修改版本号
 	 */
 	public long increseEditVersion() {
-		return this.editVersion.incrementAndGet();
+		this.editVersion.increment();
+		return this.editVersion.longValue();
 	}
 
 	public T getEntity() {
@@ -172,7 +173,7 @@ public class CacheObject<T extends IEntity<?>> {
 	}
 
 	public long getEditVersion() {
-		return editVersion.get();
+		return editVersion.longValue();
 	}
 
 	public PersistStatus getPersistStatus() {
