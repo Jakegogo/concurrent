@@ -1,2 +1,6 @@
 eclipse.preferences.version=1
+<<<<<<< HEAD
+encoding//resource/ServerCfg.properties=UTF-8
+=======
+>>>>>>> branch 'master' of https://github.com/Jakegogo/concurrent
 encoding/<project>=UTF-8
