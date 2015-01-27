@@ -63,7 +63,7 @@ public class JdbcSupport {
 			config.dialect.fillStatement(pst, id);
 
 			rs = pst.executeQuery();
-
+System.out.println("get :" + id);
 			return (T) modelInfo.generateEntity(rs);
 		} catch (Exception e) {
 			e.printStackTrace();

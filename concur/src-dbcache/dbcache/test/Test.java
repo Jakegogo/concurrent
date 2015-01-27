@@ -493,8 +493,8 @@ public class Test {
 	public void t23() throws InterruptedException {
 
 
-		for(int i = 0;i <= 100000;i++) {
-			for(long j = 1;j < 1000;j++) {
+		for(int i = 0;i <= 1000;i++) {
+			for(long j = 1;j < 50;j++) {
 				Entity entity = this.cacheService.get(j);
 				entity.increseNum();
 //			if(i % 1000000 == 0) {
@@ -511,17 +511,17 @@ public class Test {
 //			}
 
 				this.cacheService.submitUpdate(entity);
-				if (i % 10000000 == 0) {
+				if (i % 10000 == 0) {
 					System.out.println(ThreadUtils.dumpThreadPool("入库线程池", this.cacheService.getThreadPool()));
 				}
 
-				if (i % 1000000 == 0) {
-					Thread.sleep(10);
+				if (i % 10000 == 0) {
+					Thread.sleep(100);
 				}
 				entity = null;
 			}
 
-
+			Thread.sleep(500);
 //			System.gc();
 		}
 //		System.out.println(entity.num);
