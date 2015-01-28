@@ -1,6 +1,10 @@
 package dbcache.service.impl;
 
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -11,6 +15,7 @@ import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
 import dbcache.model.CacheObject;
@@ -18,6 +23,7 @@ import dbcache.model.PersistAction;
 import dbcache.model.PersistStatus;
 import dbcache.service.Cache;
 import dbcache.service.DbAccessService;
+import dbcache.service.DbBatchAccessService;
 import dbcache.service.DbPersistService;
 import dbcache.service.DbRuleService;
 import dbcache.utils.JsonUtils;
@@ -25,24 +31,29 @@ import dbcache.utils.NamedThreadFactory;
 
 
 /**
- * 延时入库实现类
+ * 延时批量入库实现类
  * <br/>单线程执行入库
  * @author Jake
  * @date 2014年8月13日上午12:31:06
  */
-@Component("delayDbPersistService")
-public class DelayDbPersistService implements DbPersistService {
+@Component("delayBatchDbPersistService")
+public class DelayBatchDbPersistService implements DbPersistService {
 
 	/**
 	 * logger
 	 */
-	private static final Logger logger = LoggerFactory.getLogger(DelayDbPersistService.class);
+	private static final Logger logger = LoggerFactory.getLogger(DelayBatchDbPersistService.class);
 
 	/**
 	 * 更改实体队列
 	 */
 	private final ConcurrentLinkedQueue<QueuedAction> updateQueue = new ConcurrentLinkedQueue<QueuedAction>();
-
+	
+	/**
+	 * 分类批量任务队列
+	 */
+	private final BatchTasks batchTasks = new BatchTasks();
+	
 	/**
 	 * 当前延迟更新的动作
 	 */
@@ -52,6 +63,9 @@ public class DelayDbPersistService implements DbPersistService {
 	@Autowired
 	private DbRuleService dbRuleService;
 
+	@Autowired
+	@Qualifier("jdbcDbAccessServiceImpl")
+	private DbBatchAccessService dbAccessService;
 
 	/**
 	 * 入库线程池
@@ -84,6 +98,58 @@ public class DelayDbPersistService implements DbPersistService {
 			}
 		}
 
+	}
+	
+	/**
+	 * 分类批量任务
+	 * @author Jake
+	 *
+	 */
+	static class BatchTasks {
+		
+		final Map<Class<?>, LinkedList<Object>> saveBatchQueue = new HashMap<Class<?>, LinkedList<Object>>();
+		
+		final Map<Class<?>, LinkedList<Object>> updateBatchQueue = new HashMap<Class<?>, LinkedList<Object>>();
+		
+		final Map<Class<?>, LinkedList<Object>> deleteBatchQueue = new HashMap<Class<?>, LinkedList<Object>>();
+		
+		// 添加插入数据任务
+		public void addSaveTask(Object object) {
+			LinkedList<Object> list = saveBatchQueue.get(object.getClass());
+			if (list == null) {
+				list = new LinkedList<Object>();
+				saveBatchQueue.put(object.getClass(), list);
+			}
+			list.add(object);
+		}
+		
+		// 添加更新数据任务
+		public void addUpdateTask(Object object) {
+			LinkedList<Object> list = updateBatchQueue.get(object.getClass());
+			if (list == null) {
+				list = new LinkedList<Object>();
+				updateBatchQueue.put(object.getClass(), list);
+			}
+			list.add(object);
+		}
+		
+		// 添加更新数据任务
+		public void addDeleteTask(Object object) {
+			LinkedList<Object> list = deleteBatchQueue.get(object.getClass());
+			if (list == null) {
+				list = new LinkedList<Object>();
+				deleteBatchQueue.put(object.getClass(), list);
+			}
+			list.add(object);
+		}
+		
+		// 清除任务队列
+		public void clearTask() {
+			saveBatchQueue.clear();
+			updateBatchQueue.clear();
+			deleteBatchQueue.clear();
+		}
+		
 	}
 
 
@@ -122,11 +188,12 @@ public class DelayDbPersistService implements DbPersistService {
 
 								timeDiff = System.currentTimeMillis() - updateAction.createTime;
 
-								//未到延迟入库时间
+								// 未到延迟入库时间
 								if (timeDiff < delayWaitTimmer) {
 									currentDelayUpdateAction = updateAction;
-
-									//等待
+									// 执行批量入库任务
+									flushBatchTask();
+									// 等待
 									Thread.sleep(delayWaitTimmer - timeDiff);
 								}
 
@@ -161,6 +228,25 @@ public class DelayDbPersistService implements DbPersistService {
 
 	}
 
+	
+	// 批量入库操作
+	protected void flushBatchTask() {
+		// 保存
+		for(Entry<Class<?>, LinkedList<Object>> entry : this.batchTasks.saveBatchQueue.entrySet()) {
+			this.dbAccessService.save(entry.getKey(), entry.getValue());
+		}
+		// 更新
+		for(Entry<Class<?>, LinkedList<Object>> entry : this.batchTasks.updateBatchQueue.entrySet()) {
+			this.dbAccessService.update(entry.getKey(), entry.getValue());
+		}
+		// 删除
+		for(Entry<Class<?>, LinkedList<Object>> entry : this.batchTasks.updateBatchQueue.entrySet()) {
+			this.dbAccessService.delete(entry.getKey(), entry.getValue());
+		}
+		// 清空任务
+		this.batchTasks.clearTask();
+	}
+
 
 	@Override
 	public void handleSave(final CacheObject<?> cacheObject, final DbAccessService dbAccessService) {
@@ -179,8 +265,8 @@ public class DelayDbPersistService implements DbPersistService {
 				// 持久化前操作
 				cacheObject.doBeforePersist();
 
-				// 持久化
-				dbAccessService.save(entity);
+				// 添加持久化任务到批量任务队列
+				batchTasks.addSaveTask(entity);
 
 				// 设置更新状态
 				cacheObject.setPersistStatus(PersistStatus.PERSIST);
@@ -205,6 +291,7 @@ public class DelayDbPersistService implements DbPersistService {
 		});
 	}
 
+	
 	@Override
 	public void handleUpdate(final CacheObject<?> cacheObject, final DbAccessService dbAccessService) {
 
@@ -241,8 +328,8 @@ public class DelayDbPersistService implements DbPersistService {
 						return;
 					}
 
-					//持久化
-					dbAccessService.update(cacheObject.getEntity());
+					// 添加持久化任务到批量任务队列
+					batchTasks.addUpdateTask(cacheObject.getEntity());
 				}
 			}
 
@@ -265,6 +352,7 @@ public class DelayDbPersistService implements DbPersistService {
 		});
 	}
 
+	
 	@Override
 	public void handleDelete(final CacheObject<?> cacheObject, final DbAccessService dbAccessService, final Object key, final Cache cache) {
 		// 最新修改版本号
@@ -285,8 +373,8 @@ public class DelayDbPersistService implements DbPersistService {
 					return;
 				}
 
-				// 持久化
-				dbAccessService.delete(cacheObject.getEntity());
+				// 添加持久化任务到批量任务队列
+				batchTasks.addDeleteTask(cacheObject.getEntity());
 
 				// 从缓存中移除
 				cache.put(key, null);
@@ -347,6 +435,8 @@ public class DelayDbPersistService implements DbPersistService {
 		if(currentDelayUpdateAction != null) {
 			currentDelayUpdateAction.persistAction.run();
 		}
+		// 执行批量入库任务
+		this.flushBatchTask();
 	}
 
 

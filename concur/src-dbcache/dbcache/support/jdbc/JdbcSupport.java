@@ -16,9 +16,14 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.sql.*;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 /**
  * Jdbc Dao支持
@@ -63,7 +68,7 @@ public class JdbcSupport {
 			config.dialect.fillStatement(pst, id);
 
 			rs = pst.executeQuery();
-System.out.println("get :" + id);
+			
 			return (T) modelInfo.generateEntity(rs);
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -102,7 +107,67 @@ System.out.println("get :" + id);
 			config.close(pst, conn);
 		}
     }
+    
+    
+    /**
+     * 批量保存实体
+     * @param clzz 实体类
+     * @param entitys 实体对象
+     */
+    public int[] batchSave(final Class<?> clzz, Collection<Object> entitys) {
 
+    	Connection conn = null;
+    	PreparedStatement pst = null;
+    	try {
+    		
+    		
+		    conn = config.getConnection();
+		    conn.setAutoCommit(false);
+		    
+		    ModelInfo modelInfo = getOrCreateModelInfo(clzz);
+		    String updateSql = modelInfo.getOrCreateSaveSql(config.dialect);
+		    	
+			pst = conn.prepareStatement(updateSql);
+			
+			for (Iterator<Object> it = entitys.iterator(); it.hasNext();) {
+				Object entity = it.next();
+				Object[] params = modelInfo.getSaveParams(entity);
+				config.dialect.fillStatement(pst, params);
+				if (it.hasNext()) {
+					pst.addBatch();
+				}
+			}
+			
+			return pst.executeBatch();
+			
+    	} catch (Exception e) {
+			e.printStackTrace();
+			
+			try {
+				// 若出现异常，对数据库中所有已完成的操作全部撤销，则回滚到事务开始状态
+				if (conn != null && !conn.isClosed()) {
+					conn.rollback();// 4,当异常发生执行catch中SQLException时，记得要rollback(回滚)；
+				}
+			} catch (SQLException e1) {
+				e1.printStackTrace();
+				throw new JdbcExecuteException(e1);
+			}
+			
+			throw new JdbcExecuteException(e);
+    	} finally {
+    		try {
+				if (conn != null && !conn.isClosed()) {
+					conn.setAutoCommit(true);
+				}
+			} catch (SQLException e2) {
+				e2.printStackTrace();
+				throw new JdbcExecuteException(e2);
+			}
+    		
+    		config.close(pst, conn);
+    	}
+    }
+    
 
     /**
      * 使用Id生成器保存实体
@@ -194,7 +259,132 @@ System.out.println("get :" + id);
 			config.close(pst, conn);
 		}
     }
+    
+    
+    /**
+     * 批量更新实体
+     * @param entitys 实体对象
+     */
+    public void batchUpdate(Collection<Object> entitys) {
+    	
+    	Map<Class<?>, List<Object>> entityClassMap = new HashMap<Class<?>, List<Object>>();
+    	
+    	for (Object entity : entitys) {
+    		List<Object> list = entityClassMap.get(entity.getClass());
+    		if (list == null) {
+    			list = new LinkedList<Object>();
+    			entityClassMap.put(entity.getClass(), list);
+    		}
+    		list.add(entity);
+    	}
 
+    	Connection conn = null;
+    	try {
+    		
+    		PreparedStatement pst = null;
+		    conn = config.getConnection();
+		    conn.setAutoCommit(false);
+		    
+		    for (Entry<Class<?>, List<Object>> entry : entityClassMap.entrySet()) {
+	    		ModelInfo modelInfo = getOrCreateModelInfo(entry.getKey());
+		    	String updateSql = modelInfo.getOrCreateUpdateSql(config.dialect);
+		    	
+				pst = conn.prepareStatement(updateSql);
+				
+				for (Iterator<Object> it = entry.getValue().iterator(); it.hasNext();) {
+					Object entity = it.next();
+					Object[] params = modelInfo.getUpdateParams(entity);
+					config.dialect.fillStatement(pst, params);
+					if (it.hasNext()) {
+						pst.addBatch();
+					}
+				}
+				pst.executeBatch();
+				pst.close();
+		    }
+		    
+		    conn.setAutoCommit(true);
+    	} catch (Exception e) {
+			e.printStackTrace();
+			
+			try {
+				// 若出现异常，对数据库中所有已完成的操作全部撤销，则回滚到事务开始状态
+				if (!conn.isClosed()) {
+					conn.rollback();// 4,当异常发生执行catch中SQLException时，记得要rollback(回滚)；
+					conn.setAutoCommit(true);
+				}
+			} catch (SQLException e1) {
+				e1.printStackTrace();
+				throw new JdbcExecuteException(e1);
+			}
+			
+			throw new JdbcExecuteException(e);
+    	} finally {
+    		config.close(conn);
+    	}
+    }
+
+    
+    /**
+     * 批量更新实体
+     * @param clzz 实体类
+     * @param entitys 实体对象
+     */
+    public int[] batchUpdate(final Class<?> clzz, Collection<Object> entitys) {
+
+    	Connection conn = null;
+    	PreparedStatement pst = null;
+    	try {
+    		
+    		
+		    conn = config.getConnection();
+		    conn.setAutoCommit(false);
+		    
+		    ModelInfo modelInfo = getOrCreateModelInfo(clzz);
+		    String updateSql = modelInfo.getOrCreateUpdateSql(config.dialect);
+		    	
+			pst = conn.prepareStatement(updateSql);
+			
+			for (Iterator<Object> it = entitys.iterator(); it.hasNext();) {
+				Object entity = it.next();
+				Object[] params = modelInfo.getUpdateParams(entity);
+				config.dialect.fillStatement(pst, params);
+				if (it.hasNext()) {
+					pst.addBatch();
+				}
+			}
+			
+			return pst.executeBatch();
+			
+    	} catch (Exception e) {
+			e.printStackTrace();
+			
+			try {
+				// 若出现异常，对数据库中所有已完成的操作全部撤销，则回滚到事务开始状态
+				if (conn != null && !conn.isClosed()) {
+					conn.rollback();// 4,当异常发生执行catch中SQLException时，记得要rollback(回滚)；
+				}
+			} catch (SQLException e1) {
+				e1.printStackTrace();
+				throw new JdbcExecuteException(e1);
+			}
+			
+			throw new JdbcExecuteException(e);
+    	} finally {
+    		try {
+				if (conn != null && !conn.isClosed()) {
+					conn.setAutoCommit(true);
+				}
+			} catch (SQLException e2) {
+				e2.printStackTrace();
+				throw new JdbcExecuteException(e2);
+			}
+    		
+    		config.close(pst, conn);
+    	}
+    }
+    
+    
 
     /**
      * 删除实体
@@ -224,6 +414,66 @@ System.out.println("get :" + id);
 		} finally {
 			config.close(pst, conn);
 		}
+    }
+    
+    
+    /**
+     * 批量删除实体
+     * @param clzz 实体类
+     * @param entitys 实体对象
+     */
+    public int[] batchDelete(final Class<?> clzz, Collection<Object> entitys) {
+
+    	Connection conn = null;
+    	PreparedStatement pst = null;
+    	try {
+    		
+    		
+		    conn = config.getConnection();
+		    conn.setAutoCommit(false);
+		    
+		    ModelInfo modelInfo = getOrCreateModelInfo(clzz);
+		    String updateSql = modelInfo.getOrCreateDeleteSql(config.dialect);
+		    	
+			pst = conn.prepareStatement(updateSql);
+			
+			for (Iterator<Object> it = entitys.iterator(); it.hasNext();) {
+				Object entity = it.next();
+				Object params = modelInfo.getDeleteParam(entity);
+				config.dialect.fillStatement(pst, params);
+				if (it.hasNext()) {
+					pst.addBatch();
+				}
+			}
+			
+			return pst.executeBatch();
+			
+    	} catch (Exception e) {
+			e.printStackTrace();
+			
+			try {
+				// 若出现异常，对数据库中所有已完成的操作全部撤销，则回滚到事务开始状态
+				if (conn != null && !conn.isClosed()) {
+					conn.rollback();// 4,当异常发生执行catch中SQLException时，记得要rollback(回滚)；
+				}
+			} catch (SQLException e1) {
+				e1.printStackTrace();
+				throw new JdbcExecuteException(e1);
+			}
+			
+			throw new JdbcExecuteException(e);
+    	} finally {
+    		try {
+				if (conn != null && !conn.isClosed()) {
+					conn.setAutoCommit(true);
+				}
+			} catch (SQLException e2) {
+				e2.printStackTrace();
+				throw new JdbcExecuteException(e2);
+			}
+    		
+    		config.close(pst, conn);
+    	}
     }
 
 
