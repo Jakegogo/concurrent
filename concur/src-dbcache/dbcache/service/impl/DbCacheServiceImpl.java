@@ -12,6 +12,7 @@ import dbcache.service.*;
 import dbcache.support.asm.ValueGetter;
 import dbcache.utils.JsonUtils;
 import dbcache.utils.concurrent.ConcurrentHashMap;
+import dbcache.utils.weak.WeakValueHashMap;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -70,26 +71,17 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 	@Inject
 	private CacheConfig<T> cacheConfig;
 
-	/**
-	 * 等待锁map {key:lock}
-	 */
-	private final ConcurrentMap<Object, Lock> WAITING_LOCK_MAP = new ConcurrentHashMap<Object, Lock>();
-
-
 	@Autowired
 	private ConfigFactory configFactory;
-
 
 	@Autowired
 	@Qualifier("jdbcDbAccessServiceImpl")
 	private DbAccessService dbAccessService;
 
-
 	@Inject
 	@Autowired
 	@Qualifier("concurrentLruHashMapCache")
 	private Cache cache;
-
 
 	/**
 	 * 默认的持久化服务
@@ -99,11 +91,9 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 	@Qualifier("inTimeDbPersistService")
 	private DbPersistService dbPersistService;
 
-
 	@Autowired
 	@Qualifier("inTimeDbPersistService")
 	private DbPersistService inTimeDbPersistService;
-
 
 	/**
 	 * 索引服务
@@ -111,6 +101,23 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 	@Inject
 	@Autowired
 	private DbIndexService<PK> indexService;
+
+	/**
+	 * 等待锁map {key:lock}
+	 */
+	private final ConcurrentMap<Object, Lock> WAITING_LOCK_MAP = new ConcurrentHashMap<Object, Lock>();
+
+	/**
+	 * 线程缓存
+	 */
+	private static final ThreadLocal<WeakValueHashMap<Object, CacheObject<?>>> threadLocalCache = new ThreadLocal<WeakValueHashMap<Object, CacheObject<?>>>() {
+
+		@Override
+		protected WeakValueHashMap<Object, CacheObject<?>> initialValue() {
+			return new WeakValueHashMap<Object, CacheObject<?>>();
+		}
+
+	};
 
 	/**
 	 * dbCache 初始化
@@ -193,11 +200,11 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 
 					wrapper = cache.putIfAbsent(key, cacheObject);
 					if (wrapper != null && wrapper.get() != null) {
-						
+
 						cacheObject = (CacheObject<T>) wrapper.get();
 						// 初始化
 						cacheObject.doInit();
-						
+
 						// 更新索引 需要外层加锁
 						if(cacheConfig.isEnableIndex()) {
 							for (ValueGetter<T> indexGetter : cacheObject.getIndexList()) {
@@ -205,7 +212,7 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 							}
 						}
 					}
-					
+
 				} else {
 					// 缓存NULL value
 					wrapper = cache.putIfAbsent(key, null);
@@ -344,10 +351,10 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 			if (wrapper != null && wrapper.get() != null) {
 				cacheObject = (CacheObject<T>) wrapper.get();
 			}
-			
+
 			// 加载回调
 			cacheObject.doAfterLoad();
-			
+
 		} else if(cacheObject == null) {// 缓存为NULL
 
 			cacheObject = configFactory.createCacheObject(entity, entity.getClass(), indexService, key, cache, cacheConfig);
@@ -356,7 +363,7 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 			if (wrapper != null && wrapper.get() != null) {
 				cacheObject = (CacheObject<T>) wrapper.get();
 			}
-			
+
 			// 加载回调
 			cacheObject.doAfterLoad();
 
