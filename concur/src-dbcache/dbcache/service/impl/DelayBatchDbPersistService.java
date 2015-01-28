@@ -1,8 +1,10 @@
 package dbcache.service.impl;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -63,6 +65,7 @@ public class DelayBatchDbPersistService implements DbPersistService {
 	@Autowired
 	private DbRuleService dbRuleService;
 
+	
 	@Autowired
 	@Qualifier("jdbcDbAccessServiceImpl")
 	private DbBatchAccessService dbAccessService;
@@ -107,50 +110,88 @@ public class DelayBatchDbPersistService implements DbPersistService {
 	 */
 	static class BatchTasks {
 		
-		final Map<Class<?>, LinkedList<Object>> saveBatchQueue = new HashMap<Class<?>, LinkedList<Object>>();
+		final Map<Class<?>, LinkedList<CacheObject<?>>> saveBatchQueue = new HashMap<Class<?>, LinkedList<CacheObject<?>>>();
 		
-		final Map<Class<?>, LinkedList<Object>> updateBatchQueue = new HashMap<Class<?>, LinkedList<Object>>();
+		final Map<Class<?>, LinkedList<CacheObject<?>>> updateBatchQueue = new HashMap<Class<?>, LinkedList<CacheObject<?>>>();
 		
-		final Map<Class<?>, LinkedList<Object>> deleteBatchQueue = new HashMap<Class<?>, LinkedList<Object>>();
+		final Map<Class<?>, LinkedList<CacheObject<?>>> deleteBatchQueue = new HashMap<Class<?>, LinkedList<CacheObject<?>>>();
 		
 		// 添加插入数据任务
-		public void addSaveTask(Object object) {
-			LinkedList<Object> list = saveBatchQueue.get(object.getClass());
+		public void addSaveTask(CacheObject<?> object) {
+			LinkedList<CacheObject<?>> list = saveBatchQueue.get(object.getEntity().getClass());
 			if (list == null) {
-				list = new LinkedList<Object>();
-				saveBatchQueue.put(object.getClass(), list);
+				list = new LinkedList<CacheObject<?>>();
+				saveBatchQueue.put(object.getEntity().getClass(), list);
 			}
 			list.add(object);
 		}
 		
 		// 添加更新数据任务
-		public void addUpdateTask(Object object) {
-			LinkedList<Object> list = updateBatchQueue.get(object.getClass());
+		public void addUpdateTask(CacheObject<?> object) {
+			LinkedList<CacheObject<?>> list = updateBatchQueue.get(object.getEntity().getClass());
 			if (list == null) {
-				list = new LinkedList<Object>();
-				updateBatchQueue.put(object.getClass(), list);
+				list = new LinkedList<CacheObject<?>>();
+				updateBatchQueue.put(object.getEntity().getClass(), list);
 			}
 			list.add(object);
 		}
 		
 		// 添加更新数据任务
-		public void addDeleteTask(Object object) {
-			LinkedList<Object> list = deleteBatchQueue.get(object.getClass());
+		public void addDeleteTask(CacheObject<?> object) {
+			LinkedList<CacheObject<?>> list = deleteBatchQueue.get(object.getEntity().getClass());
 			if (list == null) {
-				list = new LinkedList<Object>();
-				deleteBatchQueue.put(object.getClass(), list);
+				list = new LinkedList<CacheObject<?>>();
+				deleteBatchQueue.put(object.getEntity().getClass(), list);
 			}
 			list.add(object);
-		}
-		
-		// 清除任务队列
-		public void clearTask() {
-			saveBatchQueue.clear();
-			updateBatchQueue.clear();
-			deleteBatchQueue.clear();
 		}
 		
 	}
+	
+	
+	// 批量入库操作
+	protected void flushBatchTask() {
+		// 保存
+		for (Entry<Class<?>, LinkedList<CacheObject<?>>> entry : this.batchTasks.saveBatchQueue.entrySet()) {
+			LinkedList<CacheObject<?>> list = entry.getValue();
+			if (list.isEmpty()) {
+				continue;
+			}
+			List<Object> entityList = new ArrayList<Object>();
+			for (CacheObject<?> cacheObj : list) {
+				entityList.add(cacheObj.getEntity());
+			}
+			this.dbAccessService.save(entry.getKey(), entityList);
+			list.clear();
+		}
+		// 更新
+		for (Entry<Class<?>, LinkedList<CacheObject<?>>> entry : this.batchTasks.updateBatchQueue.entrySet()) {
+			LinkedList<CacheObject<?>> list = entry.getValue();
+			if (list.isEmpty()) {
+				continue;
+			}
+			List<Object> entityList = new ArrayList<Object>();
+			for (CacheObject<?> cacheObj : list) {
+				entityList.add(cacheObj.getEntity());
+			}
+			this.dbAccessService.update(entry.getKey(), entityList);
+			list.clear();
+		}
+		// 删除
+		for (Entry<Class<?>, LinkedList<CacheObject<?>>> entry : this.batchTasks.deleteBatchQueue.entrySet()) {
+			LinkedList<CacheObject<?>> list = entry.getValue();
+			if (list.isEmpty()) {
+				continue;
+			}
+			List<Object> entityList = new ArrayList<Object>();
+			for (CacheObject<?> cacheObj : list) {
+				entityList.add(cacheObj.getEntity());
+			}
+			this.dbAccessService.delete(entry.getKey(), entityList);
+			list.clear();
+		}
+	}
+
 
 
 	@PostConstruct
@@ -174,15 +215,18 @@ public class DelayBatchDbPersistService implements DbPersistService {
 
 				//循环定时检测入库,失败自动进入重试
 				while (true) {
-
+					
 					QueuedAction updateAction = updateQueue.poll();
 					try {
 
 						long timeDiff = 0l;
+						long lastFlush = System.currentTimeMillis();
 						do {
 
 							if (updateAction == null) {
-								//等待下一个检测时间
+								// 执行批量入库任务
+								flushBatchTask();
+								// 等待下一个检测时间
 								Thread.sleep(delayCheckTimmer);
 							} else {
 
@@ -191,8 +235,6 @@ public class DelayBatchDbPersistService implements DbPersistService {
 								// 未到延迟入库时间
 								if (timeDiff < delayWaitTimmer) {
 									currentDelayUpdateAction = updateAction;
-									// 执行批量入库任务
-									flushBatchTask();
 									// 等待
 									Thread.sleep(delayWaitTimmer - timeDiff);
 								}
@@ -205,6 +247,14 @@ public class DelayBatchDbPersistService implements DbPersistService {
 							updateAction = updateQueue.poll();
 							while (updateAction != null && !updateAction.persistAction.valid()) {
 								updateAction = updateQueue.poll();
+							}
+							
+							
+							if (System.currentTimeMillis() - lastFlush > delayCheckTimmer) {
+								// 执行批量入库任务
+								flushBatchTask();
+								
+								lastFlush = System.currentTimeMillis();
 							}
 
 						} while (true);
@@ -229,24 +279,6 @@ public class DelayBatchDbPersistService implements DbPersistService {
 	}
 
 	
-	// 批量入库操作
-	protected void flushBatchTask() {
-		// 保存
-		for(Entry<Class<?>, LinkedList<Object>> entry : this.batchTasks.saveBatchQueue.entrySet()) {
-			this.dbAccessService.save(entry.getKey(), entry.getValue());
-		}
-		// 更新
-		for(Entry<Class<?>, LinkedList<Object>> entry : this.batchTasks.updateBatchQueue.entrySet()) {
-			this.dbAccessService.update(entry.getKey(), entry.getValue());
-		}
-		// 删除
-		for(Entry<Class<?>, LinkedList<Object>> entry : this.batchTasks.updateBatchQueue.entrySet()) {
-			this.dbAccessService.delete(entry.getKey(), entry.getValue());
-		}
-		// 清空任务
-		this.batchTasks.clearTask();
-	}
-
 
 	@Override
 	public void handleSave(final CacheObject<?> cacheObject, final DbAccessService dbAccessService) {
@@ -260,13 +292,11 @@ public class DelayBatchDbPersistService implements DbPersistService {
 					return;
 				}
 
-				Object entity = cacheObject.getEntity();
-
 				// 持久化前操作
 				cacheObject.doBeforePersist();
 
 				// 添加持久化任务到批量任务队列
-				batchTasks.addSaveTask(entity);
+				batchTasks.addSaveTask(cacheObject);
 
 				// 设置更新状态
 				cacheObject.setPersistStatus(PersistStatus.PERSIST);
@@ -329,7 +359,7 @@ public class DelayBatchDbPersistService implements DbPersistService {
 					}
 
 					// 添加持久化任务到批量任务队列
-					batchTasks.addUpdateTask(cacheObject.getEntity());
+					batchTasks.addUpdateTask(cacheObject);
 				}
 			}
 
@@ -374,7 +404,7 @@ public class DelayBatchDbPersistService implements DbPersistService {
 				}
 
 				// 添加持久化任务到批量任务队列
-				batchTasks.addDeleteTask(cacheObject.getEntity());
+				batchTasks.addDeleteTask(cacheObject);
 
 				// 从缓存中移除
 				cache.put(key, null);

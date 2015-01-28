@@ -85,7 +85,7 @@ public class MysqlDialect extends Dialect {
 				sql.append("`").append(colName).append("` = ? ");
 			}
 		}
-		sql.append(" where `").append(tableInfo.getPrimaryKey()).append("` = ?").append(" limit 1");
+		sql.append(" where `").append(tableInfo.getPrimaryKey()).append("` = ?");
 	}
 	
 	@Override
@@ -104,7 +104,7 @@ public class MysqlDialect extends Dialect {
 				sql.append("`").append(colName).append("` = ? ");
 			}
 		}
-		sql.append(" where `").append(primaryKey).append("` = ?").append(" limit 1");
+		sql.append(" where `").append(primaryKey).append("` = ?");
 	}
 	
 	public String forModelFindById(TableInfo tInfo) {

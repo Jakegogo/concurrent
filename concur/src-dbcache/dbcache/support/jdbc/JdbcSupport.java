@@ -133,9 +133,7 @@ public class JdbcSupport {
 				Object entity = it.next();
 				Object[] params = modelInfo.getSaveParams(entity);
 				config.dialect.fillStatement(pst, params);
-				if (it.hasNext()) {
-					pst.addBatch();
-				}
+				pst.addBatch();
 			}
 			
 			return pst.executeBatch();
@@ -295,9 +293,7 @@ public class JdbcSupport {
 					Object entity = it.next();
 					Object[] params = modelInfo.getUpdateParams(entity);
 					config.dialect.fillStatement(pst, params);
-					if (it.hasNext()) {
-						pst.addBatch();
-					}
+					pst.addBatch();
 				}
 				pst.executeBatch();
 				pst.close();
@@ -349,9 +345,7 @@ public class JdbcSupport {
 				Object entity = it.next();
 				Object[] params = modelInfo.getUpdateParams(entity);
 				config.dialect.fillStatement(pst, params);
-				if (it.hasNext()) {
-					pst.addBatch();
-				}
+				pst.addBatch();
 			}
 			
 			return pst.executeBatch();
@@ -441,9 +435,7 @@ public class JdbcSupport {
 				Object entity = it.next();
 				Object params = modelInfo.getDeleteParam(entity);
 				config.dialect.fillStatement(pst, params);
-				if (it.hasNext()) {
-					pst.addBatch();
-				}
+				pst.addBatch();
 			}
 			
 			return pst.executeBatch();

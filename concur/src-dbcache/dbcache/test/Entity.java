@@ -15,7 +15,7 @@ import javax.persistence.Transient;
 import java.lang.reflect.Method;
 import java.util.concurrent.atomic.AtomicInteger;
 
-@Cached(persistType=PersistType.DELAY, enableIndex = true, cacheType=CacheType.LRU, entitySize = 1000)
+@Cached(persistType=PersistType.DELAY_BATCH, enableIndex = true, cacheType=CacheType.LRU, entitySize = 1000)
 @javax.persistence.Entity
 //@MappedSuperclass
 public class Entity implements EntityInitializer, IEntity<Long> {

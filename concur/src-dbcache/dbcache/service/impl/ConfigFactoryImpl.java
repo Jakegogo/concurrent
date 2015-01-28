@@ -164,7 +164,13 @@ public class ConfigFactoryImpl implements ConfigFactory, DbCacheMBean {
 			PersistType persistType = cacheConfig.getPersistType();
 			DbPersistService dbPersistService = persistServiceMap.get(persistType);
 			if(dbPersistService == null) {
-				dbPersistService = (DbPersistService) applicationContext.getBean(persistType.getDbPersistServiceClass());
+				
+				if (persistType.getBeanName() != null) {
+					dbPersistService = (DbPersistService) applicationContext.getBean(persistType.getBeanName(), persistType.getDbPersistServiceClass());
+				} else {
+					dbPersistService = (DbPersistService) applicationContext.getBean(persistType.getDbPersistServiceClass());
+				}
+				
 				persistServiceMap.putIfAbsent(persistType, dbPersistService);
 				dbPersistService = persistServiceMap.get(persistType);
 			}
