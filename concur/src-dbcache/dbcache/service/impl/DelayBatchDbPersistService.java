@@ -49,18 +49,18 @@ public class DelayBatchDbPersistService implements DbPersistService {
 	/**
 	 * 更改实体队列
 	 */
-	private final ConcurrentLinkedQueue<QueuedAction> updateQueue = new ConcurrentLinkedQueue<QueuedAction>();
+	private volatile ConcurrentLinkedQueue<PersistAction> updateQueue = new ConcurrentLinkedQueue<PersistAction>();
+	
+	/**
+	 * 更改实体队列1
+	 */
+	private volatile ConcurrentLinkedQueue<PersistAction> swapQueue = new ConcurrentLinkedQueue<PersistAction>();
 	
 	/**
 	 * 分类批量任务队列
 	 */
 	private final BatchTasks batchTasks = new BatchTasks();
 	
-	/**
-	 * 当前延迟更新的动作
-	 */
-	private volatile QueuedAction currentDelayUpdateAction;
-
 
 	@Autowired
 	private DbRuleService dbRuleService;
@@ -75,33 +75,6 @@ public class DelayBatchDbPersistService implements DbPersistService {
 	 */
 	private ExecutorService DB_POOL_SERVICE;
 
-
-	/**
-	 * 延迟更新操作
-	 * @author Jake
-	 * @date 2014年9月17日上午12:38:21
-	 */
-	static class QueuedAction {
-
-		PersistAction persistAction;
-
-		long createTime = System.currentTimeMillis();
-
-		public QueuedAction(PersistAction persistAction) {
-			this.persistAction = persistAction;
-		}
-
-		public static QueuedAction valueOf(PersistAction persistAction) {
-			return new QueuedAction(persistAction);
-		}
-
-		public void doRunTask() {
-			if (persistAction.valid()) {
-				persistAction.run();
-			}
-		}
-
-	}
 	
 	/**
 	 * 分类批量任务
@@ -213,58 +186,61 @@ public class DelayBatchDbPersistService implements DbPersistService {
 			@Override
 			public void run() {
 
+				ConcurrentLinkedQueue<PersistAction> processQueue = updateQueue;
+				
 				//循环定时检测入库,失败自动进入重试
 				while (true) {
 					
-					QueuedAction updateAction = updateQueue.poll();
 					try {
-
+						
 						long timeDiff = 0l;
 						long lastFlush = System.currentTimeMillis();
 						do {
-
-							if (updateAction == null) {
+							
+							PersistAction persistAction = processQueue.peek();
+							
+							if (persistAction == null) {
 								// 执行批量入库任务
 								flushBatchTask();
 								// 等待下一个检测时间
 								Thread.sleep(delayCheckTimmer);
-							} else {
+							}
 
-								timeDiff = System.currentTimeMillis() - updateAction.createTime;
-
-								// 未到延迟入库时间
-								if (timeDiff < delayWaitTimmer) {
-									currentDelayUpdateAction = updateAction;
-									// 等待
-									Thread.sleep(delayWaitTimmer - timeDiff);
+							timeDiff = System.currentTimeMillis() - lastFlush;
+							
+							if (timeDiff > delayWaitTimmer) {
+								// 替换updateQueue
+								if (processQueue == updateQueue) {
+									updateQueue = swapQueue;
 								}
-
-								//执行入库
-								updateAction.doRunTask();
-							}
-
-							//获取下一个有效的操作元素
-							updateAction = updateQueue.poll();
-							while (updateAction != null && !updateAction.persistAction.valid()) {
-								updateAction = updateQueue.poll();
-							}
-							
-							
-							if (System.currentTimeMillis() - lastFlush > delayCheckTimmer) {
+								
+								while ((persistAction = processQueue.poll()) != null) {// 获取下一个有效的操作元素
+									//执行入库
+									if (persistAction.valid()) {
+										persistAction.run();
+									}
+								};
+								
 								// 执行批量入库任务
 								flushBatchTask();
 								
 								lastFlush = System.currentTimeMillis();
+								
+								swapQueue = processQueue;
+								processQueue = updateQueue;
+								
+							} else {
+								// 等待
+								Thread.sleep(timeDiff);
 							}
-
+							
 						} while (true);
 
 					} catch (Exception e) {
 						e.printStackTrace();
 
-						if (updateAction != null && updateAction.persistAction != null) {
-							logger.error("执行入库时产生异常! 如果是主键冲突异常可忽略!" + updateAction.persistAction.getPersistInfo(), e);
-						}
+						logger.error("执行批量入库时产生异常! 如果是主键冲突异常可忽略!", e);
+						
 						//等待下一个检测时间重试入库
 						try {
 							Thread.sleep(delayCheckTimmer);
@@ -438,7 +414,7 @@ public class DelayBatchDbPersistService implements DbPersistService {
 	 * @param persistAction
 	 */
 	private void handlePersist(PersistAction persistAction) {
-		updateQueue.add(QueuedAction.valueOf(persistAction));
+		updateQueue.add(persistAction);
 	}
 
 
@@ -454,17 +430,20 @@ public class DelayBatchDbPersistService implements DbPersistService {
 	 */
 	public void flushAllEntity() {
 		//入库延迟队列中的实体
-		QueuedAction updateAction = this.updateQueue.poll();
+		PersistAction updateAction = this.updateQueue.poll();
 		while (updateAction != null) {
 			//执行入库
-			updateAction.persistAction.run();
+			updateAction.run();
 			updateAction = this.updateQueue.poll();
 		}
-
-		//入库正在延迟处理的实体
-		if(currentDelayUpdateAction != null) {
-			currentDelayUpdateAction.persistAction.run();
+		
+		updateAction = this.swapQueue.poll();
+		while (updateAction != null) {
+			//执行入库
+			updateAction.run();
+			updateAction = this.swapQueue.poll();
 		}
+
 		// 执行批量入库任务
 		this.flushBatchTask();
 	}
@@ -473,10 +452,17 @@ public class DelayBatchDbPersistService implements DbPersistService {
 
 	@Override
 	public void logHadNotPersistEntity() {
-		QueuedAction updateAction = null;
-		for (Iterator<QueuedAction> it = this.updateQueue.iterator(); it.hasNext();) {
+		PersistAction updateAction = null;
+		for (Iterator<PersistAction> it = this.updateQueue.iterator(); it.hasNext();) {
 			updateAction = it.next();
-			String persistInfo = updateAction.persistAction.getPersistInfo();
+			String persistInfo = updateAction.getPersistInfo();
+			if(!StringUtils.isBlank(persistInfo)) {
+				logger.error("检测到可能未入库对象! " + persistInfo);
+			}
+		}
+		for (Iterator<PersistAction> it = this.swapQueue.iterator(); it.hasNext();) {
+			updateAction = it.next();
+			String persistInfo = updateAction.getPersistInfo();
 			if(!StringUtils.isBlank(persistInfo)) {
 				logger.error("检测到可能未入库对象! " + persistInfo);
 			}
