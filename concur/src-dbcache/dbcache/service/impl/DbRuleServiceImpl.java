@@ -173,6 +173,11 @@ public class DbRuleServiceImpl implements DbRuleService {
 	private final int MAX_LENGTH_OF_USER_ID = 15;
 
 	/**
+	 * Long型Id缓存长度
+	 */
+	private static final int LONG_WRAP_ID_CACHE_SIZE = 100000;
+	
+	/**
 	 * Long型Id缓存
 	 */
 	private Long[] LONG_WRAP_ID_CACHE = new Long[10000];
@@ -241,7 +246,7 @@ public class DbRuleServiceImpl implements DbRuleService {
 				}
 			}
 			
-			LONG_WRAP_ID_CACHE = new Long[(maxServerId - minServerId + 2) * 10000];
+			LONG_WRAP_ID_CACHE = new Long[(maxServerId - minServerId + 2) * LONG_WRAP_ID_CACHE_SIZE];
 			
 		}
 
@@ -448,14 +453,14 @@ public class DbRuleServiceImpl implements DbRuleService {
 	 */
 	@Override
 	public Long getLongIdFromUser(long userId) {
-		if (userId % ID_BASE_VALUE_OF_AUTOINCR > 10000) {
+		if (userId % ID_BASE_VALUE_OF_AUTOINCR > LONG_WRAP_ID_CACHE_SIZE) {
 			return Long.valueOf(userId);
 		}
 		int index = 0;
 		if (userId / ID_BASE_VALUE_OF_AUTOINCR == 0) {
 			index = 9999 + (int) (userId % ID_BASE_VALUE_OF_AUTOINCR);
 		} else {
-			index = ((int) (userId / ID_BASE_VALUE_OF_AUTOINCR) - ID_BASE_VALUE_OF_SERVER - minServerId + 1) * 10000
+			index = ((int) (userId / ID_BASE_VALUE_OF_AUTOINCR) - ID_BASE_VALUE_OF_SERVER - minServerId + 1) * LONG_WRAP_ID_CACHE_SIZE
 				+ (int) (userId % ID_BASE_VALUE_OF_AUTOINCR) - 1;
 		}
 		Long id = LONG_WRAP_ID_CACHE[index];
