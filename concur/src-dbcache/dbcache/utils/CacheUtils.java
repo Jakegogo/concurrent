@@ -3,6 +3,9 @@ package dbcache.utils;
 import dbcache.service.Cache;
 import dbcache.service.DbCacheService;
 import dbcache.service.impl.ConcurrentLruHashMapCache;
+import dbcache.utils.concurrent.CleanupThread;
+import dbcache.utils.concurrent.ConcurrentLRUCache;
+import dbcache.utils.concurrent.ConcurrentLRUCache.EvictionListener;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -14,11 +17,43 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class CacheUtils {
 
+	/**
+	 * LRU Cache清除线程(单线程)
+	 */
+	private static final CleanupThread cleanupThread = new CleanupThread();
 
     /**
      * 所有通用缓存
      */
-    private static Map<String, CommonCache<?>> COMMON_CACHE_MAP = new ConcurrentHashMap<String, CommonCache<?>>();
+    private static final Map<String, CommonCache<?>> COMMON_CACHE_MAP = new ConcurrentHashMap<String, CommonCache<?>>();
+
+
+    /**
+     * 创建缓存容器
+     * @param size 限制大小
+     * @return
+     */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
+	public static ConcurrentLRUCache createLruCache(final int size) {
+    	int flexibleSize = (size * 4 + 3) / 3;
+    	return new ConcurrentLRUCache(flexibleSize, size, (int) Math
+                .floor((size + flexibleSize) / 2), (int) Math
+                .ceil(0.75 * flexibleSize), true, false, Runtime.getRuntime().availableProcessors(), null, cleanupThread);
+    }
+
+    /**
+     * 创建缓存容器
+     * @param size 限制大小
+     * @param initialSize 初始大小
+     * @param concurrencyLevel 并发数量
+     * @return
+     */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
+	public static ConcurrentLRUCache createLruCache(final int size, final int initialSize, final int concurrencyLevel) {
+    	int flexibleSize = (size * 4 + 3) / 3;
+    	return new ConcurrentLRUCache(flexibleSize, size, (int) Math
+                .floor((size + flexibleSize) / 2), initialSize, true, false, concurrencyLevel, null, cleanupThread);
+    }
 
     /**
      * 使用Cache创建一个CacheBuilder
@@ -38,7 +73,12 @@ public class CacheUtils {
     }
 
 
-    /**
+    public static CleanupThread getCleanupthread() {
+		return cleanupThread;
+	}
+
+
+	/**
      * 通用缓存构建器
      */
     public static class CacheBuilder<R> {

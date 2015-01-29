@@ -652,7 +652,7 @@ public class ConcurrentHashMap<K,V> extends AbstractMap<K,V>
             }
             return null;
         }
-        
+
         /**
          * Virtualized support for map.get(); overridden in subclasses.
          */
@@ -661,19 +661,12 @@ public class ConcurrentHashMap<K,V> extends AbstractMap<K,V>
             do {
                 K ek;
                 if (e.hash == h &&
-                    (longKeyEqual((ek = e.key), k)))
+                    ((ek = e.key) != null && ek.getClass() == Long.class && (Long) ek == key))
                     return e;
             } while ((e = e.next) != null);
             return null;
         }
-        
-        private boolean longKeyEqual(K k, long key) {
-        	if (k != null && k.getClass() == Long.class && (Long) k == key) {
-        		return true;
-        	}
-    		return false;
-    	}
-        
+
     }
 
     /* ---------------- Static utilities -------------- */
@@ -971,34 +964,27 @@ public class ConcurrentHashMap<K,V> extends AbstractMap<K,V>
         }
         return null;
     }
-    
-    
+
+
     public V get(long key) {
         Node<K,V>[] tab; Node<K,V> e, p; int n, eh; K ek;
         int h = spread((int)(key ^ (key >>> 32)));
         if ((tab = table) != null && (n = tab.length) > 0 &&
             (e = tabAt(tab, (n - 1) & h)) != null) {
             if ((eh = e.hash) == h) {
-                if (longKeyEqual((ek = e.key) , key))
+                if ((ek = e.key) != null && ek.getClass() == Long.class && (Long) ek == key)
                     return e.val;
             }
             else if (eh < 0)
                 return (p = e.find(h, key)) != null ? p.val : null;
             while ((e = e.next) != null) {
-                if (e.hash == h && longKeyEqual((ek = e.key) , key))
+                if (e.hash == h && (ek = e.key) != null && ek.getClass() == Long.class && (Long) ek == key)
                     return e.val;
             }
         }
         return null;
     }
-    
-    
-    protected boolean longKeyEqual(K k, long key) {
-    	if (k != null && k.getClass() == Long.class && (Long) k == key) {
-    		return true;
-    	}
-		return false;
-	}
+
 
 	/**
      * Tests if the specified object is a key in this table.

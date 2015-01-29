@@ -324,7 +324,7 @@ public class HashMap8<K,V> extends AbstractMap<K,V>
             return false;
         }
     }
-    
+
     /**
      * Returns the hash code of a non-{@code null} argument and 0 for
      * a {@code null} argument.
@@ -337,7 +337,7 @@ public class HashMap8<K,V> extends AbstractMap<K,V>
     public static int objectHashCode(Object o) {
         return o != null ? o.hashCode() : 0;
     }
-    
+
     /**
      * Returns {@code true} if the arguments are equal to each other
      * and {@code false} otherwise.
@@ -379,7 +379,7 @@ public class HashMap8<K,V> extends AbstractMap<K,V>
         int h;
         return (key == null) ? 0 : (h = key.hashCode()) ^ (h >>> 16);
     }
-    
+
     static final int hash(long key) {
     	return (int)(key ^ (key >>> 32));
     }
@@ -601,7 +601,7 @@ public class HashMap8<K,V> extends AbstractMap<K,V>
         Node<K,V> e;
         return (e = getNode(hash(key), key)) == null ? null : e.value;
     }
-    
+
     public V get(long key) {
         Node<K,V> e;
         return (e = getNode(hash(key), key)) == null ? null : e.value;
@@ -633,30 +633,26 @@ public class HashMap8<K,V> extends AbstractMap<K,V>
         }
         return null;
     }
-    
+
     final Node<K,V> getNode(int hash, long key) {
         Node<K,V>[] tab; Node<K,V> first, e; int n; K k;
         if ((tab = table) != null && (n = tab.length) > 0 &&
             (first = tab[(n - 1) & hash]) != null) {
             if (first.hash == hash && // always check first node
-                (keyEquals((k = first.key), key)))
+                ((k = first.key) != null && k.getClass() == Long.class && (Long) k == key))
                 return first;
             if ((e = first.next) != null) {
                 if (first instanceof TreeNode)
                     return ((TreeNode)first).getTreeNode(hash, key);
                 do {
                     if (e.hash == hash &&
-                        (keyEquals((k = first.key), key)))
+                        (((k = first.key) != null && k.getClass() == Long.class && (Long) k == key)))
                         return e;
                 } while ((e = e.next) != null);
             }
         }
         return null;
     }
-    
-    protected boolean keyEquals(K k, long key) {
-    	return (k != null && k.getClass() == Long.class && (Long) k == key);
-	}
 
 	/**
      * Returns <tt>true</tt> if this map contains a mapping for the
@@ -1781,7 +1777,7 @@ public class HashMap8<K,V> extends AbstractMap<K,V>
                 Spliterator.DISTINCT;
         }
     }
-    
+
  // Views
 
     /**
@@ -1791,7 +1787,7 @@ public class HashMap8<K,V> extends AbstractMap<K,V>
      */
     transient volatile Set<K>        keySet = null;
     transient volatile Collection<V> values = null;
-    
+
 
     /* ------------------------------------------------------------ */
     // LinkedHashMap support
@@ -1858,7 +1854,7 @@ public class HashMap8<K,V> extends AbstractMap<K,V>
 
     /* ------------------------------------------------------------ */
     // Tree bins
-    
+
     /**
      * HashMap.Node subclass for normal LinkedHashMap entries.
      */
@@ -1951,7 +1947,7 @@ public class HashMap8<K,V> extends AbstractMap<K,V>
             } while (p != null);
             return null;
         }
-        
+
         /**
          * Finds the node starting at root p with the given hash and key.
          * The kc argument caches comparableClassFor(key) upon first use
@@ -1966,7 +1962,7 @@ public class HashMap8<K,V> extends AbstractMap<K,V>
                     p = pl;
                 else if (ph < h)
                     p = pr;
-                else if (keyEquals((pk = p.key), k))
+                else if (((pk = p.key) != null && pk.getClass() == Long.class && (Long) pk == k))
                     return p;
                 else if (pl == null)
                     p = pr;
@@ -1984,17 +1980,13 @@ public class HashMap8<K,V> extends AbstractMap<K,V>
             return null;
         }
 
-        private boolean keyEquals(K k, long key) {
-        	return (k != null && k.getClass() == Long.class && (Long) k == key);
-    	}
-        
         /**
          * Calls find for root node.
          */
         final TreeNode<K,V> getTreeNode(int h, Object k) {
             return ((parent != null) ? root() : this).find(h, k, null);
         }
-        
+
         final TreeNode<K,V> getTreeNode(int h, long k) {
             return ((parent != null) ? root() : this).find(h, k, null);
         }
@@ -2927,7 +2919,7 @@ interface Spliterator<T> {
      * @return a representation of characteristics
      */
     int characteristics();
-    
+
     /**
      * Characteristic value signifying that an encounter order is defined for
      * elements. If so, this Spliterator guarantees that method
@@ -3070,7 +3062,7 @@ interface BiFunction<T, U, R> {
      */
     R apply(T t, U u);
 
-  
+
 }
 
 
