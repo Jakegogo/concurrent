@@ -112,6 +112,12 @@ public class ConcurrentLinkedHashMapCache implements Cache {
 		}
 		return null;
 	}
+	
+	
+	@Override
+	public ValueWrapper get(long key) {
+		return this.get(key);
+	}
 
 
 	@Override

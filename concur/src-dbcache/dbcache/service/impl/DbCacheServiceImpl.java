@@ -183,11 +183,9 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 	
 	
 	@Override
-	@SuppressWarnings("unchecked")
 	public T get(long id) {
 		
-		PK key = (PK) this.dbRuleService.getLongIdFromUser(id);
-		final CacheObject<T> cacheObject = this.getCacheObject(key);
+		final CacheObject<T> cacheObject = this.getCacheObject(id);
 		if (cacheObject != null && cacheObject.getPersistStatus() != PersistStatus.DELETED) {
 			return (T) cacheObject.getProxyEntity();
 		}
@@ -267,7 +265,32 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 
 		return cacheObject;
 	}
+	
+	
+	
+	/**
+	 * 获取缓存对象
+	 * @param key long 实体id
+	 * @return
+	 */
+	@SuppressWarnings({ "unchecked" })
+	private CacheObject<T> getCacheObject(long key) {
+		
+		// 从本地线程获取
+		CacheObject<T> cacheObject = threadLocalCache.get().get(key);
+		if (cacheObject != null) {
+			return cacheObject;
+		}
+		
+		// 从共用缓存获取
+		Cache.ValueWrapper wrapper = (Cache.ValueWrapper) cache.get(key);
+		if(wrapper != null) {	// 已经缓存
+			return (CacheObject<T>) wrapper.get();
+		}
 
+		return this.getCacheObject((PK) Long.valueOf(key));
+	}
+	
 
 	@Override
 	public List<T> listById(Collection<PK> idList) {

@@ -140,6 +140,12 @@ public class ConcurrentWeekHashMapCache implements Cache {
 		return value;
 	}
 
+	
+	@Override
+	public ValueWrapper get(long key) {
+		return this.get(key);
+	}
+	
 
 	@SuppressWarnings("rawtypes")
 	@Override

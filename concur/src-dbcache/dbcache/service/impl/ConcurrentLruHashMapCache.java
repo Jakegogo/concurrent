@@ -3,6 +3,8 @@ package dbcache.service.impl;
 import dbcache.service.Cache;
 import dbcache.utils.concurrent.CleanupThread;
 import dbcache.utils.concurrent.ConcurrentLRUCache;
+import dbcache.utils.concurrent.ConcurrentReferenceHashMap;
+import dbcache.utils.concurrent.ConcurrentReferenceHashMap.ReferenceType;
 import dbcache.utils.concurrent.ConcurrentWeakHashMap;
 
 import org.springframework.stereotype.Component;
@@ -47,7 +49,7 @@ public class ConcurrentLruHashMapCache implements Cache {
 	/**
 	 * 已经回收的实体
 	 */
-	private ConcurrentWeakHashMap<Object, Object> evictions;
+	private ConcurrentReferenceHashMap<Object, Object> evictions;
 
 
 	/**
@@ -59,7 +61,7 @@ public class ConcurrentLruHashMapCache implements Cache {
 	public void init(String name, int entityCacheSize, int concurrencyLevel) {
 
 		this.name = name;
-		this.evictions = new ConcurrentWeakHashMap<Object, Object>();
+		this.evictions = new ConcurrentReferenceHashMap<Object, Object>(ReferenceType.STRONG, ReferenceType.WEAK);
 
 		int size = (entityCacheSize * 4 + 3) / 3;
 		this.store = new ConcurrentLRUCache<Object, ValueWrapper>(size, entityCacheSize, (int) Math
@@ -84,6 +86,25 @@ public class ConcurrentLruHashMapCache implements Cache {
 
 	@Override
 	public ValueWrapper get(Object key) {
+		Object value = this.store.get(key);
+		if(value != null) {
+			return (ValueWrapper) fromStoreValue(value);
+		}
+		value = this.evictions.get(key);
+		if(value != null) {
+			// 添加到主缓存
+			this.putIfAbsent(key, value);
+			// 从临时缓存中移除
+			this.evictions.remove(key);
+
+			return this.get(key);
+		}
+		return null;
+	}
+	
+	
+	@Override
+	public ValueWrapper get(long key) {
 		Object value = this.store.get(key);
 		if(value != null) {
 			return (ValueWrapper) fromStoreValue(value);

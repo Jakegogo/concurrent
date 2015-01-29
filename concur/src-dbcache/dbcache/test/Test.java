@@ -565,7 +565,7 @@ public class Test {
 		long t1 = System.currentTimeMillis();
 		for(int i = 0;i <= 100000;i++) {
 			for ( long j = 100010000000015l; j < 100010000010000l;j++) {
-				this.dbRuleService.getLongIdFromUser(j);
+//				this.dbRuleService.getLongIdFromUser(j);
 			}
 		}
 		System.out.println(System.currentTimeMillis() - t1);

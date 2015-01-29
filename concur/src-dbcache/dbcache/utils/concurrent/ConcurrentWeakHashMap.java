@@ -430,6 +430,7 @@ public class ConcurrentWeakHashMap<K, V> extends AbstractMap<K, V>
             }
             return null;
         }
+        
 
         boolean containsKey(Object key, int hash) {
             if (count != 0) { // read-volatile
@@ -886,6 +887,13 @@ public class ConcurrentWeakHashMap<K, V> extends AbstractMap<K, V>
         int hash = hash(key.hashCode());
         return segmentFor(hash).get(key, hash);
     }
+    
+    
+    public V get(long key) {
+        int hash = hash((int)(key ^ (key >>> 32)));
+        return segmentFor(hash).get(key, hash);
+    }
+    
 
     /**
      * Tests if the specified object is a key in this table.

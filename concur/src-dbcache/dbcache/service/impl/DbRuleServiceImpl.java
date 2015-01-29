@@ -445,33 +445,6 @@ public class DbRuleServiceImpl implements DbRuleService {
 		return -1;
 	}
 	
-	
-	/**
-	 * 从玩家id中取得Long
-	 * @param userId 玩家id
-	 * @return Long
-	 */
-	@Override
-	public Long getLongIdFromUser(long userId) {
-		if (userId % ID_BASE_VALUE_OF_AUTOINCR > LONG_WRAP_ID_CACHE_SIZE) {
-			return Long.valueOf(userId);
-		}
-		int index = 0;
-		if (userId / ID_BASE_VALUE_OF_AUTOINCR == 0) {
-			index = 9999 + (int) (userId % ID_BASE_VALUE_OF_AUTOINCR);
-		} else {
-			index = ((int) (userId / ID_BASE_VALUE_OF_AUTOINCR) - ID_BASE_VALUE_OF_SERVER - minServerId + 1) * LONG_WRAP_ID_CACHE_SIZE
-				+ (int) (userId % ID_BASE_VALUE_OF_AUTOINCR) - 1;
-		}
-		Long id = LONG_WRAP_ID_CACHE[index];
-		if (id != null) {
-			return id;
-		}
-		id = Long.valueOf(userId);
-		LONG_WRAP_ID_CACHE[index] = id;
-		return id;
-	}
-	
 
 	/**
 	 * 从玩家id中取得自增部分
