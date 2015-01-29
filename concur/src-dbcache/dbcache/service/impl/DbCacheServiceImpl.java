@@ -10,6 +10,7 @@ import dbcache.model.IndexValue;
 import dbcache.model.PersistStatus;
 import dbcache.service.*;
 import dbcache.support.asm.ValueGetter;
+import dbcache.utils.HashMap8;
 import dbcache.utils.JsonUtils;
 import dbcache.utils.concurrent.ConcurrentHashMap;
 import dbcache.utils.weak.ValueRef;
@@ -117,19 +118,11 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 	/**
 	 * 线程缓存
 	 */
-	private final ThreadLocal<WeakValueHashMap<Object, CacheObject<T>>> threadLocalCache = new ThreadLocal<WeakValueHashMap<Object, CacheObject<T>>>() {
+	private final ThreadLocal<HashMap8<Object, CacheObject<T>>> threadLocalCache = new ThreadLocal<HashMap8<Object, CacheObject<T>>>() {
 	
 		@Override
-		protected WeakValueHashMap<Object, CacheObject<T>> initialValue() {
-			return new WeakValueHashMap<Object, CacheObject<T>>() {
-
-				@Override
-				protected Map<Object, ValueRef<Object, CacheObject<T>>> createMap(
-						int initialCapacity, float loadFactor) {
-					return super.createMap(initialCapacity, loadFactor);
-				}
-				
-			};
+		protected HashMap8<Object, CacheObject<T>> initialValue() {
+			return new HashMap8<Object, CacheObject<T>>();
 		}
 		
 	};

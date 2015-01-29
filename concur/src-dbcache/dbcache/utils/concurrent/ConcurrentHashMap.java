@@ -652,6 +652,28 @@ public class ConcurrentHashMap<K,V> extends AbstractMap<K,V>
             }
             return null;
         }
+        
+        /**
+         * Virtualized support for map.get(); overridden in subclasses.
+         */
+        Node<K,V> find(int h, long k) {
+            Node<K,V> e = this;
+            do {
+                K ek;
+                if (e.hash == h &&
+                    (longKeyEqual((ek = e.key), k)))
+                    return e;
+            } while ((e = e.next) != null);
+            return null;
+        }
+        
+        private boolean longKeyEqual(K k, long key) {
+        	if (k != null && k.getClass() == Long.class && (Long) k == key) {
+        		return true;
+        	}
+    		return false;
+    	}
+        
     }
 
     /* ---------------- Static utilities -------------- */
@@ -971,7 +993,7 @@ public class ConcurrentHashMap<K,V> extends AbstractMap<K,V>
     }
     
     
-    private boolean longKeyEqual(K k, long key) {
+    protected boolean longKeyEqual(K k, long key) {
     	if (k != null && k.getClass() == Long.class && (Long) k == key) {
     		return true;
     	}
