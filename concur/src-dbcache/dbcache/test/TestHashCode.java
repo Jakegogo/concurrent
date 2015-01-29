@@ -11,6 +11,9 @@ public class TestHashCode {
 		
 		System.out.println(System.identityHashCode(129));
 		System.out.println(System.identityHashCode(129));
+		
+		System.out.println(Long.valueOf(1).hashCode());
+		System.out.println(Long.valueOf(6000000).hashCode());
 	}
 	
 }

@@ -3,6 +3,7 @@ package dbcache.test;
 import dbcache.model.EnhancedEntity;
 import dbcache.service.Cache;
 import dbcache.service.DbCacheService;
+import dbcache.service.DbRuleService;
 import dbcache.support.asm.EntityAsmFactory;
 import dbcache.support.jdbc.JdbcSupport;
 import dbcache.utils.*;
@@ -49,6 +50,9 @@ public class Test {
 	@Resource(name = "concurrentWeekHashMapCache")
 	private Cache cache;
 
+	@Autowired
+	private DbRuleService dbRuleService;
+	
 	// 用户名 - ID 缓存
 	private CommonCache<ConcurrentHashSet<Integer>> userNameCache = CacheUtils.cacheBuilder(new CacheQuerier<ConcurrentHashSet<Integer>>() {
 		@SuppressWarnings("unchecked")
@@ -492,9 +496,9 @@ public class Test {
 	@org.junit.Test
 	public void t23() throws InterruptedException {
 
-
+		long t1 = System.currentTimeMillis();
 		for(int i = 0;i <= 1000;i++) {
-			for(long j = 1;j < 50;j++) {
+			for(long j = 1;j < 100;j++) {
 				Entity entity = this.cacheService.get(j);
 				entity.increseNum();
 //			if(i % 1000000 == 0) {
@@ -534,6 +538,8 @@ public class Test {
 //			e.printStackTrace();
 //		}
 
+		System.out.println(System.currentTimeMillis() - t1);
+		
 		while(true) {
 			try {
 				System.out.println(ThreadUtils.dumpThreadPool("入库线程池", this.cacheService.getThreadPool()));
@@ -547,5 +553,55 @@ public class Test {
 	}
 
 
+	@org.junit.Test
+	public void t24() {
+		
+		try {
+			Thread.sleep(5000);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+		
+		long t1 = System.currentTimeMillis();
+		for(int i = 0;i <= 100000;i++) {
+			for ( long j = 100010000000015l; j < 100010000010000l;j++) {
+				this.dbRuleService.getLongIdFromUser(j);
+			}
+		}
+		System.out.println(System.currentTimeMillis() - t1);
+		
+		try {
+			Thread.sleep(5000);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+		
+	}
+	
+	
+	@org.junit.Test
+	public void t25() {
+		
+		try {
+			Thread.sleep(5000);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+		
+		long t1 = System.currentTimeMillis();
+		for(int i = 0;i <= 100000;i++) {
+			for ( long j = 100010000000015l; j < 100010000010000l;j++) {
+				Long.valueOf(j);
+			}
+		}
+		System.out.println(System.currentTimeMillis() - t1);
+		
+		try {
+			Thread.sleep(5000);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+		
+	}
 
 }

@@ -12,6 +12,7 @@ import dbcache.service.*;
 import dbcache.support.asm.ValueGetter;
 import dbcache.utils.JsonUtils;
 import dbcache.utils.concurrent.ConcurrentHashMap;
+import dbcache.utils.weak.ValueRef;
 import dbcache.utils.weak.WeakValueHashMap;
 
 import org.slf4j.Logger;
@@ -101,6 +102,12 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 	@Inject
 	@Autowired
 	private DbIndexService<PK> indexService;
+	
+	/**
+	 * 入库规则服务
+	 */
+	@Autowired
+	private DbRuleService dbRuleService;
 
 	/**
 	 * 等待锁map {key:lock}
@@ -110,13 +117,21 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 	/**
 	 * 线程缓存
 	 */
-	private static final ThreadLocal<WeakValueHashMap<Object, CacheObject<?>>> threadLocalCache = new ThreadLocal<WeakValueHashMap<Object, CacheObject<?>>>() {
-
+	private final ThreadLocal<WeakValueHashMap<Object, CacheObject<T>>> threadLocalCache = new ThreadLocal<WeakValueHashMap<Object, CacheObject<T>>>() {
+	
 		@Override
-		protected WeakValueHashMap<Object, CacheObject<?>> initialValue() {
-			return new WeakValueHashMap<Object, CacheObject<?>>();
-		}
+		protected WeakValueHashMap<Object, CacheObject<T>> initialValue() {
+			return new WeakValueHashMap<Object, CacheObject<T>>() {
 
+				@Override
+				protected Map<Object, ValueRef<Object, CacheObject<T>>> createMap(
+						int initialCapacity, float loadFactor) {
+					return super.createMap(initialCapacity, loadFactor);
+				}
+				
+			};
+		}
+		
 	};
 
 	/**
@@ -165,7 +180,20 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 
 		return null;
 	}
+	
+	
+	@Override
+	@SuppressWarnings("unchecked")
+	public T get(long id) {
+		
+		PK key = (PK) this.dbRuleService.getLongIdFromUser(id);
+		final CacheObject<T> cacheObject = this.getCacheObject(key);
+		if (cacheObject != null && cacheObject.getPersistStatus() != PersistStatus.DELETED) {
+			return (T) cacheObject.getProxyEntity();
+		}
 
+		return null;
+	}
 
 	/**
 	 * 获取缓存对象
@@ -174,7 +202,14 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 	 */
 	@SuppressWarnings("unchecked")
 	private CacheObject<T> getCacheObject(PK key) {
-
+		
+		// 从本地线程获取
+		CacheObject<T> cacheObject = threadLocalCache.get().get(key);
+		if (cacheObject != null) {
+			return cacheObject;
+		}
+		
+		// 从共用缓存获取
 		Cache.ValueWrapper wrapper = (Cache.ValueWrapper) cache.get(key);
 		if(wrapper != null) {	// 已经缓存
 			return (CacheObject<T>) wrapper.get();
@@ -185,8 +220,8 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 		Lock lock = new ReentrantLock();;
 		Lock prevLock = WAITING_LOCK_MAP.putIfAbsent(key, lock);
 		lock = prevLock != null ? prevLock : lock;
-
-		CacheObject<T> cacheObject = null;
+		
+		// 查询数据库
 		lock.lock();
 		try {
 
@@ -226,6 +261,9 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 			WAITING_LOCK_MAP.remove(key);
 			lock.unlock();
 		}
+		
+		// 存储到本地缓存
+		threadLocalCache.get().put(key, cacheObject);
 
 		return cacheObject;
 	}

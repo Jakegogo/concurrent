@@ -78,5 +78,12 @@ public interface DbRuleService {
 	 * @param modelInfo 实体信息对象
 	 */
 	void initIdGenerators(Class<?> cls, ModelInfo modelInfo);
+	
+	/**
+	 * 获取Long型Id
+	 * @param id 主键
+	 * @return
+	 */
+	Long getLongIdFromUser(long id);
 
 }

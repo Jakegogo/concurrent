@@ -111,6 +111,11 @@ public class DbRuleServiceImpl implements DbRuleService {
 	 * 服标识ID列表
 	 */
 	private List<Integer> serverIdList;
+	
+	/**
+	 * 自增id的位数
+	 */
+	private static final int INCREMENT_PART = 10;
 
 	/**
 	 * 默认延迟入库时间
@@ -146,6 +151,11 @@ public class DbRuleServiceImpl implements DbRuleService {
 	 * 自增部分的ID最大值(10个9)
 	 */
 	private final long ID_MAX_VALUE_OF_AUTOINCR = 9999999999L;
+	
+	/**
+	 * 自增部分的ID取模值
+	 */
+	private final long ID_BASE_VALUE_OF_AUTOINCR = ID_MAX_VALUE_OF_AUTOINCR + 1;
 
 	/**
 	 * 自增部分的ID最小值
@@ -155,13 +165,28 @@ public class DbRuleServiceImpl implements DbRuleService {
 	/**
 	 * 自增部分的ID最小值补齐字符串
 	 */
-	public final String STR_VALUE_OF_AUTOINCR_ID_MIN_VALUE = String.format("%010d", ID_MIN_VALUE_OF_AUTOINCR);
+	public final String STR_VALUE_OF_AUTOINCR_ID_MIN_VALUE = String.format("%0" + INCREMENT_PART + "d", ID_MIN_VALUE_OF_AUTOINCR);
 
 	/**
 	 * 玩家id长度
 	 */
 	private final int MAX_LENGTH_OF_USER_ID = 15;
 
+	/**
+	 * Long型Id缓存
+	 */
+	private Long[] LONG_WRAP_ID_CACHE = new Long[10000];
+	
+	/**
+	 * 最小服Id
+	 */
+	private int minServerId = Integer.MAX_VALUE;
+	
+	/**
+	 * 最大服Id
+	 */
+	private int maxServerId = Integer.MIN_VALUE;
+	
 
 	@PostConstruct
 	public void init() {
@@ -195,6 +220,14 @@ public class DbRuleServiceImpl implements DbRuleService {
 
 								break;
 							}
+							
+							if (serverId < minServerId) {
+								minServerId = serverId;
+							}
+							
+							if (serverId > maxServerId) {
+								maxServerId = serverId;
+							}
 
 							if (!serverIdList.contains(serverId)) {
 								serverIdList.add(serverId);
@@ -207,6 +240,9 @@ public class DbRuleServiceImpl implements DbRuleService {
 					}
 				}
 			}
+			
+			LONG_WRAP_ID_CACHE = new Long[(maxServerId - minServerId + 2) * 10000];
+			
 		}
 
 		if (this.serverIdList == null || this.serverIdList.size() < 1) {
@@ -403,11 +439,39 @@ public class DbRuleServiceImpl implements DbRuleService {
 
 		return -1;
 	}
+	
+	
+	/**
+	 * 从玩家id中取得Long
+	 * @param userId 玩家id
+	 * @return Long
+	 */
+	@Override
+	public Long getLongIdFromUser(long userId) {
+		if (userId % ID_BASE_VALUE_OF_AUTOINCR > 10000) {
+			return Long.valueOf(userId);
+		}
+		int index = 0;
+		if (userId / ID_BASE_VALUE_OF_AUTOINCR == 0) {
+			index = 9999 + (int) (userId % ID_BASE_VALUE_OF_AUTOINCR);
+		} else {
+			index = ((int) (userId / ID_BASE_VALUE_OF_AUTOINCR) - ID_BASE_VALUE_OF_SERVER - minServerId + 1) * 10000
+				+ (int) (userId % ID_BASE_VALUE_OF_AUTOINCR) - 1;
+		}
+		Long id = LONG_WRAP_ID_CACHE[index];
+		if (id != null) {
+			return id;
+		}
+		id = Long.valueOf(userId);
+		LONG_WRAP_ID_CACHE[index] = id;
+		return id;
+	}
+	
 
 	/**
 	 * 从玩家id中取得自增部分
 	 * @param userId 玩家id
-	 * @return int
+	 * @return long
 	 */
 	public long getAutoIncrPartFromUser(long userId) {
 		int serverId = getServerIdFromUser(userId);

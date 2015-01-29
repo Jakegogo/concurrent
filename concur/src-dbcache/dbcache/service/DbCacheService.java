@@ -28,7 +28,14 @@ public interface DbCacheService<T extends IEntity<PK>, PK extends Comparable<PK>
 	 * @return 实体对象
 	 */
 	T get(PK id);
-
+	
+	/**
+	 * 根据主键id取得实体
+	 * <br/>根据业务需要,一般需要外部对实体进行加锁
+	 * @param id long 主键id
+	 * @return 实体对象
+	 */
+	T get(long id);
 
 	/**
 	 * 根据主键id列表取得实体列表
