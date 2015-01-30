@@ -188,8 +188,8 @@ public class InTimeDbPersistService implements DbPersistService {
 			@Override
 			public void run() {
 
-				// 缓存对象在提交之后被修改过
-				if(editVersion < cacheObject.getEditVersion()) {
+				// 判断是否有效
+				if (!this.valid()) {
 					return;
 				}
 
@@ -220,7 +220,7 @@ public class InTimeDbPersistService implements DbPersistService {
 
 			@Override
 			public boolean valid() {
-				return editVersion == cacheObject.getEditVersion();
+				return cacheObject.getPersistStatus() == PersistStatus.DELETED;
 			}
 
 
