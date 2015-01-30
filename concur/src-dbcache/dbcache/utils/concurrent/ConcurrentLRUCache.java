@@ -55,6 +55,15 @@ public class ConcurrentLRUCache<K, V>
 
     private CacheEntry<K, V> NULL_ENTRY = new NullEntry();
 
+
+    public ConcurrentLRUCache(int size, int lowerWatermark)
+    {
+        this(size, lowerWatermark, (int) Math
+                .floor((lowerWatermark + size) / 2), (int) Math
+                .ceil(0.75 * size), false, false, 16, null, null);
+    }
+
+
     public ConcurrentLRUCache(int upperWaterMark, final int lowerWaterMark,
             int acceptableWatermark, int initialSize, boolean runCleanupThread,
             boolean runNewThreadForCleanup, int concurrencyLevel,
@@ -86,12 +95,6 @@ public class ConcurrentLRUCache<K, V>
         }
     }
 
-    public ConcurrentLRUCache(int size, int lowerWatermark)
-    {
-        this(size, lowerWatermark, (int) Math
-                .floor((lowerWatermark + size) / 2), (int) Math
-                .ceil(0.75 * size), false, false, 16, null, null);
-    }
 
     public void setAlive(boolean live)
     {
@@ -116,8 +119,8 @@ public class ConcurrentLRUCache<K, V>
         }
         return e.value;
     }
-    
-    
+
+
     public V get(long key)
     {
         CacheEntry<K, V> e = map.get(key);
@@ -136,7 +139,7 @@ public class ConcurrentLRUCache<K, V>
         }
         return e.value;
     }
-    
+
 
     public V remove(K key)
     {
@@ -415,7 +418,7 @@ public class ConcurrentLRUCache<K, V>
             int eSize = 0;
 
             // System.out.println("newestEntry="+newestEntry + " oldestEntry="+oldestEntry);
-            // System.out.println("items removed:" + numRemoved + " numKept=" + numKept + 
+            // System.out.println("items removed:" + numRemoved + " numKept=" + numKept +
             //    " esetSz="+ eSize + " sz-numRemoved=" + (sz-numRemoved));
 
             for (CacheEntry<K, V> ce : map.values())
@@ -454,7 +457,7 @@ public class ConcurrentLRUCache<K, V>
                 }
             }
 
-            // System.out.println("items removed:" + numRemoved + " numKept=" + numKept + 
+            // System.out.println("items removed:" + numRemoved + " numKept=" + numKept +
             //    " esetSz="+ eSize + " sz-numRemoved=" + (sz-numRemoved));
             // TODO: allow this to be customized in the constructor?
             int numPasses = 1; // maximum number of linear passes over the data
@@ -510,7 +513,7 @@ public class ConcurrentLRUCache<K, V>
                         newOldestEntry = Math.min(thisEntry, newOldestEntry);
                     }
                 }
-                // System.out.println("items removed:" + numRemoved + " numKept=" + 
+                // System.out.println("items removed:" + numRemoved + " numKept=" +
                 //    numKept + " esetSz="+ eSize + " sz-numRemoved=" + (sz-numRemoved));
             }
 
@@ -604,8 +607,8 @@ public class ConcurrentLRUCache<K, V>
                     numRemoved++;
                 }
 
-                // System.out.println("items removed:" + numRemoved + " numKept=" + numKept + 
-                //    " initialQueueSize="+ wantToRemove + " finalQueueSize=" + 
+                // System.out.println("items removed:" + numRemoved + " numKept=" + numKept +
+                //    " initialQueueSize="+ wantToRemove + " finalQueueSize=" +
                 //      queue.size() + " sz-numRemoved=" + (sz-numRemoved));
             }
 

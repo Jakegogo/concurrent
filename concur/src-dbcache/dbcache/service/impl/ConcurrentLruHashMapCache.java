@@ -1,6 +1,7 @@
 package dbcache.service.impl;
 
 import dbcache.service.Cache;
+import dbcache.utils.CacheUtils;
 import dbcache.utils.concurrent.CleanupThread;
 import dbcache.utils.concurrent.ConcurrentLRUCache;
 import dbcache.utils.concurrent.ConcurrentReferenceHashMap;
@@ -25,11 +26,6 @@ import java.lang.ref.ReferenceQueue;
  */
 @Component("concurrentLruHashMapCache")
 public class ConcurrentLruHashMapCache implements Cache {
-
-	/**
-	 * LRU Cache清除线程(单线程)
-	 */
-	private static CleanupThread cleanupThread = new CleanupThread();
 
 	/**
 	 * 缓存名称
@@ -73,7 +69,7 @@ public class ConcurrentLruHashMapCache implements Cache {
 				evictions.put(key, value.get());
 			}
 
-		}, cleanupThread);
+		}, CacheUtils.getCleanupthread());
 
 	}
 
@@ -101,8 +97,8 @@ public class ConcurrentLruHashMapCache implements Cache {
 		}
 		return null;
 	}
-	
-	
+
+
 	@Override
 	public ValueWrapper get(long key) {
 		Object value = this.store.get(key);
