@@ -13,9 +13,6 @@ import dbcache.support.asm.ValueGetter;
 import dbcache.utils.HashMap8;
 import dbcache.utils.JsonUtils;
 import dbcache.utils.concurrent.ConcurrentHashMap;
-import dbcache.utils.weak.ValueRef;
-import dbcache.utils.weak.WeakValueHashMap;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -281,7 +278,7 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 			return (CacheObject<T>) wrapper.get();
 		}
 
-		return this.getCacheObject((PK) Long.valueOf(key));
+		return this.getCacheObject((PK)((Object) Long.valueOf(key)));
 	}
 	
 
