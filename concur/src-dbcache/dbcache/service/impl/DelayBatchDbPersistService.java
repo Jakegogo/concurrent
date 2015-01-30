@@ -126,42 +126,60 @@ public class DelayBatchDbPersistService implements DbPersistService {
 	protected void flushBatchTask() {
 		// 保存
 		for (Entry<Class<?>, LinkedList<CacheObject<?>>> entry : this.batchTasks.saveBatchQueue.entrySet()) {
-			LinkedList<CacheObject<?>> list = entry.getValue();
-			if (list.isEmpty()) {
-				continue;
+			try {
+				LinkedList<CacheObject<?>> list = entry.getValue();
+				if (list.isEmpty()) {
+					continue;
+				}
+				List<Object> entityList = new ArrayList<Object>();
+				for (CacheObject<?> cacheObj : list) {
+					if (cacheObj.getPersistStatus() != PersistStatus.DELETED) {
+						entityList.add(cacheObj.getEntity());
+					}
+				}
+				this.dbAccessService.save(entry.getKey(), entityList);
+				list.clear();
+			} catch (Exception e) {
+				e.printStackTrace();
 			}
-			List<Object> entityList = new ArrayList<Object>();
-			for (CacheObject<?> cacheObj : list) {
-				entityList.add(cacheObj.getEntity());
-			}
-			this.dbAccessService.save(entry.getKey(), entityList);
-			list.clear();
 		}
 		// 更新
 		for (Entry<Class<?>, LinkedList<CacheObject<?>>> entry : this.batchTasks.updateBatchQueue.entrySet()) {
-			LinkedList<CacheObject<?>> list = entry.getValue();
-			if (list.isEmpty()) {
-				continue;
+			try {
+				LinkedList<CacheObject<?>> list = entry.getValue();
+				if (list.isEmpty()) {
+					continue;
+				}
+				List<Object> entityList = new ArrayList<Object>();
+				for (CacheObject<?> cacheObj : list) {
+					if (cacheObj.getPersistStatus() != PersistStatus.DELETED) {
+						entityList.add(cacheObj.getEntity());
+					}
+				}
+				this.dbAccessService.update(entry.getKey(), entityList);
+				list.clear();
+			} catch (Exception e) {
+				e.printStackTrace();
 			}
-			List<Object> entityList = new ArrayList<Object>();
-			for (CacheObject<?> cacheObj : list) {
-				entityList.add(cacheObj.getEntity());
-			}
-			this.dbAccessService.update(entry.getKey(), entityList);
-			list.clear();
 		}
 		// 删除
 		for (Entry<Class<?>, LinkedList<CacheObject<?>>> entry : this.batchTasks.deleteBatchQueue.entrySet()) {
-			LinkedList<CacheObject<?>> list = entry.getValue();
-			if (list.isEmpty()) {
-				continue;
+			try {
+				LinkedList<CacheObject<?>> list = entry.getValue();
+				if (list.isEmpty()) {
+					continue;
+				}
+				List<Object> entityList = new ArrayList<Object>();
+				for (CacheObject<?> cacheObj : list) {
+					if (cacheObj.getPersistStatus() == PersistStatus.DELETED) {
+						entityList.add(cacheObj.getEntity());
+					}
+				}
+				this.dbAccessService.delete(entry.getKey(), entityList);
+				list.clear();
+			} catch (Exception e) {
+				e.printStackTrace();
 			}
-			List<Object> entityList = new ArrayList<Object>();
-			for (CacheObject<?> cacheObj : list) {
-				entityList.add(cacheObj.getEntity());
-			}
-			this.dbAccessService.delete(entry.getKey(), entityList);
-			list.clear();
 		}
 	}
 
@@ -208,7 +226,7 @@ public class DelayBatchDbPersistService implements DbPersistService {
 
 							timeDiff = System.currentTimeMillis() - lastFlush;
 							
-							if (timeDiff > delayWaitTimmer) {
+							if (timeDiff >= delayWaitTimmer) {
 								// 替换updateQueue
 								if (processQueue == updateQueue) {
 									updateQueue = swapQueue;

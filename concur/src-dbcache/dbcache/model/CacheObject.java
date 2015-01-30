@@ -8,6 +8,8 @@ import java.io.Serializable;
 import java.util.Collection;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import org.apache.commons.lang.builder.EqualsBuilder;
+
 
 /**
  * 实体缓存辅助类
@@ -158,6 +160,36 @@ public class CacheObject<T extends IEntity<?>> {
 	public long increseEditVersion() {
 		this.editVersion.increment();
 		return this.editVersion.longValue();
+	}
+	
+
+	@Override
+	public int hashCode() {
+		if (this.entity.getId() == null) {
+			return this.entity.getClass().hashCode() * 31;
+		}
+		return this.entity.getClass().hashCode() * 31 + this.entity.getId().hashCode();
+	}
+
+	
+	@Override
+	@SuppressWarnings("unchecked")
+	public boolean equals(Object obj) {
+		if (this == obj) {
+			return true;
+		}
+		if (obj == null) {
+			return false;
+		}
+		if (!(obj instanceof CacheObject)) {
+			return false;
+		}
+		
+		CacheObject<T> target = (CacheObject<T>) obj;
+		
+		return new EqualsBuilder()
+				.append(this.entity.getClass(), target.entity.getClass())
+				.append(this.entity.getId(), target.entity.getId()).isEquals();
 	}
 
 	public T getEntity() {
