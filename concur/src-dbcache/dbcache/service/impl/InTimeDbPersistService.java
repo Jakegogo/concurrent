@@ -1,7 +1,17 @@
 package dbcache.service.impl;
 
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.RejectedExecutionException;
+
+import javax.annotation.PostConstruct;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
 import dbcache.model.CacheObject;
-import dbcache.model.EntityInitializer;
 import dbcache.model.PersistAction;
 import dbcache.model.PersistStatus;
 import dbcache.service.Cache;
@@ -11,15 +21,6 @@ import dbcache.service.DbRuleService;
 import dbcache.utils.JsonUtils;
 import dbcache.utils.NamedThreadFactory;
 import dbcache.utils.ThreadUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-
-import javax.annotation.PostConstruct;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.RejectedExecutionException;
 
 /**
  * 即时入库实现
@@ -131,22 +132,23 @@ public class InTimeDbPersistService implements DbPersistService {
 
 			@Override
 			public void run() {
+				
+				//缓存对象在提交之后被修改过
+				if (editVersion < cacheObject.getEditVersion()) {
+					return;
+				}
+				
 				// 改变更新状态
 				if (cacheObject.swapUpdateProcessing(false)) {
-					//缓存对象在提交之后被修改过
-					if (editVersion < cacheObject.getEditVersion()) {
-						return;
-					}
-
+					
 					// 更新入库版本号
 					cacheObject.setDbVersion(editVersion);
-
+					
 					// 持久化前的操作
 					cacheObject.doBeforePersist();
-
-
+					
 					// 缓存对象在提交之后被入库过
-					if(cacheObject.getDbVersion() > editVersion) {
+					if (cacheObject.getDbVersion() > editVersion) {
 						return;
 					}
 

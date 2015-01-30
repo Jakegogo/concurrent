@@ -229,7 +229,6 @@ public class DelayDbPersistService implements DbPersistService {
 				// 改变更新状态
 				if (cacheObject.swapUpdateProcessing(false)) {
 
-
 					// 更新入库版本号
 					cacheObject.setDbVersion(editVersion);
 
@@ -326,8 +325,22 @@ public class DelayDbPersistService implements DbPersistService {
 
 	@Override
 	public void awaitTermination() {
-		//刷新所有延时入库的实体到库中
-		this.flushAllEntity();
+		int failCount = 0;
+		while (failCount < 3) {
+			try {
+				//刷新所有延时入库的实体到库中
+				this.flushAllEntity();
+				break;
+			} catch (Exception e) {
+				failCount ++;
+				e.printStackTrace();
+				try {
+					Thread.sleep(3000);
+				} catch (InterruptedException e1) {
+					e1.printStackTrace();
+				}
+			}
+		}
 	}
 
 
