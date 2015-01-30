@@ -3,12 +3,11 @@ package dbcache.model;
 import dbcache.conf.JsonConverter;
 import dbcache.support.asm.ValueGetter;
 import dbcache.utils.concurrent.LongAdder;
+import org.apache.commons.lang.builder.EqualsBuilder;
 
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.concurrent.atomic.AtomicBoolean;
-
-import org.apache.commons.lang.builder.EqualsBuilder;
 
 
 /**
@@ -38,11 +37,6 @@ public class CacheObject<T extends IEntity<?>> {
 	 * 修改版本号
 	 */
 	private final LongAdder editVersion = new LongAdder();
-
-	/**
-	 * 入库版本号
-	 */
-	private volatile long dbVersion = editVersion.intValue();
 	
 	/**
 	 * 索引属性值获取器列表
@@ -233,11 +227,4 @@ public class CacheObject<T extends IEntity<?>> {
 		return this.updateProcessing.compareAndSet(!processing, processing);
 	}
 
-	public long getDbVersion() {
-		return dbVersion;
-	}
-
-	public void setDbVersion(long dbVersion) {
-		this.dbVersion = dbVersion;
-	}
 }

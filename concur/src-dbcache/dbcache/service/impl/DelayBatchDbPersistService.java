@@ -1,18 +1,11 @@
 package dbcache.service.impl;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-
-import javax.annotation.PostConstruct;
-
+import dbcache.model.CacheObject;
+import dbcache.model.PersistAction;
+import dbcache.model.PersistStatus;
+import dbcache.service.*;
+import dbcache.utils.JsonUtils;
+import dbcache.utils.NamedThreadFactory;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,16 +13,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
-import dbcache.model.CacheObject;
-import dbcache.model.PersistAction;
-import dbcache.model.PersistStatus;
-import dbcache.service.Cache;
-import dbcache.service.DbAccessService;
-import dbcache.service.DbBatchAccessService;
-import dbcache.service.DbPersistService;
-import dbcache.service.DbRuleService;
-import dbcache.utils.JsonUtils;
-import dbcache.utils.NamedThreadFactory;
+import javax.annotation.PostConstruct;
+import java.util.*;
+import java.util.Map.Entry;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 
 /**
@@ -332,22 +321,15 @@ public class DelayBatchDbPersistService implements DbPersistService {
 			@Override
 			public void run() {
 
-				//缓存对象在提交之后被修改过
-				if(editVersion < cacheObject.getEditVersion()) {
-					return;
-				}
 
 				// 改变更新状态
 				if (cacheObject.swapUpdateProcessing(false)) {
 
-					// 更新入库版本号
-					cacheObject.setDbVersion(editVersion);
-
 					// 持久化前的操作
 					cacheObject.doBeforePersist();
 
-					//缓存对象在提交之后被入库过
-					if (cacheObject.getDbVersion() > editVersion) {
+					//缓存对象在提交之后被修改过
+					if(editVersion < cacheObject.getEditVersion()) {
 						return;
 					}
 
@@ -388,11 +370,6 @@ public class DelayBatchDbPersistService implements DbPersistService {
 
 				// 缓存对象在提交之后被修改过
 				if(editVersion < cacheObject.getEditVersion()) {
-					return;
-				}
-
-				// 缓存对象在提交之后被入库过
-				if(cacheObject.getDbVersion() > editVersion) {
 					return;
 				}
 

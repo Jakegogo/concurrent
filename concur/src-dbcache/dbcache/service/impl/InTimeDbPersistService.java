@@ -1,16 +1,5 @@
 package dbcache.service.impl;
 
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.RejectedExecutionException;
-
-import javax.annotation.PostConstruct;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-
 import dbcache.model.CacheObject;
 import dbcache.model.PersistAction;
 import dbcache.model.PersistStatus;
@@ -21,6 +10,15 @@ import dbcache.service.DbRuleService;
 import dbcache.utils.JsonUtils;
 import dbcache.utils.NamedThreadFactory;
 import dbcache.utils.ThreadUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
+import javax.annotation.PostConstruct;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.RejectedExecutionException;
 
 /**
  * 即时入库实现
@@ -92,8 +90,14 @@ public class InTimeDbPersistService implements DbPersistService {
 				// 持久化前操作
 				cacheObject.doBeforePersist();
 
-				// 持久化
-				dbAccessService.save(entity);
+				synchronized (cacheObject) {
+					// 判断是否有效
+					if(!this.valid()) {
+						return;
+					}
+					// 持久化
+					dbAccessService.save(entity);
+				}
 
 				// 设置状态为持久化
 				cacheObject.setPersistStatus(PersistStatus.PERSIST);
@@ -133,27 +137,25 @@ public class InTimeDbPersistService implements DbPersistService {
 			@Override
 			public void run() {
 				
-				//缓存对象在提交之后被修改过
-				if (editVersion < cacheObject.getEditVersion()) {
-					return;
-				}
-				
 				// 改变更新状态
 				if (cacheObject.swapUpdateProcessing(false)) {
 					
-					// 更新入库版本号
-					cacheObject.setDbVersion(editVersion);
-					
 					// 持久化前的操作
 					cacheObject.doBeforePersist();
-					
-					// 缓存对象在提交之后被入库过
-					if (cacheObject.getDbVersion() > editVersion) {
+
+					//缓存对象在提交之后被修改过
+					if (editVersion < cacheObject.getEditVersion()) {
 						return;
 					}
 
-					//持久化
-					dbAccessService.update(cacheObject.getEntity());
+					synchronized (cacheObject) {
+						// 判断是否有效
+						if(!this.valid()) {
+							return;
+						}
+						//持久化
+						dbAccessService.update(cacheObject.getEntity());
+					}
 				}
 			}
 
@@ -191,9 +193,14 @@ public class InTimeDbPersistService implements DbPersistService {
 					return;
 				}
 
-				// 持久化
-				dbAccessService.delete(cacheObject.getEntity());
-
+				synchronized (cacheObject) {
+					// 判断是否有效
+					if (!this.valid()) {
+						return;
+					}
+					// 持久化
+					dbAccessService.delete(cacheObject.getEntity());
+				}
 				// 从缓存中移除
 				cache.put(key, null);
 
