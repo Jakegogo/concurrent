@@ -106,8 +106,9 @@ public class Test {
 //			}
 
 			this.cacheService.submitUpdate(entity);
-			if(i%10000000 == 0) {
-				System.out.println(ThreadUtils.dumpThreadPool("入库线程池", this.cacheService.getThreadPool()));
+			if(i%1000000 == 0) {
+//				System.out.println("processing");
+//				System.out.println(ThreadUtils.dumpThreadPool("入库线程池", this.cacheService.getThreadPool()));
 			}
 
 			if(i%1000000 == 0) {
