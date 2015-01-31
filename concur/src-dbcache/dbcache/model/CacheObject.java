@@ -7,6 +7,7 @@ import org.apache.commons.lang.builder.EqualsBuilder;
 
 import java.io.Serializable;
 import java.util.Collection;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 
@@ -58,6 +59,16 @@ public class CacheObject<T extends IEntity<?>> {
 	 */
 	private AtomicBoolean updateProcessing = new AtomicBoolean(false);
 
+	//-----执行链-----
+	/**
+	 * 执行链
+	 */
+	private ConcurrentLinkedQueue<PersistAction> workQueue;
+
+	/**
+	 * 是否在执行链处理中
+	 */
+	private AtomicBoolean chainProcessing = new AtomicBoolean(false);
 
 	/**
 	 * 默认构造方法
@@ -227,4 +238,19 @@ public class CacheObject<T extends IEntity<?>> {
 		return this.updateProcessing.compareAndSet(!processing, processing);
 	}
 
+	public ConcurrentLinkedQueue<PersistAction> getWorkQueue() {
+		return workQueue;
+	}
+
+	public void setWorkQueue(ConcurrentLinkedQueue<PersistAction> workQueue) {
+		this.workQueue = workQueue;
+	}
+
+	public boolean getChainProcessing() {
+		return chainProcessing.get();
+	}
+
+	public boolean swapChainProcessing(boolean processing) {
+		return this.chainProcessing.compareAndSet(!processing, processing);
+	}
 }
