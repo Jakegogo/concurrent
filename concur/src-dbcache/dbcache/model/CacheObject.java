@@ -2,12 +2,12 @@ package dbcache.model;
 
 import dbcache.conf.JsonConverter;
 import dbcache.support.asm.ValueGetter;
+import dbcache.utils.concurrent.LinkingRunnable;
 import dbcache.utils.concurrent.LongAdder;
 import org.apache.commons.lang.builder.EqualsBuilder;
 
 import java.io.Serializable;
 import java.util.Collection;
-import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 
@@ -63,12 +63,7 @@ public class CacheObject<T extends IEntity<?>> {
 	/**
 	 * 执行链
 	 */
-	private ConcurrentLinkedQueue<PersistAction> workQueue;
-
-	/**
-	 * 是否在执行链处理中
-	 */
-	private AtomicBoolean chainProcessing = new AtomicBoolean(false);
+	private volatile LinkingRunnable lastLinkingRunnable;
 
 	/**
 	 * 默认构造方法
@@ -238,19 +233,12 @@ public class CacheObject<T extends IEntity<?>> {
 		return this.updateProcessing.compareAndSet(!processing, processing);
 	}
 
-	public ConcurrentLinkedQueue<PersistAction> getWorkQueue() {
-		return workQueue;
+
+	public LinkingRunnable getLastLinkingRunnable() {
+		return lastLinkingRunnable;
 	}
 
-	public void setWorkQueue(ConcurrentLinkedQueue<PersistAction> workQueue) {
-		this.workQueue = workQueue;
-	}
-
-	public boolean getChainProcessing() {
-		return chainProcessing.get();
-	}
-
-	public boolean swapChainProcessing(boolean processing) {
-		return this.chainProcessing.compareAndSet(!processing, processing);
+	public void setLastLinkingRunnable(LinkingRunnable lastLinkingRunnable) {
+		this.lastLinkingRunnable = lastLinkingRunnable;
 	}
 }

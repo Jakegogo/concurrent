@@ -10,18 +10,16 @@ import dbcache.service.DbRuleService;
 import dbcache.utils.JsonUtils;
 import dbcache.utils.NamedThreadFactory;
 import dbcache.utils.ThreadUtils;
-
-import org.apache.commons.lang.math.RandomUtils;
+import dbcache.utils.concurrent.LinkingRunnable;
+import dbcache.utils.concurrent.OrderedThreadPoolExecutor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
-
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.RejectedExecutionException;
 
 /**
@@ -84,38 +82,36 @@ public class InTimeDbPersistService implements DbPersistService {
 		this.dbPoolSize = dbPoolSize;
 
 		// 初始化线程池
-		DB_POOL_SERVICE = Executors.newFixedThreadPool(dbPoolSize, threadFactory);
+		DB_POOL_SERVICE = OrderedThreadPoolExecutor.newFixedThreadPool(dbPoolSize, threadFactory);
 
-		// 初始化执行链队列
-		workQueues = new ConcurrentLinkedQueue[dbPoolSize];
-		for (int i = 0;i < dbPoolSize;i++) {
-			workQueues[i] = new ConcurrentLinkedQueue<PersistAction>();
-		}
+	}
+
+
+	abstract class OrderedPersistAction extends LinkingRunnable implements PersistAction {
+
 	}
 
 
 	@Override
 	public void handleSave(final CacheObject<?> cacheObject, final DbAccessService dbAccessService) {
-		
-		if (cacheObject.getWorkQueue() == null) {
-			synchronized (cacheObject) {
-				// 随机分配执行链队列
-				if (cacheObject.getWorkQueue() == null) {
-					cacheObject.setWorkQueue(workQueues[RandomUtils.nextInt(dbPoolSize)]);
-				}
+
+		this.handlePersist(new OrderedPersistAction() {
+
+			@Override
+			public LinkingRunnable getListLinkingRunnable() {
+				return cacheObject.getLastLinkingRunnable();
 			}
-		}
 
-		ConcurrentLinkedQueue<PersistAction> curWorkQueue = cacheObject.getWorkQueue();
-		
-		curWorkQueue.add(new PersistAction() {
-
+			@Override
+			public void setLastLinkingRunnable(LinkingRunnable runnable) {
+				cacheObject.setLastLinkingRunnable(runnable);
+			}
 
 			@Override
 			public void run() {
 
 				// 判断是否有效
-				if(!this.valid()) {
+				if (!this.valid()) {
 					return;
 				}
 
@@ -129,21 +125,16 @@ public class InTimeDbPersistService implements DbPersistService {
 
 				// 设置状态为持久化
 				cacheObject.setPersistStatus(PersistStatus.PERSIST);
-				
-				cacheObject.swapChainProcessing(false);
-				// 执行队列下一个元素
-				PersistAction next = cacheObject.getWorkQueue().poll();
-				if (next != null) {
-					cacheObject.swapChainProcessing(true);
-					next.run();
-				}
+
+				// 执行队列下一个OrderedPersistAction元素
+				super.runNext();
 			}
 
 			@Override
 			public String getPersistInfo() {
 
 				// 判断状态有效性
-				if(!this.valid()) {
+				if (!this.valid()) {
 					return null;
 				}
 
@@ -156,13 +147,7 @@ public class InTimeDbPersistService implements DbPersistService {
 			}
 
 		});
-		
-		
-		PersistAction curPersistAction;
-		if (!cacheObject.getChainProcessing() && (curPersistAction = curWorkQueue.poll()) != null) {
-			cacheObject.swapChainProcessing(true);
-			this.handlePersist(curPersistAction);
-		}
+
 		
 	}
 
@@ -175,21 +160,21 @@ public class InTimeDbPersistService implements DbPersistService {
 		//最新修改版本号
 		final long editVersion = cacheObject.increseEditVersion();
 
-		if (cacheObject.getWorkQueue() == null) {
-			synchronized (cacheObject) {
-				// 随机分配执行链队列
-				if (cacheObject.getWorkQueue() == null) {
-					cacheObject.setWorkQueue(workQueues[RandomUtils.nextInt(dbPoolSize)]);
-				}
-			}
-		}
+		this.handlePersist(new OrderedPersistAction() {
 
-		ConcurrentLinkedQueue<PersistAction> curWorkQueue = cacheObject.getWorkQueue();
-		curWorkQueue.add(new PersistAction() {
+			@Override
+			public LinkingRunnable getListLinkingRunnable() {
+				return cacheObject.getLastLinkingRunnable();
+			}
+
+			@Override
+			public void setLastLinkingRunnable(LinkingRunnable runnable) {
+				cacheObject.setLastLinkingRunnable(runnable);
+			}
 
 			@Override
 			public void run() {
-				
+
 				// 改变更新状态
 				if (cacheObject.swapUpdateProcessing(false)) {
 
@@ -204,15 +189,8 @@ public class InTimeDbPersistService implements DbPersistService {
 
 				}
 
-				cacheObject.swapChainProcessing(false);
-				// 执行队列下一个元素
-				PersistAction next = cacheObject.getWorkQueue().poll();
-				if (next != null) {
-					cacheObject.swapUpdateProcessing(true);
-					cacheObject.swapChainProcessing(true);
-					next.run();
-				}
-				
+				// 执行队列下一个OrderedPersistAction元素
+				super.runNext();
 			}
 
 			@Override
@@ -233,31 +211,25 @@ public class InTimeDbPersistService implements DbPersistService {
 
 		});
 
-
-		PersistAction curPersistAction;
-		if (!cacheObject.getChainProcessing() && (curPersistAction = curWorkQueue.poll()) != null) {
-			cacheObject.swapChainProcessing(true);
-			this.handlePersist(curPersistAction);// 直接执行
-		}
-
 	}
+
 
 	@Override
 	public void handleDelete(final CacheObject<?> cacheObject, final DbAccessService dbAccessService, final Object key, final Cache cache) {
 		// 最新修改版本号
 		final long editVersion = cacheObject.increseEditVersion();
 
-		if (cacheObject.getWorkQueue() == null) {
-			synchronized (cacheObject) {
-				// 随机分配执行链队列
-				if (cacheObject.getWorkQueue() == null) {
-					cacheObject.setWorkQueue(workQueues[RandomUtils.nextInt(dbPoolSize)]);
-				}
-			}
-		}
+		this.handlePersist(new OrderedPersistAction() {
 
-		ConcurrentLinkedQueue<PersistAction> curWorkQueue = cacheObject.getWorkQueue();
-		curWorkQueue.add(new PersistAction() {
+			@Override
+			public LinkingRunnable getListLinkingRunnable() {
+				return cacheObject.getLastLinkingRunnable();
+			}
+
+			@Override
+			public void setLastLinkingRunnable(LinkingRunnable runnable) {
+				cacheObject.setLastLinkingRunnable(runnable);
+			}
 
 			@Override
 			public void run() {
@@ -273,20 +245,15 @@ public class InTimeDbPersistService implements DbPersistService {
 				// 从缓存中移除
 				cache.put(key, null);
 
-				cacheObject.swapChainProcessing(false);
-				// 执行队列下一个元素
-				PersistAction next = cacheObject.getWorkQueue().poll();
-				if (next != null) {
-					cacheObject.swapChainProcessing(true);
-					next.run();
-				}
+				// 执行队列下一个OrderedPersistAction元素
+				super.runNext();
 			}
 
 			@Override
 			public String getPersistInfo() {
 
 				// 缓存对象在提交之后被修改过
-				if(editVersion < cacheObject.getEditVersion()) {
+				if (editVersion < cacheObject.getEditVersion()) {
 					return null;
 				}
 
@@ -301,12 +268,7 @@ public class InTimeDbPersistService implements DbPersistService {
 
 
 		});
-		
-		PersistAction curPersistAction;
-		if (!cacheObject.getChainProcessing() && (curPersistAction = curWorkQueue.poll()) != null) {
-			cacheObject.swapChainProcessing(true);
-			this.handlePersist(curPersistAction);// 直接执行
-		}
+
 	}
 
 	@Override
@@ -336,7 +298,7 @@ public class InTimeDbPersistService implements DbPersistService {
 	 * 提交持久化任务
 	 * @param persistAction
 	 */
-	private void handlePersist(PersistAction persistAction) {
+	private void handlePersist(Runnable persistAction) {
 
 		try {
 			DB_POOL_SERVICE.submit(persistAction);
@@ -354,7 +316,7 @@ public class InTimeDbPersistService implements DbPersistService {
 	 * 处理持久化操作
 	 * @param persistAction 持久化操作
 	 */
-	private void handleTask(PersistAction persistAction) {
+	private void handleTask(Runnable persistAction) {
 		persistAction.run();
 	}
 

@@ -89,9 +89,10 @@ public class Test {
 	public void t1() throws InterruptedException {
 
 
-		for(int i = 0;i <= 100000000;i++) {
-			Entity entity = this.cacheService.get(1l);
-			entity.increseNum();
+		for(int i = 0;i <= 10000000;i++) {
+			for (long j = 1; j < 10; j++) {
+				Entity entity = this.cacheService.get(j);
+				entity.increseNum();
 //			if(i % 1000000 == 0) {
 //				entity.addNum(1);
 //			}
@@ -105,18 +106,19 @@ public class Test {
 //			Thread.sleep(10);
 //			}
 
-			this.cacheService.submitUpdate(entity);
-			if(i%1000000 == 0) {
+				this.cacheService.submitUpdate(entity);
+				if (i % 1000000 == 0) {
 //				System.out.println("processing");
 //				System.out.println(ThreadUtils.dumpThreadPool("入库线程池", this.cacheService.getThreadPool()));
-			}
+				}
 
-			if(i%1000000 == 0) {
-				Thread.sleep(10);
-			}
+				if (i % 1000000 == 0) {
+					Thread.sleep(10);
+				}
 
-			entity = null;
+				entity = null;
 //			System.gc();
+			}
 		}
 //		System.out.println(entity.num);
 
