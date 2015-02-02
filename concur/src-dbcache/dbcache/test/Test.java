@@ -89,9 +89,9 @@ public class Test {
 	public void t1() throws InterruptedException {
 
 
-		for(int i = 0;i <= 10000000;i++) {
-			for (long j = 1; j < 10; j++) {
-				Entity entity = this.cacheService.get(j);
+		for(int i = 0;i <= 100000000;i++) {
+//			for (long j = 1; j < 10; j++) {
+				Entity entity = this.cacheService.get(1l);
 				entity.increseNum();
 //			if(i % 1000000 == 0) {
 //				entity.addNum(1);
@@ -118,7 +118,7 @@ public class Test {
 
 				entity = null;
 //			System.gc();
-			}
+//			}
 		}
 //		System.out.println(entity.num);
 

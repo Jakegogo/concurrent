@@ -26,6 +26,12 @@ public abstract class LinkingRunnable implements Runnable {
      * @return
      */
     public abstract AtomicReference<LinkingRunnable> getLastLinkingRunnable();
+    
+    /**
+     * 执行异常回调()
+     * @param t Throwable
+     */
+    public void onException(Throwable t) {}
 
     /**
      * 覆盖(重写)次方法需要在方法末尾调用super.runNext();
@@ -38,6 +44,9 @@ public abstract class LinkingRunnable implements Runnable {
         this.runNext();
     }
 
+    /**
+     * 执行下一个任务
+     */
     protected void runNext() {
         if (!next.compareAndSet(null, this)) { // has more job to run
             next.get().run();
