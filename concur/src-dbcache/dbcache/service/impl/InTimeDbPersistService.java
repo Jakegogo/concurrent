@@ -12,15 +12,19 @@ import dbcache.utils.NamedThreadFactory;
 import dbcache.utils.ThreadUtils;
 import dbcache.utils.concurrent.LinkingRunnable;
 import dbcache.utils.concurrent.OrderedThreadPoolExecutor;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
+import javax.management.RuntimeErrorException;
+
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.RejectedExecutionException;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * 即时入库实现
@@ -98,13 +102,8 @@ public class InTimeDbPersistService implements DbPersistService {
 		this.handlePersist(new OrderedPersistAction() {
 
 			@Override
-			public LinkingRunnable getListLinkingRunnable() {
+			public AtomicReference<LinkingRunnable> getLastLinkingRunnable() {
 				return cacheObject.getLastLinkingRunnable();
-			}
-
-			@Override
-			public void setLastLinkingRunnable(LinkingRunnable runnable) {
-				cacheObject.setLastLinkingRunnable(runnable);
 			}
 
 			@Override
@@ -163,18 +162,13 @@ public class InTimeDbPersistService implements DbPersistService {
 		this.handlePersist(new OrderedPersistAction() {
 
 			@Override
-			public LinkingRunnable getListLinkingRunnable() {
+			public AtomicReference<LinkingRunnable> getLastLinkingRunnable() {
 				return cacheObject.getLastLinkingRunnable();
 			}
 
 			@Override
-			public void setLastLinkingRunnable(LinkingRunnable runnable) {
-				cacheObject.setLastLinkingRunnable(runnable);
-			}
-
-			@Override
 			public void run() {
-
+				
 				// 改变更新状态
 				if (cacheObject.swapUpdateProcessing(false)) {
 
@@ -187,6 +181,8 @@ public class InTimeDbPersistService implements DbPersistService {
 						dbAccessService.update(cacheObject.getEntity());
 					}
 
+				} else {
+					throw new IllegalStateException("检测到非顺序入库.");// 正常情况不会执行到这个分支
 				}
 
 				// 执行队列下一个OrderedPersistAction元素
@@ -222,13 +218,8 @@ public class InTimeDbPersistService implements DbPersistService {
 		this.handlePersist(new OrderedPersistAction() {
 
 			@Override
-			public LinkingRunnable getListLinkingRunnable() {
+			public AtomicReference<LinkingRunnable> getLastLinkingRunnable() {
 				return cacheObject.getLastLinkingRunnable();
-			}
-
-			@Override
-			public void setLastLinkingRunnable(LinkingRunnable runnable) {
-				cacheObject.setLastLinkingRunnable(runnable);
 			}
 
 			@Override

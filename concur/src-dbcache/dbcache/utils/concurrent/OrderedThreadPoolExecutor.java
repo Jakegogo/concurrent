@@ -3,14 +3,22 @@ package dbcache.utils.concurrent;
 import dbcache.utils.NamedThreadFactory;
 
 import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * 顺序执行的线程池
+ * <br/>顺序执行;同时复用线程,减少线程切换。适用于并发提交
  * <br/> 只能提交LinkingRunnable
- * Created by Administrator on 2015/2/1.
+ * Created by Jake on 2015/2/1.
  */
 public class OrderedThreadPoolExecutor extends ThreadPoolExecutor {
 
+	/**
+     * We don't bother to update head or tail pointers if fewer than
+     * HOPS links from "true" location. We assume that volatile
+     * writes are significantly more expensive than volatile reads.
+     */
+    private static final int HOPS = 1;
 
     public OrderedThreadPoolExecutor(int corePoolSize, int maximumPoolSize, long keepAliveTime, TimeUnit unit, BlockingQueue<Runnable> workQueue) {
         super(corePoolSize, maximumPoolSize, keepAliveTime, unit, workQueue);
@@ -38,20 +46,82 @@ public class OrderedThreadPoolExecutor extends ThreadPoolExecutor {
         LinkingRunnable runnable = (LinkingRunnable) command;
 
         // messages from the same client are handled orderly
-        LinkingRunnable old = runnable.getListLinkingRunnable();
-        runnable.setLastLinkingRunnable(runnable);
+        AtomicReference<LinkingRunnable> lastRef = runnable.getLastLinkingRunnable();
+        
+        
+//        if (old == null) { // No previous job
+//            execs.submit(job);
+//        } else {
+//            if (old.next.compareAndSet(null, job)) {
+//                // successfully append to previous task
+//            } else {
+//                // previous message is handled, order is guaranteed.
+//                execs.submit(job);
+//            }
+//        }
+        
+        
+//      if (lastRef.compareAndSet(null, runnable)) { // No previous job
+//			super.execute(command);
+//		} else {
+//			// CAS loop
+//			for (;;) {
+//				LinkingRunnable last = lastRef.get();
+//				LinkingRunnable next = last.next.get();
+//				if (last.next.compareAndSet(null, runnable)) {
+//					lastRef.compareAndSet(last, runnable);// fail is OK
+//					// successfully append to previous task
+//					break;
+//				} else if (last.next.get() == last) {
+//					// previous message is handled, order is guaranteed.
+//					super.execute(command);
+//					break;
+//				}
+//				lastRef = runnable.getLastLinkingRunnable();
+//			}
+//		}
+        
+		if (lastRef.get() == null && lastRef.compareAndSet(null, runnable)) { // No previous job
+			super.execute(command);
+		} else {
+			// CAS loop
+			retry :
+			for (;;) {
+				
+				LinkingRunnable last = lastRef.get();
 
-        if (old == null) { // No previous job
-            super.execute(command);
-        } else {
-            if (old.next.compareAndSet(null, runnable)) {
-                // successfully append to previous task
-            } else {
-                // previous message is handled, order is guaranteed.
-                super.execute(command);
-            }
-        }
+				for (int hops = 0;; hops++) {
+					AtomicReference<LinkingRunnable> nextRef = last.next;
 
+					LinkingRunnable next = nextRef.get();
+					if (next != null) {
+						if (next == last) {
+							if (lastRef.compareAndSet(last, runnable)) {
+								// previous message is handled, order is
+								// guaranteed.
+								super.execute(command);
+								return;
+							} else {
+								lastRef = runnable.getLastLinkingRunnable();
+								continue retry;
+							}
+						} else if (hops > HOPS) {
+							lastRef = runnable.getLastLinkingRunnable();
+							continue retry;
+						}
+						last = next;
+					} else if (nextRef.compareAndSet(null, runnable)) {
+						lastRef.compareAndSet(last, runnable);// fail is OK
+						// successfully append to previous task
+						return;
+					} else {
+						last = last.next.get();
+					}
+				}
+				
+			}
+		}
+        
     }
 
 
@@ -61,4 +131,5 @@ public class OrderedThreadPoolExecutor extends ThreadPoolExecutor {
                 new LinkedBlockingQueue<Runnable>(),
                 threadFactory);
     }
+    
 }

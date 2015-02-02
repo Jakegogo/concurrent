@@ -25,13 +25,7 @@ public abstract class LinkingRunnable implements Runnable {
      * 返回上一次执行的LinkingRunnable
      * @return
      */
-    public abstract LinkingRunnable getListLinkingRunnable();
-
-    /**
-     * 设置上一次执行的LinkingRunnable
-     * @param runnable
-     */
-    public abstract void setLastLinkingRunnable(LinkingRunnable runnable);
+    public abstract AtomicReference<LinkingRunnable> getLastLinkingRunnable();
 
     /**
      * 覆盖(重写)次方法需要在方法末尾调用super.runNext();

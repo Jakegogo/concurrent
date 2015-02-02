@@ -4,11 +4,13 @@ import dbcache.conf.JsonConverter;
 import dbcache.support.asm.ValueGetter;
 import dbcache.utils.concurrent.LinkingRunnable;
 import dbcache.utils.concurrent.LongAdder;
+
 import org.apache.commons.lang.builder.EqualsBuilder;
 
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 
 
 /**
@@ -61,9 +63,9 @@ public class CacheObject<T extends IEntity<?>> {
 
 	//-----执行链-----
 	/**
-	 * 执行链
+	 * 上一次执行的线程
 	 */
-	private volatile LinkingRunnable lastLinkingRunnable;
+	private volatile AtomicReference<LinkingRunnable> lastLinkingRunnable;
 
 	/**
 	 * 默认构造方法
@@ -234,11 +236,8 @@ public class CacheObject<T extends IEntity<?>> {
 	}
 
 
-	public LinkingRunnable getLastLinkingRunnable() {
+	public AtomicReference<LinkingRunnable> getLastLinkingRunnable() {
 		return lastLinkingRunnable;
 	}
 
-	public void setLastLinkingRunnable(LinkingRunnable lastLinkingRunnable) {
-		this.lastLinkingRunnable = lastLinkingRunnable;
-	}
 }
