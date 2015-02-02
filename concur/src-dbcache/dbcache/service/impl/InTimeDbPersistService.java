@@ -12,15 +12,12 @@ import dbcache.utils.NamedThreadFactory;
 import dbcache.utils.ThreadUtils;
 import dbcache.utils.concurrent.LinkingRunnable;
 import dbcache.utils.concurrent.OrderedThreadPoolExecutor;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
-import javax.management.RuntimeErrorException;
-
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.RejectedExecutionException;
@@ -190,6 +187,11 @@ public class InTimeDbPersistService implements DbPersistService {
 			}
 
 			@Override
+			public void onException(Throwable t) {
+				cacheObject.swapUpdateProcessing(false);
+			}
+
+			@Override
 			public String getPersistInfo() {
 
 				//缓存对象在提交之后被修改过
@@ -289,7 +291,7 @@ public class InTimeDbPersistService implements DbPersistService {
 	 * 提交持久化任务
 	 * @param persistAction
 	 */
-	private void handlePersist(Runnable persistAction) {
+	private void handlePersist(OrderedPersistAction persistAction) {
 
 		try {
 			DB_POOL_SERVICE.submit(persistAction);
@@ -299,6 +301,8 @@ public class InTimeDbPersistService implements DbPersistService {
 			this.handleTask(persistAction);
 
 		} catch (Exception ex) {
+			persistAction.onException(ex);
+
 			logger.error("提交任务到更新队列产生异常", ex);
 		}
 	}

@@ -29,6 +29,14 @@ public class AsyncThreadPoolExecutor extends ThreadPoolExecutor {
         super(corePoolSize, maximumPoolSize, keepAliveTime, unit, workQueue, threadFactory, handler);
     }
 
+
+    @Override
+    public Future<?> submit(Runnable task) {
+        execute(task);
+        return null;
+    }
+
+
     @Override
     public void execute(Runnable command) {
 
@@ -58,8 +66,26 @@ public class AsyncThreadPoolExecutor extends ThreadPoolExecutor {
     }
 
 
+    @Override
+    protected void afterExecute(Runnable r, Throwable t) {
+        super.afterExecute(r, t);
+
+        if (t != null) {
+            LinkingRunnable runnable = (LinkingRunnable) r;
+            runnable.onException(t);
+        }
+    }
+
+
+    /**
+     * 创建ExecutorService
+     * 使用默认的AbortPolicy将抛出RejectedExecutionException
+     * @param nThreads
+     * @param threadFactory
+     * @return
+     */
     public static ExecutorService newFixedThreadPool(int nThreads, NamedThreadFactory threadFactory) {
-        return new ThreadPoolExecutor(nThreads, nThreads,
+        return new AsyncThreadPoolExecutor(nThreads, nThreads,
                 0L, TimeUnit.MILLISECONDS,
                 new LinkedBlockingQueue<Runnable>(),
                 threadFactory);

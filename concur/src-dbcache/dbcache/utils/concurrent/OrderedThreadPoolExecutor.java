@@ -36,7 +36,13 @@ public class OrderedThreadPoolExecutor extends ThreadPoolExecutor {
         super(corePoolSize, maximumPoolSize, keepAliveTime, unit, workQueue, threadFactory, handler);
     }
 
-    @Override
+	@Override
+	public Future<?> submit(Runnable task) {
+		execute(task);
+		return null;
+	}
+
+	@Override
     public void execute(Runnable command) {
 
         if (!(command instanceof LinkingRunnable)) {
@@ -44,11 +50,14 @@ public class OrderedThreadPoolExecutor extends ThreadPoolExecutor {
         }
 
         LinkingRunnable runnable = (LinkingRunnable) command;
+		appendSubmit(runnable);
+	}
 
-        // messages from the same client are handled orderly
-        AtomicReference<LinkingRunnable> lastRef = runnable.getLastLinkingRunnable();
-        
-        
+	private void appendSubmit(LinkingRunnable runnable) {
+		// messages from the same client are handled orderly
+		AtomicReference<LinkingRunnable> lastRef = runnable.getLastLinkingRunnable();
+
+
 //        if (old == null) { // No previous job
 //            execs.submit(job);
 //        } else {
@@ -59,8 +68,8 @@ public class OrderedThreadPoolExecutor extends ThreadPoolExecutor {
 //                execs.submit(job);
 //            }
 //        }
-        
-        
+
+
 //      if (lastRef.compareAndSet(null, runnable)) { // No previous job
 //			super.execute(command);
 //		} else {
@@ -80,53 +89,55 @@ public class OrderedThreadPoolExecutor extends ThreadPoolExecutor {
 //				lastRef = runnable.getLastLinkingRunnable();
 //			}
 //		}
-        
+
 		if (lastRef.get() == null && lastRef.compareAndSet(null, runnable)) { // No previous job
-			super.execute(command);
+			super.execute(runnable);
 		} else {
 			// CAS loop
-			retry :
-			for (;;) {
-				
+			for (; ; ) {
+
 				LinkingRunnable last = lastRef.get();
 
-				for (int hops = 0;; hops++) {
-					AtomicReference<LinkingRunnable> nextRef = last.next;
+				AtomicReference<LinkingRunnable> nextRef = last.next;
 
-					LinkingRunnable next = nextRef.get();
-					if (next != null) {
-						if (next == last) {
-							if (lastRef.compareAndSet(last, runnable)) {
-								// previous message is handled, order is
-								// guaranteed.
-								super.execute(command);
-								return;
-							} else {
-								lastRef = runnable.getLastLinkingRunnable();
-								continue retry;
-							}
-						} else if (hops > HOPS) {
-							lastRef = runnable.getLastLinkingRunnable();
-							continue retry;
-						}
-						last = next;
-					} else if (nextRef.compareAndSet(null, runnable)) {
-						lastRef.compareAndSet(last, runnable);// fail is OK
-						// successfully append to previous task
+				LinkingRunnable next = nextRef.get();
+				if (next != null) {
+					if (next == last && lastRef.compareAndSet(last, runnable)) {
+						// previous message is handled, order is
+						// guaranteed.
+						super.execute(runnable);
 						return;
-					} else {
-						last = last.next.get();
 					}
+				} else if (nextRef.compareAndSet(null, runnable)) {
+					lastRef.compareAndSet(last, runnable);// fail is OK
+					// successfully append to previous task
+					return;
 				}
-				
 			}
 		}
-        
-    }
+	}
 
 
-    public static ExecutorService newFixedThreadPool(int nThreads, NamedThreadFactory threadFactory) {
-        return new ThreadPoolExecutor(nThreads, nThreads,
+	@Override
+	protected void afterExecute(Runnable r, Throwable t) {
+		super.afterExecute(r, t);
+
+		if (t != null) {
+			LinkingRunnable runnable = (LinkingRunnable) r;
+			runnable.onException(t);
+		}
+	}
+
+
+	/**
+	 * 创建ExecutorService
+	 * 使用默认的AbortPolicy将抛出RejectedExecutionException
+	 * @param nThreads
+	 * @param threadFactory
+	 * @return
+	 */
+	public static ExecutorService newFixedThreadPool(int nThreads, NamedThreadFactory threadFactory) {
+        return new OrderedThreadPoolExecutor(nThreads, nThreads,
                 0L, TimeUnit.MILLISECONDS,
                 new LinkedBlockingQueue<Runnable>(),
                 threadFactory);

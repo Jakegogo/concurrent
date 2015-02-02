@@ -59,13 +59,13 @@ public class CacheObject<T extends IEntity<?>> {
 	/**
 	 * 是否在更新处理中
 	 */
-	private AtomicBoolean updateProcessing = new AtomicBoolean(false);
+	private final AtomicBoolean updateProcessing = new AtomicBoolean(false);
 
 	//-----执行链-----
 	/**
 	 * 上一次执行的线程
 	 */
-	private volatile AtomicReference<LinkingRunnable> lastLinkingRunnable;
+	private final AtomicReference<LinkingRunnable> lastLinkingRunnable = new AtomicReference<LinkingRunnable>();
 
 	/**
 	 * 默认构造方法
