@@ -153,7 +153,7 @@ public class InTimeDbPersistService implements DbPersistService {
 	@Override
 	public void handleUpdate(final CacheObject<?> cacheObject, final DbAccessService dbAccessService) {
 		// 改变更新状态
-		if (!cacheObject.swapUpdateProcessing(true)) {
+		if (cacheObject.isUpdateProcessing() || !cacheObject.swapUpdateProcessing(true)) {
 			return;
 		}
 		//最新修改版本号

@@ -309,7 +309,7 @@ public class DelayBatchDbPersistService implements DbPersistService {
 	public void handleUpdate(final CacheObject<?> cacheObject, final DbAccessService dbAccessService) {
 
 		// 改变更新状态
-		if (!cacheObject.swapUpdateProcessing(true)) {
+		if (cacheObject.isUpdateProcessing() || !cacheObject.swapUpdateProcessing(true)) {
 			return;
 		}
 

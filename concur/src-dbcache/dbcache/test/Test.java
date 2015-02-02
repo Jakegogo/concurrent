@@ -500,7 +500,7 @@ public class Test {
 	public void t23() throws InterruptedException {
 
 		long t1 = System.currentTimeMillis();
-		for(int i = 0;i <= 10000000;i++) {
+		for(int i = 0;i <= 100000000;i++) {
 			for(long j = 1;j < 10;j++) {
 				Entity entity = this.cacheService.get(j);
 				entity.increseNum();
