@@ -1,5 +1,6 @@
 package dbcache.test;
 
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -25,15 +26,23 @@ public class TestOrderedExecutor {
 		
 		final AtomicReference<LinkingRunnable> last = new AtomicReference<LinkingRunnable>();
 		
+		final int TEST_LOOP = 100;
 		
-		ExecutorService submitExecutorService = Executors.newFixedThreadPool(4);
+		final CountDownLatch ct = new CountDownLatch(1);
 		
-		
-		for (int j = 0; j < 100;j++) {
-			submitExecutorService.submit(new Runnable() {
-				
+		for (int j = 0; j < TEST_LOOP;j++) {
+			
+			new Thread() {
+			
 				@Override
 				public void run() {
+					
+					try {
+						ct.await();
+					} catch (InterruptedException e) {
+						e.printStackTrace();
+					}
+					
 					executorService.execute(new LinkingRunnable() {
 						
 						@Override
@@ -44,30 +53,22 @@ public class TestOrderedExecutor {
 						@Override
 						public void run() {
 							int j = i.getVal();
-							try {
-								Thread.sleep(10);
-							} catch (InterruptedException e) {
-								e.printStackTrace();
-							}
+
 							j+=1;
-							try {
-								Thread.sleep(10);
-							} catch (InterruptedException e) {
-								e.printStackTrace();
-							}
+
 							i.setVal(j);
 						}
 						
 					});
 				}
-			});
+			}.start();
 		}
 		
 		try {
+			ct.countDown();
 			Thread.sleep(3000);
 			System.out.println(i.getVal());
 			executorService.shutdownNow();
-			submitExecutorService.shutdownNow();
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
