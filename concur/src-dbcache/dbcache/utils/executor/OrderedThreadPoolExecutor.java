@@ -1,7 +1,6 @@
 package dbcache.utils.executor;
 
 import dbcache.utils.NamedThreadFactory;
-import dbcache.utils.executor.ThreadPoolExecutor.Worker;
 
 import java.util.HashSet;
 import java.util.Iterator;
