@@ -3,6 +3,8 @@ package dbcache.utils.executor;
 import dbcache.utils.NamedThreadFactory;
 
 import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
@@ -139,6 +141,171 @@ public class AsyncThreadPoolExecutor extends ThreadPoolExecutor {
                     ++n;
             }
             return n;
+        } finally {
+            mainLock.unlock();
+        }
+    }
+	
+	@Override
+	public long getTaskCount() {
+		final ReentrantLock mainLock = this.mainLock;
+		mainLock.lock();
+		try {
+			long n = completedTaskCount;
+			for (Worker w : workers) {
+				n += w.completedTasks;
+				if (w.isActive())
+					++n;
+			}
+			return n + workQueue.size();
+		} finally {
+			mainLock.unlock();
+		}
+	}
+	
+	@Override
+	public void setCorePoolSize(int corePoolSize) {
+        if (corePoolSize < 0)
+            throw new IllegalArgumentException();
+        final ReentrantLock mainLock = this.mainLock;
+        mainLock.lock();
+        try {
+            int extra = this.corePoolSize - corePoolSize;
+            this.corePoolSize = corePoolSize;
+            if (extra < 0) {
+                int n = workQueue.size(); // don't add more threads than tasks
+                while (extra++ < 0 && n-- > 0 && poolSize < corePoolSize) {
+                    Thread t = addThread(null);
+                    if (t != null)
+                        t.start();
+                    else
+                        break;
+                }
+            }
+            else if (extra > 0 && poolSize > corePoolSize) {
+                try {
+                    Iterator<Worker> it = workers.iterator();
+                    while (it.hasNext() &&
+                           extra-- > 0 &&
+                           poolSize > corePoolSize &&
+                           workQueue.remainingCapacity() == 0)
+                        it.next().interruptIfIdle();
+                } catch (SecurityException ignore) {
+                    // Not an error; it is OK if the threads stay live
+                }
+            }
+        } finally {
+            mainLock.unlock();
+        }
+    }
+	
+	@Override
+	void interruptIdleWorkers() {
+		final ReentrantLock mainLock = this.mainLock;
+		mainLock.lock();
+		try {
+			for (Worker w : workers)
+				w.interruptIfIdle();
+		} finally {
+			mainLock.unlock();
+		}
+	}
+	
+	@Override
+	public void setMaximumPoolSize(int maximumPoolSize) {
+        if (maximumPoolSize <= 0 || maximumPoolSize < corePoolSize)
+            throw new IllegalArgumentException();
+        final ReentrantLock mainLock = this.mainLock;
+        mainLock.lock();
+        try {
+            int extra = this.maximumPoolSize - maximumPoolSize;
+            this.maximumPoolSize = maximumPoolSize;
+            if (extra > 0 && poolSize > maximumPoolSize) {
+                try {
+                    Iterator<Worker> it = workers.iterator();
+                    while (it.hasNext() &&
+                           extra > 0 &&
+                           poolSize > maximumPoolSize) {
+                        it.next().interruptIfIdle();
+                        --extra;
+                    }
+                } catch (SecurityException ignore) {
+                    // Not an error; it is OK if the threads stay live
+                }
+            }
+        } finally {
+            mainLock.unlock();
+        }
+    }
+	
+	@Override
+	public void shutdown() {
+
+	SecurityManager security = System.getSecurityManager();
+	if (security != null)
+            security.checkPermission(shutdownPerm);
+
+        final ReentrantLock mainLock = this.mainLock;
+        mainLock.lock();
+        try {
+            if (security != null) { // Check if caller can modify our threads
+                for (Worker w : workers)
+                    security.checkAccess(w.thread);
+            }
+
+            int state = runState;
+            if (state < SHUTDOWN)
+                runState = SHUTDOWN;
+
+            try {
+                for (Worker w : workers) {
+                    w.interruptIfIdle();
+                }
+            } catch (SecurityException se) { // Try to back out
+                runState = state;
+                // tryTerminate() here would be a no-op
+                throw se;
+            }
+
+            tryTerminate(); // Terminate now if pool and queue empty
+        } finally {
+            mainLock.unlock();
+        }
+    }
+
+    
+	@Override
+    public List<Runnable> shutdownNow() {
+
+	SecurityManager security = System.getSecurityManager();
+	if (security != null)
+            security.checkPermission(shutdownPerm);
+
+        final ReentrantLock mainLock = this.mainLock;
+        mainLock.lock();
+        try {
+            if (security != null) { // Check if caller can modify our threads
+                for (Worker w : workers)
+                    security.checkAccess(w.thread);
+            }
+
+            int state = runState;
+            if (state < STOP)
+                runState = STOP;
+
+            try {
+                for (Worker w : workers) {
+                    w.interruptNow();
+                }
+            } catch (SecurityException se) { // Try to back out
+                runState = state;
+                // tryTerminate() here would be a no-op
+                throw se;
+            }
+
+            List<Runnable> tasks = drainQueue();
+            tryTerminate(); // Terminate now if pool and queue empty
+            return tasks;
         } finally {
             mainLock.unlock();
         }

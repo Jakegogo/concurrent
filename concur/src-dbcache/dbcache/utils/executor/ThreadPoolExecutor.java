@@ -301,7 +301,7 @@ public class ThreadPoolExecutor extends AbstractExecutorService {
     /**
      * Permission for checking shutdown
      */
-    private static final RuntimePermission shutdownPerm =
+	protected static final RuntimePermission shutdownPerm =
         new RuntimePermission("modifyThread");
 
     /*
@@ -376,7 +376,7 @@ public class ThreadPoolExecutor extends AbstractExecutorService {
     /**
      * Wait condition to support awaitTermination
      */
-    private final Condition termination = mainLock.newCondition();
+    protected final Condition termination = mainLock.newCondition();
 
     /**
      * Set containing all worker threads in pool. Accessed only when
@@ -397,19 +397,19 @@ public class ThreadPoolExecutor extends AbstractExecutorService {
      * true, core threads use keepAliveTime to time out waiting for
      * work.
      */
-    private volatile boolean allowCoreThreadTimeOut;
+    protected volatile boolean allowCoreThreadTimeOut;
 
     /**
      * Core pool size, updated only while holding mainLock, but
      * volatile to allow concurrent readability even during updates.
      */
-    private volatile int   corePoolSize;
+    protected volatile int   corePoolSize;
 
     /**
      * Maximum pool size, updated only while holding mainLock but
      * volatile to allow concurrent readability even during updates.
      */
-    private volatile int   maximumPoolSize;
+    protected volatile int   maximumPoolSize;
 
     /**
      * Current pool size, updated only while holding mainLock but
@@ -420,7 +420,7 @@ public class ThreadPoolExecutor extends AbstractExecutorService {
     /**
      * Handler called when saturated or shutdown in execute.
      */
-    private volatile RejectedExecutionHandler handler;
+    protected volatile RejectedExecutionHandler handler;
 
     /**
      * Factory for new threads. All threads are created using this
@@ -450,7 +450,7 @@ public class ThreadPoolExecutor extends AbstractExecutorService {
     /**
      * The default rejected execution handler
      */
-    private static final RejectedExecutionHandler defaultHandler =
+    protected static final RejectedExecutionHandler defaultHandler =
         new AbortPolicy();
 
     // Constructors
@@ -1190,7 +1190,7 @@ public class ThreadPoolExecutor extends AbstractExecutorService {
      * Drains the task queue into a new list. Used by shutdownNow.
      * Call only while holding main lock.
      */
-    private List<Runnable> drainQueue() {
+    protected List<Runnable> drainQueue() {
         List<Runnable> taskList = new ArrayList<Runnable>();
         workQueue.drainTo(taskList);
         /*
