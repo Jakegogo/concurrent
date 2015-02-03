@@ -12,67 +12,65 @@ import java.util.concurrent.locks.ReentrantLock;
 /**
  * 顺序执行的线程池
  * <br/>顺序执行;同时复用线程,减少线程切换。适用于并发提交
- * <br/> 只能提交LinkingExecutable
+ * <br/> 只能提交SimpleLinkingRunnable
  * Created by Jake on 2015/2/1.
  */
-public class OrderedThreadPoolExecutor extends ThreadPoolExecutor {
+public class SimpleOrderedThreadPoolExecutor extends ThreadPoolExecutor {
 
 	protected final HashSet<Worker> workers = new HashSet<Worker>();
-	
-	/**
-     * We don't bother to update head or tail pointers if fewer than
-     * HOPS links from "true" location. We assume that volatile
-     * writes are significantly more expensive than volatile reads.
-     */
-    private static final int HOPS = 1;
 
-    public OrderedThreadPoolExecutor(int corePoolSize, int maximumPoolSize, long keepAliveTime, TimeUnit unit, BlockingQueue<Runnable> workQueue) {
+
+    public SimpleOrderedThreadPoolExecutor(int corePoolSize, int maximumPoolSize, long keepAliveTime, TimeUnit unit, BlockingQueue<Runnable> workQueue) {
         super(corePoolSize, maximumPoolSize, keepAliveTime, unit, workQueue);
     }
 
-    public OrderedThreadPoolExecutor(int corePoolSize, int maximumPoolSize, long keepAliveTime, TimeUnit unit, BlockingQueue<Runnable> workQueue, ThreadFactory threadFactory) {
+    public SimpleOrderedThreadPoolExecutor(int corePoolSize, int maximumPoolSize, long keepAliveTime, TimeUnit unit, BlockingQueue<Runnable> workQueue, ThreadFactory threadFactory) {
         super(corePoolSize, maximumPoolSize, keepAliveTime, unit, workQueue, threadFactory);
     }
 
-    public OrderedThreadPoolExecutor(int corePoolSize, int maximumPoolSize, long keepAliveTime, TimeUnit unit, BlockingQueue<Runnable> workQueue, RejectedExecutionHandler handler) {
+    public SimpleOrderedThreadPoolExecutor(int corePoolSize, int maximumPoolSize, long keepAliveTime, TimeUnit unit, BlockingQueue<Runnable> workQueue, RejectedExecutionHandler handler) {
         super(corePoolSize, maximumPoolSize, keepAliveTime, unit, workQueue, handler);
     }
 
-    public OrderedThreadPoolExecutor(int corePoolSize, int maximumPoolSize, long keepAliveTime, TimeUnit unit, BlockingQueue<Runnable> workQueue, ThreadFactory threadFactory, RejectedExecutionHandler handler) {
+    public SimpleOrderedThreadPoolExecutor(int corePoolSize, int maximumPoolSize, long keepAliveTime, TimeUnit unit, BlockingQueue<Runnable> workQueue, ThreadFactory threadFactory, RejectedExecutionHandler handler) {
         super(corePoolSize, maximumPoolSize, keepAliveTime, unit, workQueue, threadFactory, handler);
     }
 
-
-    protected <T> RunnableFuture<T> newTaskFor(Runnable runnable, T value) {
-        return new LinkingRunnableFutureTask<T>(runnable, value);
+    @Override
+    public Future<?> submit(Runnable task) {
+        throw new UnsupportedOperationException();
     }
 
-
-    protected <T> RunnableFuture<T> newTaskFor(Callable<T> callable) {
-        return new LinkingRunnableFutureTask<T>(callable);
+    @Override
+    public <T> Future<T> submit(Runnable task, T result) {
+        throw new UnsupportedOperationException();
     }
 
+    @Override
+    public <T> Future<T> submit(Callable<T> task) {
+        throw new UnsupportedOperationException();
+    }
 
     @Override
     public void execute(Runnable command) {
-        assert command instanceof LinkingRunnableFutureTask;
 
-        LinkingRunnableFutureTask task = (LinkingRunnableFutureTask) command;
-		appendSubmit(task);
+        if (!(command instanceof SimpleLinkingRunnable)) {
+            throw new IllegalArgumentException("只能提交SimpleLinkingRunnable.");
+        }
+
+        SimpleLinkingRunnable runnable = (SimpleLinkingRunnable) command;
+		appendSubmit(runnable);
 	}
 
-	private void appendSubmit(LinkingRunnableFutureTask task) {
-
-        LinkingExecutable runnable = task.getLinkingExecutable();
-
-		// messages from the same client are handled orderly
-		AtomicReference<LinkingExecutable> lastRef = runnable.getLastLinkingRunnable();
+	private void appendSubmit(SimpleLinkingRunnable runnable) {
+        // messages from the same client are handled orderly
+        AtomicReference<SimpleLinkingRunnable> lastRef = runnable.getLastSimpleLinkingRunnable();
 
 
 //        if (old == null) { // No previous job
 //            execs.submit(job);
 //        } else {
-//            if (old.fetchNext.compareAndSet(null, job)) {
+//            if (old.next.compareAndSet(null, job)) {
 //                // successfully append to previous task
 //            } else {
 //                // previous message is handled, order is guaranteed.
@@ -86,46 +84,46 @@ public class OrderedThreadPoolExecutor extends ThreadPoolExecutor {
 //		} else {
 //			// CAS loop
 //			for (;;) {
-//				LinkingRunnable last = lastRef.get();
-//				LinkingRunnable fetchNext = last.fetchNext.get();
-//				if (last.fetchNext.compareAndSet(null, runnable)) {
+//				SimpleLinkingRunnable last = lastRef.get();
+//				SimpleLinkingRunnable next = last.next.get();
+//				if (last.next.compareAndSet(null, runnable)) {
 //					lastRef.compareAndSet(last, runnable);// fail is OK
 //					// successfully append to previous task
 //					break;
-//				} else if (last.fetchNext.get() == last) {
+//				} else if (last.next.get() == last) {
 //					// previous message is handled, order is guaranteed.
 //					super.execute(command);
 //					break;
 //				}
-//				lastRef = runnable.getLastLinkingRunnable();
+//				lastRef = runnable.getLastSimpleLinkingRunnable();
 //			}
 //		}
 
-		if (lastRef.get() == null && lastRef.compareAndSet(null, runnable)) { // No previous job
-			super.execute(task);
-		} else {
-			// CAS loop
-			for (; ; ) {
+        if (lastRef.get() == null && lastRef.compareAndSet(null, runnable)) { // No previous job
+            super.execute(runnable);
+        } else {
+            // CAS loop
+            for (; ; ) {
 
-                LinkingExecutable last = lastRef.get();
+                SimpleLinkingRunnable last = lastRef.get();
 
-				AtomicReference<LinkingRunnableFutureTask> nextRef = last.getNext();
+                AtomicReference<SimpleLinkingRunnable> nextRef = last.next;
 
-                LinkingRunnableFutureTask next = nextRef.get();
-				if (next != null) {
-					if (next == LinkingRunnableFutureTask.PLACE_HOLDER && lastRef.compareAndSet(last, runnable)) {
-						// previous message is handled, order is
-						// guaranteed.
-						super.execute(task);
-						return;
-					}
-				} else if (nextRef.compareAndSet(null, task)) {
-					lastRef.compareAndSet(last, runnable);// fail is OK
-					// successfully append to previous task
-					return;
-				}
-			}
-		}
+                SimpleLinkingRunnable next = nextRef.get();
+                if (next != null) {
+                    if (next == last && lastRef.compareAndSet(last, runnable)) {
+                        // previous message is handled, order is
+                        // guaranteed.
+                        super.execute(runnable);
+                        return;
+                    }
+                } else if (nextRef.compareAndSet(null, runnable)) {
+                    lastRef.compareAndSet(last, runnable);// fail is OK
+                    // successfully append to previous task
+                    return;
+                }
+            }
+        }
 	}
 
 
@@ -134,7 +132,7 @@ public class OrderedThreadPoolExecutor extends ThreadPoolExecutor {
 		super.afterExecute(r, t);
 
 		if (t != null) {
-			LinkingRunnable runnable = (LinkingRunnable) r;
+			SimpleLinkingRunnable runnable = (SimpleLinkingRunnable) r;
 			runnable.onException(t);
 		}
 	}
@@ -412,7 +410,8 @@ public class OrderedThreadPoolExecutor extends ThreadPoolExecutor {
          * Runs a single task between before/after methods.
          */
         private void runTask(Runnable task) {
-
+        	assert task instanceof SimpleLinkingRunnable;
+        	
             final ReentrantLock runLock = this.runLock;
             runLock.lock();
             try {
@@ -438,9 +437,9 @@ public class OrderedThreadPoolExecutor extends ThreadPoolExecutor {
                 beforeExecute(thread, task);
                 try {
                     task.run();
-
-                    LinkingRunnableFutureTask next = (LinkingRunnableFutureTask) task;
-                    while ((next = next.fetchNext()) != null) {
+                    
+                    SimpleLinkingRunnable next = (SimpleLinkingRunnable) task;
+                    while ((next = fetchNext(next)) != null) {
                     	next.run();
                     }
                     
@@ -457,6 +456,17 @@ public class OrderedThreadPoolExecutor extends ThreadPoolExecutor {
             }
         }
 
+        /**
+         * 获取下一个任务
+         * @param SimpleLinkingRunnable
+         * @return
+         */
+        SimpleLinkingRunnable fetchNext(SimpleLinkingRunnable SimpleLinkingRunnable) {
+        	if (!SimpleLinkingRunnable.next.compareAndSet(null, SimpleLinkingRunnable)) {
+        		return SimpleLinkingRunnable.next.get();
+        	}
+        	return null;
+        }
         
         /**
          * Main run loop
@@ -500,8 +510,8 @@ public class OrderedThreadPoolExecutor extends ThreadPoolExecutor {
 	 * @param threadFactory
 	 * @return
 	 */
-	public static OrderedThreadPoolExecutor newFixedThreadPool(int nThreads, NamedThreadFactory threadFactory) {
-        return new OrderedThreadPoolExecutor(nThreads, nThreads,
+	public static SimpleOrderedThreadPoolExecutor newFixedThreadPool(int nThreads, NamedThreadFactory threadFactory) {
+        return new SimpleOrderedThreadPoolExecutor(nThreads, nThreads,
                 0L, TimeUnit.MILLISECONDS,
                 new LinkedBlockingQueue<Runnable>(),
                 threadFactory, new ThreadPoolExecutor.CallerRunsPolicy());

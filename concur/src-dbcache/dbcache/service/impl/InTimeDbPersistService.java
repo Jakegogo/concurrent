@@ -10,17 +10,14 @@ import dbcache.service.DbRuleService;
 import dbcache.utils.JsonUtils;
 import dbcache.utils.NamedThreadFactory;
 import dbcache.utils.ThreadUtils;
-import dbcache.utils.executor.LinkingRunnable;
-import dbcache.utils.executor.OrderedThreadPoolExecutor;
-
+import dbcache.utils.executor.SimpleLinkingRunnable;
+import dbcache.utils.executor.SimpleOrderedThreadPoolExecutor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
-
-import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.atomic.AtomicReference;
@@ -81,12 +78,12 @@ public class InTimeDbPersistService implements DbPersistService {
 		this.dbPoolSize = dbPoolSize;
 
 		// 初始化线程池
-		DB_POOL_SERVICE = OrderedThreadPoolExecutor.newFixedThreadPool(dbPoolSize, threadFactory);
+		DB_POOL_SERVICE = SimpleOrderedThreadPoolExecutor.newFixedThreadPool(dbPoolSize, threadFactory);
 
 	}
 
 
-	abstract class OrderedPersistAction extends LinkingRunnable implements PersistAction {
+	abstract class OrderedPersistAction extends SimpleLinkingRunnable implements PersistAction {
 
 	}
 
@@ -97,7 +94,7 @@ public class InTimeDbPersistService implements DbPersistService {
 		this.handlePersist(new OrderedPersistAction() {
 
 			@Override
-			public AtomicReference<LinkingRunnable> getLastLinkingRunnable() {
+			public AtomicReference<SimpleLinkingRunnable> getLastSimpleLinkingRunnable() {
 				return cacheObject.getLastLinkingRunnable();
 			}
 
@@ -161,7 +158,7 @@ public class InTimeDbPersistService implements DbPersistService {
 		this.handlePersist(new OrderedPersistAction() {
 
 			@Override
-			public AtomicReference<LinkingRunnable> getLastLinkingRunnable() {
+			public AtomicReference<SimpleLinkingRunnable> getLastSimpleLinkingRunnable() {
 				return cacheObject.getLastLinkingRunnable();
 			}
 
@@ -221,7 +218,7 @@ public class InTimeDbPersistService implements DbPersistService {
 		this.handlePersist(new OrderedPersistAction() {
 
 			@Override
-			public AtomicReference<LinkingRunnable> getLastLinkingRunnable() {
+			public AtomicReference<SimpleLinkingRunnable> getLastSimpleLinkingRunnable() {
 				return cacheObject.getLastLinkingRunnable();
 			}
 
@@ -299,7 +296,7 @@ public class InTimeDbPersistService implements DbPersistService {
 	private void handlePersist(OrderedPersistAction persistAction) {
 
 		try {
-			DB_POOL_SERVICE.submit(persistAction);
+			DB_POOL_SERVICE.execute(persistAction);
 		} catch (RejectedExecutionException ex) {
 			logger.error("提交任务到更新队列被拒绝,使用同步处理:RejectedExecutionException");
 

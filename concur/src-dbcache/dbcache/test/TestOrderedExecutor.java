@@ -1,15 +1,13 @@
 package dbcache.test;
 
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicReference;
-
 import dbcache.utils.NamedThreadFactory;
+import dbcache.utils.executor.LinkingExecutable;
 import dbcache.utils.executor.LinkingRunnable;
 import dbcache.utils.executor.OrderedThreadPoolExecutor;
+
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class TestOrderedExecutor {
 	
@@ -24,7 +22,7 @@ public class TestOrderedExecutor {
 		// 初始化线程池
 		final ExecutorService executorService = OrderedThreadPoolExecutor.newFixedThreadPool(4, threadFactory);
 		
-		final AtomicReference<LinkingRunnable> last = new AtomicReference<LinkingRunnable>();
+		final AtomicReference<LinkingExecutable> last = new AtomicReference<LinkingExecutable>();
 		
 		final int TEST_LOOP = 1000000;
 		
@@ -44,10 +42,10 @@ public class TestOrderedExecutor {
 					}
 					
 					for (int k = 0;k < TEST_LOOP;k++) {
-						executorService.execute(new LinkingRunnable() {
+						executorService.submit(new LinkingRunnable() {
 							
 							@Override
-							public AtomicReference<LinkingRunnable> getLastLinkingRunnable() {
+							public AtomicReference<LinkingExecutable> getLastLinkingRunnable() {
 								return last;
 							}
 							

@@ -3,8 +3,7 @@ package dbcache.model;
 import dbcache.conf.JsonConverter;
 import dbcache.support.asm.ValueGetter;
 import dbcache.utils.concurrent.LongAdder;
-import dbcache.utils.executor.LinkingRunnable;
-
+import dbcache.utils.executor.SimpleLinkingRunnable;
 import org.apache.commons.lang.builder.EqualsBuilder;
 
 import java.io.Serializable;
@@ -65,7 +64,7 @@ public class CacheObject<T extends IEntity<?>> {
 	/**
 	 * 上一次执行的线程
 	 */
-	private final AtomicReference<LinkingRunnable> lastLinkingRunnable = new AtomicReference<LinkingRunnable>();
+	private final AtomicReference<SimpleLinkingRunnable> lastLinkingRunnable = new AtomicReference<SimpleLinkingRunnable>();
 
 	/**
 	 * 默认构造方法
@@ -236,7 +235,7 @@ public class CacheObject<T extends IEntity<?>> {
 	}
 
 
-	public AtomicReference<LinkingRunnable> getLastLinkingRunnable() {
+	public AtomicReference<SimpleLinkingRunnable> getLastLinkingRunnable() {
 		return lastLinkingRunnable;
 	}
 

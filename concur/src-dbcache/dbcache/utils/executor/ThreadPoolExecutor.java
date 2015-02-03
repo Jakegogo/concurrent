@@ -923,7 +923,7 @@ public class ThreadPoolExecutor extends AbstractExecutorService {
     /* Utilities for worker thread control */
 
     /**
-     * Gets the next task for a worker thread to run.  The general
+     * Gets the fetchNext task for a worker thread to run.  The general
      * approach is similar to execute() in that worker threads trying
      * to get a task to run do so on the basis of prevailing state
      * accessed outside of locks.  This may cause them to choose the
@@ -1323,7 +1323,7 @@ public class ThreadPoolExecutor extends AbstractExecutorService {
      * Sets the core number of threads.  This overrides any value set
      * in the constructor.  If the new value is smaller than the
      * current value, excess existing threads will be terminated when
-     * they next become idle. If larger, new threads will, if needed,
+     * they fetchNext become idle. If larger, new threads will, if needed,
      * be started to execute any queued tasks.
      *
      * @param corePoolSize the new core size
@@ -1443,7 +1443,7 @@ public class ThreadPoolExecutor extends AbstractExecutorService {
      * Sets the maximum allowed number of threads. This overrides any
      * value set in the constructor. If the new value is smaller than
      * the current value, excess existing threads will be
-     * terminated when they next become idle.
+     * terminated when they fetchNext become idle.
      *
      * @param maximumPoolSize the new maximum
      * @throws IllegalArgumentException if the new maximum is
@@ -1806,7 +1806,7 @@ public class ThreadPoolExecutor extends AbstractExecutorService {
         public DiscardOldestPolicy() { }
 
         /**
-         * Obtains and ignores the next task that the executor
+         * Obtains and ignores the fetchNext task that the executor
          * would otherwise execute, if one is immediately available,
          * and then retries execution of task r, unless the executor
          * is shut down, in which case task r is instead discarded.

@@ -180,6 +180,19 @@ public class Config {
 		}
 	}
 
+	public final void checkAndClose(Connection conn) {
+		if (threadLocal.get() != null) {
+			try {
+				if (!conn.isValid(5)) {
+					conn.close();
+				}
+				threadLocal.set(null);
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+		}
+	}
+
 	public final void close(Connection conn) {
 		if (threadLocal.get() == null)		// in transaction if conn in threadlocal
 			if (conn != null)

@@ -5,87 +5,82 @@ import dbcache.utils.NamedThreadFactory;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Future;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * 顺序执行的线程池
- * <br/>顺序执行;同时复用线程,减少线程切换。适用于单线程提交
- * <br/> 只能提交LinkingRunnable
+ * <br/>顺序执行;同时复用线程,减少线程切换。适用于并发提交
+ * <br/> 只能提交SimpleLinkingRunnable
  * Created by Jake on 2015/2/1.
  */
-public class AsyncThreadPoolExecutor extends ThreadPoolExecutor {
+public class SimpleSyncThreadPoolExecutor extends ThreadPoolExecutor {
 
 	protected final HashSet<Worker> workers = new HashSet<Worker>();
-	
-	/**
-     * We don't bother to update head or tail pointers if fewer than
-     * HOPS links from "true" location. We assume that volatile
-     * writes are significantly more expensive than volatile reads.
-     */
-    private static final int HOPS = 1;
 
-    public AsyncThreadPoolExecutor(int corePoolSize, int maximumPoolSize, long keepAliveTime, TimeUnit unit, BlockingQueue<Runnable> workQueue) {
+
+    public SimpleSyncThreadPoolExecutor(int corePoolSize, int maximumPoolSize, long keepAliveTime, TimeUnit unit, BlockingQueue<Runnable> workQueue) {
         super(corePoolSize, maximumPoolSize, keepAliveTime, unit, workQueue);
     }
 
-    public AsyncThreadPoolExecutor(int corePoolSize, int maximumPoolSize, long keepAliveTime, TimeUnit unit, BlockingQueue<Runnable> workQueue, ThreadFactory threadFactory) {
+    public SimpleSyncThreadPoolExecutor(int corePoolSize, int maximumPoolSize, long keepAliveTime, TimeUnit unit, BlockingQueue<Runnable> workQueue, ThreadFactory threadFactory) {
         super(corePoolSize, maximumPoolSize, keepAliveTime, unit, workQueue, threadFactory);
     }
 
-    public AsyncThreadPoolExecutor(int corePoolSize, int maximumPoolSize, long keepAliveTime, TimeUnit unit, BlockingQueue<Runnable> workQueue, RejectedExecutionHandler handler) {
+    public SimpleSyncThreadPoolExecutor(int corePoolSize, int maximumPoolSize, long keepAliveTime, TimeUnit unit, BlockingQueue<Runnable> workQueue, RejectedExecutionHandler handler) {
         super(corePoolSize, maximumPoolSize, keepAliveTime, unit, workQueue, handler);
     }
 
-    public AsyncThreadPoolExecutor(int corePoolSize, int maximumPoolSize, long keepAliveTime, TimeUnit unit, BlockingQueue<Runnable> workQueue, ThreadFactory threadFactory, RejectedExecutionHandler handler) {
+    public SimpleSyncThreadPoolExecutor(int corePoolSize, int maximumPoolSize, long keepAliveTime, TimeUnit unit, BlockingQueue<Runnable> workQueue, ThreadFactory threadFactory, RejectedExecutionHandler handler) {
         super(corePoolSize, maximumPoolSize, keepAliveTime, unit, workQueue, threadFactory, handler);
     }
 
-	@Override
-	public Future<?> submit(Runnable task) {
-		execute(task);
-		return null;
-	}
+    @Override
+    public Future<?> submit(Runnable task) {
+        throw new UnsupportedOperationException();
+    }
 
-	@Override
+    @Override
+    public <T> Future<T> submit(Runnable task, T result) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public <T> Future<T> submit(Callable<T> task) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
     public void execute(Runnable command) {
 
-        if (!(command instanceof LinkingRunnable)) {
-            throw new IllegalArgumentException("只能提交LinkingRunnable.");
+        if (!(command instanceof SimpleLinkingRunnable)) {
+            throw new IllegalArgumentException("只能提交SimpleLinkingRunnable.");
         }
 
-        LinkingRunnable runnable = (LinkingRunnable) command;
+        SimpleLinkingRunnable runnable = (SimpleLinkingRunnable) command;
 		appendSubmit(runnable);
 	}
 
-	private void appendSubmit(LinkingRunnable command) {
-		if (!(command instanceof LinkingRunnable)) {
-            throw new IllegalArgumentException("只能提交LinkingRunnable.");
-        }
-
-        LinkingRunnable runnable = (LinkingRunnable) command;
+	private void appendSubmit(SimpleLinkingRunnable runnable) {
 
         // messages from the same client are handled orderly
-        AtomicReference<LinkingRunnable> lastRef = runnable.getLastLinkingRunnable();
-        LinkingRunnable last = lastRef.get();
+        AtomicReference<SimpleLinkingRunnable> lastRef = runnable.getLastSimpleLinkingRunnable();
+
+        SimpleLinkingRunnable last = lastRef.get();
         lastRef.set(runnable);
-        
+
         if (last == null) { // No previous job
-            super.submit(runnable);
+            super.execute(runnable);
         } else {
             if (last.next.compareAndSet(null, runnable)) {
                 // successfully append to previous task
             } else {
                 // previous message is handled, order is guaranteed.
-            	super.submit(runnable);
+                super.execute(runnable);
             }
         }
+
 	}
 
 
@@ -94,7 +89,7 @@ public class AsyncThreadPoolExecutor extends ThreadPoolExecutor {
 		super.afterExecute(r, t);
 
 		if (t != null) {
-			LinkingRunnable runnable = (LinkingRunnable) r;
+			SimpleLinkingRunnable runnable = (SimpleLinkingRunnable) r;
 			runnable.onException(t);
 		}
 	}
@@ -372,7 +367,7 @@ public class AsyncThreadPoolExecutor extends ThreadPoolExecutor {
          * Runs a single task between before/after methods.
          */
         private void runTask(Runnable task) {
-        	assert task instanceof LinkingRunnable;
+        	assert task instanceof SimpleLinkingRunnable;
         	
             final ReentrantLock runLock = this.runLock;
             runLock.lock();
@@ -400,7 +395,7 @@ public class AsyncThreadPoolExecutor extends ThreadPoolExecutor {
                 try {
                     task.run();
                     
-                    LinkingRunnable next = (LinkingRunnable) task;
+                    SimpleLinkingRunnable next = (SimpleLinkingRunnable) task;
                     while ((next = fetchNext(next)) != null) {
                     	next.run();
                     }
@@ -420,12 +415,12 @@ public class AsyncThreadPoolExecutor extends ThreadPoolExecutor {
 
         /**
          * 获取下一个任务
-         * @param linkingRunnable
+         * @param SimpleLinkingRunnable
          * @return
          */
-        LinkingRunnable fetchNext(LinkingRunnable linkingRunnable) {
-        	if (!linkingRunnable.next.compareAndSet(null, linkingRunnable)) {
-        		return linkingRunnable.next.get();
+        SimpleLinkingRunnable fetchNext(SimpleLinkingRunnable SimpleLinkingRunnable) {
+        	if (!SimpleLinkingRunnable.next.compareAndSet(null, SimpleLinkingRunnable)) {
+        		return SimpleLinkingRunnable.next.get();
         	}
         	return null;
         }
@@ -467,13 +462,13 @@ public class AsyncThreadPoolExecutor extends ThreadPoolExecutor {
 
 	/**
 	 * 创建ExecutorService
-	 * 使用默认的AbortPolicy将抛出RejectedExecutionException
+	 * 使用CallerRunsPolicy拒绝策略
 	 * @param nThreads
 	 * @param threadFactory
 	 * @return
 	 */
-	public static AsyncThreadPoolExecutor newFixedThreadPool(int nThreads, NamedThreadFactory threadFactory) {
-        return new AsyncThreadPoolExecutor(nThreads, nThreads,
+	public static SimpleSyncThreadPoolExecutor newFixedThreadPool(int nThreads, NamedThreadFactory threadFactory) {
+        return new SimpleSyncThreadPoolExecutor(nThreads, nThreads,
                 0L, TimeUnit.MILLISECONDS,
                 new LinkedBlockingQueue<Runnable>(),
                 threadFactory, new ThreadPoolExecutor.CallerRunsPolicy());

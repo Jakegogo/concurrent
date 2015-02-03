@@ -11,34 +11,34 @@ import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * 顺序执行的线程池
- * <br/>顺序执行;同时复用线程,减少线程切换。适用于并发提交
+ * <br/>顺序执行;同时复用线程,减少线程切换。适用于单线程提交
  * <br/> 只能提交LinkingExecutable
  * Created by Jake on 2015/2/1.
  */
-public class OrderedThreadPoolExecutor extends ThreadPoolExecutor {
+public class SyncThreadPoolExecutor extends ThreadPoolExecutor {
 
-	protected final HashSet<Worker> workers = new HashSet<Worker>();
-	
-	/**
+    protected final HashSet<Worker> workers = new HashSet<Worker>();
+
+    /**
      * We don't bother to update head or tail pointers if fewer than
      * HOPS links from "true" location. We assume that volatile
      * writes are significantly more expensive than volatile reads.
      */
     private static final int HOPS = 1;
 
-    public OrderedThreadPoolExecutor(int corePoolSize, int maximumPoolSize, long keepAliveTime, TimeUnit unit, BlockingQueue<Runnable> workQueue) {
+    public SyncThreadPoolExecutor(int corePoolSize, int maximumPoolSize, long keepAliveTime, TimeUnit unit, BlockingQueue<Runnable> workQueue) {
         super(corePoolSize, maximumPoolSize, keepAliveTime, unit, workQueue);
     }
 
-    public OrderedThreadPoolExecutor(int corePoolSize, int maximumPoolSize, long keepAliveTime, TimeUnit unit, BlockingQueue<Runnable> workQueue, ThreadFactory threadFactory) {
+    public SyncThreadPoolExecutor(int corePoolSize, int maximumPoolSize, long keepAliveTime, TimeUnit unit, BlockingQueue<Runnable> workQueue, ThreadFactory threadFactory) {
         super(corePoolSize, maximumPoolSize, keepAliveTime, unit, workQueue, threadFactory);
     }
 
-    public OrderedThreadPoolExecutor(int corePoolSize, int maximumPoolSize, long keepAliveTime, TimeUnit unit, BlockingQueue<Runnable> workQueue, RejectedExecutionHandler handler) {
+    public SyncThreadPoolExecutor(int corePoolSize, int maximumPoolSize, long keepAliveTime, TimeUnit unit, BlockingQueue<Runnable> workQueue, RejectedExecutionHandler handler) {
         super(corePoolSize, maximumPoolSize, keepAliveTime, unit, workQueue, handler);
     }
 
-    public OrderedThreadPoolExecutor(int corePoolSize, int maximumPoolSize, long keepAliveTime, TimeUnit unit, BlockingQueue<Runnable> workQueue, ThreadFactory threadFactory, RejectedExecutionHandler handler) {
+    public SyncThreadPoolExecutor(int corePoolSize, int maximumPoolSize, long keepAliveTime, TimeUnit unit, BlockingQueue<Runnable> workQueue, ThreadFactory threadFactory, RejectedExecutionHandler handler) {
         super(corePoolSize, maximumPoolSize, keepAliveTime, unit, workQueue, threadFactory, handler);
     }
 
@@ -58,89 +58,43 @@ public class OrderedThreadPoolExecutor extends ThreadPoolExecutor {
         assert command instanceof LinkingRunnableFutureTask;
 
         LinkingRunnableFutureTask task = (LinkingRunnableFutureTask) command;
-		appendSubmit(task);
-	}
+        appendSubmit(task);
+    }
 
-	private void appendSubmit(LinkingRunnableFutureTask task) {
+    private void appendSubmit(LinkingRunnableFutureTask task) {
 
         LinkingExecutable runnable = task.getLinkingExecutable();
 
-		// messages from the same client are handled orderly
-		AtomicReference<LinkingExecutable> lastRef = runnable.getLastLinkingRunnable();
+        // messages from the same client are handled orderly
+        AtomicReference<LinkingExecutable> lastRef = runnable.getLastLinkingRunnable();
+        LinkingExecutable last = lastRef.get();
+        lastRef.set(runnable);
+
+        if (last == null) { // No previous job
+            super.submit(task);
+        } else {
+            if (lastRef.compareAndSet(null, runnable)) {
+                // successfully append to previous task
+            } else {
+                // previous message is handled, order is guaranteed.
+                super.submit(task);
+            }
+        }
+    }
 
 
-//        if (old == null) { // No previous job
-//            execs.submit(job);
-//        } else {
-//            if (old.fetchNext.compareAndSet(null, job)) {
-//                // successfully append to previous task
-//            } else {
-//                // previous message is handled, order is guaranteed.
-//                execs.submit(job);
-//            }
-//        }
+    @Override
+    protected void afterExecute(Runnable r, Throwable t) {
+        super.afterExecute(r, t);
+
+        if (t != null) {
+            LinkingRunnable runnable = (LinkingRunnable) r;
+            runnable.onException(t);
+        }
+    }
 
 
-//      if (lastRef.compareAndSet(null, runnable)) { // No previous job
-//			super.execute(command);
-//		} else {
-//			// CAS loop
-//			for (;;) {
-//				LinkingRunnable last = lastRef.get();
-//				LinkingRunnable fetchNext = last.fetchNext.get();
-//				if (last.fetchNext.compareAndSet(null, runnable)) {
-//					lastRef.compareAndSet(last, runnable);// fail is OK
-//					// successfully append to previous task
-//					break;
-//				} else if (last.fetchNext.get() == last) {
-//					// previous message is handled, order is guaranteed.
-//					super.execute(command);
-//					break;
-//				}
-//				lastRef = runnable.getLastLinkingRunnable();
-//			}
-//		}
-
-		if (lastRef.get() == null && lastRef.compareAndSet(null, runnable)) { // No previous job
-			super.execute(task);
-		} else {
-			// CAS loop
-			for (; ; ) {
-
-                LinkingExecutable last = lastRef.get();
-
-				AtomicReference<LinkingRunnableFutureTask> nextRef = last.getNext();
-
-                LinkingRunnableFutureTask next = nextRef.get();
-				if (next != null) {
-					if (next == LinkingRunnableFutureTask.PLACE_HOLDER && lastRef.compareAndSet(last, runnable)) {
-						// previous message is handled, order is
-						// guaranteed.
-						super.execute(task);
-						return;
-					}
-				} else if (nextRef.compareAndSet(null, task)) {
-					lastRef.compareAndSet(last, runnable);// fail is OK
-					// successfully append to previous task
-					return;
-				}
-			}
-		}
-	}
-
-
-	@Override
-	protected void afterExecute(Runnable r, Throwable t) {
-		super.afterExecute(r, t);
-
-		if (t != null) {
-			LinkingRunnable runnable = (LinkingRunnable) r;
-			runnable.onException(t);
-		}
-	}
-
-	
-	@Override
+    @Override
     protected Thread addThread(Runnable firstTask) {
         Worker w = new Worker(firstTask);
         Thread t = threadFactory.newThread(w);
@@ -153,10 +107,10 @@ public class OrderedThreadPoolExecutor extends ThreadPoolExecutor {
         }
         return t;
     }
-	
-	
-	@Override
-	public long getCompletedTaskCount() {
+
+
+    @Override
+    public long getCompletedTaskCount() {
         final ReentrantLock mainLock = this.mainLock;
         mainLock.lock();
         try {
@@ -168,10 +122,10 @@ public class OrderedThreadPoolExecutor extends ThreadPoolExecutor {
             mainLock.unlock();
         }
     }
-	
-	
-	@Override
-	public int getActiveCount() {
+
+
+    @Override
+    public int getActiveCount() {
         final ReentrantLock mainLock = this.mainLock;
         mainLock.lock();
         try {
@@ -185,26 +139,26 @@ public class OrderedThreadPoolExecutor extends ThreadPoolExecutor {
             mainLock.unlock();
         }
     }
-	
-	@Override
-	public long getTaskCount() {
-		final ReentrantLock mainLock = this.mainLock;
-		mainLock.lock();
-		try {
-			long n = completedTaskCount;
-			for (Worker w : workers) {
-				n += w.completedTasks;
-				if (w.isActive())
-					++n;
-			}
-			return n + workQueue.size();
-		} finally {
-			mainLock.unlock();
-		}
-	}
-	
-	@Override
-	public void setCorePoolSize(int corePoolSize) {
+
+    @Override
+    public long getTaskCount() {
+        final ReentrantLock mainLock = this.mainLock;
+        mainLock.lock();
+        try {
+            long n = completedTaskCount;
+            for (Worker w : workers) {
+                n += w.completedTasks;
+                if (w.isActive())
+                    ++n;
+            }
+            return n + workQueue.size();
+        } finally {
+            mainLock.unlock();
+        }
+    }
+
+    @Override
+    public void setCorePoolSize(int corePoolSize) {
         if (corePoolSize < 0)
             throw new IllegalArgumentException();
         final ReentrantLock mainLock = this.mainLock;
@@ -226,9 +180,9 @@ public class OrderedThreadPoolExecutor extends ThreadPoolExecutor {
                 try {
                     Iterator<Worker> it = workers.iterator();
                     while (it.hasNext() &&
-                           extra-- > 0 &&
-                           poolSize > corePoolSize &&
-                           workQueue.remainingCapacity() == 0)
+                            extra-- > 0 &&
+                            poolSize > corePoolSize &&
+                            workQueue.remainingCapacity() == 0)
                         it.next().interruptIfIdle();
                 } catch (SecurityException ignore) {
                     // Not an error; it is OK if the threads stay live
@@ -238,21 +192,21 @@ public class OrderedThreadPoolExecutor extends ThreadPoolExecutor {
             mainLock.unlock();
         }
     }
-	
-	@Override
-	void interruptIdleWorkers() {
-		final ReentrantLock mainLock = this.mainLock;
-		mainLock.lock();
-		try {
-			for (Worker w : workers)
-				w.interruptIfIdle();
-		} finally {
-			mainLock.unlock();
-		}
-	}
-	
-	@Override
-	public void setMaximumPoolSize(int maximumPoolSize) {
+
+    @Override
+    void interruptIdleWorkers() {
+        final ReentrantLock mainLock = this.mainLock;
+        mainLock.lock();
+        try {
+            for (Worker w : workers)
+                w.interruptIfIdle();
+        } finally {
+            mainLock.unlock();
+        }
+    }
+
+    @Override
+    public void setMaximumPoolSize(int maximumPoolSize) {
         if (maximumPoolSize <= 0 || maximumPoolSize < corePoolSize)
             throw new IllegalArgumentException();
         final ReentrantLock mainLock = this.mainLock;
@@ -264,8 +218,8 @@ public class OrderedThreadPoolExecutor extends ThreadPoolExecutor {
                 try {
                     Iterator<Worker> it = workers.iterator();
                     while (it.hasNext() &&
-                           extra > 0 &&
-                           poolSize > maximumPoolSize) {
+                            extra > 0 &&
+                            poolSize > maximumPoolSize) {
                         it.next().interruptIfIdle();
                         --extra;
                     }
@@ -277,12 +231,12 @@ public class OrderedThreadPoolExecutor extends ThreadPoolExecutor {
             mainLock.unlock();
         }
     }
-	
-	@Override
-	public void shutdown() {
 
-	SecurityManager security = System.getSecurityManager();
-	if (security != null)
+    @Override
+    public void shutdown() {
+
+        SecurityManager security = System.getSecurityManager();
+        if (security != null)
             security.checkPermission(shutdownPerm);
 
         final ReentrantLock mainLock = this.mainLock;
@@ -313,12 +267,12 @@ public class OrderedThreadPoolExecutor extends ThreadPoolExecutor {
         }
     }
 
-    
-	@Override
+
+    @Override
     public List<Runnable> shutdownNow() {
 
-	SecurityManager security = System.getSecurityManager();
-	if (security != null)
+        SecurityManager security = System.getSecurityManager();
+        if (security != null)
             security.checkPermission(shutdownPerm);
 
         final ReentrantLock mainLock = this.mainLock;
@@ -350,9 +304,9 @@ public class OrderedThreadPoolExecutor extends ThreadPoolExecutor {
             mainLock.unlock();
         }
     }
-	
-	// Worker
-	protected final class Worker implements Runnable {
+
+    // Worker
+    protected final class Worker implements Runnable {
         /**
          * The runLock is acquired and released surrounding each task
          * execution. It mainly protects against interrupts that are
@@ -393,8 +347,8 @@ public class OrderedThreadPoolExecutor extends ThreadPoolExecutor {
             final ReentrantLock runLock = this.runLock;
             if (runLock.tryLock()) {
                 try {
-		    if (thread != Thread.currentThread())
-			thread.interrupt();
+                    if (thread != Thread.currentThread())
+                        thread.interrupt();
                 } finally {
                     runLock.unlock();
                 }
@@ -424,8 +378,8 @@ public class OrderedThreadPoolExecutor extends ThreadPoolExecutor {
                  * the interrupt is re-enabled.
                  */
                 if (runState < STOP &&
-                    Thread.interrupted() &&
-                    runState >= STOP)
+                        Thread.interrupted() &&
+                        runState >= STOP)
                     thread.interrupt();
                 /*
                  * Track execution state to ensure that afterExecute
@@ -441,9 +395,9 @@ public class OrderedThreadPoolExecutor extends ThreadPoolExecutor {
 
                     LinkingRunnableFutureTask next = (LinkingRunnableFutureTask) task;
                     while ((next = next.fetchNext()) != null) {
-                    	next.run();
+                        next.run();
                     }
-                    
+
                     ran = true;
                     afterExecute(task, null);
                     ++completedTasks;
@@ -457,7 +411,7 @@ public class OrderedThreadPoolExecutor extends ThreadPoolExecutor {
             }
         }
 
-        
+
         /**
          * Main run loop
          */
@@ -474,9 +428,9 @@ public class OrderedThreadPoolExecutor extends ThreadPoolExecutor {
             }
         }
     }
-	
-	
-	/**
+
+
+    /**
      * Performs bookkeeping for an exiting worker thread.
      * @param w the worker
      */
@@ -493,18 +447,18 @@ public class OrderedThreadPoolExecutor extends ThreadPoolExecutor {
         }
     }
 
-	/**
-	 * 创建ExecutorService
-	 * 使用CallerRunsPolicy拒绝策略
-	 * @param nThreads
-	 * @param threadFactory
-	 * @return
-	 */
-	public static OrderedThreadPoolExecutor newFixedThreadPool(int nThreads, NamedThreadFactory threadFactory) {
-        return new OrderedThreadPoolExecutor(nThreads, nThreads,
+    /**
+     * 创建ExecutorService
+     * 使用CallerRunsPolicy拒绝策略
+     * @param nThreads
+     * @param threadFactory
+     * @return
+     */
+    public static SyncThreadPoolExecutor newFixedThreadPool(int nThreads, NamedThreadFactory threadFactory) {
+        return new SyncThreadPoolExecutor(nThreads, nThreads,
                 0L, TimeUnit.MILLISECONDS,
                 new LinkedBlockingQueue<Runnable>(),
                 threadFactory, new ThreadPoolExecutor.CallerRunsPolicy());
     }
-    
+
 }

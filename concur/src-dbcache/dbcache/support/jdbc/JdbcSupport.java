@@ -72,6 +72,7 @@ public class JdbcSupport {
 			return (T) modelInfo.generateEntity(rs);
 		} catch (Exception e) {
 			e.printStackTrace();
+			config.checkAndClose(conn);
 			throw new JdbcExecuteException(e);
 		} finally {
 			config.close(rs, pst, conn);
@@ -102,6 +103,7 @@ public class JdbcSupport {
 			return result > 0;
 		} catch (Exception e) {
 			e.printStackTrace();
+			config.checkAndClose(conn);
 			throw new JdbcExecuteException(e);
 		} finally {
 			config.close(pst, conn);
@@ -150,7 +152,7 @@ public class JdbcSupport {
 				e1.printStackTrace();
 				throw new JdbcExecuteException(e1);
 			}
-			
+			config.checkAndClose(conn);
 			throw new JdbcExecuteException(e);
     	} finally {
     		try {
@@ -190,6 +192,7 @@ public class JdbcSupport {
 			return result > 0;
 		} catch (Exception e) {
 			e.printStackTrace();
+			config.checkAndClose(conn);
 			throw new JdbcExecuteException(e);
 		} finally {
 			config.close(pst, conn);
@@ -221,6 +224,7 @@ public class JdbcSupport {
 			return result > 0;
 		} catch (Exception e) {
 			e.printStackTrace();
+			config.checkAndClose(conn);
 			throw new JdbcExecuteException(e);
 		} finally {
 			config.close(pst, conn);
@@ -252,6 +256,7 @@ public class JdbcSupport {
 			return result > 0;
 		} catch (Exception e) {
 			e.printStackTrace();
+			config.checkAndClose(conn);
 			throw new JdbcExecuteException(e);
 		} finally {
 			config.close(pst, conn);
@@ -313,7 +318,7 @@ public class JdbcSupport {
 				e1.printStackTrace();
 				throw new JdbcExecuteException(e1);
 			}
-			
+			config.checkAndClose(conn);
 			throw new JdbcExecuteException(e);
     	} finally {
     		config.close(conn);
@@ -362,7 +367,7 @@ public class JdbcSupport {
 				e1.printStackTrace();
 				throw new JdbcExecuteException(e1);
 			}
-			
+			config.checkAndClose(conn);
 			throw new JdbcExecuteException(e);
     	} finally {
     		try {
@@ -404,6 +409,7 @@ public class JdbcSupport {
 			return result > 0;
 		} catch (Exception e) {
 			e.printStackTrace();
+			config.checkAndClose(conn);
 			throw new JdbcExecuteException(e);
 		} finally {
 			config.close(pst, conn);
@@ -452,7 +458,7 @@ public class JdbcSupport {
 				e1.printStackTrace();
 				throw new JdbcExecuteException(e1);
 			}
-			
+			config.checkAndClose(conn);
 			throw new JdbcExecuteException(e);
     	} finally {
     		try {
@@ -495,6 +501,7 @@ public class JdbcSupport {
 			return (List<T>) modelInfo.generateEntityList(rs);
 		} catch (Exception e) {
 			e.printStackTrace();
+			config.checkAndClose(conn);
 			throw new JdbcExecuteException(e);
 		} finally {
 			config.close(rs, pst, conn);
@@ -528,6 +535,7 @@ public class JdbcSupport {
 			return modelInfo.generateIdList(rs);
 		} catch (Exception e) {
 			e.printStackTrace();
+			config.checkAndClose(conn);
 			throw new JdbcExecuteException(e);
 		} finally {
 			config.close(rs, pst, conn);
@@ -561,6 +569,7 @@ public class JdbcSupport {
 			return modelInfo.generateUniqueResult(rs);
 		} catch (Exception e) {
 			e.printStackTrace();
+			config.checkAndClose(conn);
 			throw new JdbcExecuteException(e);
 		} finally {
 			config.close(rs, pst, conn);
@@ -595,6 +604,7 @@ public class JdbcSupport {
 			return (List<T>) modelInfo.generateEntityList(rs);
 		} catch (Exception e) {
 			e.printStackTrace();
+			config.checkAndClose(conn);
 			throw new JdbcExecuteException(e);
 		} finally {
 			config.close(rs, pst, conn);
@@ -627,6 +637,7 @@ public class JdbcSupport {
 			return (List<T>) this.generateObjectList(rs, clzz);
 		} catch (Exception e) {
 			e.printStackTrace();
+			config.checkAndClose(conn);
 			throw new JdbcExecuteException(e);
 		} finally {
 			config.close(rs, pst, conn);
@@ -659,6 +670,7 @@ public class JdbcSupport {
 			return this.generateObjectList(rs, rowMapper);
 		} catch (Exception e) {
 			e.printStackTrace();
+			config.checkAndClose(conn);
 			throw new JdbcExecuteException(e);
 		} finally {
 			config.close(rs, pst, conn);
@@ -689,6 +701,7 @@ public class JdbcSupport {
 			return result > 0;
 		} catch (Exception e) {
 			e.printStackTrace();
+			config.checkAndClose(conn);
 			throw new JdbcExecuteException(e);
 		} finally {
 			config.close(pst, conn);
@@ -926,6 +939,7 @@ public class JdbcSupport {
 			buildTypes(rsmd, attrTypeMap);
 		} catch (Exception e) {
 			e.printStackTrace();
+			config.checkAndClose(conn);
 			throw new JdbcExecuteException(e);
 		} finally {
 			config.close(rs, pst, conn);
