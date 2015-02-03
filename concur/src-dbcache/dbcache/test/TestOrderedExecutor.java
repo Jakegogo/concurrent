@@ -26,11 +26,11 @@ public class TestOrderedExecutor {
 		
 		final AtomicReference<LinkingRunnable> last = new AtomicReference<LinkingRunnable>();
 		
-		final int TEST_LOOP = 100;
+		final int TEST_LOOP = 1000000;
 		
 		final CountDownLatch ct = new CountDownLatch(1);
 		
-		for (int j = 0; j < TEST_LOOP;j++) {
+		for (int j = 0; j < 4;j++) {
 			
 			new Thread() {
 			
@@ -43,23 +43,25 @@ public class TestOrderedExecutor {
 						e.printStackTrace();
 					}
 					
-					executorService.execute(new LinkingRunnable() {
-						
-						@Override
-						public AtomicReference<LinkingRunnable> getLastLinkingRunnable() {
-							return last;
-						}
-						
-						@Override
-						public void run() {
-							int j = i.getVal();
-
-							j+=1;
-
-							i.setVal(j);
-						}
-						
-					});
+					for (int k = 0;k < TEST_LOOP;k++) {
+						executorService.execute(new LinkingRunnable() {
+							
+							@Override
+							public AtomicReference<LinkingRunnable> getLastLinkingRunnable() {
+								return last;
+							}
+							
+							@Override
+							public void run() {
+								int j = i.getVal();
+	
+								j+=1;
+	
+								i.setVal(j);
+							}
+							
+						});
+					}
 				}
 			}.start();
 		}

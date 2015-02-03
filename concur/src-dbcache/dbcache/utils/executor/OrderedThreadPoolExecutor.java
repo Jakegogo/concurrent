@@ -507,16 +507,16 @@ public class OrderedThreadPoolExecutor extends ThreadPoolExecutor {
 
 	/**
 	 * 创建ExecutorService
-	 * 使用默认的AbortPolicy将抛出RejectedExecutionException
+	 * 使用CallerRunsPolicy拒绝策略
 	 * @param nThreads
 	 * @param threadFactory
 	 * @return
 	 */
-	public static ExecutorService newFixedThreadPool(int nThreads, NamedThreadFactory threadFactory) {
+	public static OrderedThreadPoolExecutor newFixedThreadPool(int nThreads, NamedThreadFactory threadFactory) {
         return new OrderedThreadPoolExecutor(nThreads, nThreads,
                 0L, TimeUnit.MILLISECONDS,
                 new LinkedBlockingQueue<Runnable>(),
-                threadFactory);
+                threadFactory, new ThreadPoolExecutor.CallerRunsPolicy());
     }
     
 }

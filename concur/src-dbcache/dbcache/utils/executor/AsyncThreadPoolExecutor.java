@@ -472,11 +472,11 @@ public class AsyncThreadPoolExecutor extends ThreadPoolExecutor {
 	 * @param threadFactory
 	 * @return
 	 */
-	public static ExecutorService newFixedThreadPool(int nThreads, NamedThreadFactory threadFactory) {
+	public static AsyncThreadPoolExecutor newFixedThreadPool(int nThreads, NamedThreadFactory threadFactory) {
         return new AsyncThreadPoolExecutor(nThreads, nThreads,
                 0L, TimeUnit.MILLISECONDS,
                 new LinkedBlockingQueue<Runnable>(),
-                threadFactory);
+                threadFactory, new ThreadPoolExecutor.CallerRunsPolicy());
     }
     
 }
