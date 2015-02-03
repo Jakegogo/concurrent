@@ -10,14 +10,16 @@ import dbcache.service.DbRuleService;
 import dbcache.utils.JsonUtils;
 import dbcache.utils.NamedThreadFactory;
 import dbcache.utils.ThreadUtils;
-import dbcache.utils.concurrent.LinkingRunnable;
-import dbcache.utils.concurrent.OrderedThreadPoolExecutor;
+import dbcache.utils.executor.LinkingRunnable;
+import dbcache.utils.executor.OrderedThreadPoolExecutor;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
+
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.RejectedExecutionException;
@@ -122,8 +124,6 @@ public class InTimeDbPersistService implements DbPersistService {
 				// 设置状态为持久化
 				cacheObject.setPersistStatus(PersistStatus.PERSIST);
 
-				// 执行队列下一个OrderedPersistAction元素
-				super.runNext();
 			}
 
 			@Override
@@ -182,8 +182,6 @@ public class InTimeDbPersistService implements DbPersistService {
 					throw new IllegalStateException("检测到非顺序入库.");// 正常情况不会执行到这个分支
 				}
 
-				// 执行队列下一个OrderedPersistAction元素
-				super.runNext();
 			}
 
 			@Override
@@ -238,8 +236,6 @@ public class InTimeDbPersistService implements DbPersistService {
 				// 从缓存中移除
 				cache.put(key, null);
 
-				// 执行队列下一个OrderedPersistAction元素
-				super.runNext();
 			}
 
 			@Override

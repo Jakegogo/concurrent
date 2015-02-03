@@ -1,4 +1,4 @@
-package dbcache.utils.concurrent;
+package dbcache.utils.executor;
 
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -41,16 +41,19 @@ public abstract class LinkingRunnable implements Runnable {
             throw new IllegalArgumentException("请传参LinkingRunnable(Runnable r),或者覆盖LinkingRunnable.run()方法.");
         }
         this.impl.run();
-        this.runNext();
     }
 
-    /**
-     * 执行下一个任务
-     */
-    protected void runNext() {
-        if (!next.compareAndSet(null, this)) { // has more job to run
-            next.get().run();
-        }
-    }
+//    /**
+//     * 执行下一个任务
+//     */
+//    @Deprecated
+//    protected void runNext() {
+//        if (!next.compareAndSet(null, this)) { // has more job to run
+//        	LinkingRunnable nextRunnable = next.get();
+//        	if (nextRunnable != this) {
+//        		nextRunnable.run();
+//        	}
+//        }
+//    }
 
 }

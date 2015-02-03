@@ -2,8 +2,8 @@ package dbcache.model;
 
 import dbcache.conf.JsonConverter;
 import dbcache.support.asm.ValueGetter;
-import dbcache.utils.concurrent.LinkingRunnable;
 import dbcache.utils.concurrent.LongAdder;
+import dbcache.utils.executor.LinkingRunnable;
 
 import org.apache.commons.lang.builder.EqualsBuilder;
 
