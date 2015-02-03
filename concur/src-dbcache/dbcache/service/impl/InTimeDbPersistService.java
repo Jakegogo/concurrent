@@ -43,13 +43,6 @@ public class InTimeDbPersistService implements DbPersistService {
 	 */
 	private static final int DEFAULT_DB_POOL_SIZE = Runtime.getRuntime().availableProcessors()/2 + 1;
 
-
-	/**
-	 * 执行链队列
-	 */
-	private ConcurrentLinkedQueue<PersistAction>[] workQueues;
-
-
 	/**
 	 * 入库线程池
 	 */
@@ -63,6 +56,9 @@ public class InTimeDbPersistService implements DbPersistService {
 
 	@Autowired
 	private DbRuleService dbRuleService;
+	
+	@Autowired
+	private DelayDbPersistService delayDbPersistService;
 
 
 	@PostConstruct
@@ -124,6 +120,12 @@ public class InTimeDbPersistService implements DbPersistService {
 				// 设置状态为持久化
 				cacheObject.setPersistStatus(PersistStatus.PERSIST);
 
+			}
+			
+			@Override
+			public void onException(Throwable t) {
+				cacheObject.swapUpdateProcessing(false);
+				delayDbPersistService.handleUpdate(cacheObject, dbAccessService);
 			}
 
 			@Override
@@ -187,6 +189,7 @@ public class InTimeDbPersistService implements DbPersistService {
 			@Override
 			public void onException(Throwable t) {
 				cacheObject.swapUpdateProcessing(false);
+				delayDbPersistService.handleUpdate(cacheObject, dbAccessService);
 			}
 
 			@Override
@@ -236,6 +239,12 @@ public class InTimeDbPersistService implements DbPersistService {
 				// 从缓存中移除
 				cache.put(key, null);
 
+			}
+			
+			@Override
+			public void onException(Throwable t) {
+				cacheObject.swapUpdateProcessing(false);
+				delayDbPersistService.handleUpdate(cacheObject, dbAccessService);
 			}
 
 			@Override
