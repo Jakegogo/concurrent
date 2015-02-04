@@ -25,9 +25,11 @@ public class SafeRunable implements Runnable {
 	@Override
 	public void run() {
 		safeType.currentThread = Thread.currentThread();// 设置当前执行线程
-		
+
 		// 迭代执行SafeActor
-		if (safeActor.roll()) {
+		boolean scroll = safeActor.roll();
+
+		if (scroll) {
 			try {
 				
 				safeActor.run();
@@ -40,11 +42,15 @@ public class SafeRunable implements Runnable {
 			} catch (Exception e) {
 				safeActor.onException(e);
 			}
+
 		}
-		
-		safeType.currentThread = null;// 取消当前执行线程
-		// 执行下一个任务
-		this.runNext();
+
+
+		// 执行联合序列的之后的任务
+		if (scroll) {
+			safeActor.runNext();
+		}
+
 	}
 
 	/**
@@ -93,6 +99,9 @@ public class SafeRunable implements Runnable {
 	 */
 	protected void runNext() {
 		if (!next.compareAndSet(null, this)) { // has more job to run
+
+			safeType.currentThread = null;// 取消当前执行线程
+
 			next.get().run();
 		}
 	}

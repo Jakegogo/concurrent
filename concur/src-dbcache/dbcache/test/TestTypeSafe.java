@@ -1,15 +1,9 @@
 package dbcache.test;
 
-import dbcache.utils.NamedThreadFactory;
-import dbcache.utils.executor.LinkingExecutable;
-import dbcache.utils.executor.LinkingRunnable;
-import dbcache.utils.executor.OrderedThreadPoolExecutor;
 import dbcache.utils.typesafe.SafeActor;
 import dbcache.utils.typesafe.SafeType;
 
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.atomic.AtomicReference;
 
 public class TestTypeSafe {
 	
@@ -19,7 +13,7 @@ public class TestTypeSafe {
 		final B b = new B();
 		final C c = new C();
 				
-		final int TEST_LOOP = 2000;
+		final int TEST_LOOP = 1;
 		
 		final CountDownLatch ct = new CountDownLatch(1);
 		
@@ -62,7 +56,7 @@ public class TestTypeSafe {
 						
 						for (int k = 0;k < TEST_LOOP;k++) {
 							
-							new SafeActor(b, c) {
+							new SafeActor(a, c) {
 								
 								@Override
 								public void run() {

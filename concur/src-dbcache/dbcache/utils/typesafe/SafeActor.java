@@ -20,6 +20,7 @@ public abstract class SafeActor implements Runnable {
 	private AtomicInteger count = new AtomicInteger(0);
 	
 	Object[] afterExecuteArgs;
+
 	
 	public SafeActor(SafeType... safeTypes) {
 		if (safeTypes == null) {
@@ -32,13 +33,22 @@ public abstract class SafeActor implements Runnable {
 		}
 		this.safeRunables = safeRunables;
 	}
-	
+
 	/**
 	 * 迭代
 	 * @return 是否执行SafeActor
 	 */
 	boolean roll() {
-		return count.incrementAndGet() == safeRunables.size();
+		return count.incrementAndGet() >= safeRunables.size();
+	}
+
+	/**
+	 * 之下下一个联合序列任务
+	 */
+	void runNext() {
+		for (SafeRunable safeRunable : safeRunables) {
+			safeRunable.runNext();
+		}
 	}
 	
 	/**
