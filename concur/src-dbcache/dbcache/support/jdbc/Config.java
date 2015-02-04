@@ -180,17 +180,21 @@ public class Config {
 		}
 	}
 
-	public final void checkAndClose(Connection conn) {
-		if (threadLocal.get() != null) {
-			try {
-				if (!conn.isValid(5)) {
-					conn.close();
-				}
-				threadLocal.set(null);
-			} catch (SQLException e) {
-				e.printStackTrace();
+	public final boolean checkConnection(Connection conn) {
+		boolean isConnection = false;
+		
+		try {
+			if (conn.isValid(2)) {
+				isConnection = true;
 			}
+		} catch (SQLException e) {
+			e.printStackTrace();
 		}
+		
+		if (!isConnection) {
+			threadLocal.set(null);
+		}
+		return isConnection;
 	}
 
 	public final void close(Connection conn) {
