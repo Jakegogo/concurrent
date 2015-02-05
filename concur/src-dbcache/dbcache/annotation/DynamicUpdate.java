@@ -11,7 +11,7 @@ import java.lang.annotation.Target;
  * @date 2015年1月12日下午11:52:50
  * @author Jake
  */
-@Target(ElementType.FIELD)
+@Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
 public @interface DynamicUpdate {
 	

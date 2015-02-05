@@ -2,6 +2,7 @@ package dbcache.service.impl;
 
 import java.io.Serializable;
 import java.util.Collection;
+import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -126,6 +127,12 @@ public class JdbcDbAccessServiceImpl implements DbBatchAccessService {
 			Class<?> entityClazz, String fieldName,
 			Object fieldValue) {
 		return jdbcSupport.listIdByAttr(entityClazz, fieldName, fieldValue);
+	}
+
+
+	@Override
+	public <T> void update(T entity, Collection<String> modifiedFields) {
+		jdbcSupport.update(entity, modifiedFields);
 	}
 
 

@@ -21,9 +21,8 @@ import dbcache.support.jdbc.dialect.MysqlDialect;
 
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.util.Collection;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 
 /**
@@ -35,7 +34,7 @@ public abstract class Dialect {
 	public abstract void forModelSave(TableInfo tableInfo, StringBuilder sql);
 	public abstract String forModelDeleteById(TableInfo tInfo);
 	public abstract void forModelUpdate(TableInfo tableInfo, StringBuilder sql);
-	public abstract void forDbUpdate(TableInfo tableInfo, Map<String, Object> attrs, Set<String> modifyFlag, String pKey, StringBuilder sql);
+	public abstract void forDbUpdate(TableInfo tableInfo, Collection<String> modifyColumns, StringBuilder sql);
 	public abstract String forModelFindById(TableInfo tInfo);
 	public abstract String forModelFindByColumn(TableInfo tInfo, String columnName);
 	public abstract String forModelFindIdByColumn(TableInfo tInfo, String columnName);

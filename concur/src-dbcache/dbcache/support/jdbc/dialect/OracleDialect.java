@@ -21,10 +21,9 @@ import dbcache.support.jdbc.TableInfo;
 
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Set;
 
 
 /**
@@ -91,13 +90,12 @@ public class OracleDialect extends Dialect {
 	}
 	
 	@Override
-	public void forDbUpdate(TableInfo tableInfo, Map<String, Object> attrs,
-			Set<String> modifyFlag, String pKey, StringBuilder sql) {
+	public void forDbUpdate(TableInfo tableInfo, Collection<String> modifyColumns,
+			StringBuilder sql) {
 		sql.append("update ").append(tableInfo.getTableName()).append(" set ");
 		boolean first = true;
-		for (Entry<String, Object> e : attrs.entrySet()) {
-			String colName = e.getKey();
-			if (!pKey.equalsIgnoreCase(colName) && modifyFlag.contains(colName) && tableInfo.hasColumnLabel(colName)) {
+		for (String colName : modifyColumns) {
+			if (tableInfo.hasColumnLabel(colName)) {
 				if (!first) {
 					sql.append(", ");
 				} else {
@@ -106,7 +104,7 @@ public class OracleDialect extends Dialect {
 				sql.append(colName).append(" = ? ");
 			}
 		}
-		sql.append(" where ").append(pKey).append(" = ?");
+		sql.append(" where ").append(tableInfo.getPrimaryKey()).append(" = ?");
 	}
 	
 	public String forModelFindById(TableInfo tInfo) {

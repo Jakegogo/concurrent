@@ -1,6 +1,7 @@
 package dbcache.service;
 
 import java.util.Collection;
+import java.util.Set;
 
 /**
  * 批量数据库管理器接口
@@ -23,7 +24,13 @@ public interface DbBatchAccessService extends DbAccessService {
 	 */
 	public void update(Class<?> clzz, Collection<Object> entitys);
 
-
+	/**
+	 * 动态更新实体对象
+	 * @param clzz 实体类
+	 * @param modifiedFields 修改过的属性集合(线程安全)
+	 */
+	public <T> void update(T entity, Collection<String> modifiedFields);
+	
 	/**
 	 * 批量删除实体对象
 	 * @param clzz 实体类

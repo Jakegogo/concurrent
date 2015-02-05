@@ -19,9 +19,8 @@ package dbcache.support.jdbc.dialect;
 import dbcache.support.jdbc.Dialect;
 import dbcache.support.jdbc.TableInfo;
 
-import java.util.Map;
+import java.util.Collection;
 import java.util.Map.Entry;
-import java.util.Set;
 
 
 /**
@@ -89,13 +88,12 @@ public class MysqlDialect extends Dialect {
 	}
 	
 	@Override
-	public void forDbUpdate(TableInfo tableInfo, Map<String, Object> attrs,
-			Set<String> modifyFlag, String primaryKey, StringBuilder sql) {
+	public void forDbUpdate(TableInfo tableInfo, Collection<String> modifyColumns,
+			StringBuilder sql) {
 		sql.append("update `").append(tableInfo.getTableName()).append("` set ");
 		boolean first = true;
-		for (Entry<String, Object> e : attrs.entrySet()) {
-			String colName = e.getKey();
-			if (!primaryKey.equalsIgnoreCase(colName) && modifyFlag.contains(colName) && tableInfo.hasColumnLabel(colName)) {
+		for (String colName : modifyColumns) {
+			if (tableInfo.hasColumnLabel(colName)) {
 				if (!first) {
 					sql.append(", ");
 				} else {
@@ -104,7 +102,7 @@ public class MysqlDialect extends Dialect {
 				sql.append("`").append(colName).append("` = ? ");
 			}
 		}
-		sql.append(" where `").append(primaryKey).append("` = ?");
+		sql.append(" where `").append(tableInfo.getPrimaryKey()).append("` = ?");
 	}
 	
 	public String forModelFindById(TableInfo tInfo) {

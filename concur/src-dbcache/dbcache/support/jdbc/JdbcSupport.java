@@ -272,7 +272,13 @@ public class JdbcSupport {
      */
     public boolean update(Object entity, Collection<String> modifiedFields) {
     	ModelInfo modelInfo = getOrCreateModelInfo(entity.getClass());
-    	String updateSql = modelInfo.getOrCreateUpdateSql(config.dialect, modifiedFields);
+    	
+    	List<String> modifiedFieldList = new ArrayList<String>();
+    	for (String field : modifiedFields) {
+    		modifiedFieldList.add(field);
+    	}
+    	
+    	String updateSql = modelInfo.getOrCreateUpdateSql(config.dialect, modifiedFieldList);
 
     	Connection conn = null;
     	PreparedStatement pst = null;
@@ -281,7 +287,7 @@ public class JdbcSupport {
 
 			pst = conn.prepareStatement(updateSql);
 
-			Object[] params = modelInfo.getUpdateParams(entity, modifiedFields);
+			Object[] params = modelInfo.getUpdateParams(entity, modifiedFieldList);
 			config.dialect.fillStatement(pst, params);
 
 			int result = pst.executeUpdate();

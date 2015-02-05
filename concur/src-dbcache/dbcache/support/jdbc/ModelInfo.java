@@ -67,6 +67,9 @@ public class ModelInfo {
 
     // 按字段查询语句
     private Map<String, String> findByColumnSqlMap = new HashMap<String, String>();
+    
+    // 按字段更新语句
+    private Map<String, String> updateByColumnSqlMap = new HashMap<String, String>();
 
     /**
      * 生成插入语句
@@ -138,15 +141,42 @@ public class ModelInfo {
      * @param modifiedFields 修改过的属性集合
      * @return
      */
-    public String getOrCreateUpdateSql(Dialect dialect, Collection<String> modifiedFields) {
-    	if (updateSql != null) {
-    		return updateSql;
+    public String getOrCreateUpdateSql(Dialect dialect, List<String> modifiedFields) {
+    	
+    	if (modifiedFields.size() == 0) {
+    		return this.getOrCreateUpdateSql(dialect);
     	}
-    	StringBuilder sqlBuilder = new StringBuilder();
-    	dialect.forModelUpdate(tableInfo, sqlBuilder);
+    	
+    	String sql = null, key = null;
+    	if (modifiedFields.size() == 1) {
+    		key = modifiedFields.get(0);
+    		
+    		sql = this.updateByColumnSqlMap.get(key);
+    		if (sql != null) {
+    			return sql;
+    		}
+    	}
+    	
+    	List<String> modifiedColumns = new ArrayList<String>();
+		for (String fieldName : modifiedFields) {
+			AttributeInfo attributeInfo = this.attrTypeMap.get(fieldName);
+			if (attributeInfo == null) {
+				throw new IllegalArgumentException("不存在的属性:" + fieldName + " [" + this.clzz + "]");
+			}
+			if (!attributeInfo.isPrimaryKey()) {
+				modifiedColumns.add(attributeInfo.getColumnName());
+			}
+		}
+		
+		StringBuilder sqlBuilder = new StringBuilder();
+    	dialect.forDbUpdate(tableInfo, modifiedColumns, sqlBuilder);
 
-    	this.updateSql = sqlBuilder.toString();
-    	return this.updateSql;
+    	sql = sqlBuilder.toString();
+    	if (modifiedFields.size() == 1) {
+    		this.updateByColumnSqlMap.put(key, sql);
+    	}
+    	
+    	return sql;
     }
 
 
@@ -394,7 +424,7 @@ public class ModelInfo {
     * @return
     */
    @SuppressWarnings("unchecked")
-	public Object[] getUpdateParams(Object entity, Collection<String> modifiedFields) {
+	public Object[] getUpdateParams(Object entity, List<String> modifiedFields) {
    	Object[] sqlParams = new Object[this.columnInfos.size()];
 		int i = 0;
 		for (String fieldName : modifiedFields) {
