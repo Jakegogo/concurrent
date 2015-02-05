@@ -265,6 +265,39 @@ public class JdbcSupport {
     
     
     /**
+     * 更新实体
+     * @param entity 实体对象
+     * @param modifiedFields 修改过的属性集合(线程安全)
+     * @return
+     */
+    public boolean update(Object entity, Collection<String> modifiedFields) {
+    	ModelInfo modelInfo = getOrCreateModelInfo(entity.getClass());
+    	String updateSql = modelInfo.getOrCreateUpdateSql(config.dialect, modifiedFields);
+
+    	Connection conn = null;
+    	PreparedStatement pst = null;
+    	try {
+	    	conn = config.getConnection();
+
+			pst = conn.prepareStatement(updateSql);
+
+			Object[] params = modelInfo.getUpdateParams(entity, modifiedFields);
+			config.dialect.fillStatement(pst, params);
+
+			int result = pst.executeUpdate();
+
+			return result > 0;
+		} catch (Exception e) {
+			e.printStackTrace();
+			config.checkConnection(conn);
+			throw new JdbcExecuteException(e);
+		} finally {
+			config.close(pst, conn);
+		}
+    }
+    
+    
+    /**
      * 批量更新实体
      * @param entitys 实体对象
      */

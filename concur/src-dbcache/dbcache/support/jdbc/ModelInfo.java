@@ -130,6 +130,24 @@ public class ModelInfo {
     	this.updateSql = sqlBuilder.toString();
     	return this.updateSql;
     }
+    
+    
+    /**
+     * 生成更新语句
+     * @param dialect Dialect
+     * @param modifiedFields 修改过的属性集合
+     * @return
+     */
+    public String getOrCreateUpdateSql(Dialect dialect, Collection<String> modifiedFields) {
+    	if (updateSql != null) {
+    		return updateSql;
+    	}
+    	StringBuilder sqlBuilder = new StringBuilder();
+    	dialect.forModelUpdate(tableInfo, sqlBuilder);
+
+    	this.updateSql = sqlBuilder.toString();
+    	return this.updateSql;
+    }
 
 
     /**
@@ -368,6 +386,28 @@ public class ModelInfo {
 		return sqlParams;
 	}
 
+    
+   /**
+    * 获取更新的sql参数
+    * @param entity 实体
+    * @param modifiedFields 修改过的属性集合
+    * @return
+    */
+   @SuppressWarnings("unchecked")
+	public Object[] getUpdateParams(Object entity, Collection<String> modifiedFields) {
+   	Object[] sqlParams = new Object[this.columnInfos.size()];
+		int i = 0;
+		for (String fieldName : modifiedFields) {
+			AttributeInfo<Object> columnInfo = this.attrTypeMap.get(fieldName);
+			if (columnInfo != null && !columnInfo.isPrimaryKey()) {
+				sqlParams[i] = columnInfo.getValue(entity);
+				i++;
+			}
+		}
+		sqlParams[this.columnInfos.size() - 1] = primaryKeyInfo.getValue(entity);
+		return sqlParams;
+	}
+    
 
     @SuppressWarnings("rawtypes")
 	private Object getRsVal(ResultSet rs, int i, int type, AttributeInfo columnInfo) throws SQLException {
@@ -390,6 +430,7 @@ public class ModelInfo {
     	return value;
     }
 
+    
     public static byte[] handleBlob(Blob blob) throws SQLException {
 		if (blob == null)
 			return null;
@@ -409,6 +450,7 @@ public class ModelInfo {
 		}
 	}
 
+    
 	public static String handleClob(Clob clob) throws SQLException {
 		if (clob == null)
 			return null;
