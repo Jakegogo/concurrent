@@ -20,6 +20,10 @@ public abstract class SafeType {
 	 */
 	volatile Thread currentThread;
 	
+	/**
+	 * 当前等待执行的SafeActor
+	 */
+	AtomicReference<SafeActor> waitActor = new AtomicReference<SafeActor>();
 	
 	
 	

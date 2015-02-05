@@ -9,6 +9,8 @@ public class TestTypeSafe {
 	
 	public static void main(String[] args) {
 		
+//		while(true) {
+		
 		final A a = new A();
 		final B b = new B();
 		final C c = new C();
@@ -43,6 +45,12 @@ public class TestTypeSafe {
 									i += 1;
 									a.i = i;
 									
+//									try {
+//										Thread.sleep(3);
+//									} catch (InterruptedException e) {
+//										e.printStackTrace();
+//									}
+									
 									int j = b.j;
 									j += 1;
 									b.j = j;
@@ -64,6 +72,12 @@ public class TestTypeSafe {
 									i += 1;
 									a.i = i;
 									
+//									try {
+//										Thread.sleep(5);
+//									} catch (InterruptedException e) {
+//										e.printStackTrace();
+//									}
+									
 									int k = c.k;
 									k += 1;
 									c.k = k;
@@ -80,31 +94,47 @@ public class TestTypeSafe {
 		
 		try {
 			ct.countDown();
-			Thread.sleep(3000);
+			Thread.sleep(2000);
 			System.out.println("a.i:" + a.i);
 			System.out.println("b.j:" + b.j);
 			System.out.println("c.k:" + c.k);
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
+//		}
 		
 	}
 
 	static class A extends SafeType {
 		
 		int i = 0;
+
+		@Override
+		public String toString() {
+			return "A [i=" + i + "]";
+		}
 		
 	}
 	
 	static class B extends SafeType {
 		
 		int j = 0;
+
+		@Override
+		public String toString() {
+			return "B [j=" + j + "]";
+		}
 		
 	}
 	
 	static class C extends SafeType {
 		
 		int k = 0;
+
+		@Override
+		public String toString() {
+			return "C [k=" + k + "]";
+		}
 		
 	}
 	

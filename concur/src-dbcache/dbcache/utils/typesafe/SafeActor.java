@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import dbcache.utils.concurrent.IdentityHashMap;
+
 
 
 /**
@@ -15,23 +17,31 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 public abstract class SafeActor implements Runnable {
 	
-	private List<SafeRunable> safeRunables;
+	private IdentityHashMap<SafeType, SafeRunable> safeRunables;
+	
+	private List<SafeRunable> safeRunableList;
 	
 	private AtomicInteger count = new AtomicInteger(0);
 	
 	Object[] afterExecuteArgs;
-
+	
+	private int size;
 	
 	public SafeActor(SafeType... safeTypes) {
 		if (safeTypes == null) {
 			throw new IllegalArgumentException("safeTypes");
 		}
 		
-		List<SafeRunable> safeRunables = new ArrayList<SafeRunable>(safeTypes.length);
+		List<SafeRunable> safeRunableList = new ArrayList<SafeRunable>();
+		IdentityHashMap<SafeType, SafeRunable> safeRunables = new IdentityHashMap<SafeType, SafeRunable>(safeTypes.length);
 		for (int i = 0; i < safeTypes.length;i++) {
-			safeRunables.add(new SafeRunable(safeTypes[i], this));
+			SafeRunable safeRunable = new SafeRunable(safeTypes[i], this);
+			safeRunables.put(safeTypes[i], safeRunable);
+			safeRunableList.add(safeRunable);
 		}
 		this.safeRunables = safeRunables;
+		this.safeRunableList = safeRunableList;
+		this.size = safeTypes.length;
 	}
 
 	/**
@@ -39,16 +49,37 @@ public abstract class SafeActor implements Runnable {
 	 * @return 是否执行SafeActor
 	 */
 	boolean roll() {
-		return count.incrementAndGet() >= safeRunables.size();
+		return count.incrementAndGet() == safeRunables.size();
 	}
 
 	/**
 	 * 之下下一个联合序列任务
 	 */
 	void runNext() {
-		for (SafeRunable safeRunable : safeRunables) {
+		for (SafeRunable safeRunable : safeRunableList) {
 			safeRunable.runNext();
 		}
+	}
+	
+	/**
+	 * 执行当前的SafeRunable
+	 * @param current
+	 */
+	void runCurrent(SafeType current) {
+		SafeRunable safeRunable = safeRunables.get(current);
+		safeRunable.run();
+	}
+	
+	/**
+	 * 设置等待状态
+	 * @param current
+	 */
+	public void setWait(SafeType current) {
+		for (SafeRunable safeRunable : safeRunableList) {
+    		if (safeRunable.valid.get() && safeRunable.getSafeType() != current) {
+    			safeRunable.getSafeType().waitActor.compareAndSet(null, this);
+    		}
+    	}
 	}
 	
 	/**
@@ -72,9 +103,16 @@ public abstract class SafeActor implements Runnable {
      */
     public void start() {
     	// 执行SafeRunable执行子序列
-    	for (SafeRunable safeRunable : safeRunables) {
+    	for (SafeRunable safeRunable : safeRunableList) {
     		safeRunable.execute();
     	}
     }
+
+	@Override
+	public String toString() {
+		return "SafeActor [" + this.hashCode() + "]";
+	}
+    
+    
 
 }

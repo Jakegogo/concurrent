@@ -1,5 +1,6 @@
 package dbcache.utils.typesafe;
 
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
@@ -11,6 +12,8 @@ import java.util.concurrent.atomic.AtomicReference;
 public class SafeRunable implements Runnable {
 	
 	AtomicReference<SafeRunable> next = new AtomicReference<SafeRunable>(null);
+	
+	AtomicBoolean valid = new AtomicBoolean(true);
 	
 	private SafeType safeType;
 	
@@ -25,13 +28,22 @@ public class SafeRunable implements Runnable {
 	@Override
 	public void run() {
 		safeType.currentThread = Thread.currentThread();// 设置当前执行线程
+		AtomicReference<SafeActor> waitActorRef = safeType.waitActor;
+		
 
+		if (!waitActorRef.compareAndSet(safeActor, null)) {
+			SafeActor waitActor = waitActorRef.get();
+			if (waitActor != null) {
+				waitActor.runCurrent(safeType);
+			}
+		}
+		
 		// 迭代执行SafeActor
 		boolean scroll = safeActor.roll();
 
 		if (scroll) {
 			try {
-				
+//				System.out.println("scroll:" + safeType + ",safeActor:" + safeActor.hashCode());
 				safeActor.run();
 				
 				// afterExecute() TODO
@@ -43,8 +55,9 @@ public class SafeRunable implements Runnable {
 				safeActor.onException(e);
 			}
 
+		} else {
+//			System.out.println("not scroll:" + safeType + ",safeActor:" + safeActor.hashCode());
 		}
-
 
 		// 执行联合序列的之后的任务
 		if (scroll) {
@@ -67,6 +80,8 @@ public class SafeRunable implements Runnable {
 		AtomicReference<SafeRunable> lastRef = safeType.head;
 
 		if (lastRef.get() == null && lastRef.compareAndSet(null, this)) { // No previous job
+			safeActor.setWait(this.safeType);
+			this.valid.set(false);//
 			this.run();
 		} else {
 			// CAS loop
@@ -81,6 +96,8 @@ public class SafeRunable implements Runnable {
 					if (next == last && lastRef.compareAndSet(last, this)) {
 						// previous message is handled, order is
 						// guaranteed.
+						safeActor.setWait(this.safeType);
+						this.valid.set(false);//
 						this.run();
 						return;
 					}
@@ -98,12 +115,33 @@ public class SafeRunable implements Runnable {
 	 * 执行下一个任务
 	 */
 	protected void runNext() {
-		if (!next.compareAndSet(null, this)) { // has more job to run
-
-			safeType.currentThread = null;// 取消当前执行线程
-
-			next.get().run();
+		
+		safeType.currentThread = null;// 取消当前执行线程
+		
+		SafeRunable nextRunable = null;
+		while (!next.compareAndSet(null, this)) { // has more job to run
+			nextRunable = next.get();
+			
+			nextRunable.safeActor.setWait(nextRunable.getSafeType());
+			
+			if (nextRunable.valid.compareAndSet(true, false)) {
+				nextRunable.run();
+				break;
+			}
 		}
+		
+	}
+
+
+	public SafeType getSafeType() {
+		return safeType;
+	}
+
+
+	@Override
+	public String toString() {
+		return "SafeRunable [next=" + next + ", valid=" + valid + ", safeType="
+				+ safeType + ", safeActor=" + safeActor + "]";
 	}
 	
 }
