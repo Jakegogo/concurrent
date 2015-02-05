@@ -10,14 +10,16 @@ import dbcache.service.DbRuleService;
 import dbcache.utils.JsonUtils;
 import dbcache.utils.NamedThreadFactory;
 import dbcache.utils.ThreadUtils;
-import dbcache.utils.executor.SimpleLinkingRunnable;
-import dbcache.utils.executor.SimpleOrderedThreadPoolExecutor;
+import dbcache.utils.executors.SimpleLinkingRunnable;
+import dbcache.utils.executors.SimpleOrderedThreadPoolExecutor;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
+
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.atomic.AtomicReference;

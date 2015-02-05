@@ -1,4 +1,4 @@
-package dbcache.utils.executor;
+package dbcache.utils.executors;
 
 import java.util.concurrent.Callable;
 import java.util.concurrent.FutureTask;

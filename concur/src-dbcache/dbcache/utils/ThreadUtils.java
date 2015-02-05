@@ -101,13 +101,13 @@ public abstract class ThreadUtils {
 	 * @param threadPoolExecutor
 	 * @return
 	 */
-	private static BlockingQueue<?> getTaskQueue(dbcache.utils.executor.ThreadPoolExecutor threadPoolExecutor){
+	private static BlockingQueue<?> getTaskQueue(dbcache.utils.executors.ThreadPoolExecutor threadPoolExecutor){
 		BlockingQueue<?> queue = null;
 		try {
 			queue = threadPoolExecutor.getQueue();
 		} catch (Exception e1) {
 			try {
-				Field field = dbcache.utils.executor.ThreadPoolExecutor.class.getDeclaredField("workQueue");
+				Field field = dbcache.utils.executors.ThreadPoolExecutor.class.getDeclaredField("workQueue");
 				field.setAccessible(true);
 				queue = (BlockingQueue<?>)field.get(threadPoolExecutor);
 			} catch (Exception e2) {
@@ -142,8 +142,8 @@ public abstract class ThreadUtils {
 			map.put("配置的最大线程数量", threadPoolExecutor.getMaximumPoolSize()); 
 			map.put("历史最大峰值线程数量", threadPoolExecutor.getLargestPoolSize()); 
 			return JsonUtils.object2JsonString(map);
-		} else if(threadPool instanceof dbcache.utils.executor.ThreadPoolExecutor){
-			dbcache.utils.executor.ThreadPoolExecutor threadPoolExecutor = (dbcache.utils.executor.ThreadPoolExecutor)threadPool;
+		} else if(threadPool instanceof dbcache.utils.executors.ThreadPoolExecutor){
+			dbcache.utils.executors.ThreadPoolExecutor threadPoolExecutor = (dbcache.utils.executors.ThreadPoolExecutor)threadPool;
 			Map<String, Object> map = new HashMap<String, Object>();
 			map.put("线程池名称" , poolname);
 			

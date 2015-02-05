@@ -1,4 +1,4 @@
-package dbcache.utils.executor;
+package dbcache.utils.executors;
 
 import dbcache.utils.NamedThreadFactory;
 
@@ -461,9 +461,9 @@ public class SimpleOrderedThreadPoolExecutor extends ThreadPoolExecutor {
          * @param SimpleLinkingRunnable
          * @return
          */
-        SimpleLinkingRunnable fetchNext(SimpleLinkingRunnable SimpleLinkingRunnable) {
-        	if (!SimpleLinkingRunnable.next.compareAndSet(null, SimpleLinkingRunnable)) {
-        		return SimpleLinkingRunnable.next.get();
+        SimpleLinkingRunnable fetchNext(SimpleLinkingRunnable simpleLinkingRunnable) {
+        	if (!simpleLinkingRunnable.next.compareAndSet(null, simpleLinkingRunnable)) {
+        		return simpleLinkingRunnable.next.get();
         	}
         	return null;
         }

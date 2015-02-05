@@ -5,7 +5,7 @@
  * ORACLE PROPRIETARY/CONFIDENTIAL. Use is subject to license terms.
  */
 
-package dbcache.utils.executor;
+package dbcache.utils.executors;
 
 /**
  * Exception thrown by an {@link Executor} when a task cannot be

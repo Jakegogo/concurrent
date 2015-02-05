@@ -5,7 +5,7 @@
  * ORACLE PROPRIETARY/CONFIDENTIAL. Use is subject to license terms.
  */
 
-package dbcache.utils.executor;
+package dbcache.utils.executors;
 
 /**
  * A handler for tasks that cannot be executed by a {@link ThreadPoolExecutor}.

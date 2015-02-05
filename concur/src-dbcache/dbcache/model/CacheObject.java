@@ -3,7 +3,8 @@ package dbcache.model;
 import dbcache.conf.JsonConverter;
 import dbcache.support.asm.ValueGetter;
 import dbcache.utils.concurrent.LongAdder;
-import dbcache.utils.executor.SimpleLinkingRunnable;
+import dbcache.utils.executors.SimpleLinkingRunnable;
+
 import org.apache.commons.lang.builder.EqualsBuilder;
 
 import java.io.Serializable;

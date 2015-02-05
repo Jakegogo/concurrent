@@ -1,25 +1,24 @@
-package dbcache.utils.executor;
+package dbcache.utils.executors;
 
-import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * 链式执行的Runnable
  * @author Jake
  */
-public abstract class LinkingCallable<V> implements Callable<V>, LinkingExecutable {
+public abstract class LinkingRunnable implements Runnable, LinkingExecutable {
 
-    private final Callable<V> impl;
+    private final Runnable impl;
 
     AtomicReference<LinkingRunnableFutureTask> next = new AtomicReference<LinkingRunnableFutureTask>(null);
 
 
-    public LinkingCallable() {
+    public LinkingRunnable() {
         impl = null;
     }
 
-    public LinkingCallable(Callable<V> c) {
-        this.impl = c;
+    public LinkingRunnable(Runnable r) {
+        this.impl = r;
     }
 
     /**
@@ -27,7 +26,7 @@ public abstract class LinkingCallable<V> implements Callable<V>, LinkingExecutab
      * @return
      */
     public abstract AtomicReference<LinkingExecutable> getLastLinkingRunnable();
-
+    
     /**
      * 执行异常回调()
      * @param t Throwable
@@ -37,11 +36,11 @@ public abstract class LinkingCallable<V> implements Callable<V>, LinkingExecutab
     /**
      * 覆盖(重写)次方法需要在方法末尾调用super.runNext();
      */
-    public V call() throws Exception {
+    public void run() {
         if (this.impl == null) {
-            throw new IllegalArgumentException("请传参LinkingCallable(Callable<V> c),LinkingCallable.call()方法.");
+            throw new IllegalArgumentException("请传参LinkingRunnable(Runnable r),或者覆盖LinkingRunnable.run()方法.");
         }
-        return this.impl.call();
+        this.impl.run();
     }
 
     @Override
@@ -52,4 +51,8 @@ public abstract class LinkingCallable<V> implements Callable<V>, LinkingExecutab
         return null;
     }
 
+    @Override
+    public AtomicReference<LinkingRunnableFutureTask> getNext() {
+        return next;
+    }
 }

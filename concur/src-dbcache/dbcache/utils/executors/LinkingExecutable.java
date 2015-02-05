@@ -1,4 +1,4 @@
-package dbcache.utils.executor;
+package dbcache.utils.executors;
 
 import java.util.concurrent.atomic.AtomicReference;
 
