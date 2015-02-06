@@ -137,17 +137,23 @@ public class DelayDbPersistService implements DbPersistService {
 								updateAction.doRunTask();
 							}
 							
+							if (Thread.interrupted()) {
+								break;
+							}
 							//获取下一个有效的操作元素
 							updateAction = updateQueue.poll();
 
-						} while (!Thread.interrupted() || updateAction != null);
+						} while (true);
 
 					} catch (Exception e) {
 						e.printStackTrace();
 
 						if (updateAction != null && updateAction.persistAction != null) {
 							logger.error("执行入库时产生异常! 如果是主键冲突异常可忽略!" + updateAction.persistAction.getPersistInfo(), e);
+						} else {
+							logger.error("执行批量入库时产生异常! 如果是主键冲突异常可忽略!", e);
 						}
+						
 						//等待下一个检测时间重试入库
 						try {
 							Thread.sleep(delayCheckTimmer);

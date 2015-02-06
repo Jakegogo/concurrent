@@ -228,6 +228,9 @@ public class DelayBatchDbPersistService implements DbPersistService {
 									if (persistAction != null && persistAction.valid()) {
 										persistAction.run();
 									}
+									if (Thread.interrupted()) {
+										break;
+									}
 								} while ((persistAction = processQueue.poll()) != null); // 获取下一个有效的操作元素
 								
 								// 执行批量入库任务
@@ -243,12 +246,16 @@ public class DelayBatchDbPersistService implements DbPersistService {
 								Thread.sleep(timeDiff);
 							}
 							
-						} while (!Thread.interrupted() || persistAction != null);
+						} while (!Thread.interrupted());
 
 					} catch (Exception e) {
 						e.printStackTrace();
 
-						logger.error("执行批量入库时产生异常! 如果是主键冲突异常可忽略!", e);
+						if (persistAction != null) {
+							logger.error("执行入库时产生异常! 如果是主键冲突异常可忽略!" + persistAction.getPersistInfo(), e);
+						} else {
+							logger.error("执行批量入库时产生异常! 如果是主键冲突异常可忽略!", e);
+						}
 						
 						//等待下一个检测时间重试入库
 						try {

@@ -96,17 +96,29 @@ public class InTimeDbPersistService implements DbPersistService {
 		checkRetryThread = new Thread() {
 			
 			public void run() {
+				OrderedPersistAction action = null;
+				
 				while (!Thread.interrupted()) {
 					try {
-						OrderedPersistAction action = retryQueue.poll();
+						action = retryQueue.poll();
 						while (action != null) {
 							handlePersist(action);
+							if (Thread.interrupted()) {
+								break;
+							}
 							action = retryQueue.poll();
 						}
 						
 						Thread.sleep(delayWaitTimmer);
 					} catch (Exception e) {
 						e.printStackTrace();
+						
+						if (action != null) {
+							logger.error("执行入库时产生异常! 如果是主键冲突异常可忽略!" + action.getPersistInfo(), e);
+						} else {
+							logger.error("执行批量入库时产生异常! 如果是主键冲突异常可忽略!", e);
+						}
+						
 						try {
 							Thread.sleep(delayWaitTimmer);
 						} catch (InterruptedException e1) {
