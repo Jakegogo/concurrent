@@ -9,6 +9,8 @@ import dbcache.service.DbPersistService;
 import dbcache.service.DbRuleService;
 import dbcache.utils.JsonUtils;
 import dbcache.utils.NamedThreadFactory;
+import dbcache.utils.ThreadUtils;
+
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,6 +18,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
+
 import java.util.Iterator;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutorService;
@@ -105,11 +108,10 @@ public class DelayDbPersistService implements DbPersistService {
 			public void run() {
 
 				//循环定时检测入库,失败自动进入重试
-				while (true) {
+				QueuedAction updateAction = updateQueue.poll();
+				while (!Thread.interrupted()) {
 
-					QueuedAction updateAction = updateQueue.poll();
 					try {
-
 						long timeDiff = 0l;
 						do {
 
@@ -138,7 +140,7 @@ public class DelayDbPersistService implements DbPersistService {
 							//获取下一个有效的操作元素
 							updateAction = updateQueue.poll();
 
-						} while (true);
+						} while (!Thread.interrupted() || updateAction != null);
 
 					} catch (Exception e) {
 						e.printStackTrace();
@@ -310,6 +312,9 @@ public class DelayDbPersistService implements DbPersistService {
 
 	@Override
 	public void awaitTermination() {
+		// 关闭消费入库线程池
+		ThreadUtils.shundownThreadPool(DB_POOL_SERVICE, true);
+				
 		int failCount = 0;
 		while (failCount < 3) {
 			try {

@@ -20,6 +20,7 @@ import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
 
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.atomic.AtomicReference;
@@ -51,13 +52,19 @@ public class InTimeDbPersistService implements DbPersistService {
 	 * 线程池大小
 	 */
 	private int dbPoolSize;
+	
+	/**
+	 * 重试实体队列
+	 */
+	private final ConcurrentLinkedQueue<OrderedPersistAction> retryQueue = new ConcurrentLinkedQueue<OrderedPersistAction>();
 
+	/**
+	 * 定时检测重试线程
+	 */
+	private Thread checkRetryThread;
 
 	@Autowired
 	private DbRuleService dbRuleService;
-	
-	@Autowired
-	private DelayDbPersistService delayDbPersistService;
 
 
 	@PostConstruct
@@ -81,7 +88,37 @@ public class InTimeDbPersistService implements DbPersistService {
 
 		// 初始化线程池
 		DB_POOL_SERVICE = SimpleOrderedThreadPoolExecutor.newFixedThreadPool(dbPoolSize, threadFactory);
-
+		
+		
+		// 定时检测失败操作
+		final long delayWaitTimmer = dbRuleService.getDelayWaitTimmer();//延迟入库时间(毫秒)
+		// 初始化检测线程
+		checkRetryThread = new Thread() {
+			
+			public void run() {
+				while (!Thread.interrupted()) {
+					try {
+						OrderedPersistAction action = retryQueue.poll();
+						while (action != null) {
+							handlePersist(action);
+							action = retryQueue.poll();
+						}
+						
+						Thread.sleep(delayWaitTimmer);
+					} catch (Exception e) {
+						e.printStackTrace();
+						try {
+							Thread.sleep(delayWaitTimmer);
+						} catch (InterruptedException e1) {
+							e1.printStackTrace();
+						}
+					}
+				}
+			}
+			
+		};
+		checkRetryThread.start();
+		
 	}
 
 
@@ -124,7 +161,7 @@ public class InTimeDbPersistService implements DbPersistService {
 			@Override
 			public void onException(Throwable t) {
 				cacheObject.swapUpdateProcessing(false);
-				delayDbPersistService.handleUpdate(cacheObject, dbAccessService);
+				retryQueue.add(this);
 			}
 
 			@Override
@@ -188,7 +225,7 @@ public class InTimeDbPersistService implements DbPersistService {
 			@Override
 			public void onException(Throwable t) {
 				cacheObject.swapUpdateProcessing(false);
-				delayDbPersistService.handleUpdate(cacheObject, dbAccessService);
+				retryQueue.add(this);
 			}
 
 			@Override
@@ -243,7 +280,7 @@ public class InTimeDbPersistService implements DbPersistService {
 			@Override
 			public void onException(Throwable t) {
 				cacheObject.swapUpdateProcessing(false);
-				delayDbPersistService.handleUpdate(cacheObject, dbAccessService);
+				retryQueue.add(this);
 			}
 
 			@Override
@@ -270,7 +307,17 @@ public class InTimeDbPersistService implements DbPersistService {
 
 	@Override
 	public void awaitTermination() {
-		//关闭消费入库线程池
+		// 中断重试线程
+		checkRetryThread.interrupt();
+		
+		// 清空重试队列
+		OrderedPersistAction action = retryQueue.poll();
+		while (action != null) {
+			handlePersist(action);
+			action = retryQueue.poll();
+		}
+		
+		// 关闭消费入库线程池
 		ThreadUtils.shundownThreadPool(DB_POOL_SERVICE, false);
 	}
 

@@ -6,6 +6,8 @@ import dbcache.model.PersistStatus;
 import dbcache.service.*;
 import dbcache.utils.JsonUtils;
 import dbcache.utils.NamedThreadFactory;
+import dbcache.utils.ThreadUtils;
+
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,6 +16,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
+
 import java.util.*;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -194,17 +197,16 @@ public class DelayBatchDbPersistService implements DbPersistService {
 			public void run() {
 
 				ConcurrentLinkedQueue<PersistAction> processQueue = updateQueue;
+				PersistAction persistAction = processQueue.poll();
 				
 				//循环定时检测入库,失败自动进入重试
-				while (true) {
+				while (!Thread.interrupted()) {
 					
 					try {
 						
 						long timeDiff = 0l;
 						long lastFlush = System.currentTimeMillis();
 						do {
-							
-							PersistAction persistAction = processQueue.peek();
 							
 							if (persistAction == null) {
 								// 执行批量入库任务
@@ -221,12 +223,12 @@ public class DelayBatchDbPersistService implements DbPersistService {
 									updateQueue = swapQueue;
 								}
 								
-								while ((persistAction = processQueue.poll()) != null) {// 获取下一个有效的操作元素
+								do {
 									//执行入库
-									if (persistAction.valid()) {
+									if (persistAction != null && persistAction.valid()) {
 										persistAction.run();
 									}
-								};
+								} while ((persistAction = processQueue.poll()) != null); // 获取下一个有效的操作元素
 								
 								// 执行批量入库任务
 								flushBatchTask();
@@ -241,7 +243,7 @@ public class DelayBatchDbPersistService implements DbPersistService {
 								Thread.sleep(timeDiff);
 							}
 							
-						} while (true);
+						} while (!Thread.interrupted() || persistAction != null);
 
 					} catch (Exception e) {
 						e.printStackTrace();
@@ -414,6 +416,9 @@ public class DelayBatchDbPersistService implements DbPersistService {
 
 	@Override
 	public void awaitTermination() {
+		// 关闭消费入库线程池
+		ThreadUtils.shundownThreadPool(DB_POOL_SERVICE, true);
+				
 		int failCount = 0;
 		while (failCount < 3) {
 			try {
