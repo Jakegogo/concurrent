@@ -7,6 +7,7 @@ import java.lang.annotation.Target;
 
 /**
  * 实体方法更新索引注解
+ * <br/> 标注该方法将会修改到对应的索引属性value[]的值
  * @author Jake
  * @date 2014年9月6日上午12:44:53
  */

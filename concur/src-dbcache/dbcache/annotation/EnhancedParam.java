@@ -7,7 +7,7 @@ import java.lang.annotation.Target;
 
 /**
  * ASM代理对象参数
- * <br/> 如equals(@EnhancedParam Object object)
+ * <br/> 如: compareTo(@EnhancedParam object)
  * Created by Jake on 2015/1/19.
  */
 @Target(ElementType.PARAMETER)

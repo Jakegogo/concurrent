@@ -21,6 +21,6 @@ public @interface ThreadSafe {
 	 * 标注内部持有锁对象的类型
 	 * @return
 	 */
-	public Class<?>[] withLock() default void.class;
+	public Class<?>[] guardBy() default void.class;
 
 }
