@@ -1,6 +1,5 @@
 package dbcache.support.asm;
 
-import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 
@@ -25,11 +24,9 @@ public abstract class AbstractAsmMethodProxyAspect implements Opcodes {
 	
 	/**
 	 * 初始化类
-	 * @param classWriter ClassWriter
-	 * @param originalClass 源类
-	 * @param enhancedClassName 代理类名
+	 * @param constructorBuilder 构造方法构建器
 	 */
-	public void doInitClass(ClassWriter classWriter, Class<?> originalClass, String enhancedClassName){};
+	public void doInitClass(ConstructorBuilder constructorBuilder){};
 	
 	/**
 	 * 方法执行前执行

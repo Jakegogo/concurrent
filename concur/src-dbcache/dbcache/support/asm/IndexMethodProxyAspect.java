@@ -1,13 +1,12 @@
 package dbcache.support.asm;
 
+import dbcache.annotation.ChangeIndexes;
 import dbcache.service.DbIndexService;
 import dbcache.utils.AsmUtils;
-
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.util.ReflectionUtils;
 import org.springframework.util.ReflectionUtils.FieldCallback;
@@ -33,12 +32,6 @@ public class IndexMethodProxyAspect extends AbstractAsmMethodProxyAspect {
 
 
 	/**
-	 * 实体索引服务
-	 */
-	@Autowired
-	private DbIndexService<?> entityIndexService;
-
-	/**
 	 * 索引信息缓存
 	 * 实体类 - 索引信息
 	 */
@@ -47,73 +40,95 @@ public class IndexMethodProxyAspect extends AbstractAsmMethodProxyAspect {
 
 
 	@Override
-	public void doInitClass(ClassWriter classWriter, Class<?> originalClass,
-			String enhancedClassName) {
+	public void doInitClass(ConstructorBuilder constructorBuilder) {
 		
 		// 增加原实体类型的属性(真实类)
-		classWriter.visitField(Opcodes.ACC_PROTECTED, EntityClassProxyAdapter.REAL_OBJECT,
-				Type.getDescriptor(originalClass), null, null);
+		constructorBuilder.appendField(constructorBuilder.getOriginalClass(), EntityClassProxyAdapter.REAL_OBJECT);
+//		classWriter.visitField(Opcodes.ACC_PROTECTED, EntityClassProxyAdapter.REAL_OBJECT,
+//				Type.getDescriptor(originalClass), null, null);
 
 		// 增加切面处理对象
-		classWriter.visitField(Opcodes.ACC_PROTECTED, EntityClassProxyAdapter.HANDLER_OBJECT,
-				Type.getDescriptor(getAspectHandleClass()), null, null);
+		constructorBuilder.appendField(getAspectHandleClass(), EntityClassProxyAdapter.HANDLER_OBJECT);
+//		classWriter.visitField(Opcodes.ACC_PROTECTED, EntityClassProxyAdapter.HANDLER_OBJECT,
+//				Type.getDescriptor(getAspectHandleClass()), null, null);
 
 		// 调用originalClassName的<init>方法，否则class不能实例化
-		MethodVisitor mvInit = classWriter.visitMethod(ACC_PUBLIC, EntityClassProxyAdapter.INIT, "()V",
-				null, null);
-		mvInit.visitVarInsn(ALOAD, 0);
-		mvInit.visitMethodInsn(INVOKESPECIAL,
-				AsmUtils.toAsmCls(originalClass.getName()), EntityClassProxyAdapter.INIT, "()V");
-		mvInit.visitInsn(RETURN);
-		mvInit.visitMaxs(0, 0);
-		mvInit.visitEnd();
+//		MethodVisitor mvInit = classWriter.visitMethod(ACC_PUBLIC, EntityClassProxyAdapter.INIT, "()V",
+//				null, null);
+//		mvInit.visitVarInsn(ALOAD, 0);
+//		mvInit.visitMethodInsn(INVOKESPECIAL,
+//				AsmUtils.toAsmCls(originalClass.getName()), EntityClassProxyAdapter.INIT, "()V");
+//		mvInit.visitInsn(RETURN);
+//		mvInit.visitMaxs(0, 0);
+//		mvInit.visitEnd();
 
 		// 添加带参构造方法,用真实类对象作为参数
-		MethodVisitor mvInit1 = classWriter.visitMethod(ACC_PUBLIC, EntityClassProxyAdapter.INIT, "("
-				+ Type.getDescriptor(originalClass) + ")V", null, null);
-		mvInit1.visitVarInsn(Opcodes.ALOAD, 0);
+//		MethodVisitor mvInit1 = classWriter.visitMethod(ACC_PUBLIC, EntityClassProxyAdapter.INIT, "("
+//				+ Type.getDescriptor(originalClass) + ")V", null, null);
+//		mvInit1.visitVarInsn(Opcodes.ALOAD, 0);
+//
+//		mvInit1.visitMethodInsn(INVOKESPECIAL,
+//				AsmUtils.toAsmCls(originalClass.getName()), EntityClassProxyAdapter.INIT, "()V");
+//
+//		mvInit1.visitVarInsn(Opcodes.ALOAD, 0);
+//		mvInit1.visitVarInsn(Opcodes.ALOAD, 1);
+//
+//		mvInit1.visitFieldInsn(Opcodes.PUTFIELD,
+//				AsmUtils.toAsmCls(enhancedClassName), EntityClassProxyAdapter.REAL_OBJECT,
+//				Type.getDescriptor(originalClass));
+//
+//		mvInit1.visitInsn(RETURN);
+//		mvInit1.visitMaxs(3, 2);
+//		mvInit1.visitEnd();
 
-		mvInit1.visitMethodInsn(INVOKESPECIAL,
-				AsmUtils.toAsmCls(originalClass.getName()), EntityClassProxyAdapter.INIT, "()V");
 
-		mvInit1.visitVarInsn(Opcodes.ALOAD, 0);
-		mvInit1.visitVarInsn(Opcodes.ALOAD, 1);
+		// 添加切面处理对象构造方法,用真实类对象作为参数
+		constructorBuilder.appendParameter(getAspectHandleClass(), new ConstructorBuilder.ParameterInit () {
 
-		mvInit1.visitFieldInsn(Opcodes.PUTFIELD,
-				AsmUtils.toAsmCls(enhancedClassName), EntityClassProxyAdapter.REAL_OBJECT,
-				Type.getDescriptor(originalClass));
+			@Override
+			/**
+			 * @see dbcache.support.asm.ConstructorBuilder#getProxyEntity(java.lang.Class<T>, T, dbcache.service.DbIndexService, java.util.concurrent.atomic.AtomicIntegerArray)
+			 */
+			public int parameterIndexOfgetProxyEntity() {
+				return 1;
+			}
 
-		mvInit1.visitInsn(RETURN);
-		mvInit1.visitMaxs(3, 2);
-		mvInit1.visitEnd();
+			@Override
+			public void onConstruct(ClassWriter classWriter, MethodVisitor mvInit, Class<?> originalClass, String enhancedClassName, int localIndex) {
+				mvInit.visitVarInsn(Opcodes.ALOAD, 0);
+				mvInit.visitVarInsn(Opcodes.ALOAD, localIndex);
 
+				mvInit.visitFieldInsn(Opcodes.PUTFIELD,
+						AsmUtils.toAsmCls(enhancedClassName), EntityClassProxyAdapter.HANDLER_OBJECT,
+						Type.getDescriptor(getAspectHandleClass()));
+			}
+		});
 
-		// 添加真实对象和切面处理对象构造方法,用真实类对象作为参数
-		MethodVisitor mvInit2 = classWriter.visitMethod(ACC_PUBLIC, EntityClassProxyAdapter.INIT, "("
-				+ Type.getDescriptor(originalClass)
-				+ Type.getDescriptor(getAspectHandleClass()) + ")V", null, null);
-		mvInit2.visitVarInsn(Opcodes.ALOAD, 0);
-
-		mvInit2.visitMethodInsn(INVOKESPECIAL,
-				AsmUtils.toAsmCls(originalClass.getName()), EntityClassProxyAdapter.INIT, "()V");
-
-		mvInit2.visitVarInsn(Opcodes.ALOAD, 0);
-		mvInit2.visitVarInsn(Opcodes.ALOAD, 1);
-
-		mvInit2.visitFieldInsn(Opcodes.PUTFIELD,
-				AsmUtils.toAsmCls(enhancedClassName), EntityClassProxyAdapter.REAL_OBJECT,
-				Type.getDescriptor(originalClass));
-
-		mvInit2.visitVarInsn(Opcodes.ALOAD, 0);
-		mvInit2.visitVarInsn(Opcodes.ALOAD, 2);
-
-		mvInit2.visitFieldInsn(Opcodes.PUTFIELD,
-				AsmUtils.toAsmCls(enhancedClassName), EntityClassProxyAdapter.HANDLER_OBJECT,
-				Type.getDescriptor(getAspectHandleClass()));
-
-		mvInit2.visitInsn(RETURN);
-		mvInit2.visitMaxs(3, 2);
-		mvInit2.visitEnd();
+//		MethodVisitor mvInit2 = classWriter.visitMethod(ACC_PUBLIC, EntityClassProxyAdapter.INIT, "("
+//				+ Type.getDescriptor(originalClass)
+//				+ Type.getDescriptor(getAspectHandleClass()) + ")V", null, null);
+//		mvInit2.visitVarInsn(Opcodes.ALOAD, 0);
+//
+//		mvInit2.visitMethodInsn(INVOKESPECIAL,
+//				AsmUtils.toAsmCls(originalClass.getName()), EntityClassProxyAdapter.INIT, "()V");
+//
+//		mvInit2.visitVarInsn(Opcodes.ALOAD, 0);
+//		mvInit2.visitVarInsn(Opcodes.ALOAD, 1);
+//
+//		mvInit2.visitFieldInsn(Opcodes.PUTFIELD,
+//				AsmUtils.toAsmCls(enhancedClassName), EntityClassProxyAdapter.REAL_OBJECT,
+//				Type.getDescriptor(originalClass));
+//
+//		mvInit2.visitVarInsn(Opcodes.ALOAD, 0);
+//		mvInit2.visitVarInsn(Opcodes.ALOAD, 2);
+//
+//		mvInit2.visitFieldInsn(Opcodes.PUTFIELD,
+//				AsmUtils.toAsmCls(enhancedClassName), EntityClassProxyAdapter.HANDLER_OBJECT,
+//				Type.getDescriptor(getAspectHandleClass()));
+//
+//		mvInit2.visitInsn(RETURN);
+//		mvInit2.visitMaxs(3, 2);
+//		mvInit2.visitEnd();
 				
 	}
 
@@ -158,8 +173,8 @@ public class IndexMethodProxyAspect extends AbstractAsmMethodProxyAspect {
 			@Override
 			public void doWith(Method method) throws IllegalArgumentException,
 					IllegalAccessException {
-				if(method.isAnnotationPresent(dbcache.annotation.UpdateIndex.class)) {
-					dbcache.annotation.UpdateIndex updateIndexAno = method.getAnnotation(dbcache.annotation.UpdateIndex.class);
+				if(method.isAnnotationPresent(ChangeIndexes.class)) {
+					ChangeIndexes updateIndexAno = method.getAnnotation(ChangeIndexes.class);
 					for(String indexName : updateIndexAno.value()) {
 						Set<MethodMetaData> methodMetaDataSet = getIndexNameSet(methodsMap, method);
 						methodMetaDataSet.add(MethodMetaData.valueOf(method, indexName));

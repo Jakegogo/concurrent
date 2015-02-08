@@ -1,5 +1,6 @@
 package dbcache.support.asm;
 
+import dbcache.service.DbIndexService;
 import dbcache.utils.AsmUtils;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.MethodVisitor;
@@ -9,6 +10,7 @@ import org.objectweb.asm.Type;
 import java.lang.reflect.Constructor;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicIntegerArray;
 
 /**
  * 构建构造方法
@@ -37,8 +39,9 @@ public class ConstructorBuilder implements Opcodes {
     }
 
 
-    static interface ParameterInit {
-        void onConstruct(ClassWriter classWriter, Class<?> originalClass, String enhancedClassName, int localIndex);
+    public static interface ParameterInit {
+        int parameterIndexOfgetProxyEntity();
+        void onConstruct(ClassWriter classWriter, MethodVisitor mvInit, Class<?> originalClass, String enhancedClassName, int localIndex);
     }
 
 
@@ -52,6 +55,10 @@ public class ConstructorBuilder implements Opcodes {
         return this;
     }
 
+    /**
+     * 构建构造方法
+     * @return
+     */
     public ConstructorBuilder build() {
 
         // 添加属性
@@ -87,7 +94,7 @@ public class ConstructorBuilder implements Opcodes {
         // onConstruct
         int localIndex = 1;
         for (Map.Entry<Class<?>, ParameterInit> initParamEntry : initParams.entrySet()) {
-            initParamEntry.getValue().onConstruct(classWriter, originalClass, enhancedClassName, localIndex ++);
+            initParamEntry.getValue().onConstruct(classWriter, mvInit2, originalClass, enhancedClassName, localIndex ++);
         }
 
         mvInit2.visitInsn(RETURN);
@@ -96,6 +103,7 @@ public class ConstructorBuilder implements Opcodes {
 
         return this;
     }
+
 
     /**
      * 获取构造方法
@@ -128,17 +136,20 @@ public class ConstructorBuilder implements Opcodes {
      * 获取代理对象
      * @param proxyClass 代理类
      * @param constructParams 构造方法的参数
+     * @see ParameterInit#parameterIndexOfgetProxyEntity()
      */
     public <T> T getProxyEntity(Class<T> proxyClass, Object... constructParams) {
-
-        Object[] params = new Object[constructParams.length + 1];
-        for(int i = 0; i < constructParams.length;i ++) {
-            params[i] = constructParams[i];
-        }
 
         Constructor<?> con = getConstructor(proxyClass);
         if (con == null) {
             throw new IllegalStateException("无法获取类[" + proxyClass + "]的构造方法.");
+        }
+
+        Object[] params = new Object[initParams.size()];
+        int index = 0;
+        for (Map.Entry<Class<?>, ParameterInit> initParamEntry : initParams.entrySet()) {
+            int paramIndex = initParamEntry.getValue().parameterIndexOfgetProxyEntity();
+            params[index++] = constructParams[paramIndex];
         }
 
         try {
@@ -150,4 +161,30 @@ public class ConstructorBuilder implements Opcodes {
     }
 
 
+    /**
+     * 创建代理对象
+     * @param proxyClass 代理类
+     * @param entity 实体 0
+     * @param indexService 索引服务 1
+     * @param modifiedFields 修改的字段index 2
+     * @param <T>
+     * @see ParameterInit#parameterIndexOfgetProxyEntity()
+     * @return
+     */
+    public <T> T getProxyEntity(Class<T> proxyClass, T entity, DbIndexService indexService, AtomicIntegerArray modifiedFields) {
+        return this.getProxyEntity(proxyClass, entity, indexService, modifiedFields);
+    }
+
+    // getters
+    public Class<?> getOriginalClass() {
+        return originalClass;
+    }
+
+    public ClassWriter getClassWriter() {
+        return classWriter;
+    }
+
+    public String getEnhancedClassName() {
+        return enhancedClassName;
+    }
 }

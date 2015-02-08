@@ -6,6 +6,7 @@ import dbcache.model.CacheObject;
 import dbcache.model.IEntity;
 
 import java.io.Serializable;
+import java.util.concurrent.atomic.AtomicIntegerArray;
 
 /**
  * DbCached缓存模块配置服务接口
@@ -24,7 +25,7 @@ public interface ConfigFactory {
 	 * @return
 	 */
 	@SuppressWarnings("rawtypes")
-	public <T extends IEntity<PK>, PK extends Comparable<PK> & Serializable> T createProxyEntity(T entity, Class<? extends IEntity> proxyClass, DbIndexService indexService, CacheConfig<T> cacheConfig);
+	public <T extends IEntity<PK>, PK extends Comparable<PK> & Serializable> T createProxyEntity(T entity, Class<? extends IEntity> proxyClass, DbIndexService indexService, CacheConfig<T> cacheConfig, AtomicIntegerArray modifiedFields);
 
 
 	/**

@@ -1,9 +1,11 @@
 package dbcache.conf;
 
 import dbcache.annotation.Cached;
+import dbcache.annotation.DynamicUpdate;
 import dbcache.annotation.EnableIndex;
 import dbcache.key.IdGenerator;
 import dbcache.service.impl.ConcurrentLinkedHashMapCache;
+import dbcache.support.asm.ConstructorBuilder;
 import dbcache.support.asm.ValueGetter;
 import dbcache.utils.AnnotationUtils;
 import dbcache.utils.JsonUtils;
@@ -26,6 +28,12 @@ public class CacheConfig<T> {
 	/** 实体静态代理类  */
 	private Class<T> proxyClazz;
 
+	/** 代理类方法构造器 */
+	private ConstructorBuilder constructorBuilder;
+
+	/** 属性个数 */
+	private int fieldCount;
+
 	/** 缓存容器类型 */
 	private CacheType cacheType;
 
@@ -43,6 +51,9 @@ public class CacheConfig<T> {
 
 	/** 启用索引服务 默认true */
 	private boolean enableIndex = false;
+
+	/** 启用动态更新 */
+	private boolean enableDynamicUpdate = false;
 
 	/** 索引服务缓存类 */
 	private Class<?> indexCacheClass = ConcurrentLinkedHashMapCache.class;
@@ -76,8 +87,11 @@ public class CacheConfig<T> {
 		if(cachedAnno != null) {
 			CacheConfig<T> cacheConfig = (CacheConfig<T>) valueOf(cachedAnno);
 			cacheConfig.setClazz(entityClass);
-			if(entityClass.isAnnotationPresent(EnableIndex.class)) {
+			if (entityClass.isAnnotationPresent(EnableIndex.class)) {
 				cacheConfig.setEnableIndex(true);
+			}
+			if (entityClass.isAnnotationPresent(DynamicUpdate.class)) {
+				cacheConfig.setEnableDynamicUpdate(true);
 			}
 			return cacheConfig;
 		}
@@ -272,5 +286,29 @@ public class CacheConfig<T> {
 
 	public void setDefaultIdGenerator(IdGenerator<?> defaultIdGenerator) {
 		this.defaultIdGenerator = defaultIdGenerator;
+	}
+
+	public ConstructorBuilder getConstructorBuilder() {
+		return constructorBuilder;
+	}
+
+	public void setConstructorBuilder(ConstructorBuilder constructorBuilder) {
+		this.constructorBuilder = constructorBuilder;
+	}
+
+	public boolean isEnableDynamicUpdate() {
+		return enableDynamicUpdate;
+	}
+
+	public void setEnableDynamicUpdate(boolean enableDynamicUpdate) {
+		this.enableDynamicUpdate = enableDynamicUpdate;
+	}
+
+	public int getFieldCount() {
+		return fieldCount;
+	}
+
+	public void setFieldCount(int fieldCount) {
+		this.fieldCount = fieldCount;
 	}
 }

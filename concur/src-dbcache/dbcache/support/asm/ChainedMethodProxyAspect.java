@@ -1,6 +1,5 @@
 package dbcache.support.asm;
 
-import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.MethodVisitor;
 
 import java.lang.reflect.Method;
@@ -52,10 +51,10 @@ public class ChainedMethodProxyAspect extends AbstractAsmMethodProxyAspect {
     }
 
     @Override
-    public void doInitClass(ClassWriter classWriter, Class<?> originalClass, String enhancedClassName) {
-        this.current.doInitClass(classWriter, originalClass, enhancedClassName);
+    public void doInitClass(ConstructorBuilder constructorBuilder) {
+        this.current.doInitClass(constructorBuilder);
         if (this.next != null) {
-            this.next.doInitClass(classWriter, originalClass, enhancedClassName);
+            this.next.doInitClass(constructorBuilder);
         }
     }
 

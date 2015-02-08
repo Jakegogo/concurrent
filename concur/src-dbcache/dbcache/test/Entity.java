@@ -2,7 +2,7 @@ package dbcache.test;
 
 import dbcache.annotation.Cached;
 import dbcache.annotation.JsonConvert;
-import dbcache.annotation.UpdateIndex;
+import dbcache.annotation.ChangeIndexes;
 import dbcache.conf.CacheType;
 import dbcache.conf.PersistType;
 import dbcache.model.EntityInitializer;
@@ -67,7 +67,7 @@ public class Entity implements EntityInitializer, IEntity<Long> {
 		this.num = num;
 	}
 
-	@UpdateIndex({ "num_idx" })
+	@ChangeIndexes({ "num_idx" })
 	public int addNum(int num) {
 		this.num += num;
 		return this.num;

@@ -328,7 +328,7 @@ public class InTimeDbPersistService implements DbPersistService {
 			handlePersist(action);
 			action = retryQueue.poll();
 		}
-		
+
 		// 关闭消费入库线程池
 		ThreadUtils.shundownThreadPool(DB_POOL_SERVICE, false);
 	}

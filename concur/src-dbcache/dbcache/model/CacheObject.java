@@ -10,6 +10,7 @@ import org.apache.commons.lang.builder.EqualsBuilder;
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicIntegerArray;
 import java.util.concurrent.atomic.AtomicReference;
 
 
@@ -50,6 +51,13 @@ public class CacheObject<T extends IEntity<?>> {
 	 * Json 自动转换器
 	 */
 	private Collection<JsonConverter<T>> jsonConverters;
+
+	/**
+	 * 修改过的属性
+	 */
+	private AtomicIntegerArray modifiedFields;
+
+	// for persist
 	
 	/**
 	 * 持久化状态
@@ -87,7 +95,7 @@ public class CacheObject<T extends IEntity<?>> {
 	 *            类型
 	 */
 	public CacheObject(T entity, Serializable id, Class<T> clazz, T proxyEntity) {
-		this(entity, id, clazz, proxyEntity, null, null);
+		this(entity, id, clazz, proxyEntity, null, null, null);
 	}
 
 	/**
@@ -100,14 +108,15 @@ public class CacheObject<T extends IEntity<?>> {
 	 * @param clazz
 	 *            类型
 	 */
-	public CacheObject(T entity, Serializable id, Class<T> clazz, T proxyEntity, Collection<ValueGetter<T>> indexes, Collection<JsonConverter<T>> jsonConverters) {
+	public CacheObject(T entity, Serializable id, Class<T> clazz, T proxyEntity, Collection<ValueGetter<T>> indexes, Collection<JsonConverter<T>> jsonConverters, AtomicIntegerArray modifiedFields) {
 		this.entity = entity;
 		this.id = id;
 		this.proxyEntity = proxyEntity;
 		this.persistStatus = PersistStatus.TRANSIENT;
 		this.indexList = indexes;
 		this.jsonConverters = jsonConverters;
-		
+		this.modifiedFields = modifiedFields;
+
 		// 将进入持久化状态
 		this.doBeforePersist();
 	}
@@ -240,4 +249,7 @@ public class CacheObject<T extends IEntity<?>> {
 		return lastLinkingRunnable;
 	}
 
+	public AtomicIntegerArray getModifiedFields() {
+		return modifiedFields;
+	}
 }

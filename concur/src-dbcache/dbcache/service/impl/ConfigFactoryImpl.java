@@ -10,10 +10,7 @@ import dbcache.model.IEntity;
 import dbcache.model.WeakCacheEntity;
 import dbcache.model.WeakCacheObject;
 import dbcache.service.*;
-import dbcache.support.asm.AsmAccessHelper;
-import dbcache.support.asm.EntityAsmFactory;
-import dbcache.support.asm.IndexMethodProxyAspect;
-import dbcache.support.asm.ValueGetter;
+import dbcache.support.asm.*;
 import dbcache.utils.ThreadUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,6 +34,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.atomic.AtomicIntegerArray;
 
 /**
  * DbCached缓存模块配置服务实现
@@ -143,8 +141,9 @@ public class ConfigFactoryImpl implements ConfigFactory, DbCacheMBean {
 
 
 			//初始化代理类
-			Class<?> proxyClazz = EntityAsmFactory.getEntityEnhancedClass(clz, methodAspect);
-			cacheConfig.setProxyClazz(proxyClazz);
+			EnhancedClassInfo<?> classInfo = EntityAsmFactory.getEntityEnhancedClassInfo(clz, methodAspect);
+			cacheConfig.setProxyClazz(classInfo.getProxyClass());
+			cacheConfig.setConstructorBuilder(classInfo.getConstructorBuilder());
 
 			Field cacheConfigField = DbCacheServiceImpl.class.getDeclaredField(proxyCacheConfigProperty);
 			inject(service, cacheConfigField, cacheConfig);
@@ -298,6 +297,7 @@ public class ConfigFactoryImpl implements ConfigFactory, DbCacheMBean {
 
 			cacheConfig.setIndexes(indexes);
 			cacheConfig.setJsonAutoConverters(jsonAutoConverters);
+			cacheConfig.setFieldCount(clz.getDeclaredFields().length);
 
 			cacheConfigMap.put(clz, cacheConfig);
 		}
@@ -327,12 +327,12 @@ public class ConfigFactoryImpl implements ConfigFactory, DbCacheMBean {
 
 	@SuppressWarnings("rawtypes")
 	@Override
-	public <T extends IEntity<PK>, PK extends Comparable<PK> & Serializable> T createProxyEntity(T entity, Class<? extends IEntity> proxyClass, DbIndexService indexService, CacheConfig<T> cacheConfig) {
+	public <T extends IEntity<PK>, PK extends Comparable<PK> & Serializable> T createProxyEntity(T entity, Class<? extends IEntity> proxyClass, DbIndexService indexService, CacheConfig<T> cacheConfig, AtomicIntegerArray modifiedFields) {
 		// 判断是否启用索引服务
-		if(cacheConfig == null || !cacheConfig.isEnableIndex()) {
+		if(cacheConfig == null || (!cacheConfig.isEnableIndex() && !cacheConfig.isEnableDynamicUpdate())) {
 			return entity;
 		}
-		return this.getProxyEntity(proxyClass, entity, indexService);
+		return (T) cacheConfig.getConstructorBuilder().getProxyEntity(proxyClass, entity, indexService, modifiedFields);
 	}
 
 
@@ -352,7 +352,12 @@ public class ConfigFactoryImpl implements ConfigFactory, DbCacheMBean {
 			T entity, Class<? extends IEntity> entityClazz,
 			DbIndexService<?> indexService, Object key, Cache cache, CacheConfig<T> cacheConfig) {
 
-		T proxyEntity = this.createProxyEntity(entity, cacheConfig.getProxyClazz(), indexService, cacheConfig);
+		// 启用动态更新
+		AtomicIntegerArray modifiedFields = null;
+		if (cacheConfig.isEnableDynamicUpdate()) {
+			modifiedFields = new AtomicIntegerArray(cacheConfig.getFieldCount());
+		}
+		T proxyEntity = this.createProxyEntity(entity, cacheConfig.getProxyClazz(), indexService, cacheConfig, modifiedFields);
 
 		// 弱引用方式
 		if(cacheConfig.getCacheType() == CacheType.WEEKMAP) {
@@ -362,9 +367,9 @@ public class ConfigFactoryImpl implements ConfigFactory, DbCacheMBean {
 
 		// 生成CacheObject
 		if(cacheConfig.getCacheType() == CacheType.WEEKMAP) {
-			return new WeakCacheObject<T, WeakCacheEntity<T,?>>(entity, entity.getId(), (Class<T>) entityClazz, proxyEntity, key, cacheConfig.getIndexList(), cacheConfig.getJsonAutoConverterList());
+			return new WeakCacheObject<T, WeakCacheEntity<T,?>>(entity, entity.getId(), (Class<T>) entityClazz, proxyEntity, key, cacheConfig.getIndexList(), cacheConfig.getJsonAutoConverterList(), modifiedFields);
 		} else {
-			return new CacheObject<T>(entity, entity.getId(), (Class<T>) entityClazz, proxyEntity, cacheConfig.getIndexList(), cacheConfig.getJsonAutoConverterList());
+			return new CacheObject<T>(entity, entity.getId(), (Class<T>) entityClazz, proxyEntity, cacheConfig.getIndexList(), cacheConfig.getJsonAutoConverterList(), modifiedFields);
 		}
 
 	}
@@ -396,37 +401,6 @@ public class ConfigFactoryImpl implements ConfigFactory, DbCacheMBean {
 		return null;
 	}
 
-
-	/**
-	 * 获取代理对象
-	 * @param proxyClass 代理类
-	 * @param entity 被代理实体
-	 * @param constructParams 构造方法的参数
-	 */
-	@SuppressWarnings("unchecked")
-	private <T> T getProxyEntity(Class<?> proxyClass, T entity, Object... constructParams) {
-
-		Class<?>[] paramTypes = new Class<?>[constructParams.length + 1];
-		paramTypes[0] = entity.getClass();
-		for(int i = 1; i < constructParams.length + 1;i ++) {
-			paramTypes[i] = constructParams[i - 1].getClass().getInterfaces()[0];
-		}
-
-		Object[] params = new Object[constructParams.length + 1];
-		params[0] = entity;
-		for(int i = 1; i < constructParams.length + 1;i ++) {
-			params[i] = constructParams[i - 1];
-		}
-
-		Constructor<?> con;
-		try {
-			con = proxyClass.getConstructor(paramTypes);
-			return (T) con.newInstance(params);
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		return null;
-	}
 
 
 	//-----------------------JMX接口---------------------
