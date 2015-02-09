@@ -76,5 +76,16 @@ public class ChainedMethodProxyAspect extends AbstractAsmMethodProxyAspect {
         return this.current.doAfter(entityClass, mWriter, method, localMax, name, acc, desc);
     }
 
+	@Override
+	public boolean needOverride(Class<?> entityClass, Method method) {
+		if (this.current.needOverride(entityClass, method)) {
+			return true;
+		}
+		if (this.next != null) {
+			return this.next.needOverride(entityClass, method);
+		}
+		return false;
+	}
+
 
 }

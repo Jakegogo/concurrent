@@ -192,7 +192,10 @@ public class EntityClassProxyAdapter extends ClassVisitor implements Opcodes {
 			}
 
 			// insert code here (before)
-			int aspectBeforeLocalNum = this.methodAspect.doBefore(originalClass, mWriter, m, i, m.getName(), Opcodes.ACC_PUBLIC, null);
+			int aspectBeforeLocalNum = i;
+			if (this.methodAspect.needOverride(originalClass, m)) {
+				aspectBeforeLocalNum = this.methodAspect.doBefore(originalClass, mWriter, m, i, m.getName(), Opcodes.ACC_PUBLIC, null);
+			}
 
 			// 调用被代理对象源方法
 			// 如果不是静态方法 load this.obj对象
