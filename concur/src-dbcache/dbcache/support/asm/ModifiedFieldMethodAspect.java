@@ -56,7 +56,7 @@ public class ModifiedFieldMethodAspect extends AbstractAsmMethodProxyAspect {
 			 * @see dbcache.support.asm.ConstructorBuilder#getProxyEntity(java.lang.Class<T>, T, dbcache.service.DbIndexService, java.util.concurrent.atomic.AtomicIntegerArray)
 			 */
 			public int parameterIndexOfgetProxyEntity() {
-				return 1;
+				return 2;
 			}
 
 			@Override
