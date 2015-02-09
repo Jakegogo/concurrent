@@ -25,6 +25,8 @@ public enum PersistType {
 	
 	/**
 	 * 延时批量入库
+	 * <br/>此方式不支持DynamicUpdate
+	 * <br/>不能支持到Hibernate入库方式
 	 */
 	DELAY_BATCH(DelayBatchDbPersistService.class, "delayBatchDbPersistService");
 

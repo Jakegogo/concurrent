@@ -153,6 +153,9 @@ public class EntityAsmFactory {
 		methodAspect.doInitClass(constructorBuilder);
 
 		reader.accept(visitor, 0);
+		// 构建构造方法
+		constructorBuilder.build();
+		
 		byte[] byteCodes = writer.toByteArray();
 		AsmUtils.writeClazz(enhancedClassName, byteCodes);
 		Class<T> proxyClass = (Class<T>) classLoader.defineClass(

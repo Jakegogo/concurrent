@@ -16,6 +16,7 @@ import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
+import org.springframework.stereotype.Component;
 import org.springframework.util.ReflectionUtils;
 import org.springframework.util.ReflectionUtils.FieldCallback;
 import org.springframework.util.ReflectionUtils.MethodCallback;
@@ -28,6 +29,7 @@ import dbcache.utils.IntegerCounter;
  * 记录修改属性的切面
  * Created by Jake on 2015/2/8.
  */
+@Component
 public class ModifiedFieldMethodAspect extends AbstractAsmMethodProxyAspect {
 	
 	/**
@@ -50,7 +52,7 @@ public class ModifiedFieldMethodAspect extends AbstractAsmMethodProxyAspect {
 		constructorBuilder.appendField(AtomicIntegerArray.class, CHANGE_FIELDS_ARRAY);
 
 		// 添加切面处理对象构造方法,用真实类对象作为参数
-		constructorBuilder.appendParameter(getAspectHandleClass(), new ConstructorBuilder.ParameterInit () {
+		constructorBuilder.appendParameter(AtomicIntegerArray.class, new ConstructorBuilder.ParameterInit () {
 
 			@Override
 			/**
@@ -174,7 +176,7 @@ public class ModifiedFieldMethodAspect extends AbstractAsmMethodProxyAspect {
 			
 			Method setMethod = null;
 			try {
-				setMethod = AtomicIntegerArray.class.getDeclaredMethod("set", Integer.class, Integer.class);
+				setMethod = AtomicIntegerArray.class.getDeclaredMethod("set", int.class, int.class);
 			} catch (SecurityException e) {
 				e.printStackTrace();
 			} catch (NoSuchMethodException e) {

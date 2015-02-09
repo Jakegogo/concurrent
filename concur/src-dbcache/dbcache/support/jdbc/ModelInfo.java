@@ -196,8 +196,8 @@ public class ModelInfo {
     	
     	String key = null;
     	List<String> modifiedColumns = new ArrayList<String>();
-    	for (Integer i : modifiedFields) {
-			AttributeInfo attributeInfo = this.columnInfos.get(i);
+    	for (Integer fieldIndex : modifiedFields) {
+			AttributeInfo attributeInfo = this.columnInfos.get(fieldIndex);
 			String fieldName = attributeInfo.getColumnName();
 			modifiedColumns.add(fieldName);
 			key = attributeInfo.getName();
@@ -494,10 +494,11 @@ public class ModelInfo {
 	public Object[] getUpdateParams(List<Integer> modifiedFields, Object entity) {
 	   	Object[] sqlParams = new Object[modifiedFields.size() + 1];
 		
-	   	for (Integer i : modifiedFields) {
-			AttributeInfo attributeInfo = this.columnInfos.get(i);
+	   	int i = 0;
+	   	for (Integer fieldIndex : modifiedFields) {
+			AttributeInfo attributeInfo = this.columnInfos.get(fieldIndex);
 			if (attributeInfo != null && !attributeInfo.isPrimaryKey()) {
-				sqlParams[i] = attributeInfo.getValue(entity);
+				sqlParams[i++] = attributeInfo.getValue(entity);
 			}
 		}
 	   	

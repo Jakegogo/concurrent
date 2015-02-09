@@ -1,22 +1,27 @@
 package dbcache.test;
 
 import dbcache.annotation.Cached;
+import dbcache.annotation.ChangeFields;
+import dbcache.annotation.DynamicUpdate;
 import dbcache.annotation.JsonConvert;
 import dbcache.annotation.ChangeIndexes;
 import dbcache.conf.CacheType;
 import dbcache.conf.PersistType;
 import dbcache.model.EntityInitializer;
 import dbcache.model.IEntity;
+
 import org.apache.mina.util.ConcurrentHashSet;
 import org.hibernate.annotations.Index;
 
 import javax.persistence.Id;
 import javax.persistence.Transient;
+
 import java.lang.reflect.Method;
 import java.util.concurrent.atomic.AtomicInteger;
 
 @Cached(persistType=PersistType.INTIME, enableIndex = true, cacheType=CacheType.LRU, entitySize = 1000)
 @javax.persistence.Entity
+@DynamicUpdate
 //@MappedSuperclass
 public class Entity implements EntityInitializer, IEntity<Long> {
 
@@ -55,6 +60,7 @@ public class Entity implements EntityInitializer, IEntity<Long> {
 	}
 
 //	@UpdateIndex({ "num_idx" })
+	@ChangeFields({"num"})
 	public void increseNum() {
 		this.num = this.idgenerator.incrementAndGet();
 	}
@@ -68,6 +74,7 @@ public class Entity implements EntityInitializer, IEntity<Long> {
 	}
 
 	@ChangeIndexes({ "num_idx" })
+	@ChangeFields({"num"})
 	public int addNum(int num) {
 		this.num += num;
 		return this.num;
@@ -164,6 +171,11 @@ public class Entity implements EntityInitializer, IEntity<Long> {
 	}
 
 	public ConcurrentHashSet<Long> getFriendSet() {
+		return friendSet;
+	}
+	
+	@ChangeFields({"friends"})
+	public ConcurrentHashSet<Long> getFriendSetForUpdate() {
 		return friendSet;
 	}
 }
