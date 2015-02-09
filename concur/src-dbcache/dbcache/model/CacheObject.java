@@ -162,7 +162,7 @@ public class CacheObject<T extends IEntity<?>> {
 			}
 		}
 		// 持久化前操作
-		if (entity instanceof EntityInitializer){
+		if (entity instanceof EntityInitializer) {
 			EntityInitializer entityInitializer = (EntityInitializer) entity;
 			entityInitializer.doBeforePersist();
 		}

@@ -45,7 +45,7 @@ public class JsonConverter<T> implements Cloneable {
     private ValueSetter<T> targetSetter;
     
     /**
-     * 属性索引数
+     * 对应json串属性索引数
      */
     private int fieldIndex;
 

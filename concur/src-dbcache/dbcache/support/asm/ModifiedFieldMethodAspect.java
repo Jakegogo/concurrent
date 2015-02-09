@@ -22,6 +22,7 @@ import org.springframework.util.ReflectionUtils.MethodCallback;
 
 import dbcache.annotation.ChangeFields;
 import dbcache.utils.AsmUtils;
+import dbcache.utils.IntegerCounter;
 
 /**
  * 记录修改属性的切面
@@ -80,6 +81,7 @@ public class ModifiedFieldMethodAspect extends AbstractAsmMethodProxyAspect {
 		final Map<String, FieldMetaData> fieldsMap = indexesMetaData.fields;
 
 		//扫描属性注解
+		final IntegerCounter fieldIndexCounter = new IntegerCounter();
 		ReflectionUtils.doWithFields(clazz, new FieldCallback() {
 			public void doWith(Field field) throws IllegalArgumentException, IllegalAccessException {
 				// 忽略静态属性和临时属性
@@ -88,6 +90,7 @@ public class ModifiedFieldMethodAspect extends AbstractAsmMethodProxyAspect {
 					return;
 				}
 				
+				int fieldIndex = fieldIndexCounter.getAndIncrement();
 				try {
 					PropertyDescriptor propertyDescriptor = new PropertyDescriptor(field.getName(), clazz);
 					Method setMethod = propertyDescriptor.getWriteMethod();
@@ -96,6 +99,7 @@ public class ModifiedFieldMethodAspect extends AbstractAsmMethodProxyAspect {
 
 					FieldMetaData fieldMetaData = new FieldMetaData();
 					fieldMetaData.field = field;
+					fieldMetaData.fieldIndex = fieldIndex;
 					
 					fieldsMap.put(field.getName(), fieldMetaData);
 
@@ -104,6 +108,7 @@ public class ModifiedFieldMethodAspect extends AbstractAsmMethodProxyAspect {
 				}
 			}
 		});
+		
 		//扫描方法注解
 		ReflectionUtils.doWithMethods(clazz, new MethodCallback() {
 

@@ -7,9 +7,11 @@ import java.lang.annotation.Target;
 
 /**
  * 动态更新字段注解
- * <br/>用于大字段动态update,无修改字段值则不更新入库
+ * <br/>用于大字段动态update,无修改字段值则不更新入库.
+ * <br/>默认切面get,set方法记录修改的属性
  * <br/>通过调用setXX()方法可以检测到修改的属性
  * <br/>或者使用@ChangeFields标注方法将要修改到的属性
+ * <br/>json自动转换属性需使用@ChangeFields注解标注将修改对应属性值的方法:getXXForUpdate()
  * @date 2015年1月12日下午11:52:50
  * @author Jake
  */

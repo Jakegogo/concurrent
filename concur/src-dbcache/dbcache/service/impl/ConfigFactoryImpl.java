@@ -32,6 +32,7 @@ import java.io.Serializable;
 import java.lang.management.ManagementFactory;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -285,6 +286,12 @@ public class ConfigFactoryImpl implements ConfigFactory, DbCacheMBean {
 			final IntegerCounter fieldIndexCounter = new IntegerCounter();
 			ReflectionUtils.doWithFields(clz, new FieldCallback() {
 				public void doWith(Field field) throws IllegalArgumentException, IllegalAccessException {
+					// 忽略静态属性和临时属性
+					if (Modifier.isTransient(field.getModifiers()) || Modifier.isStatic(field.getModifiers()) ||
+							field.isAnnotationPresent(javax.persistence.Transient.class)) {
+						return;
+					}
+					
 					int fieldIndex = fieldIndexCounter.getAndIncrement();
 					// 处理索引注解
 					if (field.isAnnotationPresent(org.hibernate.annotations.Index.class) ||
