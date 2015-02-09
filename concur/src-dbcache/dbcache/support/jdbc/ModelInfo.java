@@ -36,7 +36,7 @@ public class ModelInfo {
 
 	// 属性列表
 	@SuppressWarnings("rawtypes")
-	private List<AttributeInfo> columnInfos;
+	private ArrayList<AttributeInfo> columnInfos;
 
 	/**
 	 * 实体主键ID生成map {类别ID : {实体类： 主键id生成器} }
@@ -71,6 +71,8 @@ public class ModelInfo {
     // 按字段更新语句
     private Map<String, String> updateByColumnSqlMap = new HashMap<String, String>();
 
+
+    
     /**
      * 生成插入语句
      * @param dialect Dialect
@@ -179,6 +181,49 @@ public class ModelInfo {
     	return sql;
     }
 
+    
+    /**
+     * 生成更新语句
+     * @param dialect Dialect
+     * @param modifiedFields 修改过的属性集合
+     * @return
+     */
+    public String getOrCreateUpdateSql(List<Integer> modifiedFields, Dialect dialect) {
+    	
+    	if (modifiedFields.size() == 0) {
+    		return this.getOrCreateUpdateSql(dialect);
+    	}
+    	
+    	String key = null;
+    	List<String> modifiedColumns = new ArrayList<String>();
+    	for (Integer i : modifiedFields) {
+			AttributeInfo attributeInfo = this.columnInfos.get(i);
+			String fieldName = attributeInfo.getColumnName();
+			modifiedColumns.add(fieldName);
+			key = attributeInfo.getName();
+    	}
+    	
+    	String sql = null;
+    	if (modifiedColumns.size() == 1) {
+    		key = modifiedColumns.get(0);
+    		
+    		sql = this.updateByColumnSqlMap.get(key);
+    		if (sql != null) {
+    			return sql;
+    		}
+    	}
+
+		StringBuilder sqlBuilder = new StringBuilder();
+    	dialect.forDbUpdate(tableInfo, modifiedColumns, sqlBuilder);
+
+    	sql = sqlBuilder.toString();
+    	if (modifiedColumns.size() == 1) {
+    		this.updateByColumnSqlMap.put(key, sql);
+    	}
+    	
+    	return sql;
+    }
+    
 
     /**
      * 生成查询最大主键语句
@@ -439,6 +484,29 @@ public class ModelInfo {
 	}
     
 
+   /**
+    * 获取更新的sql参数
+    * @param entity 实体
+    * @param modifiedFields 修改过的属性数组(线程安全)
+    * @return
+    */
+	@SuppressWarnings("unchecked")
+	public Object[] getUpdateParams(List<Integer> modifiedFields, Object entity) {
+	   	Object[] sqlParams = new Object[modifiedFields.size() + 1];
+		
+	   	for (Integer i : modifiedFields) {
+			AttributeInfo attributeInfo = this.columnInfos.get(i);
+			if (attributeInfo != null && !attributeInfo.isPrimaryKey()) {
+				sqlParams[i] = attributeInfo.getValue(entity);
+			}
+		}
+	   	
+		sqlParams[modifiedFields.size()] = primaryKeyInfo.getValue(entity);
+		return sqlParams;
+	}
+   
+   
+   
     @SuppressWarnings("rawtypes")
 	private Object getRsVal(ResultSet rs, int i, int type, AttributeInfo columnInfo) throws SQLException {
     	Object value = null;

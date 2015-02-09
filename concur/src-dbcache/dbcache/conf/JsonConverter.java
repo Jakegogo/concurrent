@@ -43,7 +43,11 @@ public class JsonConverter<T> implements Cloneable {
      * 目标属性设值器
      */
     private ValueSetter<T> targetSetter;
-
+    
+    /**
+     * 属性索引数
+     */
+    private int fieldIndex;
 
     public JsonConverter() {
     }
@@ -66,7 +70,22 @@ public class JsonConverter<T> implements Cloneable {
         jsonConvertConfig.targetSetter = AsmAccessHelper.createFieldSetter(clz, field);
         return jsonConvertConfig;
     }
-
+    
+    /**
+     * 生成实例
+     *
+     * @param clz 实体类
+     * @param field 目标属性
+     * @param value json串属性名
+     * @param fieldIndex 属性索引数
+     * @return
+     */
+    public static <T> JsonConverter<T> valueof(Class<T> clz, Field field, String value, int fieldIndex) throws Exception {
+        JsonConverter<T> jsonConvertConfig = valueof(clz, field, value);
+        jsonConvertConfig.fieldIndex = fieldIndex;
+        return jsonConvertConfig;
+    }
+    
 
     /**
      * 克隆
@@ -137,4 +156,9 @@ public class JsonConverter<T> implements Cloneable {
     public ValueGetter<T> getTargetGetter() {
         return targetGetter;
     }
+
+	public int getFieldIndex() {
+		return fieldIndex;
+	}
+
 }

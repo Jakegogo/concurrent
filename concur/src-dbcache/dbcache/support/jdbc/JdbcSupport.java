@@ -24,6 +24,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.concurrent.atomic.AtomicIntegerArray;
 
 /**
  * Jdbc Dao支持
@@ -267,7 +268,7 @@ public class JdbcSupport {
     /**
      * 更新实体
      * @param entity 实体对象
-     * @param modifiedFields 修改过的属性集合(线程安全)
+     * @param modifiedFields 修改过的属性集合
      * @return
      */
     public boolean update(Object entity, Collection<String> modifiedFields) {
@@ -288,6 +289,49 @@ public class JdbcSupport {
 			pst = conn.prepareStatement(updateSql);
 
 			Object[] params = modelInfo.getUpdateParams(entity, modifiedFieldList);
+			config.dialect.fillStatement(pst, params);
+
+			int result = pst.executeUpdate();
+
+			return result > 0;
+		} catch (Exception e) {
+			e.printStackTrace();
+			config.checkConnection(conn);
+			throw new JdbcExecuteException(e);
+		} finally {
+			config.close(pst, conn);
+		}
+    }
+    
+    
+    /**
+     * 更新实体
+     * @param entity 实体对象
+     * @param modifiedFields 修改过的属性数组(线程安全)
+     * @return
+     */
+    public boolean update(Object entity, AtomicIntegerArray modifiedFields) {
+    	ModelInfo modelInfo = getOrCreateModelInfo(entity.getClass());
+    	
+    	int length = modifiedFields.length();
+    	List<Integer> modifiedFieldList = new ArrayList<Integer>(length);
+    	for (int i = 0;i < length;i ++) {
+    		if (modifiedFields.get(i) == 1) {
+    			modifiedFields.set(i, 0);
+    			modifiedFieldList.add(Integer.valueOf(i));
+    		}
+    	}
+    	
+    	String updateSql = modelInfo.getOrCreateUpdateSql(modifiedFieldList, config.dialect);
+
+    	Connection conn = null;
+    	PreparedStatement pst = null;
+    	try {
+	    	conn = config.getConnection();
+
+			pst = conn.prepareStatement(updateSql);
+
+			Object[] params = modelInfo.getUpdateParams(modifiedFieldList, entity);
 			config.dialect.fillStatement(pst, params);
 
 			int result = pst.executeUpdate();

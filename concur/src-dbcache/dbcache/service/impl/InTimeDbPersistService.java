@@ -1,5 +1,6 @@
 package dbcache.service.impl;
 
+import dbcache.conf.CacheConfig;
 import dbcache.model.CacheObject;
 import dbcache.model.PersistAction;
 import dbcache.model.PersistStatus;
@@ -198,7 +199,7 @@ public class InTimeDbPersistService implements DbPersistService {
 	}
 
 	@Override
-	public void handleUpdate(final CacheObject<?> cacheObject, final DbAccessService dbAccessService) {
+	public void handleUpdate(final CacheObject<?> cacheObject, final DbAccessService dbAccessService, final CacheConfig<?> cacheConfig) {
 		// 改变更新状态
 		if (cacheObject.isUpdateProcessing() || !cacheObject.swapUpdateProcessing(true)) {
 			return;
@@ -225,7 +226,11 @@ public class InTimeDbPersistService implements DbPersistService {
 					//缓存对象在提交之后被修改过
 					if (editVersion >= cacheObject.getEditVersion()) {
 						//持久化
-						dbAccessService.update(cacheObject.getEntity());
+						if (cacheConfig.isEnableDynamicUpdate()) {
+							dbAccessService.update(cacheObject.getEntity(), cacheObject.getModifiedFields());
+						} else {
+							dbAccessService.update(cacheObject.getEntity());
+						}
 					}
 
 				} else {

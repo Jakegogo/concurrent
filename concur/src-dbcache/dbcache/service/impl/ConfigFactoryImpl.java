@@ -11,6 +11,7 @@ import dbcache.model.WeakCacheEntity;
 import dbcache.model.WeakCacheObject;
 import dbcache.service.*;
 import dbcache.support.asm.*;
+import dbcache.utils.IntegerCounter;
 import dbcache.utils.ThreadUtils;
 
 import org.slf4j.Logger;
@@ -281,8 +282,10 @@ public class ConfigFactoryImpl implements ConfigFactory, DbCacheMBean {
 			final Map<String, ValueGetter<?>> indexes = new HashMap<String, ValueGetter<?>>();
 			final Map<String, JsonConverter> jsonAutoConverters = new HashMap<String, JsonConverter>();
 
+			final IntegerCounter fieldIndexCounter = new IntegerCounter();
 			ReflectionUtils.doWithFields(clz, new FieldCallback() {
 				public void doWith(Field field) throws IllegalArgumentException, IllegalAccessException {
+					int fieldIndex = fieldIndexCounter.getAndIncrement();
 					// 处理索引注解
 					if (field.isAnnotationPresent(org.hibernate.annotations.Index.class) ||
 							field.isAnnotationPresent(dbcache.annotation.Index.class)) {
@@ -304,10 +307,10 @@ public class ConfigFactoryImpl implements ConfigFactory, DbCacheMBean {
 					}
 
 					// 处理Json转换注解
-					if(field.isAnnotationPresent(dbcache.annotation.JsonConvert.class)) {
+					if (field.isAnnotationPresent(dbcache.annotation.JsonConvert.class)) {
 						dbcache.annotation.JsonConvert jsonConvert = field.getAnnotation(dbcache.annotation.JsonConvert.class);
 						try {
-							jsonAutoConverters.put(jsonConvert.value(), JsonConverter.valueof(clz, field, jsonConvert.value()));
+							jsonAutoConverters.put(jsonConvert.value(), JsonConverter.valueof(clz, field, jsonConvert.value(), fieldIndex));
 						} catch (Exception e) {
 							logger.equals("获取实体配置出错:生成json属性自动转换失败(" + clz.getName() + "." + field.getName() + ").");
 							e.printStackTrace();

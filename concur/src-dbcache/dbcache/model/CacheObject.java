@@ -141,7 +141,7 @@ public class CacheObject<T extends IEntity<?>> {
 	 */
 	public void doAfterLoad() {
 		// 调用初始化
-		if(entity instanceof EntityInitializer){
+		if (entity instanceof EntityInitializer){
 			EntityInitializer entityInitializer = (EntityInitializer) entity;
 			entityInitializer.doAfterLoad();
 		}
@@ -152,13 +152,17 @@ public class CacheObject<T extends IEntity<?>> {
 	 */
 	public void doBeforePersist() {
 		// json持久化
-		if(!this.jsonConverters.isEmpty()) {
+		if (!this.jsonConverters.isEmpty()) {
 			for(JsonConverter<T> jsonConverter : this.jsonConverters) {
+				if (this.modifiedFields != null												// 启用了dynamicUpdate
+					&& this.modifiedFields.get(jsonConverter.getFieldIndex()) != 1) {
+					continue;
+				}
 				jsonConverter.doPersist(this.entity);
 			}
 		}
 		// 持久化前操作
-		if(entity instanceof EntityInitializer){
+		if (entity instanceof EntityInitializer){
 			EntityInitializer entityInitializer = (EntityInitializer) entity;
 			entityInitializer.doBeforePersist();
 		}

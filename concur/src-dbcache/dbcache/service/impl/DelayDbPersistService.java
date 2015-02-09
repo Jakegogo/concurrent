@@ -1,5 +1,6 @@
 package dbcache.service.impl;
 
+import dbcache.conf.CacheConfig;
 import dbcache.model.CacheObject;
 import dbcache.model.PersistAction;
 import dbcache.model.PersistStatus;
@@ -212,7 +213,7 @@ public class DelayDbPersistService implements DbPersistService {
 	}
 
 	@Override
-	public void handleUpdate(final CacheObject<?> cacheObject, final DbAccessService dbAccessService) {
+	public void handleUpdate(final CacheObject<?> cacheObject, final DbAccessService dbAccessService, final CacheConfig<?> cacheConfig) {
 
 		// 改变更新状态
 		if (cacheObject.isUpdateProcessing() || !cacheObject.swapUpdateProcessing(true)) {
@@ -239,7 +240,11 @@ public class DelayDbPersistService implements DbPersistService {
 					}
 
 					//持久化
-					dbAccessService.update(cacheObject.getEntity());
+					if (cacheConfig.isEnableDynamicUpdate()) {
+						dbAccessService.update(cacheObject.getEntity(), cacheObject.getModifiedFields());
+					} else {
+						dbAccessService.update(cacheObject.getEntity());
+					}
 				}
 			}
 

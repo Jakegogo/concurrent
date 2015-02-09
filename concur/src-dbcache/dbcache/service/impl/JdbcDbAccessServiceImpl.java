@@ -3,6 +3,7 @@ package dbcache.service.impl;
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicIntegerArray;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -131,7 +132,7 @@ public class JdbcDbAccessServiceImpl implements DbBatchAccessService {
 
 
 	@Override
-	public <T> void update(T entity, Collection<String> modifiedFields) {
+	public <T> void update(T entity, AtomicIntegerArray modifiedFields) {
 		jdbcSupport.update(entity, modifiedFields);
 	}
 

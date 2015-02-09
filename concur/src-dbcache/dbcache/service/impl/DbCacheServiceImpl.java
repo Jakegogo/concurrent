@@ -465,8 +465,7 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 			}
 
 			// 提交持久化任务
-			dbPersistService.handleUpdate(cacheObject, this.dbAccessService);
-
+			dbPersistService.handleUpdate(cacheObject, this.dbAccessService, this.cacheConfig);
 		}
 	}
 

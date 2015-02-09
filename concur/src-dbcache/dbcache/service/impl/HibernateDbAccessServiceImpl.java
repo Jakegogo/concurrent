@@ -1,6 +1,7 @@
 package dbcache.service.impl;
 
 import dbcache.service.DbAccessService;
+
 import org.hibernate.SessionFactory;
 import org.hibernate.criterion.Projections;
 import org.hibernate.criterion.Restrictions;
@@ -10,6 +11,7 @@ import org.springframework.stereotype.Component;
 
 import java.io.Serializable;
 import java.util.Collection;
+import java.util.concurrent.atomic.AtomicIntegerArray;
 
 /**
  * 数据库存储服务实现类
@@ -112,6 +114,12 @@ public class HibernateDbAccessServiceImpl extends HibernateDaoSupport implements
 				.add(Restrictions.eq(fieldName, fieldValue))
 				.setProjection(Projections.id())
 				.list();
+	}
+
+
+	@Override
+	public <T> void update(T entity, AtomicIntegerArray changeFields) {
+		throw new UnsupportedOperationException();
 	}
 
 

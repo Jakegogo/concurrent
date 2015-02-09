@@ -2,6 +2,7 @@ package dbcache.service;
 
 import java.util.Collection;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicIntegerArray;
 
 /**
  * 批量数据库管理器接口
@@ -29,7 +30,7 @@ public interface DbBatchAccessService extends DbAccessService {
 	 * @param clzz 实体类
 	 * @param modifiedFields 修改过的属性集合(线程安全)
 	 */
-	public <T> void update(T entity, Collection<String> modifiedFields);
+	public <T> void update(T entity, AtomicIntegerArray modifiedFields);
 	
 	/**
 	 * 批量删除实体对象

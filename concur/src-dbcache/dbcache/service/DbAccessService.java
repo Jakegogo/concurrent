@@ -2,6 +2,7 @@ package dbcache.service;
 
 import java.io.Serializable;
 import java.util.Collection;
+import java.util.concurrent.atomic.AtomicIntegerArray;
 
 /**
  * 通用数据库管理器接口
@@ -38,6 +39,14 @@ public interface DbAccessService {
 	 */
 	<T> void update(T entity);
 
+	
+	/**
+	 * 更新实体对象
+	 *
+	 * @param entity 实体对象
+	 * @param changeFields 修改过的属性
+	 */
+	<T> void update(T entity, AtomicIntegerArray changeFields);
 
 	/**
 	 * 删除实体
