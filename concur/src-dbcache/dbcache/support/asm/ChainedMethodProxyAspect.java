@@ -19,7 +19,7 @@ public class ChainedMethodProxyAspect extends AbstractAsmMethodProxyAspect {
     private AbstractAsmMethodProxyAspect current;
 
 
-    public ChainedMethodProxyAspect(List<ChainedMethodProxyAspect> aspectList) {
+    public ChainedMethodProxyAspect(List<AbstractAsmMethodProxyAspect> aspectList) {
         if (aspectList == null || aspectList.size() == 0) {
             throw new IllegalArgumentException("aspectList cannot be null.");
         }
@@ -34,7 +34,7 @@ public class ChainedMethodProxyAspect extends AbstractAsmMethodProxyAspect {
         if (aspects == null || aspects.length == 0) {
             throw new IllegalArgumentException("aspectList cannot be null.");
         }
-        List<ChainedMethodProxyAspect> aspectList = new LinkedList<ChainedMethodProxyAspect>((Collection<? extends ChainedMethodProxyAspect>) Arrays.asList(aspects));
+        List<AbstractAsmMethodProxyAspect> aspectList = new LinkedList<AbstractAsmMethodProxyAspect>((Collection<AbstractAsmMethodProxyAspect>) Arrays.asList(aspects));
 
         this.current = aspectList.remove(0);
         if (aspectList.size() > 0) {

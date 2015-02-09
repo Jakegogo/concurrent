@@ -41,11 +41,6 @@ public class IndexMethodProxyAspect extends AbstractAsmMethodProxyAspect {
 
 	@Override
 	public void doInitClass(ConstructorBuilder constructorBuilder) {
-		
-		// 增加原实体类型的属性(真实类)
-		constructorBuilder.appendField(constructorBuilder.getOriginalClass(), EntityClassProxyAdapter.REAL_OBJECT);
-//		classWriter.visitField(Opcodes.ACC_PROTECTED, EntityClassProxyAdapter.REAL_OBJECT,
-//				Type.getDescriptor(originalClass), null, null);
 
 		// 增加切面处理对象
 		constructorBuilder.appendField(getAspectHandleClass(), EntityClassProxyAdapter.HANDLER_OBJECT);
@@ -175,8 +170,8 @@ public class IndexMethodProxyAspect extends AbstractAsmMethodProxyAspect {
 					IllegalAccessException {
 				if(method.isAnnotationPresent(ChangeIndexes.class)) {
 					ChangeIndexes updateIndexAno = method.getAnnotation(ChangeIndexes.class);
+					Set<MethodMetaData> methodMetaDataSet = getIndexNameSet(methodsMap, method);
 					for(String indexName : updateIndexAno.value()) {
-						Set<MethodMetaData> methodMetaDataSet = getIndexNameSet(methodsMap, method);
 						methodMetaDataSet.add(MethodMetaData.valueOf(method, indexName));
 					}
 				}

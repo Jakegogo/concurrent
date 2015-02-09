@@ -57,7 +57,7 @@ public abstract class AbstractAsmMethodProxyAspect implements Opcodes {
 	 */
 	public int doAfter(Class<?> entityClass, MethodVisitor mWriter, Method method, int locals, String name, int acc, String desc) {
 		//do nothing
-		return 0;
+		return locals;
 	}
 
 

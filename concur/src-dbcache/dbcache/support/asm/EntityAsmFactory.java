@@ -1,6 +1,7 @@
 package dbcache.support.asm;
 
 import dbcache.utils.AsmUtils;
+
 import org.apache.http.annotation.ThreadSafe;
 import org.objectweb.asm.*;
 
@@ -22,7 +23,6 @@ public class EntityAsmFactory {
 	 */
 	public static ConcurrentHashMap<Class<?>, EnhancedClassInfo<?>> ENHANCED_CLASS_CACHE = new ConcurrentHashMap<Class<?>, EnhancedClassInfo<?>>();
 
-
 	/** 代理类类名 */
 	public static final String SUFIX = "$EnhancedByAsm";
 
@@ -30,7 +30,59 @@ public class EntityAsmFactory {
 	 * 字节码类加载器
 	 */
 	public static AsmClassLoader classLoader = new AsmClassLoader();
+	
+	
+	/**
+	 *
+	 * <p>
+	 * 返回代理类
+	 * </p>
+	 * 使用默认的AbstractMethodAspect
+	 *
+	 * @param <T>
+	 * @param clazz
+	 * @return
+	 * @throws Exception
+	 */
+	@SuppressWarnings("unchecked")
+	public static <T> Class<T> getEntityEnhancedClass(Class<T> clazz) {
+		// 从缓存这获取
+		if (ENHANCED_CLASS_CACHE.containsKey(clazz)) {
+			EnhancedClassInfo<T> classInfo = (EnhancedClassInfo<T>) ENHANCED_CLASS_CACHE.get(clazz);
+			if (classInfo != null) {
+				return classInfo.getProxyClass();
+			}
+		}
 
+		String enhancedClassName = clazz.getName() + SUFIX;
+		try {
+			return (Class<T>) classLoader.loadClass(enhancedClassName);
+		} catch (ClassNotFoundException classNotFoundException) {
+			ClassReader reader = null;
+			try {
+				reader = new ClassReader(clazz.getName());
+			} catch (IOException ioexception) {
+				throw new RuntimeException(ioexception);
+			}
+			ClassWriter writer = new ClassWriter(ClassWriter.COMPUTE_MAXS);
+			ClassVisitor visitor = new EntityClassProxyAdapter(enhancedClassName, clazz,
+					writer);
+			reader.accept(visitor, 0);
+			byte[] byteCodes = writer.toByteArray();
+			AsmUtils.writeClazz(enhancedClassName, byteCodes);
+			Class<T> result = (Class<T>) classLoader.defineClass(
+					enhancedClassName, byteCodes);
+
+			EnhancedClassInfo classInfo = new EnhancedClassInfo();
+			classInfo.setProxyClass(clazz);
+			
+			// 将代理类存入缓存
+			ENHANCED_CLASS_CACHE.putIfAbsent(clazz, classInfo);
+
+			return getEntityEnhancedClass(clazz);
+		}
+	}
+	
 
 	/**
 	 *
@@ -71,6 +123,10 @@ public class EntityAsmFactory {
 				writer, methodAspect);
 
 		ConstructorBuilder constructorBuilder = new ConstructorBuilder(writer, clazz, enhancedClassName);
+		
+		// 增加原实体类型的属性(真实类)
+		constructorBuilder.appendField(constructorBuilder.getOriginalClass(), EntityClassProxyAdapter.REAL_OBJECT);
+
 		// 添加切面处理对象构造方法,用真实类对象作为参数
 		constructorBuilder.appendParameter(clazz, new ConstructorBuilder.ParameterInit () {
 

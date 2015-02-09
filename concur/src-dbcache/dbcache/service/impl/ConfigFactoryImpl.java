@@ -12,6 +12,7 @@ import dbcache.model.WeakCacheObject;
 import dbcache.service.*;
 import dbcache.support.asm.*;
 import dbcache.utils.ThreadUtils;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.helpers.FormattingTuple;
@@ -25,6 +26,7 @@ import org.springframework.util.ReflectionUtils.FieldCallback;
 
 import javax.annotation.PostConstruct;
 import javax.management.*;
+
 import java.io.Serializable;
 import java.lang.management.ManagementFactory;
 import java.lang.reflect.Constructor;
@@ -64,8 +66,11 @@ public class ConfigFactoryImpl implements ConfigFactory, DbCacheMBean {
 	private ApplicationContext applicationContext;
 
 	@Autowired
-	private IndexMethodProxyAspect methodAspect;
-
+	private IndexMethodProxyAspect indexAspect;
+	
+	@Autowired
+	private ModifiedFieldMethodAspect fieldChangeAspect;
+	
 	/**
 	 * 数据库入库规则服务
 	 */
@@ -141,7 +146,9 @@ public class ConfigFactoryImpl implements ConfigFactory, DbCacheMBean {
 
 
 			//初始化代理类
-			EnhancedClassInfo<?> classInfo = EntityAsmFactory.getEntityEnhancedClassInfo(clz, methodAspect);
+			AbstractAsmMethodProxyAspect aspector = this.createAspector(cacheConfig);
+			
+			EnhancedClassInfo<?> classInfo = EntityAsmFactory.getEntityEnhancedClassInfo(clz, aspector);
 			cacheConfig.setProxyClazz(classInfo.getProxyClass());
 			cacheConfig.setConstructorBuilder(classInfo.getConstructorBuilder());
 
@@ -210,6 +217,21 @@ public class ConfigFactoryImpl implements ConfigFactory, DbCacheMBean {
 		}
 
 		return service;
+	}
+
+	
+	// 创建AsmMethodProxyAspect
+	private AbstractAsmMethodProxyAspect createAspector(CacheConfig cacheConfig) {
+		if (cacheConfig.isEnableIndex() && !cacheConfig.isEnableDynamicUpdate()) {
+			return this.indexAspect;
+		}
+		if (cacheConfig.isEnableDynamicUpdate() && !cacheConfig.isEnableIndex()) {
+			return this.fieldChangeAspect;
+		}
+		if (cacheConfig.isEnableIndex() && cacheConfig.isEnableDynamicUpdate()) {
+			return new ChainedMethodProxyAspect(fieldChangeAspect, indexAspect);
+		}
+		return new AbstractAsmMethodProxyAspect() {};
 	}
 
 
