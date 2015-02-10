@@ -6,6 +6,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
@@ -22,6 +23,7 @@ import org.springframework.util.ReflectionUtils.FieldCallback;
 import org.springframework.util.ReflectionUtils.MethodCallback;
 
 import dbcache.annotation.ChangeFields;
+import dbcache.support.asm.IndexMethodProxyAspect.MethodMetaData;
 import dbcache.utils.AsmUtils;
 import dbcache.utils.IntegerCounter;
 
@@ -79,8 +81,8 @@ public class ModifiedFieldMethodAspect extends AbstractAsmMethodProxyAspect {
 	public void initClassMetaInfo(final Class<?> clazz, final String enhancedClassName) {
 
 		final ClassIndexesMetaData indexesMetaData = new ClassIndexesMetaData();
-		final Map<Method, Set<MethodMetaData>> methodsMap = indexesMetaData.changeIndexValueMethods;
-		final Map<String, FieldMetaData> fieldsMap = indexesMetaData.fields;
+		final Map<Method, Set<MethodMetaData>> methodsMap = indexesMetaData.changeIndexValueMethods;// 修改属性的方法 - 修改到的属性集合
+		final Map<String, FieldMetaData> fieldsMap = indexesMetaData.fields;// 属性名 - 属性信息
 
 		//扫描属性注解
 		final IntegerCounter fieldIndexCounter = new IntegerCounter();
@@ -126,6 +128,21 @@ public class ModifiedFieldMethodAspect extends AbstractAsmMethodProxyAspect {
 				}
 			}
 		});
+		
+		// 扫描修改属性的方法
+		Map<Method, List<String>> putFieldMethods = AsmAccessHelper.getPutFieldsMethodMap(clazz);
+		
+		for (Map.Entry<Method, List<String>> methodEntry : putFieldMethods.entrySet()) {
+			List<String> modifields = methodEntry.getValue();
+			for (String field : modifields) {
+				if (fieldsMap.containsKey(field)) {
+					Method method = methodEntry.getKey();
+					Set<MethodMetaData> methodMetaDataSet = getFieldNameSet(methodsMap, method);
+					methodMetaDataSet.add(MethodMetaData.valueOf(method, field));
+				}
+			}
+		}
+		
 
 		indexesMetaData.enhancedClassName = enhancedClassName;
 		//存储到缓存

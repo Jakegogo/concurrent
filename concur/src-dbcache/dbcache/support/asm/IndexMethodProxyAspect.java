@@ -3,6 +3,7 @@ package dbcache.support.asm;
 import dbcache.annotation.ChangeIndexes;
 import dbcache.service.DbIndexService;
 import dbcache.utils.AsmUtils;
+
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
@@ -17,6 +18,7 @@ import java.beans.PropertyDescriptor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
@@ -131,8 +133,9 @@ public class IndexMethodProxyAspect extends AbstractAsmMethodProxyAspect {
 	public void initClassMetaInfo(final Class<?> clazz, final String enhancedClassName) {
 
 		final ClassIndexesMetaData indexesMetaData = new ClassIndexesMetaData();
-		final Map<Method, Set<MethodMetaData>> methodsMap = indexesMetaData.changeIndexValueMethods;
-		final Map<String, Field> fieldsMap = indexesMetaData.indexFields;
+		final Map<Method, Set<MethodMetaData>> methodsMap = indexesMetaData.changeIndexValueMethods;// 方法 - 修改的索引集合
+		final Map<String, Field> fieldsMap = indexesMetaData.indexFields;// 索引名 - 属性
+		final Map<String, String> indexesMap = new HashMap<String, String>();// 属性名 - 索引名
 
 		//扫描属性注解
 		ReflectionUtils.doWithFields(clazz, new FieldCallback() {
@@ -148,6 +151,8 @@ public class IndexMethodProxyAspect extends AbstractAsmMethodProxyAspect {
 						indexName = indexAno1.name();
 					}
 
+					indexesMap.put(field.getName(), indexName);
+					
 					try {
 						PropertyDescriptor propertyDescriptor = new PropertyDescriptor(field.getName(), clazz);
 						Method setMethod = propertyDescriptor.getWriteMethod();
@@ -168,7 +173,7 @@ public class IndexMethodProxyAspect extends AbstractAsmMethodProxyAspect {
 			@Override
 			public void doWith(Method method) throws IllegalArgumentException,
 					IllegalAccessException {
-				if(method.isAnnotationPresent(ChangeIndexes.class)) {
+				if (method.isAnnotationPresent(ChangeIndexes.class)) {
 					ChangeIndexes updateIndexAno = method.getAnnotation(ChangeIndexes.class);
 					Set<MethodMetaData> methodMetaDataSet = getIndexNameSet(methodsMap, method);
 					for(String indexName : updateIndexAno.value()) {
@@ -177,6 +182,24 @@ public class IndexMethodProxyAspect extends AbstractAsmMethodProxyAspect {
 				}
 			}
 		});
+		
+		// 扫描修改属性的方法
+		Map<Method, List<String>> putFieldMethods = AsmAccessHelper.getPutFieldsMethodMap(clazz);
+		
+		for (Map.Entry<Method, List<String>> methodEntry : putFieldMethods.entrySet()) {
+			List<String> modifields = methodEntry.getValue();
+			for (String field : modifields) {
+				
+				if (indexesMap.containsKey(field)) {
+					
+					Method method = methodEntry.getKey();
+					Set<MethodMetaData> methodMetaDataSet = getIndexNameSet(methodsMap, method);
+					
+					String indexName = indexesMap.get(field);
+					methodMetaDataSet.add(MethodMetaData.valueOf(method, indexName));
+				}
+			}
+		}
 
 		indexesMetaData.enhancedClassName = enhancedClassName;
 		//存储到缓存

@@ -3,6 +3,10 @@ package dbcache.support.asm;
 import dbcache.utils.AsmUtils;
 
 import org.objectweb.asm.*;
+import org.objectweb.asm.tree.AbstractInsnNode;
+import org.objectweb.asm.tree.ClassNode;
+import org.objectweb.asm.tree.FieldInsnNode;
+import org.objectweb.asm.tree.MethodNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -11,9 +15,15 @@ import java.beans.PropertyDescriptor;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.ListIterator;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
+
+import javassist.bytecode.Opcode;
 
 
 /**
@@ -56,12 +66,16 @@ public class AsmAccessHelper implements Opcodes {
 	 * 字节码类加载器
 	 */
 	public static AsmClassLoader classLoader = new AsmClassLoader();
-		
-	//fieldGetter缓存
+	
+	// innder caches
+	// fieldGetter缓存
 	private static Map<Field , ValueGetter<?>> fieldGetterCache = new ConcurrentHashMap<Field , ValueGetter<?>>();
-	//fieldSetter缓存
+	// fieldSetter缓存
 	private static Map<Field , ValueSetter<?>> fieldSetterCache = new ConcurrentHashMap<Field , ValueSetter<?>>();
-
+	// putFieldsMthodMap缓存
+	private static Map<Class<?>, Map<Method, List<String>>> putFieldsMthodMapCache = new ConcurrentHashMap<Class<?>, Map<Method, List<String>>>();
+	
+	
 	/**
 	 * 创建属性获取器
 	 * @param clazz 类
@@ -357,5 +371,121 @@ public class AsmAccessHelper implements Opcodes {
 	}
 
 
+	/**
+	 * 获取修改属性的方法
+	 * @param clazz 类
+	 * @return 方法 - 修改的属性列表
+	 */
+	public static Map<Method, List<String>> getPutFieldsMethodMap(final Class<?> clazz) {
+		// 查找缓存
+		if (putFieldsMthodMapCache.containsKey(clazz)) {
+			return putFieldsMthodMapCache.get(clazz);
+		}
+		
+		ClassReader reader = null;
+		
+		try {
+			reader = new ClassReader(clazz.getName());
+		} catch (IOException e) {
+			e.printStackTrace();
+			throw new IllegalStateException(e);
+		}
+		
+		Map<Method, List<String>> putFieldsMethodMap = new HashMap<Method, List<String>>();
+		
+        ClassNode cn = new ClassNode(); 
+        reader.accept(cn, 0); 
+        List<MethodNode> methodList = cn.methods; 
+        for (MethodNode md : methodList) {
+        	Method method = null;
+        	if (md.instructions != null && !"<init>".equals(md.name)) {
+            	for (ListIterator<AbstractInsnNode> it = md.instructions.iterator();it.hasNext();) {
+            		AbstractInsnNode node = it.next();
+            		if (node instanceof FieldInsnNode) {
+            			FieldInsnNode fieldNode = ((FieldInsnNode) node);
+            			if (fieldNode.getOpcode() == Opcode.PUTFIELD) {
+            				if (method == null) {
+            					method = toClassMethod(clazz, md);
+            				}
+            				List<String> fields = putFieldsMethodMap.get(method);
+            				if (fields == null) {
+            					fields = new ArrayList<String>();
+            					putFieldsMethodMap.put(method, fields);
+            				}
+            				fields.add(fieldNode.name);
+            			}
+            		}
+            	}
+            }
+        }
+        
+        putFieldsMthodMapCache.put(clazz, putFieldsMethodMap);
+        
+        return putFieldsMethodMap;
+	}
+
+	
+	private static Method toClassMethod(Class<?> clazz, MethodNode md) {
+		return toClassMethod(clazz, md.name, md.desc);
+	}
+
+	
+	public static Method toClassMethod(Class<?> clazz, String name, String desc) {
+		
+		final Type[] argumentsType = Type.getArgumentTypes(desc);
+		final Class<?>[] parameterTypes = new Class<?>[argumentsType.length];
+		
+		int i = 0;
+		for (Type argType : argumentsType) {
+			String argClassName = argType.getClassName();
+			Class<?> argClass = tryGetClassWithName(argClassName);
+			if (argClass == null) {
+				try {
+					parameterTypes[i++] = Class.forName(argClassName);
+				} catch (ClassNotFoundException e) {
+					e.printStackTrace();
+				}
+			} else {
+				parameterTypes[i++] = argClass;
+			}
+		}
+		
+		try {
+			return clazz.getMethod(name, parameterTypes);
+		} catch (SecurityException e) {
+			e.printStackTrace();
+		} catch (NoSuchMethodException e) {
+			e.printStackTrace();
+		}
+		
+		return null;
+	}
+	
+
+	public static Class<?> tryGetClassWithName(String className) {
+		if ("int".equals(className)) {
+			return Integer.TYPE;
+		} else if("long".equals(className)) {
+			return Long.TYPE;
+		} else if("boolean".equals(className)) {
+			return Boolean.TYPE;
+		} else if("double".equals(className)) {
+			return Double.TYPE;
+		} else if("short".equals(className)) {
+			return Short.TYPE;
+		} else if("char".equals(className)) {
+			return Character.TYPE;
+		} else if("byte".equals(className)) {
+			return Byte.TYPE;
+		} else if("float".equals(className)) {
+			return Float.TYPE;
+		}
+		
+		return null;
+	}
+	
+	
 
 }
+
+

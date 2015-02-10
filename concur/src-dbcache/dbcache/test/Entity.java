@@ -60,7 +60,7 @@ public class Entity implements EntityInitializer, IEntity<Long> {
 	}
 
 //	@UpdateIndex({ "num_idx" })
-	@ChangeFields({"num"})
+//	@ChangeFields({"num"})
 	public void increseNum() {
 		this.num = this.idgenerator.incrementAndGet();
 	}
@@ -73,13 +73,16 @@ public class Entity implements EntityInitializer, IEntity<Long> {
 		this.num = num;
 	}
 
-	@ChangeIndexes({ "num_idx" })
-	@ChangeFields({"num"})
+//	@ChangeIndexes({ "num_idx" })
+//	@ChangeFields({"num"})
 	public int addNum(int num) {
 		this.num += num;
 		return this.num;
 	}
 
+	public void combine(Entity other, boolean addMap) {
+		this.friendSet.addAll(other.getFriendSet());
+	}
 
 	public int getUid() {
 		return uid;

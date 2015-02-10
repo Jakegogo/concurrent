@@ -195,7 +195,7 @@ public class ModelInfo {
     	}
     	
     	String key = null;
-    	List<String> modifiedColumns = new ArrayList<String>();
+    	List<String> modifiedColumns = new ArrayList<String>(modifiedFields.size());
     	for (Integer fieldIndex : modifiedFields) {
 			AttributeInfo attributeInfo = this.columnInfos.get(fieldIndex);
 			String fieldName = attributeInfo.getColumnName();
