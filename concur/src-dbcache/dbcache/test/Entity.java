@@ -4,7 +4,6 @@ import dbcache.annotation.Cached;
 import dbcache.annotation.ChangeFields;
 import dbcache.annotation.DynamicUpdate;
 import dbcache.annotation.JsonConvert;
-import dbcache.annotation.ChangeIndexes;
 import dbcache.conf.CacheType;
 import dbcache.conf.PersistType;
 import dbcache.model.EntityInitializer;
