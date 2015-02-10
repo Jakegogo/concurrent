@@ -287,7 +287,7 @@ public class ModifiedFieldMethodAspect extends AbstractAsmMethodProxyAspect {
 
 		@Override
 		public int compareTo(MethodMetaData o) {
-			return this.method.hashCode() - o.method.hashCode();
+			return this.fieldName.hashCode() - o.fieldName.hashCode();
 		}
 
 

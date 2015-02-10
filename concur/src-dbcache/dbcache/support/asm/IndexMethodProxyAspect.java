@@ -421,7 +421,7 @@ public class IndexMethodProxyAspect extends AbstractAsmMethodProxyAspect {
 
 		@Override
 		public int compareTo(MethodMetaData o) {
-			return this.method.hashCode() - o.method.hashCode();
+			return this.indexName.hashCode() - o.indexName.hashCode();
 		}
 
 
