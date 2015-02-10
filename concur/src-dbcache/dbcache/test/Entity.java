@@ -20,7 +20,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 @Cached(persistType=PersistType.INTIME, enableIndex = true, cacheType=CacheType.LRU, entitySize = 1000)
 @javax.persistence.Entity
-//@DynamicUpdate
+@DynamicUpdate
 //@MappedSuperclass
 public class Entity implements EntityInitializer, IEntity<Long> {
 

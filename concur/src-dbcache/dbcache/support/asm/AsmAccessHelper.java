@@ -1,6 +1,7 @@
 package dbcache.support.asm;
 
 import dbcache.support.asm.util.AsmUtils;
+import dbcache.support.asm.util.ReflectUtils;
 
 import org.objectweb.asm.*;
 import org.objectweb.asm.tree.AbstractInsnNode;
@@ -434,23 +435,8 @@ public class AsmAccessHelper implements Opcodes {
 
 	
 	public static Method toClassMethod(Class<?> clazz, String name, String desc) {
-		
-		final Type[] argumentsType = Type.getArgumentTypes(desc);
-		final Class<?>[] parameterTypes = new Class<?>[argumentsType.length];
-		
 		try {
-			int i = 0;
-			
-			for (Type argType : argumentsType) {
-				String argClassName = argType.getClassName();
-				Class<?> argClass = tryGetClassWithName(argClassName);
-				if (argClass == null) {
-					parameterTypes[i++] = Class.forName(argClassName);
-				} else {
-					parameterTypes[i++] = argClass;
-				}
-			}
-		
+			Class<?>[] parameterTypes = ReflectUtils.parseTypes(desc);
 			return clazz.getMethod(name, parameterTypes);
 		} catch (ClassNotFoundException e) {
 			e.printStackTrace();
@@ -459,33 +445,8 @@ public class AsmAccessHelper implements Opcodes {
 		} catch (NoSuchMethodException e) {
 			e.printStackTrace();
 		}
-		
 		return null;
 	}
-	
-
-	public static Class<?> tryGetClassWithName(String className) {
-		if ("int".equals(className)) {
-			return Integer.TYPE;
-		} else if("long".equals(className)) {
-			return Long.TYPE;
-		} else if("boolean".equals(className)) {
-			return Boolean.TYPE;
-		} else if("double".equals(className)) {
-			return Double.TYPE;
-		} else if("short".equals(className)) {
-			return Short.TYPE;
-		} else if("char".equals(className)) {
-			return Character.TYPE;
-		} else if("byte".equals(className)) {
-			return Byte.TYPE;
-		} else if("float".equals(className)) {
-			return Float.TYPE;
-		}
-		
-		return null;
-	}
-	
 	
 
 }
