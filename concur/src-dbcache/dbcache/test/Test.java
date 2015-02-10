@@ -92,7 +92,7 @@ public class Test {
 		for(int i = 0;i <= 100000000;i++) {
 //			for (long j = 1; j < 10; j++) {
 				Entity entity = this.cacheService.get(1l);
-				entity.increseNum();
+				entity.addNum();
 //			if(i % 1000000 == 0) {
 //				entity.addNum(1);
 //			}

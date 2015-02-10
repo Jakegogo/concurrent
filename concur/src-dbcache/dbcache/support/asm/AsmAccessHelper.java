@@ -2,12 +2,9 @@ package dbcache.support.asm;
 
 import dbcache.support.asm.util.AsmUtils;
 import dbcache.support.asm.util.ReflectUtils;
-
+import javassist.bytecode.Opcode;
 import org.objectweb.asm.*;
-import org.objectweb.asm.tree.AbstractInsnNode;
-import org.objectweb.asm.tree.ClassNode;
-import org.objectweb.asm.tree.FieldInsnNode;
-import org.objectweb.asm.tree.MethodNode;
+import org.objectweb.asm.tree.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -16,15 +13,10 @@ import java.beans.PropertyDescriptor;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.ListIterator;
-import java.util.Map;
+import java.lang.reflect.Modifier;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
-
-import javassist.bytecode.Opcode;
 
 
 /**
@@ -428,7 +420,95 @@ public class AsmAccessHelper implements Opcodes {
         return putFieldsMethodMap;
 	}
 
-	
+
+	/**
+	 * 获取修改属性的所有调用方法
+	 * @param clazz 类
+	 * @return 方法 - 修改的属性列表
+	 */
+	public static Map<Method, List<String>> getPutFieldsCallHierarchyMethodMap(final Class<?> clazz) {
+		// 查找缓存
+		if (putFieldsMthodMapCache.containsKey(clazz)) {
+			return putFieldsMthodMapCache.get(clazz);
+		}
+
+		ClassReader reader = null;
+
+		try {
+			reader = new ClassReader(clazz.getName());
+		} catch (IOException e) {
+			e.printStackTrace();
+			throw new IllegalStateException(e);
+		}
+
+		String internalClassName = Type.getInternalName(clazz);
+
+		Map<Method, List<String>> putFieldsMethodMap = new HashMap<Method, List<String>>();
+		Map<Method, Method> callHierarchyMap = new HashMap<Method, Method>();// key <--call-- value
+
+		ClassNode cn = new ClassNode();
+		reader.accept(cn, 0);
+		List<MethodNode> methodList = cn.methods;
+		for (MethodNode md : methodList) {
+			Method method = null;
+			if (md.instructions != null && !"<init>".equals(md.name)) {
+				for (ListIterator<AbstractInsnNode> it = md.instructions.iterator();it.hasNext();) {
+					AbstractInsnNode node = it.next();
+					if (node instanceof FieldInsnNode) {
+						FieldInsnNode fieldNode = ((FieldInsnNode) node);
+						if (fieldNode.getOpcode() == Opcode.PUTFIELD) {
+							if (method == null) {
+								method = toClassMethod(clazz, md);
+							}
+							if (method == null) {
+								continue;
+							}
+							List<String> fields = putFieldsMethodMap.get(method);
+							if (fields == null) {
+								fields = new ArrayList<String>();
+								putFieldsMethodMap.put(method, fields);
+							}
+							fields.add(fieldNode.name);
+						}
+					} else if (node instanceof MethodInsnNode) {
+						MethodInsnNode methodNode = (MethodInsnNode) node;
+						if (methodNode.owner.equals(internalClassName)) {
+							if (method == null) {
+								method = toClassMethod(clazz, md);
+							}
+							callHierarchyMap.put(toClassMethod(clazz, methodNode.name, methodNode.desc), method);
+						}
+					}
+				}
+			}
+		}
+
+		// 处理callHierarchy
+		Map<Method, List<String>> addPutFieldsMethods = new HashMap<Method, List<String>>();
+		for (Map.Entry<Method, List<String>> putFieldsMethodEntry : putFieldsMethodMap.entrySet()) {
+			Method calledMethod = putFieldsMethodEntry.getKey();
+			Method callMethod = callHierarchyMap.get(calledMethod);
+
+			while (callMethod != null) {
+				if (Modifier.isPublic(callMethod.getModifiers())) {
+					addPutFieldsMethods.put(callMethod, putFieldsMethodEntry.getValue());
+				}
+				calledMethod = callMethod;
+				callMethod = callHierarchyMap.get(calledMethod);
+			}
+
+		}
+
+		putFieldsMethodMap.putAll(addPutFieldsMethods);
+
+		putFieldsMthodMapCache.put(clazz, putFieldsMethodMap);
+
+		return putFieldsMethodMap;
+	}
+
+
+
+
 	private static Method toClassMethod(Class<?> clazz, MethodNode md) {
 		return toClassMethod(clazz, md.name, md.desc);
 	}

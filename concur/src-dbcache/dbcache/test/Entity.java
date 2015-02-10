@@ -64,6 +64,10 @@ public class Entity implements EntityInitializer, IEntity<Long> {
 		this.num = this.idgenerator.incrementAndGet();
 	}
 
+	public void addNum() {
+		this.increseNum();
+	}
+
 	public int getNum() {
 		return num;
 	}
@@ -79,6 +83,7 @@ public class Entity implements EntityInitializer, IEntity<Long> {
 		return this.num;
 	}
 
+	@ChangeFields({"friends"})
 	public void combine(Entity other, boolean addMap) {
 		this.friendSet.addAll(other.getFriendSet());
 	}

@@ -1,16 +1,13 @@
 package dbcache.support.jdbc;
 
+import dbcache.key.IdGenerator;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
-import java.sql.Blob;
-import java.sql.Clob;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Types;
+import java.sql.*;
 import java.util.*;
-
-import dbcache.key.IdGenerator;
+import java.util.Date;
 
 /**
  * Entity信息
@@ -470,7 +467,10 @@ public class ModelInfo {
     */
    @SuppressWarnings("unchecked")
 	public Object[] getUpdateParams(Object entity, List<String> modifiedFields) {
-   	Object[] sqlParams = new Object[this.columnInfos.size()];
+		if (modifiedFields.size() == 0) {
+			return this.getUpdateParams(entity);
+		}
+   		Object[] sqlParams = new Object[this.columnInfos.size()];
 		int i = 0;
 		for (String fieldName : modifiedFields) {
 			AttributeInfo<Object> columnInfo = this.attrTypeMap.get(fieldName);
@@ -492,6 +492,10 @@ public class ModelInfo {
     */
 	@SuppressWarnings("unchecked")
 	public Object[] getUpdateParams(List<Integer> modifiedFields, Object entity) {
+		if (modifiedFields.size() == 0) {
+			return this.getUpdateParams(entity);
+		}
+
 	   	Object[] sqlParams = new Object[modifiedFields.size() + 1];
 		
 	   	int i = 0;

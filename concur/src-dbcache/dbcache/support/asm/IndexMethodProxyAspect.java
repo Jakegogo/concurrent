@@ -2,7 +2,6 @@ package dbcache.support.asm;
 
 import dbcache.service.DbIndexService;
 import dbcache.support.asm.util.AsmUtils;
-
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
@@ -10,17 +9,12 @@ import org.objectweb.asm.Type;
 import org.springframework.stereotype.Component;
 import org.springframework.util.ReflectionUtils;
 import org.springframework.util.ReflectionUtils.FieldCallback;
-import org.springframework.util.ReflectionUtils.MethodCallback;
 
 import java.beans.IntrospectionException;
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeSet;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -111,7 +105,7 @@ public class IndexMethodProxyAspect extends AbstractAsmMethodProxyAspect {
 		});
 		
 		// 扫描修改属性的方法
-		Map<Method, List<String>> putFieldMethods = AsmAccessHelper.getPutFieldsMethodMap(clazz);
+		Map<Method, List<String>> putFieldMethods = AsmAccessHelper.getPutFieldsCallHierarchyMethodMap(clazz);
 		
 		for (Map.Entry<Method, List<String>> methodEntry : putFieldMethods.entrySet()) {
 			List<String> modifields = methodEntry.getValue();

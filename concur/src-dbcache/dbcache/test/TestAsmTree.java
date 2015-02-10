@@ -1,26 +1,14 @@
 package dbcache.test;
 
+import dbcache.support.asm.util.ReflectUtils;
+import javassist.bytecode.Opcode;
+import org.objectweb.asm.*;
+import org.objectweb.asm.tree.*;
+
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
-
-import javassist.bytecode.Opcode;
-import net.sf.cglib.core.TypeUtils;
-
-import org.objectweb.asm.Attribute;
-import org.objectweb.asm.ClassReader;
-import org.objectweb.asm.MethodVisitor;
-import org.objectweb.asm.Opcodes;
-import org.objectweb.asm.Type;
-import org.objectweb.asm.tree.AbstractInsnNode;
-import org.objectweb.asm.tree.AnnotationNode;
-import org.objectweb.asm.tree.ClassNode;
-import org.objectweb.asm.tree.FieldInsnNode;
-import org.objectweb.asm.tree.FieldNode;
-import org.objectweb.asm.tree.LdcInsnNode;
-import org.objectweb.asm.tree.LocalVariableNode;
-import org.objectweb.asm.tree.MethodNode;
 
 public class TestAsmTree {
 	/** 
@@ -30,9 +18,7 @@ public class TestAsmTree {
 	     */ 
 	    public static void main(String[] args) { 
 	    	
-	    	TypeUtils.getBoxedType(null);
-	    	
-	        try { 
+	        try {
 	            ClassReader reader = new ClassReader( 
 	                    "dbcache.test.Entity"); 
 	            ClassNode cn = new ClassNode(); 
@@ -50,7 +36,7 @@ public class TestAsmTree {
 	                final Type[] arguments = Type.getArgumentTypes(md.desc);
 	        		for (Type argType : arguments) {
 	        			try {
-							System.out.println(argType.getClassName() + " : " + Class.forName(argType.getClassName()));
+							System.out.println(argType.getClassName() + " : " + ReflectUtils.parseTypes(md.desc));
 						} catch (ClassNotFoundException e) {
 							e.printStackTrace();
 						}
@@ -80,7 +66,12 @@ public class TestAsmTree {
 	                			if (fieldNode.getOpcode() == Opcode.PUTFIELD) {
 	                				System.out.println("put field : " + fieldNode.name);
 	                			}
-	                		}
+	                		} else if (node instanceof MethodInsnNode) {
+								MethodInsnNode methodNode = (MethodInsnNode) node;
+								if (methodNode.owner.equals(Type.getInternalName(dbcache.test.Entity.class))) {
+									System.out.println("inner call ====>>>> " + methodNode.name + methodNode.desc);
+								}
+							}
 	                	}
 	                }
 	                
@@ -95,8 +86,8 @@ public class TestAsmTree {
 	                }
 	                System.out.println("===================");
 	            } 
-	            MethodVisitor mv = cn.visitMethod(Opcodes.AALOAD, "<init>", Type 
-	                    .getType(String.class).toString(), null, null); 
+	            MethodVisitor mv = cn.visitMethod(Opcodes.AALOAD, "<init>", Type
+						.getType(String.class).toString(), null, null);
 	            mv.visitFieldInsn(Opcodes.GETFIELD, Type.getInternalName(String.class), "str", Type 
 	                    .getType(String.class).toString()); 
 	            System.out.println(cn.name); 

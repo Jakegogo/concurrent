@@ -1,18 +1,8 @@
 package dbcache.support.asm;
 
-import java.beans.IntrospectionException;
-import java.beans.PropertyDescriptor;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeSet;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicIntegerArray;
-
+import dbcache.annotation.ChangeFields;
+import dbcache.support.asm.util.AsmUtils;
+import dbcache.utils.IntegerCounter;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
@@ -22,10 +12,14 @@ import org.springframework.util.ReflectionUtils;
 import org.springframework.util.ReflectionUtils.FieldCallback;
 import org.springframework.util.ReflectionUtils.MethodCallback;
 
-import dbcache.annotation.ChangeFields;
-import dbcache.support.asm.IndexMethodProxyAspect.MethodMetaData;
-import dbcache.support.asm.util.AsmUtils;
-import dbcache.utils.IntegerCounter;
+import java.beans.IntrospectionException;
+import java.beans.PropertyDescriptor;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicIntegerArray;
 
 /**
  * 记录修改属性的切面
@@ -130,7 +124,7 @@ public class ModifiedFieldMethodAspect extends AbstractAsmMethodProxyAspect {
 		});
 		
 		// 扫描修改属性的方法
-		Map<Method, List<String>> putFieldMethods = AsmAccessHelper.getPutFieldsMethodMap(clazz);
+		Map<Method, List<String>> putFieldMethods = AsmAccessHelper.getPutFieldsCallHierarchyMethodMap(clazz);
 		
 		for (Map.Entry<Method, List<String>> methodEntry : putFieldMethods.entrySet()) {
 			List<String> modifields = methodEntry.getValue();
