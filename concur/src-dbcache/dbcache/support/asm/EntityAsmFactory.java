@@ -1,6 +1,6 @@
 package dbcache.support.asm;
 
-import dbcache.utils.AsmUtils;
+import dbcache.support.asm.util.AsmUtils;
 
 import org.apache.http.annotation.ThreadSafe;
 import org.objectweb.asm.*;

@@ -1,6 +1,6 @@
 package dbcache.support.asm;
 
-import dbcache.utils.AsmUtils;
+import dbcache.support.asm.util.AsmUtils;
 
 import org.objectweb.asm.*;
 import org.objectweb.asm.tree.AbstractInsnNode;
@@ -407,6 +407,9 @@ public class AsmAccessHelper implements Opcodes {
             				if (method == null) {
             					method = toClassMethod(clazz, md);
             				}
+            				if (method == null) {
+            					continue;
+            				}
             				List<String> fields = putFieldsMethodMap.get(method);
             				if (fields == null) {
             					fields = new ArrayList<String>();
@@ -435,23 +438,22 @@ public class AsmAccessHelper implements Opcodes {
 		final Type[] argumentsType = Type.getArgumentTypes(desc);
 		final Class<?>[] parameterTypes = new Class<?>[argumentsType.length];
 		
-		int i = 0;
-		for (Type argType : argumentsType) {
-			String argClassName = argType.getClassName();
-			Class<?> argClass = tryGetClassWithName(argClassName);
-			if (argClass == null) {
-				try {
-					parameterTypes[i++] = Class.forName(argClassName);
-				} catch (ClassNotFoundException e) {
-					e.printStackTrace();
-				}
-			} else {
-				parameterTypes[i++] = argClass;
-			}
-		}
-		
 		try {
+			int i = 0;
+			
+			for (Type argType : argumentsType) {
+				String argClassName = argType.getClassName();
+				Class<?> argClass = tryGetClassWithName(argClassName);
+				if (argClass == null) {
+					parameterTypes[i++] = Class.forName(argClassName);
+				} else {
+					parameterTypes[i++] = argClass;
+				}
+			}
+		
 			return clazz.getMethod(name, parameterTypes);
+		} catch (ClassNotFoundException e) {
+			e.printStackTrace();
 		} catch (SecurityException e) {
 			e.printStackTrace();
 		} catch (NoSuchMethodException e) {

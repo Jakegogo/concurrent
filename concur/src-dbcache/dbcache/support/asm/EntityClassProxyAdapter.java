@@ -1,7 +1,7 @@
 package dbcache.support.asm;
 
 import dbcache.model.EnhancedEntity;
-import dbcache.utils.AsmUtils;
+import dbcache.support.asm.util.AsmUtils;
 
 import org.objectweb.asm.*;
 

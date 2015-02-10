@@ -24,7 +24,7 @@ import org.springframework.util.ReflectionUtils.MethodCallback;
 
 import dbcache.annotation.ChangeFields;
 import dbcache.support.asm.IndexMethodProxyAspect.MethodMetaData;
-import dbcache.utils.AsmUtils;
+import dbcache.support.asm.util.AsmUtils;
 import dbcache.utils.IntegerCounter;
 
 /**

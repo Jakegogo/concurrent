@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.ListIterator;
 
 import javassist.bytecode.Opcode;
+import net.sf.cglib.core.TypeUtils;
 
 import org.objectweb.asm.Attribute;
 import org.objectweb.asm.ClassReader;
@@ -28,6 +29,9 @@ public class TestAsmTree {
 	     * @date 2012-4-21 下午10:17:22 
 	     */ 
 	    public static void main(String[] args) { 
+	    	
+	    	TypeUtils.getBoxedType(null);
+	    	
 	        try { 
 	            ClassReader reader = new ClassReader( 
 	                    "dbcache.test.Entity"); 

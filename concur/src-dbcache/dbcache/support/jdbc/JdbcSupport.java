@@ -1,7 +1,7 @@
 package dbcache.support.jdbc;
 
 import dbcache.key.IdGenerator;
-import dbcache.utils.AsmUtils;
+import dbcache.support.asm.util.AsmUtils;
 import dbcache.utils.MutableInteger;
 import dbcache.utils.StringUtils;
 import dbcache.utils.concurrent.IdentityHashMap;

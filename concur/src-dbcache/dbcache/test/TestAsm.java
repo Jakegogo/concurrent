@@ -1,7 +1,7 @@
 package dbcache.test;
 
 import dbcache.support.asm.AsmClassLoader;
-import dbcache.utils.AsmUtils;
+import dbcache.support.asm.util.AsmUtils;
 
 /**
  * Created by Administrator on 2015/1/3.

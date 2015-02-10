@@ -1,4 +1,4 @@
-package dbcache.utils;
+package dbcache.support.asm.util;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -16,6 +16,8 @@ import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
+
+import dbcache.utils.StringUtils;
 
 /**
  * 类操作的工具集
