@@ -135,7 +135,7 @@ public interface DbCacheService<T extends IEntity<PK>, PK extends Comparable<PK>
 	 * <br/>
 	 * @return
 	 */
-	Cache getCache();
+	CacheUnit getCacheUnit();
 
 
 	/**

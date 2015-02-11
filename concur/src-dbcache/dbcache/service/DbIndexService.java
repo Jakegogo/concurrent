@@ -1,11 +1,11 @@
 package dbcache.service;
 
-import java.io.Serializable;
-import java.util.Collection;
-
 import dbcache.model.IEntity;
 import dbcache.model.IndexObject;
 import dbcache.model.IndexValue;
+
+import java.io.Serializable;
+import java.util.Collection;
 
 
 /**
@@ -53,7 +53,7 @@ public interface DbIndexService<PK extends Comparable<PK> & Serializable> {
 	 * 获取缓存
 	 * @return
 	 */
-	public Cache getCache();
+	public CacheUnit getCacheUnit();
 
 
 }

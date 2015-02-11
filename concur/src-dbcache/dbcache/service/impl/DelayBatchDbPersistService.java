@@ -369,7 +369,7 @@ public class DelayBatchDbPersistService implements DbPersistService {
 
 	
 	@Override
-	public void handleDelete(final CacheObject<?> cacheObject, final DbAccessService dbAccessService, final Object key, final Cache cache) {
+	public void handleDelete(final CacheObject<?> cacheObject, final DbAccessService dbAccessService, final Object key, final CacheUnit cacheUnit) {
 		// 最新修改版本号
 		final long editVersion = cacheObject.increseEditVersion();
 
@@ -387,7 +387,7 @@ public class DelayBatchDbPersistService implements DbPersistService {
 				batchTasks.addDeleteTask(cacheObject);
 
 				// 从缓存中移除
-				cache.put(key, null);
+				cacheUnit.put(key, null);
 
 			}
 

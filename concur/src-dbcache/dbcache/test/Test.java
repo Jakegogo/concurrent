@@ -1,7 +1,7 @@
 package dbcache.test;
 
 import dbcache.model.EnhancedEntity;
-import dbcache.service.Cache;
+import dbcache.service.CacheUnit;
 import dbcache.service.DbCacheService;
 import dbcache.service.DbRuleService;
 import dbcache.support.asm.EntityAsmFactory;
@@ -48,7 +48,7 @@ public class Test {
 
 
 	@Resource(name = "concurrentWeekHashMapCache")
-	private Cache cache;
+	private CacheUnit cacheUnit;
 
 	@Autowired
 	private DbRuleService dbRuleService;

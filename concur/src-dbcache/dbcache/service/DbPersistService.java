@@ -31,9 +31,9 @@ public interface DbPersistService {
 	 * @param cacheObject 实体缓存对象
 	 * @param dbAccessService 数据库存取服务
 	 * @param key 缓存key
-	 * @param cache 缓存容器
+	 * @param cacheUnit 缓存容器
 	 */
-	public void handleDelete(CacheObject<?> cacheObject, DbAccessService dbAccessService, Object key, Cache cache);
+	public void handleDelete(CacheObject<?> cacheObject, DbAccessService dbAccessService, Object key, CacheUnit cacheUnit);
 
 	/**
 	 * 等待处理完毕

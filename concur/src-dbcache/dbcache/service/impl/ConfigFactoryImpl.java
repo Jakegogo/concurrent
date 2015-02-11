@@ -161,10 +161,10 @@ public class ConfigFactoryImpl implements ConfigFactory, DbCacheMBean {
 			//初始化缓存实例
 			Field cacheField = DbCacheServiceImpl.class.getDeclaredField(cacheProperty);
 			Class<?> cacheClass = cacheConfig.getCacheType().getCacheClass();
-			Cache cache = (Cache) applicationContext.getAutowireCapableBeanFactory().createBean(cacheClass);
+			CacheUnit cacheUnit = (CacheUnit) applicationContext.getAutowireCapableBeanFactory().createBean(cacheClass);
 			int concurrencyLevel = cacheConfig.getConcurrencyLevel() == 0? Runtime.getRuntime().availableProcessors() : cacheConfig.getConcurrencyLevel();
-			cache.init("ENTITY_CACHE_" + cacheClass.getSimpleName(), cacheConfig.getEntitySize(), concurrencyLevel);
-			inject(service, cacheField, cache);
+			cacheUnit.init("ENTITY_CACHE_" + cacheClass.getSimpleName(), cacheConfig.getEntitySize(), concurrencyLevel);
+			inject(service, cacheField, cacheUnit);
 
 
 			//设置持久化PersistType方式的dbPersistService
@@ -194,13 +194,13 @@ public class ConfigFactoryImpl implements ConfigFactory, DbCacheMBean {
 
 
 			// 索引服务缓存设置
-			Cache indexCache = (Cache) applicationContext.getAutowireCapableBeanFactory().createBean(cacheConfig.getIndexCacheClass());
+			CacheUnit indexCacheUnit = (CacheUnit) applicationContext.getAutowireCapableBeanFactory().createBean(cacheConfig.getIndexCacheClass());
 			// 初始化索引缓存
-			indexCache.init("INDEX_CACHE_" + cacheClass.getSimpleName(), cacheConfig.getIndexSize() > 0 ? cacheConfig.getIndexSize() : cacheConfig.getEntitySize(), concurrencyLevel);
+			indexCacheUnit.init("INDEX_CACHE_" + cacheClass.getSimpleName(), cacheConfig.getIndexSize() > 0 ? cacheConfig.getIndexSize() : cacheConfig.getEntitySize(), concurrencyLevel);
 
 			Field cacheField1 = indexService.getClass().getDeclaredField(cacheProperty);
 			ReflectionUtils.makeAccessible(cacheField1);
-			inject(indexService, cacheField1, indexCache);
+			inject(indexService, cacheField1, indexCacheUnit);
 
 
 			//修改IndexService的cacheConfig
@@ -369,12 +369,12 @@ public class ConfigFactoryImpl implements ConfigFactory, DbCacheMBean {
 
 
 	@SuppressWarnings({ "unchecked", "rawtypes" })
-	private <T extends IEntity<PK>, PK extends Comparable<PK> & Serializable> WeakCacheEntity<T, ?> wrapEntity(T entity, Class<? extends IEntity> entityClazz, Cache cache, Object key, CacheConfig<T> cacheConfig) {
+	private <T extends IEntity<PK>, PK extends Comparable<PK> & Serializable> WeakCacheEntity<T, ?> wrapEntity(T entity, Class<? extends IEntity> entityClazz, CacheUnit cacheUnit, Object key, CacheConfig<T> cacheConfig) {
 		// 判断是否开启弱引用
 		if(cacheConfig == null || cacheConfig.getCacheType() != CacheType.WEEKMAP) {
 			return null;
 		}
-		return WeakCacheEntity.valueOf(entity, cache.getReferencequeue(), key);
+		return WeakCacheEntity.valueOf(entity, cacheUnit.getReferencequeue(), key);
 	}
 
 
@@ -382,7 +382,7 @@ public class ConfigFactoryImpl implements ConfigFactory, DbCacheMBean {
 	@Override
 	public <T extends IEntity<PK>, PK extends Comparable<PK> & Serializable> CacheObject<T> createCacheObject(
 			T entity, Class<? extends IEntity> entityClazz,
-			DbIndexService<?> indexService, Object key, Cache cache, CacheConfig<T> cacheConfig) {
+			DbIndexService<?> indexService, Object key, CacheUnit cacheUnit, CacheConfig<T> cacheConfig) {
 
 		// 启用动态更新
 		AtomicIntegerArray modifiedFields = null;
@@ -393,8 +393,8 @@ public class ConfigFactoryImpl implements ConfigFactory, DbCacheMBean {
 
 		// 弱引用方式
 		if(cacheConfig.getCacheType() == CacheType.WEEKMAP) {
-			entity = (T) this.wrapEntity(entity, entityClazz, cache, key, cacheConfig);
-			proxyEntity = (T) this.wrapEntity(proxyEntity, entityClazz, cache, key, cacheConfig);
+			entity = (T) this.wrapEntity(entity, entityClazz, cacheUnit, key, cacheConfig);
+			proxyEntity = (T) this.wrapEntity(proxyEntity, entityClazz, cacheUnit, key, cacheConfig);
 		}
 
 		// 生成CacheObject

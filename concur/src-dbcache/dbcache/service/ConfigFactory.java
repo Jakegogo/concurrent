@@ -33,12 +33,12 @@ public interface ConfigFactory {
 	 * @param entity 实体
 	 * @param class1 实体类
 	 * @param indexService 索引服务
-	 * @param cache 实体缓存容器
+	 * @param cacheUnit 实体缓存容器
 	 * @param cacheConfig 缓存配置
 	 * @return
 	 */
 	@SuppressWarnings("rawtypes")
-	public <T extends IEntity<PK>, PK extends Comparable<PK> & Serializable> CacheObject<T> createCacheObject(T entity, Class<? extends IEntity> class1, DbIndexService<?> indexService, Object key, Cache cache, CacheConfig<T> cacheConfig);
+	public <T extends IEntity<PK>, PK extends Comparable<PK> & Serializable> CacheObject<T> createCacheObject(T entity, Class<? extends IEntity> class1, DbIndexService<?> indexService, Object key, CacheUnit cacheUnit, CacheConfig<T> cacheConfig);
 
 
 	/**

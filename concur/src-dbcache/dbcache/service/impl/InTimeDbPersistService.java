@@ -4,7 +4,7 @@ import dbcache.conf.CacheConfig;
 import dbcache.model.CacheObject;
 import dbcache.model.PersistAction;
 import dbcache.model.PersistStatus;
-import dbcache.service.Cache;
+import dbcache.service.CacheUnit;
 import dbcache.service.DbAccessService;
 import dbcache.service.DbPersistService;
 import dbcache.service.DbRuleService;
@@ -267,7 +267,7 @@ public class InTimeDbPersistService implements DbPersistService {
 
 
 	@Override
-	public void handleDelete(final CacheObject<?> cacheObject, final DbAccessService dbAccessService, final Object key, final Cache cache) {
+	public void handleDelete(final CacheObject<?> cacheObject, final DbAccessService dbAccessService, final Object key, final CacheUnit cacheUnit) {
 		// 最新修改版本号
 		final long editVersion = cacheObject.increseEditVersion();
 
@@ -290,7 +290,7 @@ public class InTimeDbPersistService implements DbPersistService {
 				dbAccessService.delete(cacheObject.getEntity());
 
 				// 从缓存中移除
-				cache.put(key, null);
+				cacheUnit.put(key, null);
 
 			}
 			

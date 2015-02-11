@@ -1,11 +1,10 @@
 package dbcache.utils;
 
-import dbcache.service.Cache;
+import dbcache.service.CacheUnit;
 import dbcache.service.DbCacheService;
 import dbcache.service.impl.ConcurrentLruHashMapCache;
 import dbcache.utils.concurrent.CleanupThread;
 import dbcache.utils.concurrent.ConcurrentLRUCache;
-import dbcache.utils.concurrent.ConcurrentLRUCache.EvictionListener;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -104,11 +103,11 @@ public class CacheUtils {
 
         /**
          * 使用指定的缓存单元
-         * @param cache 缓存单元
+         * @param cacheUnit 缓存单元
          * @return CacheBuilder<R>
          */
-        public CacheBuilder<R> use(Cache cache) {
-            this.commonCache.setCache(cache);
+        public CacheBuilder<R> use(CacheUnit cacheUnit) {
+            this.commonCache.setCacheUnit(cacheUnit);
             return this;
         }
 
@@ -131,7 +130,7 @@ public class CacheUtils {
          */
         public CacheBuilder<R> newCacheUnit(final String name, final int size) {
             this.commonCache.setName(name);
-            this.commonCache.setCache(new ConcurrentLruHashMapCache() {{
+            this.commonCache.setCacheUnit(new ConcurrentLruHashMapCache() {{
                 this.init(name, size, Runtime.getRuntime().availableProcessors());
             }});
             return this;
@@ -144,7 +143,7 @@ public class CacheUtils {
          */
         public CommonCache<R> build() {
 
-            if(commonCache.getCache() == null) {
+            if(commonCache.getCacheUnit() == null) {
                 // TODO
             }
 

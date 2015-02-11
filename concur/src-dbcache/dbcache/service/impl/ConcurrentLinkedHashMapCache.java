@@ -3,9 +3,8 @@ package dbcache.service.impl;
 import com.googlecode.concurrentlinkedhashmap.ConcurrentLinkedHashMap;
 import com.googlecode.concurrentlinkedhashmap.EvictionListener;
 
-import dbcache.service.Cache;
+import dbcache.service.CacheUnit;
 import dbcache.utils.concurrent.ConcurrentReferenceHashMap;
-import dbcache.utils.concurrent.ConcurrentWeakHashMap;
 import dbcache.utils.concurrent.ConcurrentReferenceHashMap.ReferenceType;
 
 import org.springframework.stereotype.Component;
@@ -21,7 +20,7 @@ import java.util.concurrent.ConcurrentMap;
  * @date 2014-7-31-下午8:24:23
  */
 @Component("concurrentLinkedHashMapCache")
-public class ConcurrentLinkedHashMapCache implements Cache {
+public class ConcurrentLinkedHashMapCache implements CacheUnit {
 
 	/**
 	 * 缺省实体缓存最大容量
