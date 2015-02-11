@@ -33,8 +33,26 @@ public class TableInfo {
 	private String primaryKey;
 	private String secondaryKey = null;
 	
+	private Class<?> modelClass;
+	
 	@SuppressWarnings("unchecked")
 	private Map<String, Class<?>> columnTypeMap = new LinkedHashMap<String, Class<?>>();	//	new HashMap<String, Class<?>>();
+	
+	
+	public TableInfo(String tableName, Class<?> modelClass) {
+		this(tableName, Dialect.getDefaultDialect().getDefaultPrimaryKey(), modelClass);
+	}
+	
+	public TableInfo(String tableName, String primaryKey, Class<?> modelClass) {
+		if (StringUtils.isBlank(tableName))
+			throw new IllegalArgumentException("Table name can not be blank.");
+		if (modelClass == null)
+			throw new IllegalArgumentException("Model class can not be null.");
+		
+		this.tableName = tableName.trim();
+		this.setPrimaryKey(primaryKey.trim());	// this.primaryKey = primaryKey.trim();
+		this.modelClass = modelClass;
+	}
 	
 	public String getTableName() {
 		return tableName;
@@ -68,30 +86,14 @@ public class TableInfo {
 		return primaryKey;
 	}
 	
-	private Class<?> modelClass;
-	
-	public TableInfo(String tableName, Class<?> modelClass) {
-		this(tableName, Dialect.getDefaultDialect().getDefaultPrimaryKey(), modelClass);
-	}
-	
-	public TableInfo(String tableName, String primaryKey, Class<?> modelClass) {
-		if (StringUtils.isBlank(tableName))
-			throw new IllegalArgumentException("Table name can not be blank.");
-		if (StringUtils.isBlank(primaryKey))
-			throw new IllegalArgumentException("Primary key can not be blank.");
-		if (modelClass == null)
-			throw new IllegalArgumentException("Model class can not be null.");
-		
-		this.tableName = tableName.trim();
-		setPrimaryKey(primaryKey.trim());	// this.primaryKey = primaryKey.trim();
-		this.modelClass = modelClass;
-	}
-	
 	public Map<String, Class<?>> getColumnTypeMap() {
 		return columnTypeMap;
 	}
 
 	public void setPrimaryKey(String primaryKey) {
+		if (StringUtils.isBlank(primaryKey))
+			throw new IllegalArgumentException("Primary key can not be blank.");
+		
 		String[] keyArr = primaryKey.split(",");
 		if (keyArr.length > 1) {
 			if (StringUtils.isBlank(keyArr[0]) || StringUtils.isBlank(keyArr[1]))
@@ -115,6 +117,7 @@ public class TableInfo {
 	public Class<?> getModelClass() {
 		return modelClass;
 	}
+	
 }
 
 

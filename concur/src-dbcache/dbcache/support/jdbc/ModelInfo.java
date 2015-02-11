@@ -66,9 +66,10 @@ public class ModelInfo {
     private Map<String, String> findByColumnSqlMap = new HashMap<String, String>();
     
     // 按字段更新语句
-    private Map<String, String> updateByColumnSqlMap = new HashMap<String, String>();
+    private Map<Integer, String> updateByColumnSqlMap = new HashMap<Integer, String>();
 
-
+	// 按字段更新语句
+    private Map<String, String> updateByFieldSqlMap = new HashMap<String, String>();
     
     /**
      * 生成插入语句
@@ -150,7 +151,7 @@ public class ModelInfo {
     	if (modifiedFields.size() == 1) {
     		key = modifiedFields.get(0);
     		
-    		sql = this.updateByColumnSqlMap.get(key);
+    		sql = this.updateByFieldSqlMap.get(key);
     		if (sql != null) {
     			return sql;
     		}
@@ -172,7 +173,7 @@ public class ModelInfo {
 
     	sql = sqlBuilder.toString();
     	if (modifiedFields.size() == 1) {
-    		this.updateByColumnSqlMap.put(key, sql);
+    		this.updateByFieldSqlMap.put(key, sql);
     	}
     	
     	return sql;
@@ -191,30 +192,28 @@ public class ModelInfo {
     		return this.getOrCreateUpdateSql(dialect);
     	}
     	
-    	String key = null;
-    	List<String> modifiedColumns = new ArrayList<String>(modifiedFields.size());
-    	for (Integer fieldIndex : modifiedFields) {
-			AttributeInfo attributeInfo = this.columnInfos.get(fieldIndex);
-			String fieldName = attributeInfo.getColumnName();
-			modifiedColumns.add(fieldName);
-			key = attributeInfo.getName();
-    	}
-    	
-    	String sql = null;
-    	if (modifiedColumns.size() == 1) {
-    		key = modifiedColumns.get(0);
-    		
+    	String sql = null; int key = 1;
+    	if (modifiedFields.size() <= 3) {
+    		for (Integer fieldIndex : modifiedFields) {
+    			key = key * 31 + fieldIndex;
+        	}
     		sql = this.updateByColumnSqlMap.get(key);
     		if (sql != null) {
     			return sql;
     		}
     	}
-
+    	
+    	List<String> modifiedColumns = new ArrayList<String>(modifiedFields.size());
+    	for (Integer fieldIndex : modifiedFields) {
+			AttributeInfo attributeInfo = this.columnInfos.get(fieldIndex);
+			modifiedColumns.add(attributeInfo.getColumnName());
+    	}
+    	
 		StringBuilder sqlBuilder = new StringBuilder();
     	dialect.forDbUpdate(tableInfo, modifiedColumns, sqlBuilder);
 
     	sql = sqlBuilder.toString();
-    	if (modifiedColumns.size() == 1) {
+    	if (modifiedFields.size() <= 3) {
     		this.updateByColumnSqlMap.put(key, sql);
     	}
     	

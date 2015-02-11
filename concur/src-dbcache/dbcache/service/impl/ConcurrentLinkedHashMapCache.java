@@ -4,7 +4,9 @@ import com.googlecode.concurrentlinkedhashmap.ConcurrentLinkedHashMap;
 import com.googlecode.concurrentlinkedhashmap.EvictionListener;
 
 import dbcache.service.Cache;
+import dbcache.utils.concurrent.ConcurrentReferenceHashMap;
 import dbcache.utils.concurrent.ConcurrentWeakHashMap;
+import dbcache.utils.concurrent.ConcurrentReferenceHashMap.ReferenceType;
 
 import org.springframework.stereotype.Component;
 
@@ -44,7 +46,7 @@ public class ConcurrentLinkedHashMapCache implements Cache {
 	/**
 	 * 已经回收的实体
 	 */
-	private ConcurrentWeakHashMap<Object, Object> evictions;
+	private ConcurrentReferenceHashMap<Object, Object> evictions;
 
 
 	/**
@@ -56,7 +58,7 @@ public class ConcurrentLinkedHashMapCache implements Cache {
 	public void init(String name, int entityCacheSize, int concurrencyLevel) {
 
 		this.name = name;
-		this.evictions = new ConcurrentWeakHashMap<Object, Object>();
+		this.evictions = new ConcurrentReferenceHashMap<Object, Object>(ReferenceType.STRONG, ReferenceType.WEAK);
 
 		this.store = new ConcurrentLinkedHashMap.Builder<Object, ValueWrapper>()
 				.maximumWeightedCapacity(entityCacheSize > 0 ? entityCacheSize : DEFAULT_MAX_CAPACITY_OF_ENTITY_CACHE)

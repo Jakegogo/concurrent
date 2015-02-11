@@ -50,6 +50,7 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 	 * 6,可监控,易于问题排查 ↑
 	 * 7,注重性能和内存占用以及回收 ↑
 	 * 8,简单为主,不过度封装 ↓
+	 * 9,懒加载,预编译操作  ↓
 	 */
 
 	/**

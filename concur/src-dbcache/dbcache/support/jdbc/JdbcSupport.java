@@ -72,12 +72,11 @@ public class JdbcSupport {
 			
 			return (T) modelInfo.generateEntity(rs);
 		} catch (Exception e) {
-			e.printStackTrace();
-			config.checkConnection(conn);
-			throw new JdbcExecuteException(e);
+			handleException(conn, e);
 		} finally {
 			config.close(rs, pst, conn);
 		}
+    	return null;
     }
 
 
@@ -103,12 +102,11 @@ public class JdbcSupport {
 
 			return result > 0;
 		} catch (Exception e) {
-			e.printStackTrace();
-			config.checkConnection(conn);
-			throw new JdbcExecuteException(e);
+			handleException(conn, e);
 		} finally {
 			config.close(pst, conn);
 		}
+    	return false;
     }
     
     
@@ -142,8 +140,6 @@ public class JdbcSupport {
 			return pst.executeBatch();
 			
     	} catch (Exception e) {
-			e.printStackTrace();
-			
 			try {
 				// 若出现异常，对数据库中所有已完成的操作全部撤销，则回滚到事务开始状态
 				if (conn != null && !conn.isClosed()) {
@@ -153,8 +149,7 @@ public class JdbcSupport {
 				e1.printStackTrace();
 				throw new JdbcExecuteException(e1);
 			}
-			config.checkConnection(conn);
-			throw new JdbcExecuteException(e);
+			handleException(conn, e);
     	} finally {
     		try {
 				if (conn != null && !conn.isClosed()) {
@@ -167,6 +162,7 @@ public class JdbcSupport {
     		
     		config.close(pst, conn);
     	}
+    	return new int[0];
     }
     
 
@@ -192,12 +188,11 @@ public class JdbcSupport {
 
 			return result > 0;
 		} catch (Exception e) {
-			e.printStackTrace();
-			config.checkConnection(conn);
-			throw new JdbcExecuteException(e);
+			handleException(conn, e);
 		} finally {
 			config.close(pst, conn);
 		}
+    	return false;
     }
 
 
@@ -224,12 +219,11 @@ public class JdbcSupport {
 
 			return result > 0;
 		} catch (Exception e) {
-			e.printStackTrace();
-			config.checkConnection(conn);
-			throw new JdbcExecuteException(e);
+			handleException(conn, e);
 		} finally {
 			config.close(pst, conn);
 		}
+    	return false;
     }
 
 
@@ -256,12 +250,11 @@ public class JdbcSupport {
 
 			return result > 0;
 		} catch (Exception e) {
-			e.printStackTrace();
-			config.checkConnection(conn);
-			throw new JdbcExecuteException(e);
+			handleException(conn, e);
 		} finally {
 			config.close(pst, conn);
 		}
+    	return false;
     }
     
     
@@ -295,12 +288,11 @@ public class JdbcSupport {
 
 			return result > 0;
 		} catch (Exception e) {
-			e.printStackTrace();
-			config.checkConnection(conn);
-			throw new JdbcExecuteException(e);
+			handleException(conn, e);
 		} finally {
 			config.close(pst, conn);
 		}
+    	return false;
     }
     
     
@@ -338,12 +330,11 @@ public class JdbcSupport {
 
 			return result > 0;
 		} catch (Exception e) {
-			e.printStackTrace();
-			config.checkConnection(conn);
-			throw new JdbcExecuteException(e);
+			handleException(conn, e);
 		} finally {
 			config.close(pst, conn);
 		}
+    	return false;
     }
     
     
@@ -389,8 +380,6 @@ public class JdbcSupport {
 		    
 		    conn.setAutoCommit(true);
     	} catch (Exception e) {
-			e.printStackTrace();
-			
 			try {
 				// 若出现异常，对数据库中所有已完成的操作全部撤销，则回滚到事务开始状态
 				if (!conn.isClosed()) {
@@ -401,8 +390,7 @@ public class JdbcSupport {
 				e1.printStackTrace();
 				throw new JdbcExecuteException(e1);
 			}
-			config.checkConnection(conn);
-			throw new JdbcExecuteException(e);
+			handleException(conn, e);
     	} finally {
     		config.close(conn);
     	}
@@ -439,8 +427,6 @@ public class JdbcSupport {
 			return pst.executeBatch();
 			
     	} catch (Exception e) {
-			e.printStackTrace();
-			
 			try {
 				// 若出现异常，对数据库中所有已完成的操作全部撤销，则回滚到事务开始状态
 				if (conn != null && !conn.isClosed()) {
@@ -450,8 +436,7 @@ public class JdbcSupport {
 				e1.printStackTrace();
 				throw new JdbcExecuteException(e1);
 			}
-			config.checkConnection(conn);
-			throw new JdbcExecuteException(e);
+			handleException(conn, e);
     	} finally {
     		try {
 				if (conn != null && !conn.isClosed()) {
@@ -464,6 +449,7 @@ public class JdbcSupport {
     		
     		config.close(pst, conn);
     	}
+    	return new int[0];
     }
     
     
@@ -491,12 +477,11 @@ public class JdbcSupport {
 
 			return result > 0;
 		} catch (Exception e) {
-			e.printStackTrace();
-			config.checkConnection(conn);
-			throw new JdbcExecuteException(e);
+			handleException(conn, e);
 		} finally {
 			config.close(pst, conn);
 		}
+    	return false;
     }
     
     
@@ -530,8 +515,6 @@ public class JdbcSupport {
 			return pst.executeBatch();
 			
     	} catch (Exception e) {
-			e.printStackTrace();
-			
 			try {
 				// 若出现异常，对数据库中所有已完成的操作全部撤销，则回滚到事务开始状态
 				if (conn != null && !conn.isClosed()) {
@@ -541,8 +524,7 @@ public class JdbcSupport {
 				e1.printStackTrace();
 				throw new JdbcExecuteException(e1);
 			}
-			config.checkConnection(conn);
-			throw new JdbcExecuteException(e);
+			handleException(conn, e);
     	} finally {
     		try {
 				if (conn != null && !conn.isClosed()) {
@@ -555,6 +537,7 @@ public class JdbcSupport {
     		
     		config.close(pst, conn);
     	}
+    	return new int[0];
     }
 
 
@@ -583,13 +566,11 @@ public class JdbcSupport {
 
 			return (List<T>) modelInfo.generateEntityList(rs);
 		} catch (Exception e) {
-			e.printStackTrace();
-			config.checkConnection(conn);
-			throw new JdbcExecuteException(e);
+			handleException(conn, e);
 		} finally {
 			config.close(rs, pst, conn);
 		}
-
+    	return null;
     }
 
 
@@ -617,13 +598,11 @@ public class JdbcSupport {
 
 			return modelInfo.generateIdList(rs);
 		} catch (Exception e) {
-			e.printStackTrace();
-			config.checkConnection(conn);
-			throw new JdbcExecuteException(e);
+			handleException(conn, e);
 		} finally {
 			config.close(rs, pst, conn);
 		}
-
+    	return null;
     }
 
 
@@ -651,13 +630,11 @@ public class JdbcSupport {
 
 			return modelInfo.generateUniqueResult(rs);
 		} catch (Exception e) {
-			e.printStackTrace();
-			config.checkConnection(conn);
-			throw new JdbcExecuteException(e);
+			handleException(conn, e);
 		} finally {
 			config.close(rs, pst, conn);
 		}
-
+    	return null;
     }
 
 
@@ -686,13 +663,11 @@ public class JdbcSupport {
 
 			return (List<T>) modelInfo.generateEntityList(rs);
 		} catch (Exception e) {
-			e.printStackTrace();
-			config.checkConnection(conn);
-			throw new JdbcExecuteException(e);
+			handleException(conn, e);
 		} finally {
 			config.close(rs, pst, conn);
 		}
-
+    	return null;
     }
 
 
@@ -719,13 +694,11 @@ public class JdbcSupport {
 
 			return (List<T>) this.generateObjectList(rs, clzz);
 		} catch (Exception e) {
-			e.printStackTrace();
-			config.checkConnection(conn);
-			throw new JdbcExecuteException(e);
+			handleException(conn, e);
 		} finally {
 			config.close(rs, pst, conn);
 		}
-
+    	return null;
     }
 
 
@@ -752,13 +725,11 @@ public class JdbcSupport {
 
 			return this.generateObjectList(rs, rowMapper);
 		} catch (Exception e) {
-			e.printStackTrace();
-			config.checkConnection(conn);
-			throw new JdbcExecuteException(e);
+			handleException(conn, e);
 		} finally {
 			config.close(rs, pst, conn);
 		}
-
+    	return null;
     }
 
 
@@ -783,12 +754,11 @@ public class JdbcSupport {
 
 			return result > 0;
 		} catch (Exception e) {
-			e.printStackTrace();
-			config.checkConnection(conn);
-			throw new JdbcExecuteException(e);
+			handleException(conn, e);
 		} finally {
 			config.close(pst, conn);
 		}
+		return false;
 	}
 
 
@@ -848,7 +818,15 @@ public class JdbcSupport {
 		return results;
     }
 
+    
+    // 处理jdbc异常
+	private void handleException(Connection conn, Exception e) throws JdbcExecuteException {
+		e.printStackTrace();
+		config.checkConnection(conn);
+		throw new JdbcExecuteException(e);
+	}
 
+    
 	/**
      * 获取或创建实体信息
      * @param clzz 实体类
@@ -884,6 +862,7 @@ public class JdbcSupport {
 		if (StringUtils.isEmpty(tableName)) {
     		tableName = StringUtils.getLString(clzz.getSimpleName());
     	}
+		
     	// 创建TableInfo对象
     	final TableInfo tableInfo = new TableInfo(tableName, clzz);
     	modelInfo.setTableInfo(tableInfo);
@@ -899,7 +878,7 @@ public class JdbcSupport {
 
 			@SuppressWarnings("unchecked")
 			public void doWith(Field field) throws IllegalArgumentException, IllegalAccessException {
-
+				
 				// 忽略静态属性和临时属性
 				if(Modifier.isTransient(field.getModifiers()) || Modifier.isStatic(field.getModifiers()) ||
 						field.isAnnotationPresent(javax.persistence.Transient.class)) {
@@ -1021,9 +1000,7 @@ public class JdbcSupport {
 
 			buildTypes(rsmd, attrTypeMap);
 		} catch (Exception e) {
-			e.printStackTrace();
-			config.checkConnection(conn);
-			throw new JdbcExecuteException(e);
+			handleException(conn, e);
 		} finally {
 			config.close(rs, pst, conn);
 		}
