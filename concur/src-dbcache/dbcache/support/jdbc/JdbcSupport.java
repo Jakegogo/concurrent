@@ -1,5 +1,7 @@
 package dbcache.support.jdbc;
 
+import dbcache.annotation.Shard;
+import dbcache.conf.shard.ShardStrategy;
 import dbcache.key.IdGenerator;
 import dbcache.support.asm.util.AsmUtils;
 import dbcache.utils.MutableInteger;
@@ -848,8 +850,9 @@ public class JdbcSupport {
     	final ModelInfo modelInfo = new ModelInfo();
     	modelInfo.setClzz(clzz);
 
-    	String tableName = null;
+    	
     	// 获取类Meta信息
+    	String tableName = null;
     	if (clzz.isAnnotationPresent(javax.persistence.Table.class)) {
     		javax.persistence.Table tableAnno = clzz.getAnnotation(javax.persistence.Table.class);
     		tableName = tableAnno.name();
@@ -926,6 +929,18 @@ public class JdbcSupport {
 
     	modelInfo.setAttrTypeMap(attrTypeMap);
     	tableInfo.setColumnTypeMap(columnTypeMap);
+    	
+    	// 分表策略
+    	if (clzz.isAnnotationPresent(Shard.class)) {
+			Shard shardAnno = clzz.getAnnotation(Shard.class);
+			Class<? extends ShardStrategy> shardStrategrClass = shardAnno.value();
+			try {
+				tableInfo.setShardStrategy(shardStrategrClass.newInstance());
+			} catch (Exception e) {
+				e.printStackTrace();
+				throw new IllegalArgumentException("分表策略无法初始化:" + shardStrategrClass.getName(), e);
+			}
+		}
 
     	// 初始化字段对应的sql类型
     	initAttributeSqlTypes(tableInfo, attrTypeMap);

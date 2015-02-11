@@ -3,6 +3,8 @@ package dbcache.conf;
 import dbcache.annotation.Cached;
 import dbcache.annotation.DynamicUpdate;
 import dbcache.annotation.EnableIndex;
+import dbcache.annotation.Shard;
+import dbcache.conf.shard.ShardStrategy;
 import dbcache.key.IdGenerator;
 import dbcache.service.impl.ConcurrentLinkedHashMapCache;
 import dbcache.support.asm.ConstructorBuilder;
@@ -75,7 +77,10 @@ public class CacheConfig<T> {
 
 	/**  默认主键id生成器  */
 	private IdGenerator<?> defaultIdGenerator;
-
+	
+	/** 分表策略类,null为不分表 */
+	private ShardStrategy shardStrategy;
+	
 	/**
 	 * 获取实例
 	 * @param entityClass 实体类
@@ -84,18 +89,36 @@ public class CacheConfig<T> {
 	@SuppressWarnings("unchecked")
 	public static <T> CacheConfig<T> valueOf(Class<T> entityClass) {
 		Cached cachedAnno = entityClass.getAnnotation(Cached.class);
+		
+		CacheConfig<T> cacheConfig = null;
 		if(cachedAnno != null) {
-			CacheConfig<T> cacheConfig = (CacheConfig<T>) valueOf(cachedAnno);
-			cacheConfig.setClazz(entityClass);
-			if (entityClass.isAnnotationPresent(EnableIndex.class)) {
-				cacheConfig.setEnableIndex(true);
-			}
-			if (entityClass.isAnnotationPresent(DynamicUpdate.class)) {
-				cacheConfig.setEnableDynamicUpdate(true);
-			}
-			return cacheConfig;
+			cacheConfig = (CacheConfig<T>) valueOf(cachedAnno);
+		} else {
+			cacheConfig = (CacheConfig<T>) valueOf();
 		}
-		return (CacheConfig<T>) valueOf();
+		
+		cacheConfig.setClazz(entityClass);
+		
+		if (entityClass.isAnnotationPresent(EnableIndex.class)) {
+			cacheConfig.setEnableIndex(true);
+		}
+		
+		if (entityClass.isAnnotationPresent(DynamicUpdate.class)) {
+			cacheConfig.setEnableDynamicUpdate(true);
+		}
+		
+		if (entityClass.isAnnotationPresent(Shard.class)) {
+			Shard shardAnno = entityClass.getAnnotation(Shard.class);
+			Class<? extends ShardStrategy> shardStrategrClass = shardAnno.value();
+			try {
+				cacheConfig.setShardStrategy(shardStrategrClass.newInstance());
+			} catch (Exception e) {
+				e.printStackTrace();
+				throw new IllegalArgumentException("分表策略无法初始化:" + shardStrategrClass.getName(), e);
+			}
+		}
+		
+		return cacheConfig;
 	}
 
 	/**
@@ -310,5 +333,13 @@ public class CacheConfig<T> {
 
 	public void setFieldCount(int fieldCount) {
 		this.fieldCount = fieldCount;
+	}
+
+	public ShardStrategy getShardStrategy() {
+		return shardStrategy;
+	}
+
+	public void setShardStrategy(ShardStrategy shardStrategy) {
+		this.shardStrategy = shardStrategy;
 	}
 }

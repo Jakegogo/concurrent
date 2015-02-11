@@ -24,6 +24,8 @@ import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
 
+import dbcache.conf.shard.ShardStrategy;
+
 /**
  * TableInfo save the table info like column name and column type.
  */
@@ -38,6 +40,8 @@ public class TableInfo {
 	@SuppressWarnings("unchecked")
 	private Map<String, Class<?>> columnTypeMap = new LinkedHashMap<String, Class<?>>();	//	new HashMap<String, Class<?>>();
 	
+	/** 分表策略类,null为不分表 */
+	private ShardStrategy shardStrategy;
 	
 	public TableInfo(String tableName, Class<?> modelClass) {
 		this(tableName, Dialect.getDefaultDialect().getDefaultPrimaryKey(), modelClass);
@@ -52,6 +56,13 @@ public class TableInfo {
 		this.tableName = tableName.trim();
 		this.setPrimaryKey(primaryKey.trim());	// this.primaryKey = primaryKey.trim();
 		this.modelClass = modelClass;
+	}
+	
+	public String getTableName(Object key) {
+		if (shardStrategy == null) {
+			return tableName;
+		}
+		return tableName + shardStrategy.getTableNameSuffix(key);
 	}
 	
 	public String getTableName() {
@@ -116,6 +127,14 @@ public class TableInfo {
 
 	public Class<?> getModelClass() {
 		return modelClass;
+	}
+
+	public ShardStrategy getShardStrategy() {
+		return shardStrategy;
+	}
+
+	public void setShardStrategy(ShardStrategy shardStrategy) {
+		this.shardStrategy = shardStrategy;
 	}
 	
 }
