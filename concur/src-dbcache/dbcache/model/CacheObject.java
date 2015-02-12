@@ -1,14 +1,12 @@
 package dbcache.model;
 
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicIntegerArray;
-import java.util.concurrent.atomic.AtomicReference;
-
-import org.apache.commons.lang.builder.EqualsBuilder;
-
 import dbcache.conf.CacheConfig;
 import dbcache.conf.JsonConverter;
 import dbcache.utils.executors.SimpleLinkingRunnable;
+import org.apache.commons.lang.builder.EqualsBuilder;
+
+import java.util.concurrent.atomic.AtomicIntegerArray;
+import java.util.concurrent.atomic.AtomicReference;
 
 
 /**
@@ -44,7 +42,7 @@ public class CacheObject<T extends IEntity<?>> {
 	/**
 	 * 是否在更新处理中
 	 */
-	private final AtomicBoolean updateProcessing = new AtomicBoolean(false);
+	private volatile boolean updateProcessing = false;
 
 	//-----执行链-----
 	/**
@@ -65,8 +63,6 @@ public class CacheObject<T extends IEntity<?>> {
 	 *
 	 * @param entity
 	 *            实体
-	 * @param id
-	 *            主键
 	 * @param clazz
 	 *            类型
 	 */
@@ -79,8 +75,6 @@ public class CacheObject<T extends IEntity<?>> {
 	 *
 	 * @param entity
 	 *            实体
-	 * @param id
-	 *            主键
 	 * @param clazz
 	 *            类型
 	 */
@@ -185,18 +179,12 @@ public class CacheObject<T extends IEntity<?>> {
 	}
 
 	public boolean isUpdateProcessing() {
-		return this.updateProcessing.get();
+		return this.updateProcessing;
 	}
 
-	/**
-	 * 改变状态
-	 * @param processing 目标状态
-	 * @return 是否改变成功
-	 */
-	public boolean swapUpdateProcessing(boolean processing) {
-		return this.updateProcessing.compareAndSet(!processing, processing);
+	public void setUpdateProcessing(boolean updateProcessing) {
+		this.updateProcessing = updateProcessing;
 	}
-
 
 	public AtomicReference<SimpleLinkingRunnable> getLastLinkingRunnable() {
 		return lastLinkingRunnable;

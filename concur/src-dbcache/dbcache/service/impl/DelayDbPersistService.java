@@ -12,16 +12,13 @@ import dbcache.service.DbRuleService;
 import dbcache.utils.JsonUtils;
 import dbcache.utils.NamedThreadFactory;
 import dbcache.utils.ThreadUtils;
-
 import org.apache.commons.lang.StringUtils;
-import org.apache.poi.hssf.record.formula.functions.T;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
-
 import java.util.Iterator;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutorService;
@@ -218,28 +215,31 @@ public class DelayDbPersistService implements DbPersistService {
 	public <T extends IEntity<?>> void handleUpdate(final CacheObject<T> cacheObject, final DbAccessService dbAccessService, final CacheConfig<T> cacheConfig) {
 
 		// 改变更新状态
-		if (cacheObject.isUpdateProcessing() || !cacheObject.swapUpdateProcessing(true)) {
+		if (cacheObject.isUpdateProcessing()) {
 			return;
 		}
-		
+
+		// 改变更新状态
+		cacheObject.setUpdateProcessing(true);
+
 		this.handlePersist(new PersistAction() {
 
 			@Override
 			public void run() {
 
 				// 改变更新状态
-				if (cacheObject.swapUpdateProcessing(false)) {
+				cacheObject.setUpdateProcessing(false);
 
-					// 持久化前的操作
-					cacheObject.doBeforePersist(cacheConfig);
+				// 持久化前的操作
+				cacheObject.doBeforePersist(cacheConfig);
 
-					//持久化
-					if (cacheConfig.isEnableDynamicUpdate()) {
-						dbAccessService.update(cacheObject.getEntity(), cacheObject.getModifiedFields());
-					} else {
-						dbAccessService.update(cacheObject.getEntity());
-					}
+				//持久化
+				if (cacheConfig.isEnableDynamicUpdate()) {
+					dbAccessService.update(cacheObject.getEntity(), cacheObject.getModifiedFields());
+				} else {
+					dbAccessService.update(cacheObject.getEntity());
 				}
+
 			}
 
 			@Override

@@ -14,15 +14,12 @@ import dbcache.utils.NamedThreadFactory;
 import dbcache.utils.ThreadUtils;
 import dbcache.utils.executors.SimpleLinkingRunnable;
 import dbcache.utils.executors.SimpleOrderedThreadPoolExecutor;
-
-import org.apache.poi.hssf.record.formula.functions.T;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
-
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.RejectedExecutionException;
@@ -175,7 +172,7 @@ public class InTimeDbPersistService implements DbPersistService {
 			
 			@Override
 			public void onException(Throwable t) {
-				cacheObject.swapUpdateProcessing(false);
+				cacheObject.setUpdateProcessing(false);
 				retryQueue.add(this);
 			}
 
@@ -203,9 +200,11 @@ public class InTimeDbPersistService implements DbPersistService {
 	@Override
 	public <T extends IEntity<?>> void handleUpdate(final CacheObject<T> cacheObject, final DbAccessService dbAccessService, final CacheConfig<T> cacheConfig) {
 		// 改变更新状态
-		if (cacheObject.isUpdateProcessing() || !cacheObject.swapUpdateProcessing(true)) {
+		if (cacheObject.isUpdateProcessing()) {
 			return;
 		}
+		// 改变更新状态
+		cacheObject.setUpdateProcessing(true);
 		
 		this.handlePersist(new OrderedPersistAction() {
 
@@ -218,27 +217,23 @@ public class InTimeDbPersistService implements DbPersistService {
 			public void run() {
 				
 				// 改变更新状态
-				if (cacheObject.swapUpdateProcessing(false)) {
+				cacheObject.setUpdateProcessing(false);
 
-					// 持久化前的操作
-					cacheObject.doBeforePersist(cacheConfig);
+				// 持久化前的操作
+				cacheObject.doBeforePersist(cacheConfig);
 
-					//持久化
-					if (cacheConfig.isEnableDynamicUpdate()) {
-						dbAccessService.update(cacheObject.getEntity(), cacheObject.getModifiedFields());
-					} else {
-						dbAccessService.update(cacheObject.getEntity());
-					}
-
+				//持久化
+				if (cacheConfig.isEnableDynamicUpdate()) {
+					dbAccessService.update(cacheObject.getEntity(), cacheObject.getModifiedFields());
 				} else {
-					throw new IllegalStateException("检测到非顺序入库.");// 正常情况不会执行到这个分支
+					dbAccessService.update(cacheObject.getEntity());
 				}
 
 			}
 
 			@Override
 			public void onException(Throwable t) {
-				cacheObject.swapUpdateProcessing(false);
+				cacheObject.setUpdateProcessing(false);
 				retryQueue.add(this);
 			}
 
@@ -285,7 +280,7 @@ public class InTimeDbPersistService implements DbPersistService {
 			
 			@Override
 			public void onException(Throwable t) {
-				cacheObject.swapUpdateProcessing(false);
+				cacheObject.setUpdateProcessing(false);
 				retryQueue.add(this);
 			}
 

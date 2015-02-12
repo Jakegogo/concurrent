@@ -90,8 +90,8 @@ public class Test {
 
 
 		for(int i = 0;i <= 100000000;i++) {
-//			for (long j = 1; j < 10; j++) {
-				Entity entity = this.cacheService.get(1l);
+			for (long j = 1; j < 10; j++) {
+				Entity entity = this.cacheService.get(j);
 				entity.addNum();
 //			if(i % 1000000 == 0) {
 //				entity.addNum(1);
@@ -118,7 +118,7 @@ public class Test {
 
 				entity = null;
 //			System.gc();
-//			}
+			}
 		}
 //		System.out.println(entity.num);
 

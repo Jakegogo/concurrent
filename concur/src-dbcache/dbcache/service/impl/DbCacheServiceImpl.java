@@ -116,14 +116,7 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 	/**
 	 * 线程缓存
 	 */
-	private final ThreadLocal<HashMap8<Object, CacheObject<T>>> threadLocalCache = new ThreadLocal<HashMap8<Object, CacheObject<T>>>() {
-	
-		@Override
-		protected HashMap8<Object, CacheObject<T>> initialValue() {
-			return new HashMap8<Object, CacheObject<T>>();
-		}
-		
-	};
+	private final ConcurrentMap<Thread, HashMap8<Object, CacheObject<T>>> threadLocalCache = new ConcurrentHashMap<Thread, HashMap8<Object, CacheObject<T>>>();
 
 	/**
 	 * dbCache 初始化
@@ -193,7 +186,7 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 	private CacheObject<T> getCacheObject(PK key) {
 		
 		// 从本地线程获取
-		CacheObject<T> cacheObject = threadLocalCache.get().get(key);
+		CacheObject<T> cacheObject = this.getCacheObjectFromThreadLocal(key);
 		if (cacheObject != null) {
 			return cacheObject;
 		}
@@ -252,13 +245,12 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 		}
 		
 		// 存储到本地缓存
-		threadLocalCache.get().put(key, cacheObject);
+		this.putCacheObjectToThreadLocal(key, cacheObject);
 
 		return cacheObject;
 	}
-	
-	
-	
+
+
 	/**
 	 * 获取缓存对象
 	 * @param key long 实体id
@@ -268,7 +260,7 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 	private CacheObject<T> getCacheObject(long key) {
 		
 		// 从本地线程获取
-		CacheObject<T> cacheObject = threadLocalCache.get().get(key);
+		CacheObject<T> cacheObject = this.getCacheObjectFromThreadLocal(key);
 		if (cacheObject != null) {
 			return cacheObject;
 		}
@@ -281,7 +273,7 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 
 		return this.getCacheObject((PK)((Object) Long.valueOf(key)));
 	}
-	
+
 
 	@Override
 	public List<T> listById(Collection<PK> idList) {
@@ -503,6 +495,39 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 			// 提交持久化任务
 			inTimeDbPersistService.handleDelete(cacheObject, this.dbAccessService, id, this.cacheUnit);
 		}
+	}
+
+
+
+	// 从ThreadLocal中获取
+	private CacheObject<T> getCacheObjectFromThreadLocal(PK key) {
+		return this.getThreadMap().get(key);
+	}
+
+
+	// 从ThreadLocal中获取
+	private CacheObject<T> getCacheObjectFromThreadLocal(long key) {
+		return this.getThreadMap().get(key);
+	}
+
+
+	// 存储到ThreadLocal
+	private void putCacheObjectToThreadLocal(PK key, CacheObject<T> cacheObject) {
+		this.getThreadMap().put(key, cacheObject);
+	}
+
+
+	// 获取ThreadLocalMap
+	private HashMap8<Object, CacheObject<T>> getThreadMap() {
+		HashMap8<Object, CacheObject<T>> threadMap = threadLocalCache.get(Thread.currentThread());
+		if (threadMap == null) {
+			threadMap = new HashMap8<Object, CacheObject<T>>();
+			HashMap8<Object, CacheObject<T>> oldThreadMap = threadLocalCache.putIfAbsent(Thread.currentThread(), threadMap);
+			if (oldThreadMap != null) {
+				return oldThreadMap;
+			}
+		}
+		return threadMap;
 	}
 
 
