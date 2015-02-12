@@ -13,6 +13,7 @@ import dbcache.service.*;
 import dbcache.support.asm.*;
 import dbcache.utils.IntegerCounter;
 import dbcache.utils.ThreadUtils;
+import dbcache.utils.executors.SimpleLinkingRunnable;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,6 +40,7 @@ import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicIntegerArray;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * DbCached缓存模块配置服务实现
@@ -398,12 +400,22 @@ public class ConfigFactoryImpl implements ConfigFactory, DbCacheMBean {
 		}
 
 		// 生成CacheObject
+		CacheObject<T> result = null;
 		if(cacheConfig.getCacheType() == CacheType.WEEKMAP) {
-			return new WeakCacheObject<T, WeakCacheEntity<T,?>>(entity, entity.getId(), (Class<T>) entityClazz, proxyEntity, key, cacheConfig.getIndexList(), cacheConfig.getJsonAutoConverterList(), modifiedFields);
+			result = new WeakCacheObject<T, WeakCacheEntity<T,?>>(entity, entity.getId(), (Class<T>) entityClazz, proxyEntity, key, modifiedFields);
 		} else {
-			return new CacheObject<T>(entity, entity.getId(), (Class<T>) entityClazz, proxyEntity, cacheConfig.getIndexList(), cacheConfig.getJsonAutoConverterList(), modifiedFields);
+			result = new CacheObject<T>(entity, entity.getId(), (Class<T>) entityClazz, proxyEntity, modifiedFields);
 		}
-
+		
+		// 初始化执行链
+		if (cacheConfig.getPersistType() == PersistType.INTIME) {
+			result.setLastLinkingRunnable(new AtomicReference<SimpleLinkingRunnable>());
+		}
+		
+		// 持久化前回调
+		result.doBeforePersist(cacheConfig);
+		
+		return result;
 	}
 
 

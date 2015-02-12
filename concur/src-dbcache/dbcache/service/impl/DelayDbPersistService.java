@@ -2,6 +2,7 @@ package dbcache.service.impl;
 
 import dbcache.conf.CacheConfig;
 import dbcache.model.CacheObject;
+import dbcache.model.IEntity;
 import dbcache.model.PersistAction;
 import dbcache.model.PersistStatus;
 import dbcache.service.Cache;
@@ -13,6 +14,7 @@ import dbcache.utils.NamedThreadFactory;
 import dbcache.utils.ThreadUtils;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.poi.hssf.record.formula.functions.T;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -170,7 +172,7 @@ public class DelayDbPersistService implements DbPersistService {
 
 
 	@Override
-	public void handleSave(final CacheObject<?> cacheObject, final DbAccessService dbAccessService) {
+	public <T extends IEntity<?>> void handleSave(final CacheObject<T> cacheObject, final DbAccessService dbAccessService, final CacheConfig<T> cacheConfig) {
 		this.handlePersist(new PersistAction() {
 
 			@Override
@@ -184,7 +186,7 @@ public class DelayDbPersistService implements DbPersistService {
 				Object entity = cacheObject.getEntity();
 
 				// 持久化前操作
-				cacheObject.doBeforePersist();
+				cacheObject.doBeforePersist(cacheConfig);
 
 				// 持久化
 				dbAccessService.save(entity);
@@ -213,16 +215,13 @@ public class DelayDbPersistService implements DbPersistService {
 	}
 
 	@Override
-	public void handleUpdate(final CacheObject<?> cacheObject, final DbAccessService dbAccessService, final CacheConfig<?> cacheConfig) {
+	public <T extends IEntity<?>> void handleUpdate(final CacheObject<T> cacheObject, final DbAccessService dbAccessService, final CacheConfig<T> cacheConfig) {
 
 		// 改变更新状态
 		if (cacheObject.isUpdateProcessing() || !cacheObject.swapUpdateProcessing(true)) {
 			return;
 		}
-
-		//最新修改版本号
-		final long editVersion = cacheObject.increseEditVersion();
-
+		
 		this.handlePersist(new PersistAction() {
 
 			@Override
@@ -232,12 +231,7 @@ public class DelayDbPersistService implements DbPersistService {
 				if (cacheObject.swapUpdateProcessing(false)) {
 
 					// 持久化前的操作
-					cacheObject.doBeforePersist();
-
-					//缓存对象在提交之后被修改过
-					if(editVersion < cacheObject.getEditVersion()) {
-						return;
-					}
+					cacheObject.doBeforePersist(cacheConfig);
 
 					//持久化
 					if (cacheConfig.isEnableDynamicUpdate()) {
@@ -250,18 +244,12 @@ public class DelayDbPersistService implements DbPersistService {
 
 			@Override
 			public String getPersistInfo() {
-
-				//缓存对象在提交之后被修改过
-				if(editVersion < cacheObject.getEditVersion()) {
-					return null;
-				}
-
 				return JsonUtils.object2JsonString(cacheObject.getEntity());
 			}
 
 			@Override
 			public boolean valid() {
-				return editVersion == cacheObject.getEditVersion();
+				return true;
 			}
 
 		});
@@ -269,8 +257,6 @@ public class DelayDbPersistService implements DbPersistService {
 
 	@Override
 	public void handleDelete(final CacheObject<?> cacheObject, final DbAccessService dbAccessService, final Object key, final Cache cache) {
-		// 最新修改版本号
-		final long editVersion = cacheObject.increseEditVersion();
 
 		this.handlePersist(new PersistAction() {
 
@@ -292,12 +278,6 @@ public class DelayDbPersistService implements DbPersistService {
 
 			@Override
 			public String getPersistInfo() {
-
-				// 缓存对象在提交之后被修改过
-				if(editVersion < cacheObject.getEditVersion()) {
-					return null;
-				}
-
 				return JsonUtils.object2JsonString(cacheObject.getEntity());
 			}
 

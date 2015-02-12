@@ -1,11 +1,7 @@
 package dbcache.model;
 
-import dbcache.conf.JsonConverter;
-import dbcache.support.asm.ValueGetter;
-
 import java.io.Serializable;
 import java.lang.ref.WeakReference;
-import java.util.Collection;
 import java.util.concurrent.atomic.AtomicIntegerArray;
 
 
@@ -56,8 +52,8 @@ public class WeakCacheObject<T extends IEntity<?>, R extends WeakCacheEntity<T,?
 	 *            类型
 	 */
 	@SuppressWarnings("unchecked")
-	public WeakCacheObject(T entity, Serializable id, Class<T> clazz, T proxyEntity, Object key, Collection<ValueGetter<T>> indexes, Collection<JsonConverter<T>> jsonConverters, AtomicIntegerArray modifiedFields) {
-		super(entity, id, clazz, proxyEntity, indexes, jsonConverters, modifiedFields);
+	public WeakCacheObject(T entity, Serializable id, Class<T> clazz, T proxyEntity, Object key, AtomicIntegerArray modifiedFields) {
+		super(entity, id, clazz, proxyEntity, modifiedFields);
 		this.hashCode = key.hashCode();
 	}
 

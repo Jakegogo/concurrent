@@ -61,7 +61,7 @@ public class Entity implements EntityInitializer, IEntity<Long> {
 //	@UpdateIndex({ "num_idx" })
 //	@ChangeFields({"num"})
 	public void increseNum() {
-		this.num = this.idgenerator.incrementAndGet();
+		this.uid = this.idgenerator.incrementAndGet();
 	}
 
 	public void addNum() {

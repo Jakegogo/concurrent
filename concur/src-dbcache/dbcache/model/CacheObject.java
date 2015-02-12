@@ -1,17 +1,15 @@
 package dbcache.model;
 
-import dbcache.conf.JsonConverter;
-import dbcache.support.asm.ValueGetter;
-import dbcache.utils.concurrent.LongAdder;
-import dbcache.utils.executors.SimpleLinkingRunnable;
-
-import org.apache.commons.lang.builder.EqualsBuilder;
-
 import java.io.Serializable;
-import java.util.Collection;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicIntegerArray;
 import java.util.concurrent.atomic.AtomicReference;
+
+import org.apache.commons.lang.builder.EqualsBuilder;
+
+import dbcache.conf.CacheConfig;
+import dbcache.conf.JsonConverter;
+import dbcache.utils.executors.SimpleLinkingRunnable;
 
 
 /**
@@ -36,22 +34,7 @@ public class CacheObject<T extends IEntity<?>> {
 	 * 主键id
 	 */
 	private final Serializable id;
-
-	/**
-	 * 修改版本号
-	 */
-	private final LongAdder editVersion = new LongAdder();
 	
-	/**
-	 * 索引属性值获取器列表
-	 */
-	private Collection<ValueGetter<T>> indexList;
-
-	/**
-	 * Json 自动转换器
-	 */
-	private Collection<JsonConverter<T>> jsonConverters;
-
 	/**
 	 * 修改过的属性
 	 */
@@ -73,8 +56,8 @@ public class CacheObject<T extends IEntity<?>> {
 	/**
 	 * 上一次执行的线程
 	 */
-	private final AtomicReference<SimpleLinkingRunnable> lastLinkingRunnable = new AtomicReference<SimpleLinkingRunnable>();
-
+	private volatile AtomicReference<SimpleLinkingRunnable> lastLinkingRunnable;
+	
 	/**
 	 * 默认构造方法
 	 */
@@ -95,7 +78,7 @@ public class CacheObject<T extends IEntity<?>> {
 	 *            类型
 	 */
 	public CacheObject(T entity, Serializable id, Class<T> clazz, T proxyEntity) {
-		this(entity, id, clazz, proxyEntity, null, null, null);
+		this(entity, id, clazz, proxyEntity, null);
 	}
 
 	/**
@@ -108,26 +91,21 @@ public class CacheObject<T extends IEntity<?>> {
 	 * @param clazz
 	 *            类型
 	 */
-	public CacheObject(T entity, Serializable id, Class<T> clazz, T proxyEntity, Collection<ValueGetter<T>> indexes, Collection<JsonConverter<T>> jsonConverters, AtomicIntegerArray modifiedFields) {
+	public CacheObject(T entity, Serializable id, Class<T> clazz, T proxyEntity, AtomicIntegerArray modifiedFields) {
 		this.entity = entity;
 		this.id = id;
 		this.proxyEntity = proxyEntity;
 		this.persistStatus = PersistStatus.TRANSIENT;
-		this.indexList = indexes;
-		this.jsonConverters = jsonConverters;
 		this.modifiedFields = modifiedFields;
-
-		// 将进入持久化状态
-		this.doBeforePersist();
 	}
 
 	/**
 	 * 初始化
 	 */
-	public void doInit() {
+	public void doInit(CacheConfig<T> cacheConfig) {
 		// 初始化json自动转换属性
-		if(!this.jsonConverters.isEmpty()) {
-			for(JsonConverter<T> jsonConverter : this.jsonConverters) {
+		if(!cacheConfig.getJsonAutoConverterList().isEmpty()) {
+			for(JsonConverter<T> jsonConverter : cacheConfig.getJsonAutoConverterList()) {
 				jsonConverter.doConvert(this.entity);
 			}
 		}
@@ -150,10 +128,10 @@ public class CacheObject<T extends IEntity<?>> {
 	/**
 	 * 持久化之前的操作
 	 */
-	public void doBeforePersist() {
+	public void doBeforePersist(CacheConfig<T> cacheConfig) {
 		// json持久化
-		if (!this.jsonConverters.isEmpty()) {
-			for(JsonConverter<T> jsonConverter : this.jsonConverters) {
+		if (!cacheConfig.getJsonAutoConverterList().isEmpty()) {
+			for(JsonConverter<T> jsonConverter : cacheConfig.getJsonAutoConverterList()) {
 				if (this.modifiedFields != null												// 启用了dynamicUpdate
 					&& this.modifiedFields.get(jsonConverter.getFieldIndex()) != 1) {
 					continue;
@@ -166,15 +144,6 @@ public class CacheObject<T extends IEntity<?>> {
 			EntityInitializer entityInitializer = (EntityInitializer) entity;
 			entityInitializer.doBeforePersist();
 		}
-	}
-
-
-	/**
-	 * 更新修改版本号
-	 */
-	public long increseEditVersion() {
-		this.editVersion.increment();
-		return this.editVersion.longValue();
 	}
 	
 
@@ -219,20 +188,12 @@ public class CacheObject<T extends IEntity<?>> {
 		return id;
 	}
 
-	public long getEditVersion() {
-		return editVersion.longValue();
-	}
-
 	public PersistStatus getPersistStatus() {
 		return persistStatus;
 	}
 
 	public void setPersistStatus(PersistStatus persistStatus) {
 		this.persistStatus = persistStatus;
-	}
-
-	public Collection<ValueGetter<T>> getIndexList() {
-		return indexList;
 	}
 
 	public boolean isUpdateProcessing() {
@@ -251,6 +212,11 @@ public class CacheObject<T extends IEntity<?>> {
 
 	public AtomicReference<SimpleLinkingRunnable> getLastLinkingRunnable() {
 		return lastLinkingRunnable;
+	}
+
+	public void setLastLinkingRunnable(
+			AtomicReference<SimpleLinkingRunnable> lastLinkingRunnable) {
+		this.lastLinkingRunnable = lastLinkingRunnable;
 	}
 
 	public AtomicIntegerArray getModifiedFields() {
