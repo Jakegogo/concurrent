@@ -1,6 +1,5 @@
 package dbcache.model;
 
-import java.io.Serializable;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicIntegerArray;
 import java.util.concurrent.atomic.AtomicReference;
@@ -31,11 +30,6 @@ public class CacheObject<T extends IEntity<?>> {
 	protected final T proxyEntity;
 
 	/**
-	 * 主键id
-	 */
-	private final Serializable id;
-	
-	/**
 	 * 修改过的属性
 	 */
 	private AtomicIntegerArray modifiedFields;
@@ -63,7 +57,6 @@ public class CacheObject<T extends IEntity<?>> {
 	 */
 	protected CacheObject() {
 		this.entity = null;
-		this.id = null;
 		this.proxyEntity = null;
 	}
 
@@ -77,8 +70,8 @@ public class CacheObject<T extends IEntity<?>> {
 	 * @param clazz
 	 *            类型
 	 */
-	public CacheObject(T entity, Serializable id, Class<T> clazz, T proxyEntity) {
-		this(entity, id, clazz, proxyEntity, null);
+	public CacheObject(T entity, Class<T> clazz, T proxyEntity) {
+		this(entity, clazz, proxyEntity, null);
 	}
 
 	/**
@@ -91,9 +84,8 @@ public class CacheObject<T extends IEntity<?>> {
 	 * @param clazz
 	 *            类型
 	 */
-	public CacheObject(T entity, Serializable id, Class<T> clazz, T proxyEntity, AtomicIntegerArray modifiedFields) {
+	public CacheObject(T entity, Class<T> clazz, T proxyEntity, AtomicIntegerArray modifiedFields) {
 		this.entity = entity;
-		this.id = id;
 		this.proxyEntity = proxyEntity;
 		this.persistStatus = PersistStatus.TRANSIENT;
 		this.modifiedFields = modifiedFields;
@@ -182,10 +174,6 @@ public class CacheObject<T extends IEntity<?>> {
 
 	public T getProxyEntity() {
 		return proxyEntity;
-	}
-
-	public Serializable getId() {
-		return id;
 	}
 
 	public PersistStatus getPersistStatus() {

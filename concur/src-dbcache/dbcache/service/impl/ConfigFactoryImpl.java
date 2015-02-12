@@ -359,7 +359,7 @@ public class ConfigFactoryImpl implements ConfigFactory, DbCacheMBean {
 
 
 
-	@SuppressWarnings("rawtypes")
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	@Override
 	public <T extends IEntity<PK>, PK extends Comparable<PK> & Serializable> T createProxyEntity(T entity, Class<? extends IEntity> proxyClass, DbIndexService indexService, CacheConfig<T> cacheConfig, AtomicIntegerArray modifiedFields) {
 		// 判断是否启用索引服务
@@ -402,9 +402,9 @@ public class ConfigFactoryImpl implements ConfigFactory, DbCacheMBean {
 		// 生成CacheObject
 		CacheObject<T> result = null;
 		if(cacheConfig.getCacheType() == CacheType.WEEKMAP) {
-			result = new WeakCacheObject<T, WeakCacheEntity<T,?>>(entity, entity.getId(), (Class<T>) entityClazz, proxyEntity, key, modifiedFields);
+			result = new WeakCacheObject<T, WeakCacheEntity<T,?>>(entity, (Class<T>) entityClazz, proxyEntity, key, modifiedFields);
 		} else {
-			result = new CacheObject<T>(entity, entity.getId(), (Class<T>) entityClazz, proxyEntity, modifiedFields);
+			result = new CacheObject<T>(entity, (Class<T>) entityClazz, proxyEntity, modifiedFields);
 		}
 		
 		// 初始化执行链

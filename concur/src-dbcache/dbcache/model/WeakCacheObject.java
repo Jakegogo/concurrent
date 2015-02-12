@@ -1,6 +1,5 @@
 package dbcache.model;
 
-import java.io.Serializable;
 import java.lang.ref.WeakReference;
 import java.util.concurrent.atomic.AtomicIntegerArray;
 
@@ -37,8 +36,8 @@ public class WeakCacheObject<T extends IEntity<?>, R extends WeakCacheEntity<T,?
 	 *            类型
 	 */
 	@SuppressWarnings("unchecked")
-	public WeakCacheObject(T entity, Serializable id, Class<T> clazz, WeakReference<?> proxyEntity) {
-		super(entity, id, clazz, (T) proxyEntity);
+	public WeakCacheObject(T entity, Class<T> clazz, WeakReference<?> proxyEntity) {
+		super(entity, clazz, (T) proxyEntity);
 	}
 
 	/**
@@ -51,9 +50,8 @@ public class WeakCacheObject<T extends IEntity<?>, R extends WeakCacheEntity<T,?
 	 * @param clazz
 	 *            类型
 	 */
-	@SuppressWarnings("unchecked")
-	public WeakCacheObject(T entity, Serializable id, Class<T> clazz, T proxyEntity, Object key, AtomicIntegerArray modifiedFields) {
-		super(entity, id, clazz, proxyEntity, modifiedFields);
+	public WeakCacheObject(T entity, Class<T> clazz, T proxyEntity, Object key, AtomicIntegerArray modifiedFields) {
+		super(entity, clazz, proxyEntity, modifiedFields);
 		this.hashCode = key.hashCode();
 	}
 
