@@ -517,7 +517,7 @@ public class AsmAccessHelper implements Opcodes {
 	public static Method toClassMethod(Class<?> clazz, String name, String desc) {
 		try {
 			Class<?>[] parameterTypes = ReflectUtils.parseTypes(desc);
-			return clazz.getMethod(name, parameterTypes);
+			return clazz.getDeclaredMethod(name, parameterTypes);
 		} catch (ClassNotFoundException e) {
 			e.printStackTrace();
 		} catch (SecurityException e) {

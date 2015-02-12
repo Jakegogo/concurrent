@@ -72,6 +72,15 @@ public class Entity implements EntityInitializer, IEntity<Long> {
 		return num;
 	}
 
+	private void resetNum() {
+		this.idgenerator = new AtomicInteger(num);
+		this.uid = 0;
+	}
+
+	public void doReset() {
+		this.resetNum();
+	}
+
 	public void setNum(int num) {
 		this.num = num;
 	}
