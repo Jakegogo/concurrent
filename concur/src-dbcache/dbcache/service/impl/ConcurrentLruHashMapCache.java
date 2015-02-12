@@ -1,12 +1,10 @@
 package dbcache.service.impl;
 
-import dbcache.service.Cache;
+import dbcache.service.CacheUnit;
 import dbcache.utils.CacheUtils;
-import dbcache.utils.concurrent.CleanupThread;
 import dbcache.utils.concurrent.ConcurrentLRUCache;
 import dbcache.utils.concurrent.ConcurrentReferenceHashMap;
 import dbcache.utils.concurrent.ConcurrentReferenceHashMap.ReferenceType;
-import dbcache.utils.concurrent.ConcurrentWeakHashMap;
 
 import org.springframework.stereotype.Component;
 
@@ -25,7 +23,7 @@ import java.lang.ref.ReferenceQueue;
  * @date 2014-7-31-下午8:24:23
  */
 @Component("concurrentLruHashMapCache")
-public class ConcurrentLruHashMapCache implements Cache {
+public class ConcurrentLruHashMapCache implements CacheUnit {
 
 	/**
 	 * 缓存名称

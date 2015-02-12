@@ -20,7 +20,7 @@ import dbcache.model.IndexKey;
 import dbcache.model.IndexObject;
 import dbcache.model.IndexValue;
 import dbcache.model.PersistStatus;
-import dbcache.service.Cache;
+import dbcache.service.CacheUnit;
 import dbcache.service.DbAccessService;
 import dbcache.service.DbIndexService;
 import dbcache.support.asm.ValueGetter;
@@ -46,7 +46,7 @@ public class DbIndexServiceImpl<PK extends Comparable<PK> & Serializable>
 	@Inject
 	@Autowired
 	@Qualifier("concurrentLruHashMapCache")
-	private Cache cache;
+	private CacheUnit cacheUnit;
 
 	@Autowired
 	@Qualifier("jdbcDbAccessServiceImpl")
@@ -140,7 +140,7 @@ public class DbIndexServiceImpl<PK extends Comparable<PK> & Serializable>
 		
 		final Object key = CacheRule.getIndexIdKey(indexName, indexValue);
 
-		Cache.ValueWrapper wrapper = (Cache.ValueWrapper) cache.get(key);
+		CacheUnit.ValueWrapper wrapper = (CacheUnit.ValueWrapper) cacheUnit.get(key);
 		if(wrapper != null) {	// 已经缓存
 
 			IndexObject<PK> indexObject = (IndexObject<PK>) wrapper.get();
@@ -154,7 +154,7 @@ public class DbIndexServiceImpl<PK extends Comparable<PK> & Serializable>
 
 		IndexObject<PK> indexObject = IndexObject.valueOf(IndexKey.valueOf(indexName, indexValue), PersistStatus.TRANSIENT);
 
-		wrapper = cache.putIfAbsent(key, indexObject);
+		wrapper = cacheUnit.putIfAbsent(key, indexObject);
 
 		if (wrapper != null && wrapper.get() != null) {
 			indexObject = (IndexObject<PK>) wrapper.get();
@@ -208,8 +208,8 @@ public class DbIndexServiceImpl<PK extends Comparable<PK> & Serializable>
 
 
 	@Override
-	public Cache getCache() {
-		return cache;
+	public CacheUnit getCacheUnit() {
+		return cacheUnit;
 	}
 
 	public CacheConfig<?> getCacheConfig() {

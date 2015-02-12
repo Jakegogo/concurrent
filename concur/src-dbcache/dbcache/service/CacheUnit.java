@@ -8,7 +8,7 @@ import java.lang.ref.ReferenceQueue;
  * @author jake
  * @date 2014-7-31-下午8:31:25
  */
-public interface Cache {
+public interface CacheUnit {
 
 	/**
 	 * 获取缓存包装对象

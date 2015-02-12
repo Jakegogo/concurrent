@@ -81,7 +81,7 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 	@Inject
 	@Autowired
 	@Qualifier("concurrentLruHashMapCache")
-	private Cache cache;
+	private CacheUnit cacheUnit;
 
 	/**
 	 * 默认的持久化服务
@@ -199,7 +199,7 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 		}
 		
 		// 从共用缓存获取
-		Cache.ValueWrapper wrapper = (Cache.ValueWrapper) cache.get(key);
+		CacheUnit.ValueWrapper wrapper = (CacheUnit.ValueWrapper) cacheUnit.get(key);
 		if(wrapper != null) {	// 已经缓存
 			return (CacheObject<T>) wrapper.get();
 		}
@@ -214,15 +214,15 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 		lock.lock();
 		try {
 
-			wrapper = (Cache.ValueWrapper) cache.get(key);
+			wrapper = (CacheUnit.ValueWrapper) cacheUnit.get(key);
 			if (wrapper == null) {
 
 				T entity = dbAccessService.get(clazz, key);
 				if (entity != null) {
 					// 创建缓存对象
-					cacheObject = configFactory.createCacheObject(entity, clazz, indexService, key, cache, cacheConfig);
+					cacheObject = configFactory.createCacheObject(entity, clazz, indexService, key, cacheUnit, cacheConfig);
 
-					wrapper = cache.putIfAbsent(key, cacheObject);
+					wrapper = cacheUnit.putIfAbsent(key, cacheObject);
 					if (wrapper != null && wrapper.get() != null) {
 
 						cacheObject = (CacheObject<T>) wrapper.get();
@@ -239,7 +239,7 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 
 				} else {
 					// 缓存NULL value
-					wrapper = cache.putIfAbsent(key, null);
+					wrapper = cacheUnit.putIfAbsent(key, null);
 					if (wrapper != null && wrapper.get() != null) {
 						cacheObject = (CacheObject<T>) wrapper.get();
 					}
@@ -274,7 +274,7 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 		}
 		
 		// 从共用缓存获取
-		Cache.ValueWrapper wrapper = (Cache.ValueWrapper) cache.get(key);
+		CacheUnit.ValueWrapper wrapper = (CacheUnit.ValueWrapper) cacheUnit.get(key);
 		if(wrapper != null) {	// 已经缓存
 			return (CacheObject<T>) wrapper.get();
 		}
@@ -390,16 +390,16 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 		//存储到缓存
 		CacheObject<T> cacheObject = null;
 		final Object key = entity.getId();
-		Cache.ValueWrapper wrapper = (Cache.ValueWrapper) cache.get(key);
+		CacheUnit.ValueWrapper wrapper = (CacheUnit.ValueWrapper) cacheUnit.get(key);
 		if(wrapper != null) {
 			cacheObject = (CacheObject<T>) wrapper.get();
 		}
 
 		if (wrapper == null) {//缓存还不存在
 
-			cacheObject = configFactory.createCacheObject(entity, entity.getClass(), indexService, key, cache, cacheConfig);
+			cacheObject = configFactory.createCacheObject(entity, entity.getClass(), indexService, key, cacheUnit, cacheConfig);
 
-			wrapper = cache.putIfAbsent(key, cacheObject);
+			wrapper = cacheUnit.putIfAbsent(key, cacheObject);
 			if (wrapper != null && wrapper.get() != null) {
 				cacheObject = (CacheObject<T>) wrapper.get();
 			}
@@ -409,9 +409,9 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 
 		} else if(cacheObject == null) {// 缓存为NULL
 
-			cacheObject = configFactory.createCacheObject(entity, entity.getClass(), indexService, key, cache, cacheConfig);
+			cacheObject = configFactory.createCacheObject(entity, entity.getClass(), indexService, key, cacheUnit, cacheConfig);
 
-			wrapper = cache.replace(key, null, cacheObject);
+			wrapper = cacheUnit.replace(key, null, cacheObject);
 			if (wrapper != null && wrapper.get() != null) {
 				cacheObject = (CacheObject<T>) wrapper.get();
 			}
@@ -501,7 +501,7 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 			}
 
 			// 提交持久化任务
-			inTimeDbPersistService.handleDelete(cacheObject, this.dbAccessService, id, this.cache);
+			inTimeDbPersistService.handleDelete(cacheObject, this.dbAccessService, id, this.cacheUnit);
 		}
 	}
 
@@ -513,8 +513,8 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 
 
 	@Override
-	public Cache getCache() {
-		return cache;
+	public CacheUnit getCacheUnit() {
+		return cacheUnit;
 	}
 
 
@@ -543,8 +543,8 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 		toStrMap.put("clazz", this.clazz);
 		toStrMap.put("proxyClazz", this.cacheConfig.getProxyClazz());
 		toStrMap.put("WAITING_LOCK_MAP_SIZE", this.WAITING_LOCK_MAP.size());
-		toStrMap.put("cacheUseSize", this.cache.getCachedSize());
-		toStrMap.put("indexServiceCacheUseSize", this.indexService.getCache().getCachedSize());
+		toStrMap.put("cacheUseSize", this.cacheUnit.getCachedSize());
+		toStrMap.put("indexServiceCacheUseSize", this.indexService.getCacheUnit().getCachedSize());
 		return JsonUtils.object2JsonString(toStrMap);
 	}
 

@@ -2,7 +2,7 @@ package dbcache.service.impl;
 
 import dbcache.model.WeakCacheEntity;
 import dbcache.model.WeakCacheObject;
-import dbcache.service.Cache;
+import dbcache.service.CacheUnit;
 import dbcache.utils.concurrent.ConcurrentHashMap;
 
 import org.slf4j.Logger;
@@ -25,7 +25,7 @@ import java.util.concurrent.TimeUnit;
  * @date 2014-8-1-下午8:30:34
  */
 @Component("concurrentWeekHashMapCache")
-public class ConcurrentWeekHashMapCache implements Cache {
+public class ConcurrentWeekHashMapCache implements CacheUnit {
 
 	/**
 	 * logger

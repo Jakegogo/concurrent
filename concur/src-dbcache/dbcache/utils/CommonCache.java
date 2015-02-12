@@ -1,6 +1,6 @@
 package dbcache.utils;
 
-import dbcache.service.Cache;
+import dbcache.service.CacheUnit;
 import dbcache.service.DbCacheService;
 import dbcache.service.impl.ConcurrentLruHashMapCache;
 import dbcache.utils.concurrent.ConcurrentHashMap;
@@ -20,7 +20,7 @@ public class CommonCache<R> {
     /**
      * 默认缓存
      */
-    private static Cache defaultCache = new ConcurrentLruHashMapCache() {{
+    private static CacheUnit defaultCacheUnit = new ConcurrentLruHashMapCache() {{
         this.init("DEFAULT_COMMON_CACHE", 100000, Runtime.getRuntime().availableProcessors());
     }};
 
@@ -37,7 +37,7 @@ public class CommonCache<R> {
     /**
      * 缓存单元
      */
-    private Cache cache;
+    private CacheUnit cacheUnit;
 
     /**
      * DbCacheService
@@ -56,7 +56,7 @@ public class CommonCache<R> {
 
     public R get(Object... key) {
         Integer cachedKey = new HashCodeBuilder().append(this).append(key).toHashCode();
-        Cache.ValueWrapper cacheWrapper = getCache().get(cachedKey);
+        CacheUnit.ValueWrapper cacheWrapper = getCacheUnit().get(cachedKey);
         if(cacheWrapper != null) {
             return (R) cacheWrapper.get();
         }
@@ -67,14 +67,14 @@ public class CommonCache<R> {
 
         lock.lock();
         try {
-            cacheWrapper = getCache().get(cachedKey);
+            cacheWrapper = getCacheUnit().get(cachedKey);
             if(cacheWrapper != null) {
                 return (R) cacheWrapper.get();
             }
 
             R value = this.cacheQuery.query(key);
 
-            cacheWrapper = getCache().putIfAbsent(cachedKey, value);
+            cacheWrapper = getCacheUnit().putIfAbsent(cachedKey, value);
             if(cacheWrapper != null) {
                 return (R) cacheWrapper.get();
             }
@@ -89,7 +89,7 @@ public class CommonCache<R> {
 
 
     public R put(Object key, Object value) {
-        Cache.ValueWrapper cacheWrapper = getCache().put(new HashCodeBuilder().append(this).append(key).toHashCode(), value);
+        CacheUnit.ValueWrapper cacheWrapper = getCacheUnit().put(new HashCodeBuilder().append(this).append(key).toHashCode(), value);
         if(cacheWrapper != null) {
             return (R) cacheWrapper.get();
         }
@@ -98,7 +98,7 @@ public class CommonCache<R> {
 
 
     public R put(Object[] key, Object value) {
-        Cache.ValueWrapper cacheWrapper = getCache().put(new HashCodeBuilder().append(this).append(key).toHashCode(), value);
+        CacheUnit.ValueWrapper cacheWrapper = getCacheUnit().put(new HashCodeBuilder().append(this).append(key).toHashCode(), value);
         if(cacheWrapper != null) {
             return (R) cacheWrapper.get();
         }
@@ -108,7 +108,7 @@ public class CommonCache<R> {
 
     public R putIfAbsent(Object key, Object value) {
         this.get(key);
-        Cache.ValueWrapper cacheWrapper = getCache().putIfAbsent(new HashCodeBuilder().append(this).append(key).toHashCode(), value);
+        CacheUnit.ValueWrapper cacheWrapper = getCacheUnit().putIfAbsent(new HashCodeBuilder().append(this).append(key).toHashCode(), value);
         if(cacheWrapper != null) {
             return (R) cacheWrapper.get();
         }
@@ -118,7 +118,7 @@ public class CommonCache<R> {
 
     public R putIfAbsent(Object[] key, Object value) {
         this.get(key);
-        Cache.ValueWrapper cacheWrapper = getCache().putIfAbsent(new HashCodeBuilder().append(this).append(key).toHashCode(), value);
+        CacheUnit.ValueWrapper cacheWrapper = getCacheUnit().putIfAbsent(new HashCodeBuilder().append(this).append(key).toHashCode(), value);
         if(cacheWrapper != null) {
             return (R) cacheWrapper.get();
         }
@@ -127,7 +127,7 @@ public class CommonCache<R> {
 
 
     public R replace(Object key, Object oldValue, Object newValue) {
-        Cache.ValueWrapper cacheWrapper = getCache().replace(new HashCodeBuilder().append(this).append(key).toHashCode(), oldValue, newValue);
+        CacheUnit.ValueWrapper cacheWrapper = getCacheUnit().replace(new HashCodeBuilder().append(this).append(key).toHashCode(), oldValue, newValue);
         if(cacheWrapper != null) {
             return (R) cacheWrapper.get();
         }
@@ -136,7 +136,7 @@ public class CommonCache<R> {
 
 
     public R replace(Object[] key, Object oldValue, Object newValue) {
-        Cache.ValueWrapper cacheWrapper = getCache().replace(new HashCodeBuilder().append(this).append(key).toHashCode(), oldValue, newValue);
+        CacheUnit.ValueWrapper cacheWrapper = getCacheUnit().replace(new HashCodeBuilder().append(this).append(key).toHashCode(), oldValue, newValue);
         if(cacheWrapper != null) {
             return (R) cacheWrapper.get();
         }
@@ -145,7 +145,7 @@ public class CommonCache<R> {
 
 
     public R evict(Object... key) {
-        Cache.ValueWrapper cacheWrapper = getCache().evict(new HashCodeBuilder().append(this).append(key).toHashCode());
+        CacheUnit.ValueWrapper cacheWrapper = getCacheUnit().evict(new HashCodeBuilder().append(this).append(key).toHashCode());
         if(cacheWrapper != null) {
             return (R) cacheWrapper.get();
         }
@@ -154,23 +154,23 @@ public class CommonCache<R> {
 
 
     public void clear() {
-        getCache().clear();
+        getCacheUnit().clear();
     }
 
-    public Cache getCache() {
-        if (this.cache != null) {
-            return this.cache;
+    public CacheUnit getCacheUnit() {
+        if (this.cacheUnit != null) {
+            return this.cacheUnit;
         }
         if (this.dbCacheService != null) {
-            this.cache = this.dbCacheService.getCache();
-            return this.cache;
+            this.cacheUnit = this.dbCacheService.getCacheUnit();
+            return this.cacheUnit;
         }
-        this.cache = defaultCache;
-        return this.cache;
+        this.cacheUnit = defaultCacheUnit;
+        return this.cacheUnit;
     }
 
-    protected void setCache(Cache cache) {
-        this.cache = cache;
+    protected void setCacheUnit(CacheUnit cacheUnit) {
+        this.cacheUnit = cacheUnit;
     }
 
     public void setDbCacheService(DbCacheService dbCacheService) {
@@ -178,7 +178,7 @@ public class CommonCache<R> {
     }
 
     public String getName() {
-        return name == null ? cache.getName() : name;
+        return name == null ? cacheUnit.getName() : name;
     }
 
     public void setName(String name) {
