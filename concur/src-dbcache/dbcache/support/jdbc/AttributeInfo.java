@@ -1,10 +1,13 @@
 package dbcache.support.jdbc;
 
+import com.alibaba.fastjson.JSON;
+import dbcache.annotation.JsonType;
 import dbcache.support.asm.AsmAccessHelper;
 import dbcache.support.asm.ValueGetter;
 import dbcache.support.asm.ValueSetter;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.Type;
 
 /**
  * 实体属性信息
@@ -53,6 +56,17 @@ public class AttributeInfo<T> {
 	private Class<?> type;
 
 	/**
+	 * 是否为json属性
+	 */
+	private boolean jsonType;
+
+	/**
+	 * json属性类型
+	 */
+	private Type targetType;
+
+
+	/**
 	 * 获取实例
 	 * @param clazz 实体类
 	 * @param field 属性
@@ -69,8 +83,16 @@ public class AttributeInfo<T> {
 		columnInfo.attrSetter = AsmAccessHelper.createFieldSetter(clazz, field);
 		columnInfo.index = index;
 		columnInfo.type = field.getDeclaringClass();
+		columnInfo.targetType = field.getGenericType();
+
+		// 处理Json转换注解
+		if (field.isAnnotationPresent(JsonType.class)) {
+			columnInfo.jsonType = true;
+		}
+
 		return columnInfo;
 	}
+
 
 	public String getName() {
 		return name;
@@ -98,12 +120,46 @@ public class AttributeInfo<T> {
 	}
 
 	/**
+	 * 获取持久化属性
+	 * @param object
+	 * @return
+	 */
+	public Object getPersistValue(T object) {
+		if (jsonType) {
+			Object objectValue = this.getValue(object);
+			if (objectValue != null) {
+				return JSON.toJSONString(objectValue);
+			}
+			return null;
+		}
+		return this.getValue(object);
+	}
+
+	/**
 	 * 设置属性值
 	 * @param object 实体
 	 * @param value 属性值
 	 */
 	public void setValue(T object, Object value) {
 		this.attrSetter.set(object, value);
+	}
+
+	/**
+	 * 从持久化字段值设置属性值
+	 * @param object 实体
+	 * @param value 属性值
+	 */
+	public void setFromPersistValue(T object, Object value) {
+		if (jsonType) {
+			if (value == null) {
+				this.setValue(object, null);
+			} else {
+				// 转化成对象
+				this.setValue(object, JSON.parseObject(value.toString(), this.targetType));
+			}
+			return;
+		}
+		this.setValue(object, value);
 	}
 
 	public String getColumnName() {
@@ -144,6 +200,14 @@ public class AttributeInfo<T> {
 
 	public void setType(Class<?> type) {
 		this.type = type;
+	}
+
+	public boolean isJsonType() {
+		return jsonType;
+	}
+
+	public Type getTargetType() {
+		return targetType;
 	}
 
 }

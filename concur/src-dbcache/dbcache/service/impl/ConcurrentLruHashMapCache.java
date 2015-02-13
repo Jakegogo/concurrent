@@ -11,11 +11,6 @@ import org.springframework.stereotype.Component;
 import java.io.Serializable;
 import java.lang.ref.ReferenceQueue;
 
-//import java.lang.ref.WeakReference;
-//import java.util.concurrent.ConcurrentMap;
-//import com.googlecode.concurrentlinkedhashmap.ConcurrentLinkedHashMap;
-//import com.googlecode.concurrentlinkedhashmap.EvictionListener;
-
 /**
  * Apache ConcurrentLRUCache缓存容器
  * 如果外部持有缓存对象的引用,对象将不会被回收

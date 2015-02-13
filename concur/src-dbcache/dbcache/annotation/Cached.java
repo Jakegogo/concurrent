@@ -17,7 +17,7 @@ import java.lang.annotation.Target;
  * <br/>2,外部put/add瞬时态的属性的情况需要单独提供getMapForUpdate()方法用于修改,并注解@ChangeFields("对应json串字段")
  * @see dbcache.annotation.Index
  * @see dbcache.annotation.DynamicUpdate
- * @see dbcache.annotation.JsonConvert
+ * @see JsonType
  * @author Jake
  * @date 2014年9月13日下午1:38:22
  */

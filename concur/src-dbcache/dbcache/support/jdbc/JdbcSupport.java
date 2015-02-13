@@ -837,7 +837,7 @@ public class JdbcSupport {
     public ModelInfo getOrCreateModelInfo(final Class<?> clzz) {
 
     	ModelInfo modelInfoCached = modelInfoCache.get(clzz);
-    	if(modelInfoCached != null) {
+    	if (modelInfoCached != null) {
     		return modelInfoCached;
     	}
 
@@ -883,21 +883,21 @@ public class JdbcSupport {
 			public void doWith(Field field) throws IllegalArgumentException, IllegalAccessException {
 				
 				// 忽略静态属性和临时属性
-				if(Modifier.isTransient(field.getModifiers()) || Modifier.isStatic(field.getModifiers()) ||
+				if (Modifier.isTransient(field.getModifiers()) || Modifier.isStatic(field.getModifiers()) ||
 						field.isAnnotationPresent(javax.persistence.Transient.class)) {
 					return;
 				}
 
 				// 是否为主键
 				boolean isPrimaryKey = false;
-				if(field.isAnnotationPresent(javax.persistence.Id.class)) {
+				if (field.isAnnotationPresent(javax.persistence.Id.class)) {
 					isPrimaryKey = true;
 				}
 
 				String fieldName = field.getName();
 				String columnName = fieldName;
 				// 定义了别名
-				if(field.isAnnotationPresent(javax.persistence.Column.class)) {
+				if (field.isAnnotationPresent(javax.persistence.Column.class)) {
 					javax.persistence.Column columnAnno = field.getAnnotation(javax.persistence.Column.class);
 					if (!StringUtils.isEmpty(columnAnno.name())) {
 						columnName = columnAnno.name();
@@ -905,7 +905,7 @@ public class JdbcSupport {
 				}
 
 				// 主键
-				if(isPrimaryKey) {
+				if (isPrimaryKey) {
 					tableInfo.setPrimaryKey(columnName);
 				}
 
@@ -918,7 +918,7 @@ public class JdbcSupport {
 					AttributeInfo attributeInfo = AttributeInfo.valueOf(clzz, field, columnName, indexCounter.incrementAndGet());
 					attrTypeMap.put(fieldName, attributeInfo);
 					// 主键
-					if(isPrimaryKey) {
+					if (isPrimaryKey) {
 						attributeInfo.setPrimaryKey(true);
 						modelInfo.setPrimaryKeyInfo(attributeInfo);
 					}

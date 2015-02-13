@@ -3,19 +3,17 @@ package dbcache.test;
 import dbcache.annotation.Cached;
 import dbcache.annotation.ChangeFields;
 import dbcache.annotation.DynamicUpdate;
-import dbcache.annotation.JsonConvert;
+import dbcache.annotation.JsonType;
 import dbcache.conf.CacheType;
 import dbcache.conf.PersistType;
 import dbcache.model.EntityInitializer;
 import dbcache.model.IEntity;
-
 import org.apache.mina.util.ConcurrentHashSet;
 import org.hibernate.annotations.Index;
 
 import javax.persistence.Column;
 import javax.persistence.Id;
 import javax.persistence.Transient;
-
 import java.lang.reflect.Method;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -30,8 +28,6 @@ public class Entity implements EntityInitializer, IEntity<Long> {
 	@Id
 	public Long id;
 
-
-
 	private int uid;
 
 	@Index(name=NUM_INDEX)
@@ -39,21 +35,15 @@ public class Entity implements EntityInitializer, IEntity<Long> {
 
 	private String name;
 
-	private String friends = "[1,2,3]";
-
 	public byte[] a = new byte[100];
 
 	@Transient
 	private AtomicInteger idgenerator;
 
-	public void setFriendSet(ConcurrentHashSet<Long> friendSet) {
-		this.friendSet = friendSet;
-	}
 
-//	@Transient
-	@JsonConvert("friends")
+	@JsonType
 	@Column(columnDefinition="varchar(255) null comment '已经领取过的奖励Id'")
-	private ConcurrentHashSet<Long> friendSet = new ConcurrentHashSet<Long>();
+	private ConcurrentHashSet<Long> friends = new ConcurrentHashSet<Long>();
 
 	public Entity() {
 //		doAfterLoad();
@@ -96,7 +86,7 @@ public class Entity implements EntityInitializer, IEntity<Long> {
 
 	@ChangeFields({"friends"})
 	public void combine(Entity other, boolean addMap) {
-		this.friendSet.addAll(other.getFriendSet());
+		this.friends.addAll(other.getFriends());
 	}
 
 	public int getUid() {
@@ -180,20 +170,12 @@ public class Entity implements EntityInitializer, IEntity<Long> {
 		this.name = name;
 	}
 
-	public String getFriends() {
+	public ConcurrentHashSet<Long> getFriends() {
 		return friends;
 	}
 
-	public void setFriends(String friends) {
+	public void setFriends(ConcurrentHashSet<Long> friends) {
 		this.friends = friends;
 	}
 
-	public ConcurrentHashSet<Long> getFriendSet() {
-		return friendSet;
-	}
-	
-	@ChangeFields({"friends"})
-	public ConcurrentHashSet<Long> getFriendSetForUpdate() {
-		return friendSet;
-	}
 }

@@ -296,7 +296,7 @@ public class Test {
 		}
 		System.out.println(entity.getNum());
 
-		entity.getFriendSet().add(4l);
+		entity.getFriends().add(4l);
 //		entity.getClass()
 		this.cacheService.submitUpdate(entity);
 		if (entity instanceof EnhancedEntity) {
@@ -324,7 +324,7 @@ public class Test {
 		}
 		System.out.println(entity.getNum());
 
-		entity.getFriendSet().add(4l);
+		entity.getFriends().add(4l);
 //		entity.getClass()
 		this.cacheService.submitUpdate(entity);
 		if (entity instanceof EnhancedEntity) {

@@ -23,7 +23,7 @@ public class FieldSetterTest {
         set.add(111l);
         getNum.set(entity, set);
 
-        System.out.println(entity.getFriendSet());
+        System.out.println(entity.getFriends());
 
     }
 

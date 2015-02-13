@@ -2,7 +2,6 @@ package dbcache.service.impl;
 
 import dbcache.conf.CacheConfig;
 import dbcache.conf.CacheType;
-import dbcache.conf.JsonConverter;
 import dbcache.conf.PersistType;
 import dbcache.key.IdGenerator;
 import dbcache.model.CacheObject;
@@ -14,7 +13,6 @@ import dbcache.support.asm.*;
 import dbcache.utils.IntegerCounter;
 import dbcache.utils.ThreadUtils;
 import dbcache.utils.executors.SimpleLinkingRunnable;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.helpers.FormattingTuple;
@@ -28,7 +26,6 @@ import org.springframework.util.ReflectionUtils.FieldCallback;
 
 import javax.annotation.PostConstruct;
 import javax.management.*;
-
 import java.io.Serializable;
 import java.lang.management.ManagementFactory;
 import java.lang.reflect.Constructor;
@@ -283,9 +280,8 @@ public class ConfigFactoryImpl implements ConfigFactory, DbCacheMBean {
 			cacheConfig = CacheConfig.valueOf(clz);
 
 			final Map<String, ValueGetter<?>> indexes = new HashMap<String, ValueGetter<?>>();
-			final Map<String, JsonConverter> jsonAutoConverters = new HashMap<String, JsonConverter>();
-
 			final IntegerCounter fieldIndexCounter = new IntegerCounter();
+
 			ReflectionUtils.doWithFields(clz, new FieldCallback() {
 				public void doWith(Field field) throws IllegalArgumentException, IllegalAccessException {
 					// 忽略静态属性和临时属性
@@ -315,22 +311,10 @@ public class ConfigFactoryImpl implements ConfigFactory, DbCacheMBean {
 						}
 					}
 
-					// 处理Json转换注解
-					if (field.isAnnotationPresent(dbcache.annotation.JsonConvert.class)) {
-						dbcache.annotation.JsonConvert jsonConvert = field.getAnnotation(dbcache.annotation.JsonConvert.class);
-						try {
-							jsonAutoConverters.put(jsonConvert.value(), JsonConverter.valueof(clz, field, jsonConvert.value(), fieldIndex));
-						} catch (Exception e) {
-							logger.equals("获取实体配置出错:生成json属性自动转换失败(" + clz.getName() + "." + field.getName() + ").");
-							e.printStackTrace();
-						}
-					}
-
 				}
 			});
 
 			cacheConfig.setIndexes(indexes);
-			cacheConfig.setJsonAutoConverters(jsonAutoConverters);
 			cacheConfig.setFieldCount(clz.getDeclaredFields().length);
 
 			cacheConfigMap.put(clz, cacheConfig);

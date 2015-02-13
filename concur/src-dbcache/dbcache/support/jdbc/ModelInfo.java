@@ -299,7 +299,7 @@ public class ModelInfo {
 
 			int columnIndex = 1;
 			for (AttributeInfo<Object> columnInfo : this.columnInfos) {
-				columnInfo.setValue(instance, this.getRsVal(rs, columnIndex, columnInfo.getSqlType(), columnInfo));
+				columnInfo.setFromPersistValue(instance, this.getRsVal(rs, columnIndex, columnInfo.getSqlType(), columnInfo));
 				columnIndex++;
 			}
 			return instance;
@@ -327,7 +327,7 @@ public class ModelInfo {
 
 			int columnIndex = 1;
 			for (AttributeInfo<Object> columnInfo : this.columnInfos) {
-				columnInfo.setValue(instance, this.getRsVal(rs, columnIndex, columnInfo.getSqlType(), columnInfo));
+				columnInfo.setFromPersistValue(instance, this.getRsVal(rs, columnIndex, columnInfo.getSqlType(), columnInfo));
 				columnIndex++;
 			}
 			list.add(instance);
@@ -377,7 +377,7 @@ public class ModelInfo {
 		Object[] sqlParams = new Object[this.columnInfos.size()];
 		int i = 0;
 		for (AttributeInfo<Object> columnInfo : this.columnInfos) {
-			sqlParams[i] = columnInfo.getValue(entity);
+			sqlParams[i] = columnInfo.getPersistValue(entity);
 			i++;
 		}
 		return sqlParams;
@@ -393,7 +393,7 @@ public class ModelInfo {
     	Object[] sqlParams = new Object[this.columnInfos.size()];
 		int i = 0;Object columnVal;
 		for (AttributeInfo<Object> columnInfo : this.columnInfos) {
-			columnVal = columnInfo.getValue(entity);
+			columnVal = columnInfo.getPersistValue(entity);
 			if (columnInfo.isPrimaryKey() && columnVal == null) {
 				if (this.defaultIdGenerator != null) {
 					sqlParams[i] = this.defaultIdGenerator.generateId();
@@ -420,7 +420,7 @@ public class ModelInfo {
     	Object[] sqlParams = new Object[this.columnInfos.size()];
 		int i = 0;Object columnVal;
 		for (AttributeInfo<Object> columnInfo : this.columnInfos) {
-			columnVal = columnInfo.getValue(entity);
+			columnVal = columnInfo.getPersistValue(entity);
 			if (columnInfo.isPrimaryKey() && columnVal == null) {
 				// 获取Id生成器
 				IdGenerator<?> idGenerator = this.idGenerators.get(Integer.valueOf(category));
@@ -449,11 +449,11 @@ public class ModelInfo {
 		int i = 0;
 		for (AttributeInfo<Object> columnInfo : this.columnInfos) {
 			if (!columnInfo.isPrimaryKey()) {
-				sqlParams[i] = columnInfo.getValue(entity);
+				sqlParams[i] = columnInfo.getPersistValue(entity);
 				i++;
 			}
 		}
-		sqlParams[this.columnInfos.size() - 1] = primaryKeyInfo.getValue(entity);
+		sqlParams[this.columnInfos.size() - 1] = primaryKeyInfo.getPersistValue(entity);
 		return sqlParams;
 	}
 
@@ -474,11 +474,11 @@ public class ModelInfo {
 		for (String fieldName : modifiedFields) {
 			AttributeInfo<Object> columnInfo = this.attrTypeMap.get(fieldName);
 			if (columnInfo != null && !columnInfo.isPrimaryKey()) {
-				sqlParams[i] = columnInfo.getValue(entity);
+				sqlParams[i] = columnInfo.getPersistValue(entity);
 				i++;
 			}
 		}
-		sqlParams[this.columnInfos.size() - 1] = primaryKeyInfo.getValue(entity);
+		sqlParams[this.columnInfos.size() - 1] = primaryKeyInfo.getPersistValue(entity);
 		return sqlParams;
 	}
     
@@ -501,11 +501,11 @@ public class ModelInfo {
 	   	for (Integer fieldIndex : modifiedFields) {
 			AttributeInfo attributeInfo = this.columnInfos.get(fieldIndex);
 			if (attributeInfo != null && !attributeInfo.isPrimaryKey()) {
-				sqlParams[i++] = attributeInfo.getValue(entity);
+				sqlParams[i++] = attributeInfo.getPersistValue(entity);
 			}
 		}
 	   	
-		sqlParams[modifiedFields.size()] = primaryKeyInfo.getValue(entity);
+		sqlParams[modifiedFields.size()] = primaryKeyInfo.getPersistValue(entity);
 		return sqlParams;
 	}
    
@@ -578,7 +578,7 @@ public class ModelInfo {
      * @return
      */
 	public Object getDeleteParam(Object entity) {
-		return primaryKeyInfo.getValue(entity);
+		return primaryKeyInfo.getPersistValue(entity);
 	}
 
 	public TableInfo getTableInfo() {

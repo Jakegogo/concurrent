@@ -65,10 +65,6 @@ public class CacheConfig<T> {
 	/** 索引信息  List */
 	private List<ValueGetter<T>> indexList = new ArrayList<ValueGetter<T>>();
 
-	/** json属性自动转换信息 json串属性名 - 转换信息 */
-	private Map<String, JsonConverter<T>> jsonAutoConverters = new HashMap<String, JsonConverter<T>>();
-	/** json属性自动转换信息 List */
-	private List<JsonConverter<T>> jsonAutoConverterList = new ArrayList<JsonConverter<T>>();
 	/**
 	 * 实体主键ID生成map {类别ID : {实体类： 主键id生成器} }
 	 * <br/>category - IdGenerator
@@ -274,25 +270,8 @@ public class CacheConfig<T> {
 		this.indexCacheClass = indexCacheClass;
 	}
 
-
-	public Map<String, JsonConverter<T>> getJsonAutoConverters() {
-		return jsonAutoConverters;
-	}
-
-	public void setJsonAutoConverters(Map<String, JsonConverter<T>> jsonAutoConverters) {
-		this.jsonAutoConverters = jsonAutoConverters;
-
-		List<JsonConverter<T>> jsonAutoConverterList = new ArrayList<JsonConverter<T>>(jsonAutoConverters.size());
-		jsonAutoConverterList.addAll(jsonAutoConverters.values());
-		this.jsonAutoConverterList = Collections.unmodifiableList(jsonAutoConverterList);
-	}
-
 	public List<ValueGetter<T>> getIndexList() {
 		return indexList;
-	}
-
-	public List<JsonConverter<T>> getJsonAutoConverterList() {
-		return jsonAutoConverterList;
 	}
 
 	public Map<Integer, IdGenerator<?>> getIdGenerators() {

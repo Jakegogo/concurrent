@@ -1,7 +1,6 @@
 package dbcache.model;
 
 import dbcache.conf.CacheConfig;
-import dbcache.conf.JsonConverter;
 import dbcache.utils.executors.SimpleLinkingRunnable;
 import org.apache.commons.lang.builder.EqualsBuilder;
 
@@ -89,13 +88,6 @@ public class CacheObject<T extends IEntity<?>> {
 	 * 初始化
 	 */
 	public void doInit(CacheConfig<T> cacheConfig) {
-		// 初始化json自动转换属性
-		if(!cacheConfig.getJsonAutoConverterList().isEmpty()) {
-			for(JsonConverter<T> jsonConverter : cacheConfig.getJsonAutoConverterList()) {
-				jsonConverter.doConvert(this.entity);
-			}
-		}
-				
 		// 加载回调
 		this.doAfterLoad();
 	}
@@ -115,16 +107,6 @@ public class CacheObject<T extends IEntity<?>> {
 	 * 持久化之前的操作
 	 */
 	public void doBeforePersist(CacheConfig<T> cacheConfig) {
-		// json持久化
-		if (!cacheConfig.getJsonAutoConverterList().isEmpty()) {
-			for(JsonConverter<T> jsonConverter : cacheConfig.getJsonAutoConverterList()) {
-				if (this.modifiedFields != null												// 启用了dynamicUpdate
-					&& this.modifiedFields.get(jsonConverter.getFieldIndex()) != 1) {
-					continue;
-				}
-				jsonConverter.doPersist(this.entity);
-			}
-		}
 		// 持久化前操作
 		if (entity instanceof EntityInitializer) {
 			EntityInitializer entityInitializer = (EntityInitializer) entity;
