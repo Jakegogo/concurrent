@@ -899,7 +899,9 @@ public class JdbcSupport {
 				// 定义了别名
 				if(field.isAnnotationPresent(javax.persistence.Column.class)) {
 					javax.persistence.Column columnAnno = field.getAnnotation(javax.persistence.Column.class);
-					columnName = columnAnno.name();
+					if (!StringUtils.isEmpty(columnAnno.name())) {
+						columnName = columnAnno.name();
+					}
 				}
 
 				// 主键

@@ -12,6 +12,7 @@ import dbcache.model.IEntity;
 import org.apache.mina.util.ConcurrentHashSet;
 import org.hibernate.annotations.Index;
 
+import javax.persistence.Column;
 import javax.persistence.Id;
 import javax.persistence.Transient;
 
@@ -49,8 +50,9 @@ public class Entity implements EntityInitializer, IEntity<Long> {
 		this.friendSet = friendSet;
 	}
 
-	@Transient
+//	@Transient
 	@JsonConvert("friends")
+	@Column(columnDefinition="varchar(255) null comment '已经领取过的奖励Id'")
 	private ConcurrentHashSet<Long> friendSet = new ConcurrentHashSet<Long>();
 
 	public Entity() {
