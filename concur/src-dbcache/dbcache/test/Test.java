@@ -29,6 +29,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(locations = { "classpath:applicationContext.xml" })
@@ -105,6 +106,10 @@ public class Test {
 //			if(i%100 == 0) {
 //			Thread.sleep(10);
 //			}
+				
+				ConcurrentHashSet<Long> friends = entity.getFriends();
+				friends.add(Long.valueOf(new Random().nextInt(3)));
+				entity.setFriends(friends);
 
 				this.cacheService.submitUpdate(entity);
 				if (i % 10000000 == 0) {
