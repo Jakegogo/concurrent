@@ -436,20 +436,22 @@ public class OrderedThreadPoolExecutor extends ThreadPoolExecutor {
                  */
                 boolean ran = false;
                 beforeExecute(thread, task);
+                LinkingRunnableFutureTask next = (LinkingRunnableFutureTask) task;
                 try {
-                    task.run();
-
-                    LinkingRunnableFutureTask next = (LinkingRunnableFutureTask) task;
-                    while ((next = next.fetchNext()) != null) {
+                	
+                    do {
                     	next.run();
-                    }
+                    	afterExecute(next, null);
+                    } while ((next = next.fetchNext()) != null);
                     
                     ran = true;
-                    afterExecute(task, null);
                     ++completedTasks;
                 } catch (RuntimeException ex) {
-                    if (!ran)
-                        afterExecute(task, ex);
+                    if (!ran) {
+                    	do {
+                    		afterExecute(next, ex);
+                        } while ((next = next.fetchNext()) != null);
+                    }
                     throw ex;
                 }
             } finally {

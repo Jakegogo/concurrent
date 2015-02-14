@@ -392,20 +392,22 @@ public class SimpleSyncThreadPoolExecutor extends ThreadPoolExecutor {
                  */
                 boolean ran = false;
                 beforeExecute(thread, task);
+                SimpleLinkingRunnable next = (SimpleLinkingRunnable) task;
                 try {
-                    task.run();
-                    
-                    SimpleLinkingRunnable next = (SimpleLinkingRunnable) task;
-                    while ((next = fetchNext(next)) != null) {
+                	
+                    do {
                     	next.run();
-                    }
+                    	afterExecute(next, null);
+                    } while ((next = fetchNext(next)) != null);
                     
                     ran = true;
-                    afterExecute(task, null);
                     ++completedTasks;
                 } catch (RuntimeException ex) {
-                    if (!ran)
-                        afterExecute(task, ex);
+                    if (!ran) {
+                    	do {
+                    		afterExecute(next, ex);
+                        } while ((next = fetchNext(next)) != null);
+                    }
                     throw ex;
                 }
             } finally {
