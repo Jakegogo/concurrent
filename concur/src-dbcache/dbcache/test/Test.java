@@ -611,5 +611,22 @@ public class Test {
 		}
 		
 	}
+	
+	
+	@org.junit.Test
+	public void t26() {
+		long t1 = System.currentTimeMillis();
+		
+		ConcurrentHashSet< Long> set = new ConcurrentHashSet<Long>();
+		for(long i = 100000;i < 100030;i++) {
+			set.add(i);
+		}
+		for (int i = 0; i < 10000000;i++) {
+			JsonUtils.object2JsonString(set);
+		}
+		
+		System.out.println(System.currentTimeMillis() - t1);
+	}
+	
 
 }
