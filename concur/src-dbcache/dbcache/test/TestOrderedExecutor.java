@@ -7,6 +7,7 @@ import dbcache.utils.executors.OrderedThreadPoolExecutor;
 
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicReference;
 
 public class TestOrderedExecutor {
@@ -22,11 +23,15 @@ public class TestOrderedExecutor {
 		// 初始化线程池
 		final ExecutorService executorService = OrderedThreadPoolExecutor.newFixedThreadPool(4, threadFactory);
 		
+		final ExecutorService executorService1 = Executors.newFixedThreadPool(4, threadFactory);
+		
 		final AtomicReference<LinkingExecutable> last = new AtomicReference<LinkingExecutable>();
 		
 		final int TEST_LOOP = 1000000;
 		
 		final CountDownLatch ct = new CountDownLatch(1);
+		
+		final CountDownLatch ct1 = new CountDownLatch(TEST_LOOP * 4);
 		
 		for (int j = 0; j < 4;j++) {
 			
@@ -56,6 +61,8 @@ public class TestOrderedExecutor {
 								j+=1;
 	
 								i.setVal(j);
+								
+								ct1.countDown();
 							}
 							
 						});
@@ -66,7 +73,7 @@ public class TestOrderedExecutor {
 		
 		try {
 			ct.countDown();
-			Thread.sleep(3000);
+			ct1.await();
 			System.out.println(i.getVal());
 			executorService.shutdownNow();
 		} catch (InterruptedException e) {
