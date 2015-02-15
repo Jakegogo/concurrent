@@ -1,7 +1,9 @@
 package dbcache.support.asm;
 
 import dbcache.model.EnhancedEntity;
+import dbcache.model.IEntity;
 import dbcache.support.asm.util.AsmUtils;
+import dbcache.support.asm.util.TypeUtils;
 
 import org.objectweb.asm.*;
 
@@ -210,7 +212,28 @@ public class EntityClassProxyAdapter extends ClassVisitor implements Opcodes {
 			// load 出方法的所有参数
 			for (Class<?> tCls : m.getParameterTypes()) {
 				Type t = Type.getType(tCls);
-				mWriter.visitVarInsn(AsmUtils.loadCode(t), i++);
+				// 参数为实体类
+				if (IEntity.class.isAssignableFrom(tCls)) {
+					int local = i++;
+					mWriter.visitVarInsn(ALOAD, local);
+					mWriter.visitTypeInsn(INSTANCEOF, "dbcache/model/EnhancedEntity");
+					Label l2 = new Label();
+					mWriter.visitJumpInsn(IFEQ, l2);
+					mWriter.visitVarInsn(ALOAD, local);
+					mWriter.visitTypeInsn(CHECKCAST, "dbcache/model/EnhancedEntity");
+					Label l3 = new Label();
+					mWriter.visitLabel(l3);
+					mWriter.visitMethodInsn(INVOKEINTERFACE, "dbcache/model/EnhancedEntity", "getEntity", "()Ldbcache/model/IEntity;", true);
+					mWriter.visitTypeInsn(CHECKCAST, AsmUtils.toAsmCls(tCls.getName()));
+					Label l4 = new Label();
+					mWriter.visitJumpInsn(GOTO, l4);
+					mWriter.visitLabel(l2);
+					mWriter.visitVarInsn(ALOAD, local);
+					mWriter.visitLabel(l4);
+				} else {
+					mWriter.visitVarInsn(AsmUtils.loadCode(t), i++);
+				}
+				
 				// long和double 用64位表示，要后移一个位置，否则会报错
 				if (t.getSort() == Type.LONG || t.getSort() == Type.DOUBLE) {
 					i++;
@@ -326,8 +349,7 @@ public class EntityClassProxyAdapter extends ClassVisitor implements Opcodes {
 
 		mWriter.visitVarInsn(ALOAD, 1);
 		mWriter.visitMethodInsn(INVOKEVIRTUAL, "java/lang/Object", "getClass", "()Ljava/lang/Class;", false);
-		mWriter.visitVarInsn(ALOAD, 0);
-		mWriter.visitMethodInsn(INVOKEVIRTUAL, "java/lang/Object", "getClass", "()Ljava/lang/Class;", false);
+		mWriter.visitLdcInsn(TypeUtils.fromInternalName(AsmUtils.toAsmCls(enhancedClassName)));
 		Label l1 = new Label();
 		mWriter.visitJumpInsn(IF_ACMPNE, l1);
 		mWriter.visitVarInsn(ALOAD, 0);
