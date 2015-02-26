@@ -1,7 +1,7 @@
 package dbcache.support.jdbc;
 
 import com.alibaba.fastjson.JSON;
-import dbcache.annotation.JsonType;
+import dbcache.anno.JsonType;
 import dbcache.support.asm.AsmAccessHelper;
 import dbcache.support.asm.ValueGetter;
 import dbcache.support.asm.ValueSetter;

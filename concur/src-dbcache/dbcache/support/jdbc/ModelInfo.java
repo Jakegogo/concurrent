@@ -1,6 +1,6 @@
 package dbcache.support.jdbc;
 
-import dbcache.key.IdGenerator;
+import dbcache.pkey.IdGenerator;
 
 import java.io.IOException;
 import java.io.InputStream;

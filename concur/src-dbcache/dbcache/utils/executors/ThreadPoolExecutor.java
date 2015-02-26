@@ -374,7 +374,7 @@ public class ThreadPoolExecutor extends AbstractExecutorService {
     protected final ReentrantLock mainLock = new ReentrantLock();
 
     /**
-     * Wait condition to support awaitTermination
+     * Wait condition to support destroy
      */
     protected final Condition termination = mainLock.newCondition();
 

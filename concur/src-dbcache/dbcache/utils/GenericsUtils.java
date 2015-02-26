@@ -15,7 +15,7 @@ import java.util.Map;
 public class GenericsUtils {
 
 	/**
-	 * 获得指定类的父类的泛型参数的实际类型
+	 * 获得指定类类的泛型参数类型
 	 * @param clazz Class
 	 * @param index  泛型参数所在索引,从0开始
 	 * @return  Class
@@ -52,7 +52,7 @@ public class GenericsUtils {
 
 
 	/**
-	 * 获取实际类参数的 Map
+	 * 获取实际类参数
 	 * @param actual 最终类
 	 * @param generic 泛型声明类
 	 * @return

@@ -1,13 +1,13 @@
 package dbcache.test;
 
-import dbcache.annotation.Cached;
-import dbcache.annotation.ChangeFields;
-import dbcache.annotation.DynamicUpdate;
-import dbcache.annotation.JsonType;
+import dbcache.anno.Cached;
+import dbcache.anno.ChangeFields;
+import dbcache.anno.DynamicUpdate;
+import dbcache.anno.JsonType;
 import dbcache.conf.CacheType;
 import dbcache.conf.PersistType;
-import dbcache.model.EntityInitializer;
-import dbcache.model.IEntity;
+import dbcache.EntityInitializer;
+import dbcache.IEntity;
 
 import org.apache.mina.util.ConcurrentHashSet;
 import org.hibernate.annotations.Index;

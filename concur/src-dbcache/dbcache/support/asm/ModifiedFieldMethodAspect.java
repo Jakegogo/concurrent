@@ -1,6 +1,6 @@
 package dbcache.support.asm;
 
-import dbcache.annotation.ChangeFields;
+import dbcache.anno.ChangeFields;
 import dbcache.support.asm.util.AsmUtils;
 import dbcache.utils.IntegerCounter;
 import org.objectweb.asm.ClassWriter;
@@ -52,7 +52,7 @@ public class ModifiedFieldMethodAspect extends AbstractAsmMethodProxyAspect {
 
 			@Override
 			/**
-			 * @see dbcache.support.asm.ConstructorBuilder#getProxyEntity(java.lang.Class<T>, T, dbcache.service.DbIndexService, java.util.concurrent.atomic.AtomicIntegerArray)
+			 * @see dbcache.support.asm.ConstructorBuilder#getProxyEntity(java.lang.Class<T>, T, dbcache.index.DbIndexService , java.util.concurrent.atomic.AtomicIntegerArray)
 			 */
 			public int parameterIndexOfgetProxyEntity() {
 				return 2;

@@ -1,9 +1,8 @@
 package dbcache.support.spring;
 
-import java.lang.reflect.Field;
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
-
+import dbcache.DbCacheService;
+import dbcache.IEntity;
+import dbcache.conf.ConfigFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.helpers.FormattingTuple;
@@ -15,9 +14,9 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.ReflectionUtils;
 import org.springframework.util.ReflectionUtils.FieldCallback;
 
-import dbcache.model.IEntity;
-import dbcache.service.ConfigFactory;
-import dbcache.service.DbCacheService;
+import java.lang.reflect.Field;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 
 /**
  * DbCache自动注入处理器

@@ -1,7 +1,7 @@
 package dbcache.support.asm;
 
-import dbcache.model.EnhancedEntity;
-import dbcache.model.IEntity;
+import dbcache.EnhancedEntity;
+import dbcache.IEntity;
 import dbcache.support.asm.util.AsmUtils;
 import dbcache.support.asm.util.TypeUtils;
 
@@ -216,14 +216,14 @@ public class EntityClassProxyAdapter extends ClassVisitor implements Opcodes {
 				if (IEntity.class.isAssignableFrom(tCls)) {
 					int local = i++;
 					mWriter.visitVarInsn(ALOAD, local);
-					mWriter.visitTypeInsn(INSTANCEOF, "dbcache/model/EnhancedEntity");
+					mWriter.visitTypeInsn(INSTANCEOF, AsmUtils.toAsmCls(EnhancedEntity.class.getName()));
 					Label l2 = new Label();
 					mWriter.visitJumpInsn(IFEQ, l2);
 					mWriter.visitVarInsn(ALOAD, local);
-					mWriter.visitTypeInsn(CHECKCAST, "dbcache/model/EnhancedEntity");
+					mWriter.visitTypeInsn(CHECKCAST, AsmUtils.toAsmCls(EnhancedEntity.class.getName()));
 					Label l3 = new Label();
 					mWriter.visitLabel(l3);
-					mWriter.visitMethodInsn(INVOKEINTERFACE, "dbcache/model/EnhancedEntity", "getEntity", "()Ldbcache/model/IEntity;", true);
+					mWriter.visitMethodInsn(INVOKEINTERFACE, AsmUtils.toAsmCls(EnhancedEntity.class.getName()), "getEntity", "()" + Type.getDescriptor(IEntity.class), true);
 					mWriter.visitTypeInsn(CHECKCAST, AsmUtils.toAsmCls(tCls.getName()));
 					Label l4 = new Label();
 					mWriter.visitJumpInsn(GOTO, l4);

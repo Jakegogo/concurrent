@@ -1,8 +1,8 @@
 package dbcache.conf;
 
-import dbcache.service.impl.DelayBatchDbPersistService;
-import dbcache.service.impl.DelayDbPersistService;
-import dbcache.service.impl.InTimeDbPersistService;
+import dbcache.persist.service.impl.DelayBatchDbPersistService;
+import dbcache.persist.service.impl.DelayDbPersistService;
+import dbcache.persist.service.impl.InTimeDbPersistService;
 
 /**
  * 持久化处理类型

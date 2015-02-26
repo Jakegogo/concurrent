@@ -132,7 +132,7 @@ public class EntityAsmFactory {
 
 			@Override
 			/**
-			 * @see dbcache.support.asm.ConstructorBuilder#getProxyEntity(java.lang.Class<T>, T, dbcache.service.DbIndexService, java.util.concurrent.atomic.AtomicIntegerArray)
+			 * @see dbcache.support.asm.ConstructorBuilder#getProxyEntity(java.lang.Class<T>, T, dbcache.index.DbIndexService , java.util.concurrent.atomic.AtomicIntegerArray)
 			 */
 			public int parameterIndexOfgetProxyEntity() {
 				return 0;

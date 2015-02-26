@@ -1,11 +1,12 @@
 package dbcache.test;
 
-import dbcache.model.EnhancedEntity;
-import dbcache.model.EntityInitializer;
-import dbcache.model.IEntity;
-import dbcache.service.DbIndexService;
-import java.util.concurrent.atomic.AtomicIntegerArray;
+import dbcache.EnhancedEntity;
+import dbcache.EntityInitializer;
+import dbcache.IEntity;
+import dbcache.index.DbIndexService;
 import org.apache.mina.util.ConcurrentHashSet;
+
+import java.util.concurrent.atomic.AtomicIntegerArray;
 
 public class EnhancedByAsm
   implements EntityInitializer, IEntity<Long>

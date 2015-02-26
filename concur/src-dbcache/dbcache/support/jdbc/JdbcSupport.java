@@ -1,8 +1,8 @@
 package dbcache.support.jdbc;
 
-import dbcache.annotation.Shard;
+import dbcache.anno.Shard;
 import dbcache.conf.shard.ShardStrategy;
-import dbcache.key.IdGenerator;
+import dbcache.pkey.IdGenerator;
 import dbcache.support.asm.util.AsmUtils;
 import dbcache.utils.MutableInteger;
 import dbcache.utils.StringUtils;
@@ -924,7 +924,7 @@ public class JdbcSupport {
 					}
 				} catch (Exception e) {
 					e.printStackTrace();
-					throw new IllegalAccessException("无法创建Jdbc表字段信息:ColumnInfo");
+					throw new IllegalAccessException("无法创建Jdbc表字段信息:ColumnInfo," + clzz.getName() + "#" + fieldName);
 				}
 			}
 		});

@@ -1,7 +1,7 @@
 package dbcache.test;
 
-import dbcache.model.EntityInitializer;
-import dbcache.model.IEntity;
+import dbcache.EntityInitializer;
+import dbcache.IEntity;
 
 public class Entity$EnhancedByCc1
   implements EntityInitializer, IEntity<Long>

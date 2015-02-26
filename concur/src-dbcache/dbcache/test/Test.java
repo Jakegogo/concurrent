@@ -1,9 +1,11 @@
 package dbcache.test;
 
-import dbcache.model.EnhancedEntity;
-import dbcache.service.CacheUnit;
-import dbcache.service.DbCacheService;
-import dbcache.service.DbRuleService;
+import dbcache.EnhancedEntity;
+import dbcache.cache.common.CacheQuerier;
+import dbcache.cache.CacheUnit;
+import dbcache.DbCacheService;
+import dbcache.cache.common.CommonCache;
+import dbcache.conf.DbRuleService;
 import dbcache.support.asm.EntityAsmFactory;
 import dbcache.support.jdbc.JdbcSupport;
 import dbcache.utils.*;
@@ -329,7 +331,9 @@ public class Test {
 		}
 		System.out.println(entity.getNum());
 
-		entity.getFriends().add(4l);
+		ConcurrentHashSet<Long> friends = entity.getFriends();
+		friends.add(4l);
+		entity.setFriends(friends);
 //		entity.getClass()
 		this.cacheService.submitUpdate(entity);
 		if (entity instanceof EnhancedEntity) {

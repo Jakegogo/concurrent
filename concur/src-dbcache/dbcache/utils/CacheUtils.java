@@ -1,8 +1,10 @@
 package dbcache.utils;
 
-import dbcache.service.CacheUnit;
-import dbcache.service.DbCacheService;
-import dbcache.service.impl.ConcurrentLruHashMapCache;
+import dbcache.cache.common.CacheQuerier;
+import dbcache.cache.CacheUnit;
+import dbcache.DbCacheService;
+import dbcache.cache.common.CommonCache;
+import dbcache.cache.impl.ConcurrentLruHashMapCache;
 import dbcache.utils.concurrent.CleanupThread;
 import dbcache.utils.concurrent.ConcurrentLRUCache;
 

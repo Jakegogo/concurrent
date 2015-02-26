@@ -1,12 +1,12 @@
 package dbcache.conf;
 
-import dbcache.annotation.Cached;
-import dbcache.annotation.DynamicUpdate;
-import dbcache.annotation.EnableIndex;
-import dbcache.annotation.Shard;
+import dbcache.anno.Cached;
+import dbcache.anno.DynamicUpdate;
+import dbcache.anno.EnableIndex;
+import dbcache.anno.Shard;
 import dbcache.conf.shard.ShardStrategy;
-import dbcache.key.IdGenerator;
-import dbcache.service.impl.ConcurrentLinkedHashMapCache;
+import dbcache.pkey.IdGenerator;
+import dbcache.cache.impl.ConcurrentLinkedHashMapCache;
 import dbcache.support.asm.ConstructorBuilder;
 import dbcache.support.asm.ValueGetter;
 import dbcache.utils.AnnotationUtils;

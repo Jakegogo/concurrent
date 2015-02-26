@@ -1,6 +1,7 @@
 package dbcache.support.asm;
 
-import dbcache.service.DbIndexService;
+import dbcache.IEntity;
+import dbcache.index.DbIndexService;
 import dbcache.support.asm.util.AsmUtils;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.MethodVisitor;
@@ -46,7 +47,7 @@ public class IndexMethodProxyAspect extends AbstractAsmMethodProxyAspect {
 
 			@Override
 			/**
-			 * @see dbcache.support.asm.ConstructorBuilder#getProxyEntity(java.lang.Class<T>, T, dbcache.service.DbIndexService, java.util.concurrent.atomic.AtomicIntegerArray)
+			 * @see dbcache.support.asm.ConstructorBuilder#getProxyEntity(java.lang.Class<T>, T, dbcache.index.DbIndexService , java.util.concurrent.atomic.AtomicIntegerArray)
 			 */
 			public int parameterIndexOfgetProxyEntity() {
 				return 1;
@@ -77,13 +78,13 @@ public class IndexMethodProxyAspect extends AbstractAsmMethodProxyAspect {
 		ReflectionUtils.doWithFields(clazz, new FieldCallback() {
 			public void doWith(Field field) throws IllegalArgumentException, IllegalAccessException {
 				if (field.isAnnotationPresent(org.hibernate.annotations.Index.class) ||
-						field.isAnnotationPresent(dbcache.annotation.Index.class)) {
+						field.isAnnotationPresent(dbcache.anno.Index.class)) {
 					String indexName = null;
 					org.hibernate.annotations.Index indexAno = field.getAnnotation(org.hibernate.annotations.Index.class);
 					if(indexAno != null) {
 						indexName = indexAno.name();
 					} else {
-						dbcache.annotation.Index indexAno1 = field.getAnnotation(dbcache.annotation.Index.class);
+						dbcache.anno.Index indexAno1 = field.getAnnotation(dbcache.anno.Index.class);
 						indexName = indexAno1.name();
 					}
 
@@ -261,7 +262,7 @@ public class IndexMethodProxyAspect extends AbstractAsmMethodProxyAspect {
 			mWriter.visitVarInsn(Opcodes.ALOAD, locals);
 
 			//调用静态方法
-			mWriter.visitMethodInsn(INVOKEINTERFACE, AsmUtils.toAsmCls(getAspectHandleClass().getName()), "update", "(Ldbcache/model/IEntity;Ljava/lang/String;Ljava/lang/Object;Ljava/lang/Object;)V");
+			mWriter.visitMethodInsn(INVOKEINTERFACE, AsmUtils.toAsmCls(getAspectHandleClass().getName()), "update", "(" + Type.getDescriptor(IEntity.class) + "Ljava/lang/String;Ljava/lang/Object;Ljava/lang/Object;)V");
 
 		}
 

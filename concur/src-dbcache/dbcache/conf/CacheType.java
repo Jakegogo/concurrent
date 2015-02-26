@@ -1,8 +1,8 @@
 package dbcache.conf;
 
-import dbcache.service.impl.ConcurrentLinkedHashMapCache;
-import dbcache.service.impl.ConcurrentLruHashMapCache;
-import dbcache.service.impl.ConcurrentWeekHashMapCache;
+import dbcache.cache.impl.ConcurrentLinkedHashMapCache;
+import dbcache.cache.impl.ConcurrentLruHashMapCache;
+import dbcache.cache.impl.ConcurrentWeekHashMapCache;
 
 /**
  * 缓存类型
