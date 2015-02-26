@@ -12,6 +12,7 @@
       <sourceFolder url="file://$MODULE_DIR$/src-readwritelock" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src-test" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src-utils" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src-transfer" isTestSource="false" />
       <excludeFolder url="file://$MODULE_DIR$/target" />
     </content>
     <orderEntry type="inheritedJdk" />
@@ -74,6 +75,7 @@
     <orderEntry type="library" name="Maven: org.apache.httpcomponents:httpclient:4.2.1" level="project" />
     <orderEntry type="library" name="Maven: org.apache.httpcomponents:httpcore:4.2.1" level="project" />
     <orderEntry type="library" name="Maven: commons-codec:commons-codec:1.6" level="project" />
-    <orderEntry type="library" name="Maven: org.apache.httpcomponents:httpclient-cache:4.2.1" level="project" />
+    <orderEntry type="library" name="Maven: net.jpountz.lz4:lz4:1.3.0" level="project" />
+    <orderEntry type="library" name="Maven: org.jboss.netty:netty:3.2.10.Final" level="project" />
   </component>
 </module>

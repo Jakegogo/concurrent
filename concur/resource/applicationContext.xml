@@ -15,8 +15,7 @@
 	<!-- 下面是一些全局配置 -->
 	
 	<context:component-scan base-package="dbcache"></context:component-scan>
-	<context:component-scan base-package="com.my9yu.common.db"></context:component-scan>
-	
+
 	<context:property-placeholder location="classpath:jdbc.properties"/>
 
 	<!-- BDCP Make u crazy on multi-thread-->
@@ -62,17 +61,17 @@
         </property>
     </bean>
 
-	<!-- Transaction manager for a single Hibernate SessionFactory (alternative to JTA) -->
-	<bean id="transactionManager" class="org.springframework.orm.hibernate3.HibernateTransactionManager"
-			p:sessionFactory-ref="sessionFactory"/>
+	<!--&lt;!&ndash; Transaction manager for a single Hibernate SessionFactory (alternative to JTA) &ndash;&gt;-->
+	<!--<bean id="transactionManager" class="org.springframework.orm.hibernate3.HibernateTransactionManager"-->
+			<!--p:sessionFactory-ref="sessionFactory"/>-->
 	
 	
-	<!-- JDBC模版 -->
-	<bean id="jdbcTemplate" class="org.springframework.jdbc.core.JdbcTemplate">
-		<property name="dataSource">
-			<ref bean="dataSource" />
-		</property>
-	</bean>
+	<!--&lt;!&ndash; JDBC模版 &ndash;&gt;-->
+	<!--<bean id="jdbcTemplate" class="org.springframework.jdbc.core.JdbcTemplate">-->
+		<!--<property name="dataSource">-->
+			<!--<ref bean="dataSource" />-->
+		<!--</property>-->
+	<!--</bean>-->
 
 	<!--
 		Instruct Spring to perform declarative transaction management
@@ -84,19 +83,19 @@
     <aop:aspectj-autoproxy/>
 
 
-	<aop:config>
-		<aop:advisor id="tx" advice-ref="txAdvice"
-			pointcut="execution(* com.my9yu..service..*Manager.*(..))" order="2" />
-	</aop:config>
+	<!--<aop:config>-->
+		<!--<aop:advisor id="tx" advice-ref="txAdvice"-->
+			<!--pointcut="execution(* com..service..*Manager.*(..))" order="2" />-->
+	<!--</aop:config>-->
 
-	<tx:advice id="txAdvice">
-		<tx:attributes>
-			<tx:method name="*" read-only="false" propagation="REQUIRED" rollback-for="Throwable"/>
-			<tx:method name="get*" read-only="true" propagation="SUPPORTS" />
-			<tx:method name="is*" read-only="true"  propagation="SUPPORTS"/>
-			<tx:method name="list*" read-only="true"  propagation="SUPPORTS"/>
-		</tx:attributes>
-	</tx:advice>
+	<!--<tx:advice id="txAdvice">-->
+		<!--<tx:attributes>-->
+			<!--<tx:method name="*" read-only="false" propagation="REQUIRED" rollback-for="Throwable"/>-->
+			<!--<tx:method name="get*" read-only="true" propagation="SUPPORTS" />-->
+			<!--<tx:method name="is*" read-only="true"  propagation="SUPPORTS"/>-->
+			<!--<tx:method name="list*" read-only="true"  propagation="SUPPORTS"/>-->
+		<!--</tx:attributes>-->
+	<!--</tx:advice>-->
 	
 	
 </beans>
