@@ -5,11 +5,13 @@ import transfer.def.Config;
 import transfer.def.Types;
 import transfer.deserializer.CollectionDeSerializer;
 import transfer.deserializer.Deserializer;
+import transfer.deserializer.EntryDeserializer;
 import transfer.deserializer.MapDeSerializer;
 import transfer.serializer.NullSerializer;
 import transfer.serializer.Serializer;
 import transfer.utils.IdentityHashMap;
 import transfer.utils.IntegerMap;
+import transfer.utils.TypeUtils;
 
 import java.lang.reflect.Type;
 import java.util.Collection;
@@ -19,7 +21,7 @@ import java.util.Map;
 /**
  * 字节传输协议
  * <br/>定义传输类的属性按定义属性的先后顺序传输
- * <br/>定义传输类必须调用Config#registerClass(java.lang.Class<?>, int)进行注册
+ * <br/>定义传输类必须调用Config#registerClass(java.lang.Class<?>, int)进行注册, 或使用注解@Transferable
  * Created by Jake on 2015/2/22.
  */
 public class Transfer {
@@ -32,10 +34,13 @@ public class Transfer {
     //
 
 
+    public static final NullSerializer NULL_SERIALIZER = NullSerializer.getInstance();
+
+
     /**
      * 解码
-     * @param inputable
-     * @param clazz
+     * @param inputable 输入接口
+     * @param clazz 类型
      * @param <T>
      * @return
      */
@@ -48,8 +53,8 @@ public class Transfer {
 
     /**
      * 解码
-     * @param bytes
-     * @param clazz
+     * @param bytes 输入字节数组
+     * @param clazz 类 型
      * @param <T>
      * @return
      */
@@ -63,8 +68,8 @@ public class Transfer {
 
     /**
      * 解码
-     * @param inputable
-     * @param typeReference
+     * @param inputable 输入接口
+     * @param typeReference 类型定义
      * @param <T>
      * @return
      */
@@ -78,8 +83,8 @@ public class Transfer {
 
     /**
      * 解码
-     * @param bytes
-     * @param typeReference
+     * @param bytes 输入字节数组
+     * @param typeReference 类型定义
      * @param <T>
      * @return
      */
@@ -94,21 +99,32 @@ public class Transfer {
 
     /**
      * 迭代解码
-     * @param inputable
-     * @param typeReference
+     * @param inputable 输入字节数组
+     * @param typeReference 类型定义
      * @param <T> 集合类型类型
      * @return
      */
     public static <T extends Collection<E>, E> Iterator<E> iterator(final Inputable inputable, TypeReference<T> typeReference) {
+
         // 读取消息头
         final ByteDataMeta byteDataMeta = CollectionDeSerializer.getInstance().readMeta(inputable);
+
         // 不可以迭代
         if (byteDataMeta == null || !byteDataMeta.isIteratorAble()) {
             throw new UnsupportedOperationException();
         }
 
-        final Type componentType = new TypeReference<E>().getType();// 取出元素类型
-        final Deserializer componentDeserializer = Config.getDeserializer(componentType, byteDataMeta.getFlag());// 元素解析器
+
+        final Type componentType = TypeUtils.getParameterizedClass(typeReference.getType(), 0);// 取出元素类型
+
+
+        final Deserializer defaultComponentDeserializer;
+        if (componentType != null && componentType != Object.class) {
+            defaultComponentDeserializer = Config.getDeserializer(componentType);// 元素解析器
+        } else {
+            defaultComponentDeserializer = null;
+        }
+
 
         final IntegerMap referenceMap = new IntegerMap(16);
         return new Iterator<E>() {
@@ -125,7 +141,13 @@ public class Transfer {
             @Override
             public E next() {
                 curIndex ++;
-                return componentDeserializer.deserialze(inputable, componentType, inputable.getByte(), referenceMap);
+                if (defaultComponentDeserializer == null) {
+                    final byte elementFlag = inputable.getByte();
+                    final Deserializer componentDeserializer = Config.getDeserializer(componentType, elementFlag);// 元素解析器
+                    return componentDeserializer.deserialze(inputable, componentType, elementFlag, referenceMap);
+                } else {
+                    return defaultComponentDeserializer.deserialze(inputable, componentType, inputable.getByte(), referenceMap);
+                }
             }
 
             @Override
@@ -138,8 +160,8 @@ public class Transfer {
 
     /**
      * 迭代解码
-     * @param bytes
-     * @param typeReference
+     * @param bytes 输入字节数组
+     * @param typeReference 类型定义
      * @param <T> 集合类型类型
      * @return
      */
@@ -150,8 +172,8 @@ public class Transfer {
 
     /**
      * 迭代解码
-     * @param inputable
-     * @param typeReference
+     * @param inputable 输入接口
+     * @param typeReference 类型定义
      * @param <T> Map类型
      * @return
      */
@@ -163,8 +185,8 @@ public class Transfer {
             throw new UnsupportedOperationException();
         }
 
-        final Type componentType = new TypeReference<Map.Entry<K, V>>().getType();// 取出元素类型
-        final Deserializer entryDeserializer = Config.getDeserializer(componentType, byteDataMeta.getFlag());// 元素解析器
+        final Type componentType = typeReference.getType();// 取出元素类型
+        final Deserializer entryDeserializer = EntryDeserializer.getInstance();// 元素解析器
 
         final IntegerMap referenceMap = new IntegerMap(16);
         return new Iterator<Map.Entry<K, V>>() {
@@ -181,7 +203,7 @@ public class Transfer {
             @Override
             public Map.Entry<K, V> next() {
                 curIndex ++;
-                return entryDeserializer.deserialze(inputable, (Type) Map.Entry.class, Types.UNKOWN, referenceMap);
+                return entryDeserializer.deserialze(inputable, componentType, Types.UNKOWN, referenceMap);
             }
 
             @Override
@@ -194,8 +216,8 @@ public class Transfer {
 
     /**
      * 迭代解码
-     * @param bytes
-     * @param typeReference
+     * @param bytes 输入字节数组
+     * @param typeReference 类型定义
      * @param <T> Map类型
      * @return
      */
@@ -206,13 +228,13 @@ public class Transfer {
 
     /**
      * 编码
-     * @param outputable
-     * @param object
+     * @param outputable 输出接口
+     * @param object 目标对象
      */
     public static void encode(Outputable outputable, Object object) {
 
         if (object == null) {
-            NullSerializer.getInstance().serialze(outputable, object, null);
+            NULL_SERIALIZER.serialze(outputable, object, null);
             return;
         }
 
@@ -223,18 +245,28 @@ public class Transfer {
 
     /**
      * 编码
-     * @param object
+     * @param object 目标对象
      */
     public static ByteArray encode(Object object) {
+        return encode(object, 128);
+    }
+
+
+    /**
+     * 编码
+     * @param object 目标对象
+     * @param bytesLength 编码字节长度(估算)
+     */
+    public static ByteArray encode(Object object, int bytesLength) {
 
         if (object == null) {
             ByteBuffer buffer = new ByteBuffer(1);
-            NullSerializer.getInstance().serialze(buffer, object, null);
+            NULL_SERIALIZER.serialze(buffer, object, null);
             return buffer.getByteArray();
         }
 
         Serializer serializer = Config.getSerializer(object.getClass());
-        ByteBuffer buffer = new ByteBuffer(256);
+        ByteBuffer buffer = new ByteBuffer(bytesLength);
 
         serializer.serialze(buffer, object, new IdentityHashMap(16));
         return buffer.getByteArray();

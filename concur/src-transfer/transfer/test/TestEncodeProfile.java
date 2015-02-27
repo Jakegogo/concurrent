@@ -1,6 +1,5 @@
 package transfer.test;
 
-import dbcache.test.Entity;
 import transfer.ByteArray;
 import transfer.Transfer;
 import transfer.def.Config;

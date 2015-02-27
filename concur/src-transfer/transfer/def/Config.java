@@ -1,9 +1,12 @@
 package transfer.def;
 
 import org.apache.mina.util.ConcurrentHashSet;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.util.ReflectionUtils;
 import transfer.ByteArray;
 import transfer.anno.Ignore;
+import transfer.anno.Transferable;
 import transfer.core.ClassInfo;
 import transfer.core.EnumInfo;
 import transfer.core.FieldInfo;
@@ -30,7 +33,11 @@ import java.util.concurrent.atomic.AtomicLong;
  */
 public class Config {
 
+    private static final Logger logger = LoggerFactory.getLogger(Config.class);
+
     private static Config instance = new Config();
+
+    public static final NullDeserializer NULL_DESERIALIZER = NullDeserializer.getInstance();
 
     final ByteMap<Deserializer> deserializers = new ByteMap<Deserializer>();
 
@@ -43,8 +50,6 @@ public class Config {
     final IntegerMap<Class> classIdMap = new IntegerMap<Class>();
 
     final IdentityHashMap<Class, Integer> idClassMap = new IdentityHashMap<Class, Integer>();
-
-    private static AtomicInteger typeIdGenerator = new AtomicInteger(1000000);
 
 
     // 1111 0000 类型
@@ -67,10 +72,27 @@ public class Config {
      * @param id 唯一编号
      */
     public static void registerClass(Class<?> clazz, int id) {
+
+        Class oldClass = instance.classIdMap.get(id);
+        if (oldClass != null) {
+            logger.warn("注册解析类Id重复: " + clazz + ",Id: " + id + " , (" + oldClass + ")");
+        }
+
         instance.classIdMap.put(id, clazz);
         instance.idClassMap.put(clazz, id);
-        instance.typedDeserializers.put(clazz, ObjectDeSerializer.getInstance());
-        instance.serializers.put(clazz, ObjectSerializer.getInstance());
+
+        boolean repeatRegisterSerializers,repeatRegisterDeSerializers;
+        if (clazz.isEnum() || (clazz.getSuperclass() != null && clazz.getSuperclass().isEnum())) { // 枚举类型
+            repeatRegisterSerializers = instance.serializers.put(clazz, EnumSerializer.getInstance());
+            repeatRegisterDeSerializers = instance.typedDeserializers.put(clazz, EnumDeserializer.getInstance());
+        } else {
+            repeatRegisterSerializers = instance.serializers.put(clazz, ObjectSerializer.getInstance());
+            repeatRegisterDeSerializers = instance.typedDeserializers.put(clazz, ObjectDeSerializer.getInstance());
+        }
+
+        if (repeatRegisterSerializers || repeatRegisterDeSerializers) {
+            logger.warn("重复注册解析类:" + clazz + ",Id:" + id);
+        }
     }
 
 
@@ -117,10 +139,40 @@ public class Config {
      * @see transfer.def.Types
      * @return
      */
+    public static Deserializer getDeserializer(Type type) {
+
+        if (type == null || type == Object.class) {
+            return null;
+        }
+
+        if (type instanceof Class<?>) {
+
+            return getDeserializer((Class<?>) type, type);
+        }
+
+        if (type instanceof ParameterizedType) {
+            Type rawType = ((ParameterizedType) type).getRawType();
+            if (rawType instanceof Class<?>) {
+                return getDeserializer((Class<?>) rawType, type);
+            } else {
+                return getDeserializer(rawType);
+            }
+        }
+
+        throw new UnsupportDeserializerTypeException(type);
+    }
+
+
+    /**
+     * 获取解析器
+     * @param type 类型
+     * @see transfer.def.Types
+     * @return
+     */
     public static Deserializer getDeserializer(Type type, byte flag) {
 
         if (flag == Types.NULL) {
-            return NullDeserializer.getInstance();
+            return NULL_DESERIALIZER;
         }
 
         if (type == null || type == Object.class) {
@@ -193,8 +245,9 @@ public class Config {
             deserializer =  EntryDeserializer.getInstance();
         } else {
             deserializer = ObjectDeSerializer.getInstance();
-                    // 注册为对象解析方式
-            registerClass((Class<?>) type, typeIdGenerator.incrementAndGet());
+
+            // 注册类型
+            autoRegisterClass(clazz);
         }
 
 
@@ -208,12 +261,28 @@ public class Config {
     }
 
 
+    // 自动注册类型
+    private static void autoRegisterClass(Class<?> clazz) {
+        // 获取唯一标识
+        if (clazz.isAnnotationPresent(Transferable.class)) {
+            Transferable transferable = clazz.getAnnotation(Transferable.class);
+            // 注册为对象解析方式
+            registerClass(clazz, transferable.id());
+
+            return;
+        }
+
+        throw new UnsupportDeserializerTypeException(clazz);
+    }
+
+
     /**
      * 获取编码器
      * @param clazz 类型
      * @return
      */
     public static Serializer getSerializer(Class clazz) {
+
         Serializer serializer = instance.serializers.get(clazz);
         if (serializer != null) {
             return serializer;
@@ -229,7 +298,8 @@ public class Config {
         } else if (Date.class.isAssignableFrom(clazz)) {
             instance.serializers.put(clazz, DateSerializer.getInstance());
         } else if (clazz.isEnum() || (clazz.getSuperclass() != null && clazz.getSuperclass().isEnum())) {
-            instance.serializers.put(clazz, EnumSerializer.getInstance());
+            // 注册类型
+            autoRegisterClass(clazz);
         } else if (clazz.isArray()) {
             instance.serializers.put(clazz, ArraySerializer.getInstance());
         } else {
@@ -259,11 +329,12 @@ public class Config {
             if (Proxy.isProxyClass(clazz)) {
                 instance.serializers.put(clazz, ObjectSerializer.getInstance());// TODO
             } else {
-                instance.serializers.put(clazz, ObjectSerializer.getInstance());
+                // 注册类型
+                autoRegisterClass(clazz);
             }
         }
 
-        serializer =  instance.serializers.get(clazz);
+        serializer = instance.serializers.get(clazz);
 
         if (serializer == null) {
             throw new UnsupportSerializerTypeException(clazz);

@@ -77,11 +77,9 @@ public class MapDeSerializer implements Deserializer {
     }
 
 
-    private Object parseElement(Inputable inputable, Type keyType, byte keyFlag, IntegerMap referenceMap) {
-
-        Deserializer elementDeserializer = Config.getDeserializer(keyType, keyFlag);
-
-        return elementDeserializer.deserialze(inputable, keyType, keyFlag, referenceMap);
+    private Object parseElement(Inputable inputable, Type type, byte byteFlag, IntegerMap referenceMap) {
+        Deserializer elementDeserializer = Config.getDeserializer(type, byteFlag);
+        return elementDeserializer.deserialze(inputable, type, byteFlag, referenceMap);
     }
 
 

@@ -1,6 +1,5 @@
 package transfer.test;
 
-import dbcache.test.Entity;
 import dbcache.utils.JsonUtils;
 import transfer.ByteArray;
 import transfer.Transfer;

@@ -11,7 +11,11 @@ public class TypeReference<T> {
     protected TypeReference(){
         Type superClass = getClass().getGenericSuperclass();
 
-        type = ((ParameterizedType) superClass).getActualTypeArguments()[0];
+        if (superClass instanceof ParameterizedType) {
+            type = ((ParameterizedType) superClass).getActualTypeArguments()[0];
+        } else {
+            type = superClass;
+        }
     }
 
     public Type getType() {

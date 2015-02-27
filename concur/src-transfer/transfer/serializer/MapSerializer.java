@@ -40,7 +40,7 @@ public class MapSerializer implements Serializer {
             keySerializer.serialze(outputable, key, referenceMap);
 
 
-            value = entry.getKey();
+            value = entry.getValue();
 
             Serializer valueSerializer = Config.getSerializer(value.getClass());
 

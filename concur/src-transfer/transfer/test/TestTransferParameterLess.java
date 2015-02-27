@@ -7,7 +7,7 @@ import transfer.def.Config;
 /**
  * Created by Administrator on 2015/2/26.
  */
-public class TestDecodeProfile {
+public class TestTransferParameterLess {
 
     public static void main(String[] args) {
 
@@ -22,15 +22,14 @@ public class TestDecodeProfile {
         ByteArray byteArray = Transfer.encode(entity);
 
         byte[] bytes = byteArray.toBytes();
+        System.out.println(bytes);
+        System.out.println(bytes.length);
 
-        long t1 = System.currentTimeMillis();
 
-        for (int i = 0; i < 5000000;i++) {
-            Entity entity1 = Transfer.decode(bytes, Entity.class);
-        }
-
-        System.out.println(System.currentTimeMillis() - t1);
-
+        Entity entity1 = (Entity) Transfer.decode(bytes, Object.class);
+        System.out.println(entity1);
+        System.out.println(entity1.getUid());
+        System.out.println(entity1.getFriends());
     }
 
 }

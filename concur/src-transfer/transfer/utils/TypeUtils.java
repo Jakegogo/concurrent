@@ -128,6 +128,21 @@ public class TypeUtils {
     }
 
 
+    /**
+     * 获取泛型参数类
+     * @param type
+     * @return
+     */
+    public static Class<?> getParameterizedClass(Type type, int index) {
+        if (type instanceof ParameterizedType) {
+            Type parameterizedType = ((ParameterizedType)type).getActualTypeArguments()[index];
+            return getRawClass(parameterizedType);
+        } else {
+            return Object.class;
+        }
+    }
+
+
     public static final Byte castToByte(Object value) {
         if (value == null) {
             return null;

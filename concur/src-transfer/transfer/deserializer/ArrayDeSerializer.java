@@ -36,29 +36,37 @@ public class ArrayDeSerializer implements Deserializer {
             return (T) new Object[0];
         }
 
-        // 读取元素类型
-        byte elementFlag = inputable.getByte();
 
         Type itemType = null;
-
-
         if (type instanceof Class<?> && ((Class<?>)type).isArray()) {
             itemType = ((Class<?>)type).getComponentType();
         } else if (type instanceof ParameterizedType) {
             itemType = TypeUtils.getParameterizedType((ParameterizedType) type, 0);
         }
 
+
         Object[] array = (Object[]) Array.newInstance(TypeUtils.getRawClass(itemType), size);
+
+
+        final Deserializer defaultComponentDeserializer;
+        if (itemType != null && itemType != Object.class) {
+            defaultComponentDeserializer = Config.getDeserializer(itemType);// 元素解析器
+        } else {
+            defaultComponentDeserializer = null;
+        }
+
 
         // 循环解析元素
         for (int i = 0; i < size;i++) {
 
-            Deserializer elementDeserializer = Config.getDeserializer(itemType, elementFlag);
-            array[i] = elementDeserializer.deserialze(inputable, itemType, elementFlag, referenceMap);
-
-            if (i < size - 1) {// 获取下一个元素的类型
-                elementFlag = inputable.getByte();
+            if (defaultComponentDeserializer == null) {
+                final byte elementFlag = inputable.getByte();
+                final Deserializer componentDeserializer = Config.getDeserializer(itemType, elementFlag);// 元素解析器
+                array[i] =  componentDeserializer.deserialze(inputable, itemType, elementFlag, referenceMap);
+            } else {
+                array[i] =  defaultComponentDeserializer.deserialze(inputable, itemType, inputable.getByte(), referenceMap);
             }
+
         }
 
         return (T) array;
