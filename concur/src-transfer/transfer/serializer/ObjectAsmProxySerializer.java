@@ -20,19 +20,17 @@ public class ObjectAsmProxySerializer implements Serializer {
     public void serialze(Outputable outputable, Object object, IdentityHashMap referenceMap) {
 
         if (object == null) {
-            NullSerializer.getInstance().serialze(outputable, object, referenceMap);
+            Config.NULL_SERIALIZER.serialze(outputable, object, referenceMap);
             return;
         }
 
         Class<?> clazz = object.getClass().getSuperclass();
 
-        int classId = Config.getClassId(clazz);
-
         ClassInfo classInfo = Config.getOrCreateClassInfo(clazz);
 
         outputable.putByte(Types.OBJECT);
 
-        BitUtils.putInt(outputable, classId);
+        BitUtils.putInt(outputable, classInfo.getClassId());
 
         for (FieldInfo fieldInfo : classInfo.getFieldInfos()) {
 

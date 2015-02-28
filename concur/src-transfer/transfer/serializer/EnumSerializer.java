@@ -18,7 +18,7 @@ public class EnumSerializer implements Serializer {
     public void serialze(Outputable outputable, Object object, IdentityHashMap referenceMap) {
 
         if (object == null) {
-            NullSerializer.getInstance().serialze(outputable, object, referenceMap);
+            Config.NULL_SERIALIZER.serialze(outputable, object, referenceMap);
             return;
         }
 
@@ -26,11 +26,9 @@ public class EnumSerializer implements Serializer {
 
         Enum<?> enumVal = (Enum<?>) object;
 
-        int enumId = Config.getClassId(enumVal.getDeclaringClass());
-
-        BitUtils.putInt(outputable, enumId);
-
         EnumInfo enumInfo = (EnumInfo) Config.getOrCreateClassInfo(enumVal.getDeclaringClass());
+
+        BitUtils.putInt(outputable, enumInfo.getClassId());
 
         int enumIndex = enumInfo.toInt(enumVal);
 

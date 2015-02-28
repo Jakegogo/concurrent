@@ -9,6 +9,11 @@ import java.util.List;
 public class ClassInfo {
 
     /**
+     * 传输类唯一标识
+     */
+    private int classId;
+
+    /**
      * 类
      */
     protected Class<?> clazz;
@@ -21,13 +26,15 @@ public class ClassInfo {
 
     /**
      * 获取实例
-     * @param clazz
-     * @param fieldInfos
+     * @param clazz 类
+     * @param classId 传输类Id
+     * @param fieldInfos 属性信息
      * @return
      */
-    public static ClassInfo valueOf(Class<?> clazz, List<FieldInfo> fieldInfos) {
+    public static ClassInfo valueOf(Class<?> clazz, int classId, List<FieldInfo> fieldInfos) {
         ClassInfo classInfo = new ClassInfo();
         classInfo.clazz = clazz;
+        classInfo.classId = classId;
         classInfo.fieldInfos = fieldInfos;
         return classInfo;
     }
@@ -40,4 +47,9 @@ public class ClassInfo {
     public List<FieldInfo> getFieldInfos() {
         return fieldInfos;
     }
+
+    public int getClassId() {
+        return classId;
+    }
+
 }

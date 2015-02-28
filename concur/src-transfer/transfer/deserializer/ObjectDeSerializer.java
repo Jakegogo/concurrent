@@ -42,15 +42,20 @@ public class ObjectDeSerializer implements Deserializer {
         } else {
 
             rawClass = TypeUtils.getRawClass(type);
-
-            if (Config.getClass(classId) != rawClass) {
-                throw new IllegalClassTypeException(classId, type);
-            }
-
         }
 
         if (rawClass == null) {
             throw new UnsupportDeserializerTypeException(rawClass);
+        }
+
+        ClassInfo classInfo = Config.getOrCreateClassInfo(rawClass);
+
+        if (classInfo == null) {
+            throw new UnsupportDeserializerTypeException(rawClass);
+        }
+
+        if (classId != classInfo.getClassId()) {
+            throw new IllegalClassTypeException(classId, type);
         }
 
         Object object;
@@ -60,7 +65,6 @@ public class ObjectDeSerializer implements Deserializer {
             throw new IllegalArgumentException("create instane error, class " + rawClass.getName());
         }
 
-        ClassInfo classInfo = Config.getOrCreateClassInfo(rawClass);
 
         Type fieldType;
         Object fieldValue;

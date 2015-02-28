@@ -19,7 +19,7 @@ public class CollectionSerializer implements Serializer {
     public void serialze(Outputable outputable, Object object, IdentityHashMap referenceMap) {
 
         if (object == null) {
-            NullSerializer.getInstance().serialze(outputable, object, referenceMap);
+            Config.NULL_SERIALIZER.serialze(outputable, object, referenceMap);
             return;
         }
 

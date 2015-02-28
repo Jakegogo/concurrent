@@ -39,6 +39,8 @@ public class Config {
 
     public static final NullDeserializer NULL_DESERIALIZER = NullDeserializer.getInstance();
 
+    public static final NullSerializer NULL_SERIALIZER = NullSerializer.getInstance();
+
     final ByteMap<Deserializer> deserializers = new ByteMap<Deserializer>();
 
     final IdentityHashMap<Type, Deserializer> typedDeserializers = new IdentityHashMap<Type, Deserializer>();
@@ -393,7 +395,9 @@ public class Config {
                 }
             });
 
-            classInfo = ClassInfo.valueOf(clazz, fieldInfos);
+            int classId = Config.getClassId(clazz);
+            classInfo = ClassInfo.valueOf(clazz, classId, fieldInfos);
+
             instance.classInfoMap.put(clazz, classInfo);
         }
 

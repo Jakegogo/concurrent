@@ -41,11 +41,6 @@ public class EnumDeserializer implements Deserializer {
         } else {
 
             rawClass = TypeUtils.getRawClass(type);
-
-            if (Config.getClass(enumType) != rawClass) {
-                throw new IllegalClassTypeException(enumType, type);
-            }
-
         }
 
         if (rawClass == null) {
@@ -56,6 +51,10 @@ public class EnumDeserializer implements Deserializer {
 
         if (enumInfo == null) {
             throw new UnsupportDeserializerTypeException(rawClass);
+        }
+
+        if (enumType != enumInfo.getClassId()) {
+            throw new IllegalClassTypeException(enumType, type);
         }
 
         // 读取枚举索引

@@ -25,36 +25,27 @@ public class ByteBuffer implements Outputable {
 
     @Override
     public void putByte(byte byte1) {
-        this.checkBounds(1);
-        this.curByteArray.putByte(byte1);
+        this.curByteArray.checkBounds(1, this)
+                .putByte(byte1);
         offset += 1;
     }
 
 
     @Override
     public void putBytes(byte[] bytes) {
-        this.checkBounds(bytes.length);
-        this.curByteArray.putBytes(bytes);
+        this.curByteArray.checkBounds(bytes.length, this)
+                .putBytes(bytes);
         offset += bytes.length;
     }
 
 
     @Override
     public void putByte(byte... bytes) {
-        this.checkBounds(bytes.length);
-        this.curByteArray.putBytes(bytes);
+        this.curByteArray.checkBounds(bytes.length, this)
+                .putBytes(bytes);
         offset += bytes.length;
     }
 
-
-    private void checkBounds(int expandLength) {
-        if (this.curByteArray.offset + expandLength > this.curByteArray.length) {
-            if (expandLength < EXPAND_STEP_SIZE) {
-                expandLength = EXPAND_STEP_SIZE;
-            }
-            this.curByteArray = this.curByteArray.expandNext(expandLength);
-        }
-    }
 
     /**
      * 获取字节
@@ -142,6 +133,18 @@ public class ByteBuffer implements Outputable {
         public void putBytes(byte[] bytes) {
             System.arraycopy(bytes, 0, this.byteArray, offset, bytes.length);
             offset += bytes.length;
+        }
+
+        private ByteArr checkBounds(int expandLength, ByteBuffer byteBuffer) {
+            if (this.offset + expandLength > this.length) {
+                if (expandLength < EXPAND_STEP_SIZE) {
+                    expandLength = EXPAND_STEP_SIZE;
+                }
+                ByteArr newByteArr = this.expandNext(expandLength);
+                byteBuffer.curByteArray = newByteArr;
+                return newByteArr;
+            }
+            return this;
         }
 
     }

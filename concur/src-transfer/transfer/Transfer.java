@@ -7,7 +7,6 @@ import transfer.deserializer.CollectionDeSerializer;
 import transfer.deserializer.Deserializer;
 import transfer.deserializer.EntryDeserializer;
 import transfer.deserializer.MapDeSerializer;
-import transfer.serializer.NullSerializer;
 import transfer.serializer.Serializer;
 import transfer.utils.IdentityHashMap;
 import transfer.utils.IntegerMap;
@@ -32,9 +31,6 @@ public class Transfer {
     // Inputable、Outputable适配网络框架的readBuffer、writeBuffer
     // TypeReference指定泛型类型将预编译,可提升解析速度
     //
-
-
-    public static final NullSerializer NULL_SERIALIZER = NullSerializer.getInstance();
 
 
     /**
@@ -234,7 +230,7 @@ public class Transfer {
     public static void encode(Outputable outputable, Object object) {
 
         if (object == null) {
-            NULL_SERIALIZER.serialze(outputable, object, null);
+            Config.NULL_SERIALIZER.serialze(outputable, object, null);
             return;
         }
 
@@ -261,7 +257,7 @@ public class Transfer {
 
         if (object == null) {
             ByteBuffer buffer = new ByteBuffer(1);
-            NULL_SERIALIZER.serialze(buffer, object, null);
+            Config.NULL_SERIALIZER.serialze(buffer, object, null);
             return buffer.getByteArray();
         }
 
