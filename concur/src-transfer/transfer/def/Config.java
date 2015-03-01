@@ -57,15 +57,30 @@ public class Config {
     // 1111 0000 类型
     public static final byte TYPE_MASK = (byte) 0xF0;
 
-    // 0000 0111 额外信息
-    public static final byte EXTRA_MASK = (byte) 0x07;
+    // 0000 1111 额外信息
+    public static final byte EXTRA_MASK = (byte) 0x0F;
 
 
     // Number类型标记
-    public static byte INT32 = 0x01;
-    public static byte INT64 = 0x02;
-    public static byte FLOAT = 0x03;
-    public static byte DOUBLE = 0x04;
+    public static final byte INT321 = 0x00;// int 1字节
+    public static final byte INT322 = 0x01;// int 2字节
+    public static final byte INT323 = 0x02;// int 3字节
+    public static final byte INT324 = 0x03;// int 4字节
+
+    public static final byte INT642 = 0x04;// long 2字节
+    public static final byte INT644 = 0x05;// long 4字节
+    public static final byte INT646 = 0x06;// long 6字节
+    public static final byte INT648 = 0x07;// long 8字节
+
+    public static final byte FLOAT1 = 0x08;// float 1字节
+    public static final byte FLOAT2 = 0x09;// float 2字节
+    public static final byte FLOAT3 = 0x0A;// float 3字节
+    public static final byte FLOAT4 = 0x0B;// float 4字节
+
+    public static final byte DOUBLE2 = 0x0C;// double 2字节
+    public static final byte DOUBLE4 = 0x0D;// double 4字节
+    public static final byte DOUBLE6 = 0x0E;// double 6字节
+    public static final byte DOUBLE8 = 0x0F;// double 8字节
 
 
     /**
@@ -178,7 +193,7 @@ public class Config {
         }
 
         if (type == null || type == Object.class) {
-            return instance.deserializers.get(flag);
+            return instance.deserializers.get(Config.getType(flag));
         }
 
         Deserializer deserializer = instance.typedDeserializers.get(type);

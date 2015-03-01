@@ -29,7 +29,7 @@ public class TestTransfer {
 
         byte[] bytes = byteArray.toBytes();
         System.out.println(bytes);
-        System.out.println(bytes.length);
+        System.out.println("length:" + bytes.length);
 
 
         Entity entity1 = Transfer.decode(bytes, Entity.class);
@@ -40,7 +40,7 @@ public class TestTransfer {
         System.out.println(entity1.getDate());
         System.out.println(entity1.getStr());
         System.out.println(entity1.getBool());
-
+        System.out.println(entity1.getFval());
     }
 
 }
