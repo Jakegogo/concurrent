@@ -23,16 +23,18 @@ public class TestEncodePerform {
 
         long t1 = System.currentTimeMillis();
 
+        ByteArray byteArray = Transfer.encode(entity);
+        System.out.println(byteArray.toBytes().length);
         for (int i = 0; i < 10000000;i++) {
-            ByteArray byteArray = Transfer.encode(entity);
+            byteArray = Transfer.encode(entity);
         }
 
         System.out.println(System.currentTimeMillis() - t1);
 
-
+        System.out.println(JsonUtils.object2JsonString(entity).getBytes().length);
         t1 = System.currentTimeMillis();
         for (int i = 0; i < 10000000;i++) {
-            JsonUtils.object2Bytes(entity);
+            JsonUtils.object2JsonString(entity).getBytes();
         }
 
         System.out.println(System.currentTimeMillis() - t1);
