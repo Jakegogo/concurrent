@@ -32,12 +32,12 @@ public class TestTransfer {
         ByteArray byteArray = Transfer.encode(entity);
 
         byte[] bytes = byteArray.toBytes();
-        System.out.println(bytes);
+        System.out.println(bytes.length);
 
 
 
         Entity entity1 = Transfer.decode(bytes, Entity.class);
-        System.out.println(JsonUtils.object2JsonString(entity1));
+        System.out.println(JsonUtils.object2JsonString(entity1).getBytes().length);
     }
 
 }
