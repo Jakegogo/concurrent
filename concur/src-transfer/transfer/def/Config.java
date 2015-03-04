@@ -67,20 +67,17 @@ public class Config {
     public static final byte INT323 = 0x02;// int 3字节
     public static final byte INT324 = 0x03;// int 4字节
 
-    public static final byte INT642 = 0x04;// long 2字节
-    public static final byte INT644 = 0x05;// long 4字节
-    public static final byte INT646 = 0x06;// long 6字节
-    public static final byte INT648 = 0x07;// long 8字节
+    public static final byte INT641 = 0x04;// long 2字节
+    public static final byte INT642 = 0x05;// long 4字节
+    public static final byte INT643 = 0x06;// long 6字节
+    public static final byte INT644 = 0x07;// long 8字节
+    public static final byte INT645 = 0x08;// long 2字节
+    public static final byte INT646 = 0x09;// long 4字节
+    public static final byte INT647 = 0x0A;// long 6字节
+    public static final byte INT648 = 0x0B;// long 8字节
 
-    public static final byte FLOAT1 = 0x08;// float 1字节
-    public static final byte FLOAT2 = 0x09;// float 2字节
-    public static final byte FLOAT3 = 0x0A;// float 3字节
-    public static final byte FLOAT4 = 0x0B;// float 4字节
-
-    public static final byte DOUBLE2 = 0x0C;// double 2字节
-    public static final byte DOUBLE4 = 0x0D;// double 4字节
-    public static final byte DOUBLE6 = 0x0E;// double 6字节
-    public static final byte DOUBLE8 = 0x0F;// double 8字节
+    public static final byte FLOAT = 0x0C;// float 4字节
+    public static final byte DOUBLE = 0x0D;// double 8字节
 
 
     /**

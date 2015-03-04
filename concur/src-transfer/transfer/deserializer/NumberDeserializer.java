@@ -56,8 +56,20 @@ public class NumberDeserializer implements Deserializer {
                     return (T) number;
                 }
                 break;
+            case Config.INT641:
+                number = BitUtils.getLong1(inputable);
+                if (type == long.class || type == Long.class) {
+                    return (T) number;
+                }
+                break;
             case Config.INT642:
                 number = BitUtils.getLong2(inputable);
+                if (type == long.class || type == Long.class) {
+                    return (T) number;
+                }
+                break;
+            case Config.INT643:
+                number = BitUtils.getLong3(inputable);
                 if (type == long.class || type == Long.class) {
                     return (T) number;
                 }
@@ -68,8 +80,20 @@ public class NumberDeserializer implements Deserializer {
                     return (T) number;
                 }
                 break;
+            case Config.INT645:
+                number = BitUtils.getLong5(inputable);
+                if (type == long.class || type == Long.class) {
+                    return (T) number;
+                }
+                break;
             case Config.INT646:
                 number = BitUtils.getLong6(inputable);
+                if (type == long.class || type == Long.class) {
+                    return (T) number;
+                }
+                break;
+            case Config.INT647:
+                number = BitUtils.getLong7(inputable);
                 if (type == long.class || type == Long.class) {
                     return (T) number;
                 }
@@ -80,56 +104,18 @@ public class NumberDeserializer implements Deserializer {
                     return (T) number;
                 }
                 break;
-
-            case Config.FLOAT1:
-                number = BitUtils.getFloat1(inputable);
-                if (type == float.class || type == Float.class) {
-                    return (T) number;
-                }
-                break;
-            case Config.FLOAT2:
-                number = BitUtils.getFloat2(inputable);
-                if (type == float.class || type == Float.class) {
-                    return (T) number;
-                }
-                break;
-            case Config.FLOAT3:
-                number = BitUtils.getFloat3(inputable);
-                if (type == float.class || type == Float.class) {
-                    return (T) number;
-                }
-                break;
-            case Config.FLOAT4:
+            case Config.FLOAT:
                 number = BitUtils.getFloat(inputable);
                 if (type == float.class || type == Float.class) {
                     return (T) number;
                 }
                 break;
-            case Config.DOUBLE2:
-                number = BitUtils.getDouble2(inputable);
-                if (type == double.class || type == Double.class) {
-                    return (T) number;
-                }
-                break;
-            case Config.DOUBLE4:
-                number = BitUtils.getDouble4(inputable);
-                if (type == double.class || type == Double.class) {
-                    return (T) number;
-                }
-                break;
-            case Config.DOUBLE6:
-                number = BitUtils.getDouble6(inputable);
-                if (type == double.class || type == Double.class) {
-                    return (T) number;
-                }
-                break;
-            case Config.DOUBLE8:
+            case Config.DOUBLE:
                 number = BitUtils.getDouble(inputable);
                 if (type == double.class || type == Double.class) {
                     return (T) number;
                 }
                 break;
-
         }
 
         if (type == null || type == Number.class) {

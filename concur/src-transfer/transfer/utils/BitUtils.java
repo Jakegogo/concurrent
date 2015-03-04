@@ -113,9 +113,32 @@ public class BitUtils {
      * @param inputable
      * @return
      */
+    public static long getLong1(final Inputable inputable) {
+        return ((long) inputable.getByte() & 0xff);
+    }
+
+    /**
+     * 读取长整型
+     * @param inputable
+     * @return
+     */
     public static long getLong2(final Inputable inputable) {
         return (((long) inputable.getByte() & 0xff) <<  8) |
                 (((long) inputable.getByte() & 0xff) <<  0);
+    }
+
+
+    /**
+     * 读取长整型
+     * @param inputable
+     * @return
+     */
+    public static long getLong3(final Inputable inputable) {
+        byte[] longBytes = new byte[3];
+        inputable.getBytes(longBytes);
+        return ((((long) longBytes[0] & 0xff) << 16) |
+                (((long) longBytes[1] & 0xff) <<  8) |
+                (((long) longBytes[2] & 0xff) <<  0));
     }
 
 
@@ -139,6 +162,22 @@ public class BitUtils {
      * @param inputable
      * @return
      */
+    public static long getLong5(final Inputable inputable) {
+        byte[] longBytes = new byte[5];
+        inputable.getBytes(longBytes);
+        return ((((long) longBytes[0] & 0xff) << 32) |
+                (((long) longBytes[1] & 0xff) << 24) |
+                (((long) longBytes[2] & 0xff) << 16) |
+                (((long) longBytes[3] & 0xff) <<  8) |
+                (((long) longBytes[4] & 0xff) <<  0));
+    }
+
+
+    /**
+     * 读取长整型
+     * @param inputable
+     * @return
+     */
     public static long getLong6(final Inputable inputable) {
         byte[] longBytes = new byte[6];
         inputable.getBytes(longBytes);
@@ -149,6 +188,25 @@ public class BitUtils {
                 (((long) longBytes[4] & 0xff) <<  8) |
                 (((long) longBytes[5] & 0xff) <<  0));
     }
+
+
+    /**
+     * 读取长整型
+     * @param inputable
+     * @return
+     */
+    public static long getLong7(final Inputable inputable) {
+        byte[] longBytes = new byte[7];
+        inputable.getBytes(longBytes);
+        return ((((long) longBytes[0] & 0xff) << 48) |
+                (((long) longBytes[1] & 0xff) << 40) |
+                (((long) longBytes[2] & 0xff) << 32) |
+                (((long) longBytes[3] & 0xff) << 24) |
+                (((long) longBytes[4] & 0xff) << 16) |
+                (((long) longBytes[5] & 0xff) <<  8) |
+                (((long) longBytes[6] & 0xff) <<  0));
+    }
+
 
 
     /**
@@ -171,33 +229,6 @@ public class BitUtils {
         return Float.intBitsToFloat(getInt(inputable));
     }
 
-    /**
-     * 读取浮点型数据
-     * @param inputable
-     * @return
-     */
-    public static float getFloat1(final Inputable inputable) {
-        return Float.intBitsToFloat(getInt1(inputable));
-    }
-
-    /**
-     * 读取浮点型数据
-     * @param inputable
-     * @return
-     */
-    public static float getFloat2(final Inputable inputable) {
-        return Float.intBitsToFloat(getInt2(inputable));
-    }
-
-    /**
-     * 读取浮点型数据
-     * @param inputable
-     * @return
-     */
-    public static float getFloat3(final Inputable inputable) {
-        return Float.intBitsToFloat(getInt3(inputable));
-    }
-
 
     /**
      * 浮点型转换成字节
@@ -216,36 +247,6 @@ public class BitUtils {
      */
     public static double getDouble(final Inputable inputable) {
         return Double.longBitsToDouble(getLong(inputable));
-    }
-
-
-    /**
-     * 读取Double类型数据
-     * @param inputable
-     * @return
-     */
-    public static double getDouble2(final Inputable inputable) {
-        return Double.longBitsToDouble(getLong2(inputable));
-    }
-
-
-    /**
-     * 读取Double类型数据
-     * @param inputable
-     * @return
-     */
-    public static double getDouble4(final Inputable inputable) {
-        return Double.longBitsToDouble(getLong4(inputable));
-    }
-
-
-    /**
-     * 读取Double类型数据
-     * @param inputable
-     * @return
-     */
-    public static double getDouble6(final Inputable inputable) {
-        return Double.longBitsToDouble(getLong6(inputable));
     }
 
 

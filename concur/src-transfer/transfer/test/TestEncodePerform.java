@@ -32,7 +32,7 @@ public class TestEncodePerform {
 
         t1 = System.currentTimeMillis();
         for (int i = 0; i < 10000000;i++) {
-            JsonUtils.object2JsonString(entity);
+            JsonUtils.object2Bytes(entity);
         }
 
         System.out.println(System.currentTimeMillis() - t1);
