@@ -33,10 +33,41 @@ public class CollectionDeSerializer implements Deserializer {
 
         Collection list = createCollection(type);
 
-        Object[] array = (Object[]) ArrayDeSerializer.getInstance().deserialze(inputable, type, (byte) (Types.ARRAY | Config.getExtra(flag)), referenceMap);
+        // 读取集合的大小
+        int size = BitUtils.getInt(inputable);
+        if (size == 0) {
+            return (T) list;
+        }
 
-        for(Object element : array) {
-            list.add(element);
+
+        Type itemType = null;
+        if (type instanceof ParameterizedType) {
+            itemType = TypeUtils.getParameterizedType((ParameterizedType) type, 0);
+        } else if (type instanceof Class<?> && ((Class<?>)type).isArray()) {
+            itemType = ((Class<?>)type).getComponentType();
+        }
+
+
+        Deserializer defaultComponentDeserializer = null;
+        if (itemType != null && itemType != Object.class) {
+            defaultComponentDeserializer = Config.getDeserializer(itemType);// 元素解析器
+        }
+
+
+        // 循环解析元素
+        Object component;
+        if (defaultComponentDeserializer == null) {
+            for (int i = 0; i < size;i++) {
+                byte elementFlag = inputable.getByte();
+                Deserializer componentDeserializer = Config.getDeserializer(itemType, elementFlag);// 元素解析器
+                component =  componentDeserializer.deserialze(inputable, itemType, elementFlag, referenceMap);
+                list.add(component);
+            }
+        } else {
+            for (int i = 0; i < size;i++) {
+                component = defaultComponentDeserializer.deserialze(inputable, itemType, inputable.getByte(), referenceMap);
+                list.add(component);
+            }
         }
 
         return (T) list;

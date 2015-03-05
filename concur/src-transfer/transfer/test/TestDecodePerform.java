@@ -24,13 +24,7 @@ public class TestDecodePerform {
 
         byte[] bytes = byteArray.toBytes();
 
-        long t1 = System.currentTimeMillis();
-
-        for (int i = 0; i < 5000000;i++) {
-            Entity entity1 = Transfer.decode(bytes, Entity.class);
-        }
-
-        System.out.println(System.currentTimeMillis() - t1);
+        long t1 = 0l;
 
 
         String jsonString = JsonUtils.object2JsonString(entity);
@@ -38,8 +32,17 @@ public class TestDecodePerform {
         for (int i = 0; i < 5000000;i++) {
             Entity entity1 = JsonUtils.jsonString2Object(jsonString, Entity.class);
         }
-
         System.out.println(System.currentTimeMillis() - t1);
+
+
+        t1 = System.currentTimeMillis();
+        for (int i = 0; i < 5000000;i++) {
+            Entity entity1 = Transfer.decode(bytes, Entity.class);
+        }
+        System.out.println(System.currentTimeMillis() - t1);
+
+
+
 
 
     }

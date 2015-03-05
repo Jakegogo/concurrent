@@ -48,25 +48,26 @@ public class ArrayDeSerializer implements Deserializer {
         Object[] array = (Object[]) Array.newInstance(TypeUtils.getRawClass(itemType), size);
 
 
-        final Deserializer defaultComponentDeserializer;
+        Deserializer defaultComponentDeserializer = null;
         if (itemType != null && itemType != Object.class) {
             defaultComponentDeserializer = Config.getDeserializer(itemType);// 元素解析器
-        } else {
-            defaultComponentDeserializer = null;
         }
 
 
         // 循环解析元素
-        for (int i = 0; i < size;i++) {
-
-            if (defaultComponentDeserializer == null) {
-                final byte elementFlag = inputable.getByte();
-                final Deserializer componentDeserializer = Config.getDeserializer(itemType, elementFlag);// 元素解析器
-                array[i] =  componentDeserializer.deserialze(inputable, itemType, elementFlag, referenceMap);
-            } else {
-                array[i] =  defaultComponentDeserializer.deserialze(inputable, itemType, inputable.getByte(), referenceMap);
+        Object component;
+        if (defaultComponentDeserializer == null) {
+            for (int i = 0; i < size;i++) {
+                byte elementFlag = inputable.getByte();
+                Deserializer componentDeserializer = Config.getDeserializer(itemType, elementFlag);// 元素解析器
+                component =  componentDeserializer.deserialze(inputable, itemType, elementFlag, referenceMap);
+                array[i] = component;
             }
-
+        } else {
+            for (int i = 0; i < size;i++) {
+                component = defaultComponentDeserializer.deserialze(inputable, itemType, inputable.getByte(), referenceMap);
+                array[i] = component;
+            }
         }
 
         return (T) array;

@@ -9,7 +9,7 @@ import transfer.utils.IdentityHashMap;
 import java.math.BigDecimal;
 
 /**
- * 浮点输编码器
+ * 浮点数编码器
  * Created by Jake on 2015/2/26.
  */
 public class DecimalSerializer implements Serializer {

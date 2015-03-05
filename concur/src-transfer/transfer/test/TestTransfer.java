@@ -16,7 +16,7 @@ public class TestTransfer {
 
         Entity entity = new Entity();
         entity.setId(System.currentTimeMillis());
-        entity.setUid(101);
+        entity.setUid(-101);
         entity.setFval(2.34f);
         entity.setStatus(AcountStatus.OPEN);
         entity.setDate(new Date());
