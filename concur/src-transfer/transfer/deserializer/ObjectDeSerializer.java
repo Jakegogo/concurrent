@@ -32,7 +32,7 @@ public class ObjectDeSerializer implements Deserializer {
         }
 
         // 读取对象类型
-        int classId = BitUtils.getInt(inputable);
+        int classId = BitUtils.getInt2(inputable);
 
         Class<?> rawClass;
 

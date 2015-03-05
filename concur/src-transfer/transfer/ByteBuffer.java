@@ -38,6 +38,13 @@ public class ByteBuffer implements Outputable {
         offset += bytes.length;
     }
 
+    @Override
+    public void putBytes(byte[] bytes, int start, int length) {
+        this.curByteArray.checkBounds(length, this)
+                .putBytes(bytes, start, length);
+        offset += length;
+    }
+
 
     @Override
     public void putByte(byte... bytes) {
@@ -133,6 +140,11 @@ public class ByteBuffer implements Outputable {
         public void putBytes(byte[] bytes) {
             System.arraycopy(bytes, 0, this.byteArray, offset, bytes.length);
             offset += bytes.length;
+        }
+
+        public void putBytes(byte[] bytes, int start, int len) {
+            System.arraycopy(bytes, start, this.byteArray, offset, len);
+            offset += len;
         }
 
         private ByteArr checkBounds(int expandLength, ByteBuffer byteBuffer) {

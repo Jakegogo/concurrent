@@ -90,6 +90,16 @@ public class BitUtils {
 
 
     /**
+     * 整数转换成字节
+     * @param outputable
+     * @param intVal
+     */
+    public static void putInt2(final Outputable outputable, final int intVal) {
+        outputable.putByte((byte)(intVal >> 8), (byte)(intVal >> 0));
+    }
+
+
+    /**
      * 读取长整型
      * @param inputable
      * @return
@@ -105,55 +115,6 @@ public class BitUtils {
                 (((long) longBytes[5] & 0xff) << 16) |
                 (((long) longBytes[6] & 0xff) <<  8) |
                 (((long) longBytes[7] & 0xff) <<  0));
-    }
-
-
-    /**
-     * 读取长整型
-     * @param inputable
-     * @return
-     */
-    public static long getLong1(final Inputable inputable) {
-        return ((long) inputable.getByte() & 0xff);
-    }
-
-    /**
-     * 读取长整型
-     * @param inputable
-     * @return
-     */
-    public static long getLong2(final Inputable inputable) {
-        return (((long) inputable.getByte() & 0xff) <<  8) |
-                (((long) inputable.getByte() & 0xff) <<  0);
-    }
-
-
-    /**
-     * 读取长整型
-     * @param inputable
-     * @return
-     */
-    public static long getLong3(final Inputable inputable) {
-        byte[] longBytes = new byte[3];
-        inputable.getBytes(longBytes);
-        return ((((long) longBytes[0] & 0xff) << 16) |
-                (((long) longBytes[1] & 0xff) <<  8) |
-                (((long) longBytes[2] & 0xff) <<  0));
-    }
-
-
-    /**
-     * 读取长整型
-     * @param inputable
-     * @return
-     */
-    public static long getLong4(final Inputable inputable) {
-        byte[] longBytes = new byte[4];
-        inputable.getBytes(longBytes);
-        return ((((long) longBytes[0] & 0xff) << 24) |
-                (((long) longBytes[1] & 0xff) << 16) |
-                (((long) longBytes[2] & 0xff) <<  8) |
-                (((long) longBytes[3] & 0xff) <<  0));
     }
 
 

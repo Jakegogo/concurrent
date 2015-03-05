@@ -22,8 +22,9 @@ public interface Types {
 	byte ENUM = (byte) 0x50;
 	// 0100 #### (64 - (byte)0x40)
 	// 0011 #### (48 - (byte)0x30),
-	// 0010 #### (32 - (byte)0x20),
-	byte BOOLEAN = (byte) 0x20;
+	byte BOOLEAN = (byte) 0x30;
+	// 0010 #### (32 - (byte)0x32),
+	byte DECIMAL = (byte) 0x20;
 	// 0001 #### (16 - (byte)0x10),
 	byte NUMBER = (byte) 0x10;
 	// 0000 0001 (1 - (byte)0x01)

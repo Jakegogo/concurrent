@@ -3,7 +3,6 @@ package transfer.serializer;
 import transfer.Outputable;
 import transfer.def.Config;
 import transfer.def.Types;
-import transfer.utils.BitUtils;
 import transfer.utils.IdentityHashMap;
 
 import java.math.BigDecimal;
@@ -19,6 +18,12 @@ public class NumberSerializer implements Serializer {
 
     // 1000 0000
     public static final int FLAG_0X80 = 0x80;
+
+    // 0000 1000
+    public static final byte FLAG_NEGATIVE = (byte) 0x08;
+
+    // 0000 0000
+    public static final byte FLAG_NOT_NEGATIVE = (byte) 0x00;
 
     @Override
     public void serialze(Outputable outputable, Object object, IdentityHashMap referenceMap) {
@@ -43,15 +48,10 @@ public class NumberSerializer implements Serializer {
 
             this.putLongVal(outputable, number);
 
-        } else if(object instanceof Float) {
-
-            this.putFloatVal(outputable, number);
-
-        } else if(object instanceof Double
+        } else if (object instanceof Float || object instanceof Double
                 || object instanceof BigDecimal) {
 
-            this.putDoubleVal(outputable, number);
-
+            DecimalSerializer.getInstance().serialze(outputable, object, referenceMap);
         }
 
     }
@@ -60,64 +60,60 @@ public class NumberSerializer implements Serializer {
     private void putIntVal(Outputable outputable, Number number) {
 
         int value = number.intValue();
-        if (value < FLAG_0X80) {
-            outputable.putByte((byte) (Types.NUMBER | Config.INT321), (byte) value);
-        } else if ((value >>> 24) > 0) {
-            outputable.putByte((byte) (Types.NUMBER | Config.INT324), (byte)(value >> 24), (byte)(value >> 16), (byte)(value >> 8), (byte)(value >> 0));
-        } else if((value >>> 16) > 0) {
-            outputable.putByte((byte) (Types.NUMBER | Config.INT323), (byte)(value >> 16), (byte)(value >> 8), (byte)(value >> 0));
-        } else if((value >>> 8) > 0) {
-            outputable.putByte((byte) (Types.NUMBER | Config.INT322), (byte)(value >> 8), (byte)(value >> 0));
-        } else {
-            outputable.putByte((byte) (Types.NUMBER | Config.INT321), (byte)(value >> 0));
+
+        byte sign = FLAG_NOT_NEGATIVE;
+        if (value < 0) {
+            value = -value;
+            sign = FLAG_NEGATIVE;
         }
 
-    }
+        if (value < FLAG_0X80) {
+
+            outputable.putByte((byte) (Types.NUMBER | sign | Config.INT1), (byte) value);
+        } else {
+
+            byte[] bytes = new byte[4];
+
+            int i = 4;
+            while (value > 0) {
+                bytes[--i] = (byte) value;
+                value >>= 8;
+            }
+
+            outputable.putByte((byte) (Types.NUMBER | sign | (3 - i)));
+            outputable.putBytes(bytes, i, 4 - i);
+        }
+
+   }
 
 
     private void putLongVal(Outputable outputable, Number number) {
 
         long value = number.longValue();
-        if (value < FLAG_0X80) {
-            outputable.putByte((byte) (Types.NUMBER | Config.INT641), (byte)(value >> 0));
-        } else if(value <= Integer.MAX_VALUE) {
-            if ((value >>> 24) > 0) {
-                outputable.putByte((byte) (Types.NUMBER | Config.INT644), (byte)(value >> 24), (byte)(value >> 16), (byte)(value >> 8), (byte)(value >> 0));
-            } else if ((value >>> 16) > 0) {
-                outputable.putByte((byte) (Types.NUMBER | Config.INT643), (byte)(value >> 16), (byte)(value >> 8), (byte)(value >> 0));
-            } else if ((value >>> 8) > 0) {
-                outputable.putByte((byte) (Types.NUMBER | Config.INT642), (byte)(value >> 8), (byte)(value >> 0));
-            } else {
-                outputable.putByte((byte) (Types.NUMBER | Config.INT641), (byte)(value >> 0));
-            }
-        } else if(value <= 0x00FFFFFFFFFFFFFFL) {
-            if ((value >>> 56) > 0) {
-                outputable.putByte((byte) (Types.NUMBER | Config.INT648), (byte)(value >> 56), (byte)(value >> 48), (byte)(value >> 40), (byte)(value >> 32),
-                        (byte)(value >> 24), (byte)(value >> 16), (byte)(value >> 8), (byte)(value >> 0));
-            } else if ((value >>> 48) > 0) {
-                outputable.putByte((byte) (Types.NUMBER | Config.INT647), (byte)(value >> 48), (byte)(value >> 40), (byte)(value >> 32),
-                        (byte)(value >> 24), (byte)(value >> 16), (byte)(value >> 8), (byte)(value >> 0));
-            } else if ((value >>> 40) > 0) {
-                outputable.putByte((byte) (Types.NUMBER | Config.INT646), (byte)(value >> 40), (byte)(value >> 32),
-                        (byte)(value >> 24), (byte)(value >> 16), (byte)(value >> 8), (byte)(value >> 0));
-            } else {
-                outputable.putByte((byte) (Types.NUMBER | Config.INT645), (byte)(value >> 32),
-                        (byte)(value >> 24), (byte)(value >> 16), (byte)(value >> 8), (byte)(value >> 0));
-            }
+
+        byte sign = FLAG_NOT_NEGATIVE;
+        if (value < 0) {
+            value = -value;
+            sign = FLAG_NEGATIVE;
         }
 
-    }
+        if (value < FLAG_0X80) {
 
+            outputable.putByte((byte) (Types.NUMBER | sign | Config.INT1), (byte) value);
+        } else {
 
-    private void putFloatVal(Outputable outputable, Number number) {
-        outputable.putByte((byte) (Types.NUMBER | Config.FLOAT));
-        BitUtils.putInt(outputable, Float.floatToRawIntBits(number.floatValue()));
-    }
+            byte[] bytes = new byte[8];
 
+            int i = 8;
+            while (value > 0) {
+                bytes[--i] = (byte) value;
+                value >>= 8;
+            }
 
-    private void putDoubleVal(Outputable outputable, Number number) {
-        outputable.putByte((byte) (Types.NUMBER | Config.DOUBLE));
-        BitUtils.putLong(outputable, Double.doubleToRawLongBits(number.doubleValue()));
+            outputable.putByte((byte) (Types.NUMBER | sign | (7 - i)));
+            outputable.putBytes(bytes, i, 8 - i);
+        }
+
     }
 
 

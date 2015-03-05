@@ -30,7 +30,7 @@ public class ObjectSerializer implements Serializer {
 
         outputable.putByte(Types.OBJECT);
 
-        BitUtils.putInt(outputable, classInfo.getClassId());
+        BitUtils.putInt2(outputable, classInfo.getClassId());
 
         for (FieldInfo fieldInfo : classInfo.getFieldInfos()) {
 

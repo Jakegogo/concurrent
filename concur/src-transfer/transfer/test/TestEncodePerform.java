@@ -34,7 +34,7 @@ public class TestEncodePerform {
         System.out.println(JsonUtils.object2JsonString(entity).getBytes().length);
         t1 = System.currentTimeMillis();
         for (int i = 0; i < 10000000;i++) {
-            JsonUtils.object2JsonString(entity).getBytes();
+            JsonUtils.object2JsonString(entity);
         }
 
         System.out.println(System.currentTimeMillis() - t1);

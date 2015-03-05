@@ -62,22 +62,18 @@ public class Config {
 
 
     // Number类型标记
-    public static final byte INT321 = 0x00;// int 1字节
-    public static final byte INT322 = 0x01;// int 2字节
-    public static final byte INT323 = 0x02;// int 3字节
-    public static final byte INT324 = 0x03;// int 4字节
+    public static final byte INT1 = 0x00;// int 1字节
+    public static final byte INT2 = 0x01;// int 2字节
+    public static final byte INT3 = 0x02;// int 3字节
+    public static final byte INT4 = 0x03;// int 4字节
+    public static final byte INT5 = 0x04;// long 5字节
+    public static final byte INT6 = 0x05;// long 6字节
+    public static final byte INT7 = 0x06;// long 7字节
+    public static final byte INT8 = 0x07;// long 8字节
 
-    public static final byte INT641 = 0x04;// long 2字节
-    public static final byte INT642 = 0x05;// long 4字节
-    public static final byte INT643 = 0x06;// long 6字节
-    public static final byte INT644 = 0x07;// long 8字节
-    public static final byte INT645 = 0x08;// long 2字节
-    public static final byte INT646 = 0x09;// long 4字节
-    public static final byte INT647 = 0x0A;// long 6字节
-    public static final byte INT648 = 0x0B;// long 8字节
-
-    public static final byte FLOAT = 0x0C;// float 4字节
-    public static final byte DOUBLE = 0x0D;// double 8字节
+    // Decimal类型标记
+    public static final byte FLOAT = 0x00;// float 4字节
+    public static final byte DOUBLE = 0x01;// double 8字节
 
 
     /**
@@ -484,6 +480,7 @@ public class Config {
         deserializers.put(Types.MAP, MapDeSerializer.getInstance());
         deserializers.put(Types.NULL, NullDeserializer.getInstance());
         deserializers.put(Types.NUMBER, NumberDeserializer.getInstance());
+        deserializers.put(Types.DECIMAL, DecimalDeserializer.getInstance());
         deserializers.put(Types.STRING, StringDeserializer.getInstance());
         deserializers.put(Types.BOOLEAN, BooleanDeserializer.getInstance());
         deserializers.put(Types.ENUM, EnumDeserializer.getInstance());
@@ -515,10 +512,10 @@ public class Config {
         typedDeserializers.put(Long.class, NumberDeserializer.getInstance());
         typedDeserializers.put(BigInteger.class, NumberDeserializer.getInstance());
         typedDeserializers.put(BigDecimal.class, NumberDeserializer.getInstance());
-        typedDeserializers.put(float.class, NumberDeserializer.getInstance());
-        typedDeserializers.put(Float.class, NumberDeserializer.getInstance());
-        typedDeserializers.put(double.class, NumberDeserializer.getInstance());
-        typedDeserializers.put(Double.class, NumberDeserializer.getInstance());
+        typedDeserializers.put(float.class, DecimalDeserializer.getInstance());
+        typedDeserializers.put(Float.class, DecimalDeserializer.getInstance());
+        typedDeserializers.put(double.class, DecimalDeserializer.getInstance());
+        typedDeserializers.put(Double.class, DecimalDeserializer.getInstance());
         typedDeserializers.put(AtomicInteger.class, NumberDeserializer.getInstance());
         typedDeserializers.put(AtomicLong.class, NumberDeserializer.getInstance());
         typedDeserializers.put(String.class, StringDeserializer.getInstance());
@@ -552,10 +549,10 @@ public class Config {
         serializers.put(Long.class, NumberSerializer.getInstance());
         serializers.put(BigInteger.class, NumberSerializer.getInstance());
         serializers.put(BigDecimal.class, NumberSerializer.getInstance());
-        serializers.put(float.class, NumberSerializer.getInstance());
-        serializers.put(Float.class, NumberSerializer.getInstance());
-        serializers.put(double.class, NumberSerializer.getInstance());
-        serializers.put(Double.class, NumberSerializer.getInstance());
+        serializers.put(float.class, DecimalSerializer.getInstance());
+        serializers.put(Float.class, DecimalSerializer.getInstance());
+        serializers.put(double.class, DecimalSerializer.getInstance());
+        serializers.put(Double.class, DecimalSerializer.getInstance());
         serializers.put(AtomicInteger.class, NumberSerializer.getInstance());
         serializers.put(AtomicLong.class, NumberSerializer.getInstance());
         serializers.put(String.class, StringSerializer.getInstance());

@@ -28,11 +28,11 @@ public class EnumSerializer implements Serializer {
 
         EnumInfo enumInfo = (EnumInfo) Config.getOrCreateClassInfo(enumVal.getDeclaringClass());
 
-        BitUtils.putInt(outputable, enumInfo.getClassId());
+        BitUtils.putInt2(outputable, enumInfo.getClassId());
 
         int enumIndex = enumInfo.toInt(enumVal);
 
-        BitUtils.putInt(outputable, enumIndex);
+        BitUtils.putInt2(outputable, enumIndex);
     }
 
 

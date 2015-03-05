@@ -15,6 +15,7 @@ public class TestTransfer {
 //        Config.registerClass(Entity.class, 1);
 
         Entity entity = new Entity();
+        entity.setId(System.currentTimeMillis());
         entity.setUid(101);
         entity.setFval(2.34f);
         entity.setStatus(AcountStatus.OPEN);
@@ -34,6 +35,7 @@ public class TestTransfer {
 
         Entity entity1 = Transfer.decode(bytes, Entity.class);
         System.out.println(entity1);
+        System.out.println(entity1.getId());
         System.out.println(entity1.getUid());
         System.out.println(entity1.getFriends());
         System.out.println(entity1.getStatus());

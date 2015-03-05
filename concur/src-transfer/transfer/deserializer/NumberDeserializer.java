@@ -18,6 +18,12 @@ import java.util.concurrent.atomic.AtomicLong;
  */
 public class NumberDeserializer implements Deserializer {
 
+    // 0000 0111 数字类型
+    public static final byte NUMBER_MASK = (byte) 0x07;
+
+    // 0000 1000
+    public static final byte FLAG_NEGATIVE = (byte) 0x08;
+
 
     @Override
     public <T> T deserialze(Inputable inputable, Type type, byte flag, IntegerMap referenceMap) {
@@ -29,90 +35,58 @@ public class NumberDeserializer implements Deserializer {
         }
 
         byte extraFlag = Config.getExtra(flag);
+        // 符号
+        int sign = (extraFlag & FLAG_NEGATIVE) > 0 ? -1 : 1;
+
+        byte len = (byte) (extraFlag & NUMBER_MASK);
 
         Number number = null;
-        switch (extraFlag) {
-            case Config.INT321:
-                number = BitUtils.getInt1(inputable);
+        switch (len) {
+            case Config.INT1:
+                number = BitUtils.getInt1(inputable) * sign;
                 if (type == int.class || type == Integer.class) {
                     return (T) number;
                 }
                 break;
-            case Config.INT322:
-                number = BitUtils.getInt2(inputable);
+            case Config.INT2:
+                number = BitUtils.getInt2(inputable) * sign;
                 if (type == int.class || type == Integer.class) {
                     return (T) number;
                 }
                 break;
-            case Config.INT323:
-                number = BitUtils.getInt3(inputable);
+            case Config.INT3:
+                number = BitUtils.getInt3(inputable) * sign;
                 if (type == int.class || type == Integer.class) {
                     return (T) number;
                 }
                 break;
-            case Config.INT324:
-                number = BitUtils.getInt(inputable);
+            case Config.INT4:
+                number = BitUtils.getInt(inputable) * sign;
                 if (type == int.class || type == Integer.class) {
                     return (T) number;
                 }
                 break;
-            case Config.INT641:
-                number = BitUtils.getLong1(inputable);
+            case Config.INT5:
+                number = BitUtils.getLong5(inputable) * sign;
                 if (type == long.class || type == Long.class) {
                     return (T) number;
                 }
                 break;
-            case Config.INT642:
-                number = BitUtils.getLong2(inputable);
+            case Config.INT6:
+                number = BitUtils.getLong6(inputable) * sign;
                 if (type == long.class || type == Long.class) {
                     return (T) number;
                 }
                 break;
-            case Config.INT643:
-                number = BitUtils.getLong3(inputable);
+            case Config.INT7:
+                number = BitUtils.getLong7(inputable) * sign;
                 if (type == long.class || type == Long.class) {
                     return (T) number;
                 }
                 break;
-            case Config.INT644:
-                number = BitUtils.getLong4(inputable);
+            case Config.INT8:
+                number = BitUtils.getLong(inputable) * sign;
                 if (type == long.class || type == Long.class) {
-                    return (T) number;
-                }
-                break;
-            case Config.INT645:
-                number = BitUtils.getLong5(inputable);
-                if (type == long.class || type == Long.class) {
-                    return (T) number;
-                }
-                break;
-            case Config.INT646:
-                number = BitUtils.getLong6(inputable);
-                if (type == long.class || type == Long.class) {
-                    return (T) number;
-                }
-                break;
-            case Config.INT647:
-                number = BitUtils.getLong7(inputable);
-                if (type == long.class || type == Long.class) {
-                    return (T) number;
-                }
-                break;
-            case Config.INT648:
-                number = BitUtils.getLong(inputable);
-                if (type == long.class || type == Long.class) {
-                    return (T) number;
-                }
-                break;
-            case Config.FLOAT:
-                number = BitUtils.getFloat(inputable);
-                if (type == float.class || type == Float.class) {
-                    return (T) number;
-                }
-                break;
-            case Config.DOUBLE:
-                number = BitUtils.getDouble(inputable);
-                if (type == double.class || type == Double.class) {
                     return (T) number;
                 }
                 break;
@@ -128,14 +102,14 @@ public class NumberDeserializer implements Deserializer {
             return (T) Integer.valueOf(number.intValue());
         } else if (type == long.class || type == Long.class) {
             return (T) Long.valueOf(number.longValue());
+        } else  if (type == boolean.class || type == Boolean.class) {
+            return (T) Boolean.valueOf(number.intValue() == 1);
         } else if (type == float.class || type == Float.class) {
             return (T) Float.valueOf(number.floatValue());
         } else if (type == double.class || type == Double.class) {
             return (T) Double.valueOf(number.doubleValue());
         } else if (type == byte.class || type == Byte.class) {
             return (T) TypeUtils.castToByte(number);
-        } else if (type == boolean.class || type == Boolean.class) {
-            return (T) Boolean.valueOf(number.intValue() == 1);
         } else if (type == AtomicInteger.class) {
             return (T) new AtomicInteger(number.intValue());
         } else if (type == AtomicLong.class) {
