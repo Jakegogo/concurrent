@@ -21,26 +21,14 @@ public class TestIterator {
 
         List<Entity> list = new ArrayList<Entity>();
 
-        Entity entity = new Entity();
-        entity.setUid(101);
-        entity.getFriends().add(1l);
-        entity.getFriends().add(2l);
-        entity.getFriends().add(3l);
-        list.add(entity);
-
-        Entity entity1 = new Entity();
-        entity1.setUid(102);
-        entity1.getFriends().add(1l);
-        entity1.getFriends().add(2l);
-        entity1.getFriends().add(3l);
-        list.add(entity1);
-
-        Entity entity2 = new Entity();
-        entity2.setUid(103);
-        entity2.getFriends().add(1l);
-        entity2.getFriends().add(2l);
-        entity2.getFriends().add(3l);
-        list.add(entity2);
+        for (int i = 0; i < 1000;i++) {
+	        Entity entity = new Entity();
+	        entity.setUid(101 + i);
+	        entity.getFriends().add(1l);
+	        entity.getFriends().add(2l);
+	        entity.getFriends().add(3l);
+	        list.add(entity);
+        }
 
         long t1 = System.currentTimeMillis();
 
