@@ -32,9 +32,9 @@ public class ByteArrayWrappDeSerializer implements Deserializer {
     }
 
 
-    private static ByteArrayDeSerializer instance = new ByteArrayDeSerializer();
+    private static ByteArrayWrappDeSerializer instance = new ByteArrayWrappDeSerializer();
 
-    public static ByteArrayDeSerializer getInstance() {
+    public static ByteArrayWrappDeSerializer getInstance() {
         return instance;
     }
 

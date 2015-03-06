@@ -18,7 +18,8 @@ public class TestPrimitive {
         
         System.out.println(dVal);
         
-        System.out.println(Float.floatToRawIntBits(1.5f));
+        System.out.println(Float.floatToRawIntBits(1.23f));
+        
 	}
 	
 	
