@@ -3,7 +3,7 @@ package transfer.deserializer;
 import org.apache.mina.util.ConcurrentHashSet;
 import transfer.Inputable;
 import transfer.core.ByteDataMeta;
-import transfer.def.Config;
+import transfer.def.TransferConfig;
 import transfer.def.Types;
 import transfer.exception.IllegalTypeException;
 import transfer.utils.BitUtils;
@@ -25,7 +25,7 @@ public class CollectionDeSerializer implements Deserializer {
     @Override
     public <T> T deserialze(Inputable inputable, Type type, byte flag, IntegerMap referenceMap) {
 
-        byte typeFlag = Config.getType(flag);
+        byte typeFlag = TransferConfig.getType(flag);
 
         if (typeFlag != Types.COLLECTION && typeFlag != Types.ARRAY) {
             throw new IllegalTypeException(typeFlag, Types.COLLECTION, type);
@@ -50,7 +50,7 @@ public class CollectionDeSerializer implements Deserializer {
 
         Deserializer defaultComponentDeserializer = null;
         if (itemType != null && itemType != Object.class) {
-            defaultComponentDeserializer = Config.getDeserializer(itemType);// 元素解析器
+            defaultComponentDeserializer = TransferConfig.getDeserializer(itemType);// 元素解析器
         }
 
 
@@ -59,7 +59,7 @@ public class CollectionDeSerializer implements Deserializer {
         if (defaultComponentDeserializer == null) {
             for (int i = 0; i < size;i++) {
                 byte elementFlag = inputable.getByte();
-                Deserializer componentDeserializer = Config.getDeserializer(itemType, elementFlag);// 元素解析器
+                Deserializer componentDeserializer = TransferConfig.getDeserializer(itemType, elementFlag);// 元素解析器
                 component =  componentDeserializer.deserialze(inputable, itemType, elementFlag, referenceMap);
                 list.add(component);
             }
@@ -121,7 +121,7 @@ public class CollectionDeSerializer implements Deserializer {
 
     public ByteDataMeta readMeta(Inputable inputable) {
         byte flag = inputable.getByte();
-        byte type = Config.getType(flag);
+        byte type = TransferConfig.getType(flag);
 
         if (type != Types.COLLECTION && type != Types.ARRAY) {
             throw new IllegalTypeException(type, Types.COLLECTION, null);

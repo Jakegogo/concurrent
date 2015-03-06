@@ -1,7 +1,6 @@
 package transfer.serializer;
 
 import transfer.Outputable;
-import transfer.def.Config;
 import transfer.def.Types;
 import transfer.utils.BitUtils;
 import transfer.utils.IdentityHashMap;
@@ -19,7 +18,7 @@ public class DateSerializer implements Serializer {
     public void serialze(Outputable outputable, Object object, IdentityHashMap referenceMap) {
 
         if (object == null) {
-            Config.NULL_SERIALIZER.serialze(outputable, object, referenceMap);
+            NULL_SERIALIZER.serialze(outputable, object, referenceMap);
             return;
         }
 

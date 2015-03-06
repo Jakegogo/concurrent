@@ -2,7 +2,7 @@ package transfer.deserializer;
 
 import transfer.Inputable;
 import transfer.core.ByteDataMeta;
-import transfer.def.Config;
+import transfer.def.TransferConfig;
 import transfer.def.Types;
 import transfer.exception.IllegalTypeException;
 import transfer.exception.UnsupportDeserializerTypeException;
@@ -27,7 +27,7 @@ public class MapDeSerializer implements Deserializer {
     @Override
     public <T> T deserialze(Inputable inputable, Type type, byte flag, IntegerMap referenceMap) {
 
-        byte typeFlag = Config.getType(flag);
+        byte typeFlag = TransferConfig.getType(flag);
 
         if (typeFlag != Types.MAP) {
             throw new IllegalTypeException(typeFlag, Types.MAP, type);
@@ -78,7 +78,7 @@ public class MapDeSerializer implements Deserializer {
 
 
     private Object parseElement(Inputable inputable, Type type, byte byteFlag, IntegerMap referenceMap) {
-        Deserializer elementDeserializer = Config.getDeserializer(type, byteFlag);
+        Deserializer elementDeserializer = TransferConfig.getDeserializer(type, byteFlag);
         return elementDeserializer.deserialze(inputable, type, byteFlag, referenceMap);
     }
 
@@ -139,7 +139,7 @@ public class MapDeSerializer implements Deserializer {
     public ByteDataMeta readMeta(Inputable inputable) {
 
         byte flag = inputable.getByte();
-        byte type = Config.getType(flag);
+        byte type = TransferConfig.getType(flag);
 
         if (type != Types.MAP || type != Types.MAP) {
             throw new IllegalTypeException(type, Types.MAP, null);

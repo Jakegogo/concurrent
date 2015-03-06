@@ -3,7 +3,7 @@ package transfer.deserializer;
 import transfer.Inputable;
 import transfer.core.ClassInfo;
 import transfer.core.FieldInfo;
-import transfer.def.TransferConfig;
+import transfer.def.PersistConfig;
 import transfer.def.Types;
 import transfer.exception.IllegalClassTypeException;
 import transfer.exception.IllegalTypeException;
@@ -15,17 +15,21 @@ import transfer.utils.TypeUtils;
 import java.lang.reflect.Type;
 
 /**
- * 对象解析器
+ * 带标签的对象解析器
  * Created by Jake on 2015/2/23.
  */
-public class ObjectDeSerializer implements Deserializer {
+public class TagObjectDeSerializer implements Deserializer {
 
+    /**
+     * 属性名解析器
+     */
+    private static final StringDeserializer STRING_DESERIALIZER = StringDeserializer.getInstance();
 
 
     @Override
     public <T> T deserialze(Inputable inputable, Type type, byte flag, IntegerMap referenceMap) {
 
-        byte typeFlag = TransferConfig.getType(flag);
+        byte typeFlag = PersistConfig.getType(flag);
 
         if (typeFlag != Types.OBJECT) {
             throw new IllegalTypeException(typeFlag, Types.OBJECT, type);
@@ -38,7 +42,7 @@ public class ObjectDeSerializer implements Deserializer {
 
         if (type == null || type == Object.class) {
 
-            rawClass = TransferConfig.getClass(classId);
+            rawClass = PersistConfig.getClass(classId);
         } else {
 
             rawClass = TypeUtils.getRawClass(type);
@@ -48,7 +52,7 @@ public class ObjectDeSerializer implements Deserializer {
             throw new UnsupportDeserializerTypeException(rawClass);
         }
 
-        ClassInfo classInfo = TransferConfig.getOrCreateClassInfo(rawClass);
+        ClassInfo classInfo = PersistConfig.getOrCreateClassInfo(rawClass);
 
         if (classInfo == null) {
             throw new UnsupportDeserializerTypeException(rawClass);
@@ -66,17 +70,30 @@ public class ObjectDeSerializer implements Deserializer {
         }
 
 
+
         Type fieldType;
+        String fieldName;
         Object fieldValue;
+        FieldInfo fieldInfo;
         Deserializer fieldDeserializer;
 
-        for (FieldInfo fieldInfo : classInfo.getFieldInfos()) {
+        // 读取属性数量
+        int fieldNum = BitUtils.getInt2(inputable);
+
+        for (int i = 0;i < fieldNum;i++) {
+
+            fieldName = STRING_DESERIALIZER.deserialze(inputable, String.class, inputable.getByte(), referenceMap);
+
+            fieldInfo = classInfo.getFieldInfo(fieldName);
+            if (fieldInfo == null) {// 略过不存在的属性
+                continue;
+            }
 
             byte fieldFlag = inputable.getByte();
 
             fieldType = fieldInfo.getType();
 
-            fieldDeserializer = TransferConfig.getDeserializer(fieldType, fieldFlag);
+            fieldDeserializer = PersistConfig.getDeserializer(fieldType, fieldFlag);
 
             fieldValue = fieldDeserializer.deserialze(inputable, fieldType, fieldFlag, referenceMap);
 
@@ -88,9 +105,9 @@ public class ObjectDeSerializer implements Deserializer {
     }
 
 
-    private static ObjectDeSerializer instance = new ObjectDeSerializer();
+    private static TagObjectDeSerializer instance = new TagObjectDeSerializer();
 
-    public static ObjectDeSerializer getInstance() {
+    public static TagObjectDeSerializer getInstance() {
         return instance;
     }
 

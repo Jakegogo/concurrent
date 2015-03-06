@@ -2,7 +2,7 @@ package transfer.test;
 
 import transfer.ByteArray;
 import transfer.Transfer;
-import transfer.def.Config;
+import transfer.def.TransferConfig;
 
 /**
  * Created by Administrator on 2015/2/26.
@@ -11,7 +11,7 @@ public class TestEncodeProfile {
 
     public static void main(String[] args) {
 
-        Config.registerClass(Entity.class, 1);
+        TransferConfig.registerClass(Entity.class, 1);
 
         Entity entity = new Entity();
         entity.setUid(101);

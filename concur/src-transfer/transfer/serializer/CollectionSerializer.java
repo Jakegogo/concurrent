@@ -1,7 +1,7 @@
 package transfer.serializer;
 
 import transfer.Outputable;
-import transfer.def.Config;
+import transfer.def.TransferConfig;
 import transfer.def.Types;
 import transfer.utils.BitUtils;
 import transfer.utils.IdentityHashMap;
@@ -19,7 +19,7 @@ public class CollectionSerializer implements Serializer {
     public void serialze(Outputable outputable, Object object, IdentityHashMap referenceMap) {
 
         if (object == null) {
-            Config.NULL_SERIALIZER.serialze(outputable, object, referenceMap);
+            NULL_SERIALIZER.serialze(outputable, object, referenceMap);
             return;
         }
 
@@ -32,7 +32,7 @@ public class CollectionSerializer implements Serializer {
 
         for (Object element : collection) {
 
-            Serializer elementSerializer = Config.getSerializer(element.getClass());
+            Serializer elementSerializer = TransferConfig.getSerializer(element.getClass());
 
             elementSerializer.serialze(outputable, element, referenceMap);
 

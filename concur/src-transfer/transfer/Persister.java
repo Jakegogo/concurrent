@@ -1,7 +1,7 @@
 package transfer;
 
 import transfer.core.ByteDataMeta;
-import transfer.def.TransferConfig;
+import transfer.def.PersistConfig;
 import transfer.def.Types;
 import transfer.deserializer.CollectionDeSerializer;
 import transfer.deserializer.Deserializer;
@@ -18,12 +18,12 @@ import java.util.Iterator;
 import java.util.Map;
 
 /**
- * 字节传输协议
- * <br/>定义传输类的属性按定义属性的先后顺序传输
- * <br/>定义传输类必须调用Config#registerClass(java.lang.Class<?>, int)进行注册, 或使用注解@Transferable
+ * 字节存储协议
+ * <br/>定义存储类的属性按定义属性的先后顺序存储
+ * <br/>定义存储类必须调用Config#registerClass(java.lang.Class<?>, int)进行注册, 或使用注解@Transferable
  * Created by Jake on 2015/2/22.
  */
-public class Transfer {
+public class Persister {
 
 
     // notes:
@@ -42,7 +42,7 @@ public class Transfer {
      */
     public static <T> T decode(Inputable inputable, Class<T> clazz) {
         byte flag = inputable.getByte();
-        Deserializer deserializer = TransferConfig.getDeserializer((Type) clazz, flag);
+        Deserializer deserializer = PersistConfig.getDeserializer((Type) clazz, flag);
         return deserializer.deserialze(inputable, clazz, flag, new IntegerMap(16));
     }
 
@@ -57,7 +57,7 @@ public class Transfer {
     public static <T> T decode(byte[] bytes, Class<T> clazz) {
         Inputable inputable = new ByteArray(bytes);
         byte flag = inputable.getByte();
-        Deserializer deserializer = TransferConfig.getDeserializer((Type) clazz, flag);
+        Deserializer deserializer = PersistConfig.getDeserializer((Type) clazz, flag);
         return deserializer.deserialze(inputable, clazz, flag, new IntegerMap(16));
     }
 
@@ -71,7 +71,7 @@ public class Transfer {
      */
     public static <T> T decode(Inputable inputable, TypeReference<T> typeReference) {
         byte flag = inputable.getByte();
-        Deserializer deserializer = TransferConfig.getDeserializer(typeReference.getType(), flag);
+        Deserializer deserializer = PersistConfig.getDeserializer(typeReference.getType(), flag);
         return deserializer.deserialze(inputable, typeReference.getType(), flag, new IntegerMap(16));
     }
 
@@ -87,7 +87,7 @@ public class Transfer {
     public static <T> T decode(byte[] bytes, TypeReference<T> typeReference) {
         Inputable inputable = new ByteArray(bytes);
         byte flag = inputable.getByte();
-        Deserializer deserializer = TransferConfig.getDeserializer(typeReference.getType(), flag);
+        Deserializer deserializer = PersistConfig.getDeserializer(typeReference.getType(), flag);
         return deserializer.deserialze(inputable, typeReference.getType(), flag, new IntegerMap(16));
     }
 
@@ -116,7 +116,7 @@ public class Transfer {
 
         final Deserializer defaultComponentDeserializer;
         if (componentType != null && componentType != Object.class) {
-            defaultComponentDeserializer = TransferConfig.getDeserializer(componentType);// 元素解析器
+            defaultComponentDeserializer = PersistConfig.getDeserializer(componentType);// 元素解析器
         } else {
             defaultComponentDeserializer = null;
         }
@@ -139,7 +139,7 @@ public class Transfer {
                 curIndex ++;
                 if (defaultComponentDeserializer == null) {
                     final byte elementFlag = inputable.getByte();
-                    final Deserializer componentDeserializer = TransferConfig.getDeserializer(componentType, elementFlag);// 元素解析器
+                    final Deserializer componentDeserializer = PersistConfig.getDeserializer(componentType, elementFlag);// 元素解析器
                     return componentDeserializer.deserialze(inputable, componentType, elementFlag, referenceMap);
                 } else {
                     return defaultComponentDeserializer.deserialze(inputable, componentType, inputable.getByte(), referenceMap);
@@ -234,7 +234,7 @@ public class Transfer {
             return;
         }
 
-        Serializer serializer = TransferConfig.getSerializer(object.getClass());
+        Serializer serializer = PersistConfig.getSerializer(object.getClass());
         serializer.serialze(outputable, object, new IdentityHashMap(16));
     }
 
@@ -261,7 +261,7 @@ public class Transfer {
             return buffer.getByteArray();
         }
 
-        Serializer serializer = TransferConfig.getSerializer(object.getClass());
+        Serializer serializer = PersistConfig.getSerializer(object.getClass());
         ByteBuffer buffer = new ByteBuffer(bytesLength);
 
         serializer.serialze(buffer, object, new IdentityHashMap(16));

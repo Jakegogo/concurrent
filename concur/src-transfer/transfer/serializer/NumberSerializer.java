@@ -1,7 +1,7 @@
 package transfer.serializer;
 
 import transfer.Outputable;
-import transfer.def.Config;
+import transfer.def.TransferConfig;
 import transfer.def.Types;
 import transfer.utils.IdentityHashMap;
 
@@ -29,7 +29,7 @@ public class NumberSerializer implements Serializer {
     public void serialze(Outputable outputable, Object object, IdentityHashMap referenceMap) {
 
         if (object == null) {
-            Config.NULL_SERIALIZER.serialze(outputable, object, referenceMap);
+            NULL_SERIALIZER.serialze(outputable, object, referenceMap);
             return;
         }
 
@@ -69,7 +69,7 @@ public class NumberSerializer implements Serializer {
 
         if (value < FLAG_0X80) {
 
-            outputable.putByte((byte) (Types.NUMBER | sign | Config.INT1), (byte) value);
+            outputable.putByte((byte) (Types.NUMBER | sign | TransferConfig.INT1), (byte) value);
         } else {
 
             byte[] bytes = new byte[4];
@@ -99,7 +99,7 @@ public class NumberSerializer implements Serializer {
 
         if (value < FLAG_0X80) {
 
-            outputable.putByte((byte) (Types.NUMBER | sign | Config.INT1), (byte) value);
+            outputable.putByte((byte) (Types.NUMBER | sign | TransferConfig.INT1), (byte) value);
         } else {
 
             byte[] bytes = new byte[8];

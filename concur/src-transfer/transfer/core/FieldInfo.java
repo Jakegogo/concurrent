@@ -14,9 +14,14 @@ import java.lang.reflect.Type;
 public class FieldInfo<T> {
 
     /**
-     * 属性名
+     * 属性信息
      */
     private String name;
+
+    /**
+     * 属性名
+     */
+    private String fieldName;
 
     /**
      * 属性获值器
@@ -44,6 +49,7 @@ public class FieldInfo<T> {
     public static <T> FieldInfo<T> valueOf(Class<T> clazz, Field field) throws Exception {
         FieldInfo<T> fieldInfo = new FieldInfo<T>();
         fieldInfo.name = clazz.getName() + "#" + field.getName();
+        fieldInfo.fieldName = field.getName();
         fieldInfo.fieldGetter = AsmAccessHelper.createFieldGetter(clazz, field);
         fieldInfo.fieldSetter = AsmAccessHelper.createFieldSetter(clazz, field);
         fieldInfo.type = field.getGenericType();
@@ -75,4 +81,7 @@ public class FieldInfo<T> {
         return this.fieldGetter.get(object);
     }
 
+    public String getFieldName() {
+        return fieldName;
+    }
 }

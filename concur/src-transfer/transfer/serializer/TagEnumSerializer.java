@@ -2,17 +2,19 @@ package transfer.serializer;
 
 import transfer.Outputable;
 import transfer.core.EnumInfo;
-import transfer.def.TransferConfig;
+import transfer.def.PersistConfig;
 import transfer.def.Types;
 import transfer.utils.BitUtils;
 import transfer.utils.IdentityHashMap;
 
 /**
- * 枚举编码器
+ * 带标签枚举编码器
  * Created by Jake on 2015/2/26.
  */
-public class EnumSerializer implements Serializer {
+public class TagEnumSerializer implements Serializer {
 
+    // 标签编码器
+    private static final StringSerializer STRING_SERIALIZER = StringSerializer.getInstance();
 
     @Override
     public void serialze(Outputable outputable, Object object, IdentityHashMap referenceMap) {
@@ -26,19 +28,22 @@ public class EnumSerializer implements Serializer {
 
         Enum<?> enumVal = (Enum<?>) object;
 
-        EnumInfo enumInfo = (EnumInfo) TransferConfig.getOrCreateClassInfo(enumVal.getDeclaringClass());
+        EnumInfo enumInfo = (EnumInfo) PersistConfig.getOrCreateClassInfo(enumVal.getDeclaringClass());
+
 
         BitUtils.putInt2(outputable, enumInfo.getClassId());
 
-        int enumIndex = enumInfo.toInt(enumVal);
+        String enumName = enumInfo.toString(enumVal);
 
-        BitUtils.putInt2(outputable, enumIndex);
+        // 添加标签
+        STRING_SERIALIZER.serialze(outputable, enumName, referenceMap);
+
     }
 
 
-    private static EnumSerializer instance = new EnumSerializer();
+    private static TagEnumSerializer instance = new TagEnumSerializer();
 
-    public static EnumSerializer getInstance() {
+    public static TagEnumSerializer getInstance() {
         return instance;
     }
 

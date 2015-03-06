@@ -1,7 +1,7 @@
 package transfer.deserializer;
 
 import transfer.Inputable;
-import transfer.def.Config;
+import transfer.def.TransferConfig;
 import transfer.utils.IntegerMap;
 import transfer.utils.TypeUtils;
 
@@ -43,7 +43,7 @@ public class EntryDeserializer implements Deserializer {
 
 
     private Object parseElement(Inputable inputable, Type type, byte byteFlag, IntegerMap referenceMap) {
-        Deserializer elementDeserializer = Config.getDeserializer(type, byteFlag);
+        Deserializer elementDeserializer = TransferConfig.getDeserializer(type, byteFlag);
         return elementDeserializer.deserialze(inputable, type, byteFlag, referenceMap);
     }
 

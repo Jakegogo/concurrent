@@ -1,7 +1,7 @@
 package transfer.deserializer;
 
 import transfer.Inputable;
-import transfer.def.Config;
+import transfer.def.TransferConfig;
 import transfer.def.Types;
 import transfer.exception.IllegalTypeException;
 import transfer.utils.BitUtils;
@@ -28,13 +28,13 @@ public class NumberDeserializer implements Deserializer {
     @Override
     public <T> T deserialze(Inputable inputable, Type type, byte flag, IntegerMap referenceMap) {
 
-        byte typeFlag = Config.getType(flag);
+        byte typeFlag = TransferConfig.getType(flag);
 
         if (typeFlag != Types.NUMBER) {
             throw new IllegalTypeException(typeFlag, Types.NUMBER, type);
         }
 
-        byte extraFlag = Config.getExtra(flag);
+        byte extraFlag = TransferConfig.getExtra(flag);
         // 符号
         int sign = (extraFlag & FLAG_NEGATIVE) > 0 ? -1 : 1;
 
@@ -42,49 +42,49 @@ public class NumberDeserializer implements Deserializer {
 
         Number number = null;
         switch (len) {
-            case Config.INT1:
+            case TransferConfig.INT1:
                 number = BitUtils.getInt1(inputable) * sign;
                 if (type == int.class || type == Integer.class) {
                     return (T) number;
                 }
                 break;
-            case Config.INT2:
+            case TransferConfig.INT2:
                 number = BitUtils.getInt2(inputable) * sign;
                 if (type == int.class || type == Integer.class) {
                     return (T) number;
                 }
                 break;
-            case Config.INT3:
+            case TransferConfig.INT3:
                 number = BitUtils.getInt3(inputable) * sign;
                 if (type == int.class || type == Integer.class) {
                     return (T) number;
                 }
                 break;
-            case Config.INT4:
+            case TransferConfig.INT4:
                 number = BitUtils.getInt(inputable) * sign;
                 if (type == int.class || type == Integer.class) {
                     return (T) number;
                 }
                 break;
-            case Config.INT5:
+            case TransferConfig.INT5:
                 number = BitUtils.getLong5(inputable) * sign;
                 if (type == long.class || type == Long.class) {
                     return (T) number;
                 }
                 break;
-            case Config.INT6:
+            case TransferConfig.INT6:
                 number = BitUtils.getLong6(inputable) * sign;
                 if (type == long.class || type == Long.class) {
                     return (T) number;
                 }
                 break;
-            case Config.INT7:
+            case TransferConfig.INT7:
                 number = BitUtils.getLong7(inputable) * sign;
                 if (type == long.class || type == Long.class) {
                     return (T) number;
                 }
                 break;
-            case Config.INT8:
+            case TransferConfig.INT8:
                 number = BitUtils.getLong(inputable) * sign;
                 if (type == long.class || type == Long.class) {
                     return (T) number;

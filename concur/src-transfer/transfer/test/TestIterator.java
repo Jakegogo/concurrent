@@ -3,7 +3,7 @@ package transfer.test;
 import transfer.ByteArray;
 import transfer.Transfer;
 import transfer.TypeReference;
-import transfer.def.Config;
+import transfer.def.TransferConfig;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -17,7 +17,7 @@ public class TestIterator {
 
     public static void main(String[] args) {
 
-        Config.registerClass(Entity.class, 1);
+        TransferConfig.registerClass(Entity.class, 1);
 
         List<Entity> list = new ArrayList<Entity>();
 
