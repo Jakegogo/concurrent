@@ -19,7 +19,7 @@ import java.util.Map;
 
 /**
  * 字节存储协议
- * <br/>定义存储类的属性按定义属性的先后顺序存储
+ * <br/>兼容新旧版本的类
  * <br/>定义存储类必须调用Config#registerClass(java.lang.Class<?>, int)进行注册, 或使用注解@Transferable
  * Created by Jake on 2015/2/22.
  */
