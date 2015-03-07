@@ -3,7 +3,7 @@ package transfer.test;
 import dbcache.utils.JsonUtils;
 import transfer.ByteArray;
 import transfer.Transfer;
-import transfer.def.Config;
+import transfer.def.TransferConfig;
 
 /**
  * Created by Administrator on 2015/2/26.
@@ -12,7 +12,7 @@ public class TestDecodePerform {
 
     public static void main(String[] args) {
 
-        Config.registerClass(Entity.class, 1);
+        TransferConfig.registerClass(Entity.class, 1);
 
         Entity entity = new Entity();
         entity.setUid(101);
@@ -34,6 +34,14 @@ public class TestDecodePerform {
         }
         System.out.println(System.currentTimeMillis() - t1);
 
+        
+        byte[] bytes1 = JacksonUtils.object2Bytes(entity);
+        t1 = System.currentTimeMillis();
+        for (int i = 0; i < 5000000;i++) {
+            Entity entity1 = JacksonUtils.bytes2Object(bytes1, new org.codehaus.jackson.type.TypeReference<Entity>(){});
+        }
+        System.out.println(System.currentTimeMillis() - t1);
+        
 
         t1 = System.currentTimeMillis();
         for (int i = 0; i < 5000000;i++) {
