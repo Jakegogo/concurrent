@@ -1,7 +1,7 @@
 package transfer.deserializer;
 
 import transfer.Inputable;
-import transfer.def.Config;
+import transfer.def.TransferConfig;
 import transfer.def.Types;
 import transfer.exception.IllegalTypeException;
 import transfer.utils.BitUtils;
@@ -22,23 +22,23 @@ public class DecimalDeserializer implements Deserializer {
     @Override
     public <T> T deserialze(Inputable inputable, Type type, byte flag, IntegerMap referenceMap) {
 
-        byte typeFlag = Config.getType(flag);
+        byte typeFlag = TransferConfig.getType(flag);
 
         if (typeFlag != Types.DECIMAL) {
             throw new IllegalTypeException(typeFlag, Types.DECIMAL, type);
         }
 
-        byte extraFlag = Config.getExtra(flag);
+        byte extraFlag = TransferConfig.getExtra(flag);
 
         Number number = null;
         switch (extraFlag) {
-            case Config.FLOAT:
+            case TransferConfig.FLOAT:
                 number = BitUtils.getFloat(inputable);
                 if (type == float.class || type == Float.class) {
                     return (T) number;
                 }
                 break;
-            case Config.DOUBLE:
+            case TransferConfig.DOUBLE:
                 number = BitUtils.getDouble(inputable);
                 if (type == double.class || type == Double.class) {
                     return (T) number;

@@ -28,30 +28,26 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
- * Config配置选项
+ * Transfer Config配置选项
  * Created by Jake on 2015/2/23.
  */
-public class Config {
+public class TransferConfig {
 
-    private static final Logger logger = LoggerFactory.getLogger(Config.class);
-
-    private static Config instance = new Config();
+    private static final Logger logger = LoggerFactory.getLogger(TransferConfig.class);
 
     public static final NullDeserializer NULL_DESERIALIZER = NullDeserializer.getInstance();
 
-    public static final NullSerializer NULL_SERIALIZER = NullSerializer.getInstance();
+    static final ByteMap<Deserializer> deserializers = new ByteMap<Deserializer>();
 
-    final ByteMap<Deserializer> deserializers = new ByteMap<Deserializer>();
+    static final IdentityHashMap<Type, Deserializer> typedDeserializers = new IdentityHashMap<Type, Deserializer>();
 
-    final IdentityHashMap<Type, Deserializer> typedDeserializers = new IdentityHashMap<Type, Deserializer>();
+    static final IdentityHashMap<Class, Serializer> serializers = new IdentityHashMap<Class, Serializer>();
 
-    final IdentityHashMap<Class, Serializer> serializers = new IdentityHashMap<Class, Serializer>();
+    static final IdentityHashMap<Class, ClassInfo> classInfoMap = new IdentityHashMap<Class, ClassInfo>();
 
-    final IdentityHashMap<Class, ClassInfo> classInfoMap = new IdentityHashMap<Class, ClassInfo>();
+    static final IntegerMap<Class> classIdMap = new IntegerMap<Class>();
 
-    final IntegerMap<Class> classIdMap = new IntegerMap<Class>();
-
-    final IdentityHashMap<Class, Integer> idClassMap = new IdentityHashMap<Class, Integer>();
+    static final IdentityHashMap<Class, Integer> idClassMap = new IdentityHashMap<Class, Integer>();
 
 
     // 1111 0000 类型
@@ -83,21 +79,21 @@ public class Config {
      */
     public static void registerClass(Class<?> clazz, int id) {
 
-        Class oldClass = instance.classIdMap.get(id);
+        Class oldClass = classIdMap.get(id);
         if (oldClass != null) {
             logger.warn("注册解析类Id重复: " + clazz + ",Id: " + id + " , (" + oldClass + ")");
         }
 
-        instance.classIdMap.put(id, clazz);
-        instance.idClassMap.put(clazz, id);
+        classIdMap.put(id, clazz);
+        idClassMap.put(clazz, id);
 
         boolean repeatRegisterSerializers,repeatRegisterDeSerializers;
         if (clazz.isEnum() || (clazz.getSuperclass() != null && clazz.getSuperclass().isEnum())) { // 枚举类型
-            repeatRegisterSerializers = instance.serializers.put(clazz, EnumSerializer.getInstance());
-            repeatRegisterDeSerializers = instance.typedDeserializers.put(clazz, EnumDeserializer.getInstance());
+            repeatRegisterSerializers = serializers.put(clazz, EnumSerializer.getInstance());
+            repeatRegisterDeSerializers = typedDeserializers.put(clazz, EnumDeserializer.getInstance());
         } else {
-            repeatRegisterSerializers = instance.serializers.put(clazz, ObjectSerializer.getInstance());
-            repeatRegisterDeSerializers = instance.typedDeserializers.put(clazz, ObjectDeSerializer.getInstance());
+            repeatRegisterSerializers = serializers.put(clazz, ObjectSerializer.getInstance());
+            repeatRegisterDeSerializers = typedDeserializers.put(clazz, ObjectDeSerializer.getInstance());
         }
 
         if (repeatRegisterSerializers || repeatRegisterDeSerializers) {
@@ -113,8 +109,8 @@ public class Config {
      * @param deserializer 解析器
      */
     public static void registerDeserializer(Class<?> clazz, byte flag, Deserializer deserializer) {
-        instance.deserializers.put(flag, deserializer);
-        instance.typedDeserializers.put(clazz, deserializer);
+        deserializers.put(flag, deserializer);
+        typedDeserializers.put(clazz, deserializer);
     }
 
 
@@ -124,7 +120,7 @@ public class Config {
      * @param serializer 编码器
      */
     public static void registerSerializer(Class<?> clazz, Serializer serializer) {
-        instance.serializers.put(clazz, serializer);
+        serializers.put(clazz, serializer);
     }
 
 
@@ -135,7 +131,7 @@ public class Config {
      * @return
      */
     public static Deserializer getDeserializer(byte type) {
-        Deserializer deserializer = instance.deserializers.get(type);
+        Deserializer deserializer = deserializers.get(type);
         if (deserializer == null) {
             throw new UnsupportDeserializerTypeException(type);
         }
@@ -186,10 +182,10 @@ public class Config {
         }
 
         if (type == null || type == Object.class) {
-            return instance.deserializers.get(Config.getType(flag));
+            return deserializers.get(TransferConfig.getType(flag));
         }
 
-        Deserializer deserializer = instance.typedDeserializers.get(type);
+        Deserializer deserializer = typedDeserializers.get(type);
         if (deserializer != null) {
             return deserializer;
         }
@@ -214,7 +210,7 @@ public class Config {
 
     private static Deserializer getDeserializer(Class<?> clazz, Type type) {
 
-        Deserializer deserializer = instance.typedDeserializers.get(type);
+        Deserializer deserializer = typedDeserializers.get(type);
         if (deserializer != null) {
             return deserializer;
         }
@@ -223,17 +219,17 @@ public class Config {
             type = clazz;
         }
 
-        deserializer = instance.typedDeserializers.get(type);
+        deserializer = typedDeserializers.get(type);
         if (deserializer != null) {
             return deserializer;
         }
 
         if (type instanceof WildcardType || type instanceof TypeVariable || type instanceof ParameterizedType) {
-            deserializer = instance.typedDeserializers.get(clazz);
+            deserializer = typedDeserializers.get(clazz);
         }
 
         if (deserializer != null) {
-            instance.typedDeserializers.put(type, deserializer);
+            typedDeserializers.put(type, deserializer);
             return deserializer;
         }
 
@@ -265,7 +261,7 @@ public class Config {
             throw new UnsupportDeserializerTypeException(type);
         }
 
-        instance.typedDeserializers.put(type, deserializer);
+        typedDeserializers.put(type, deserializer);
 
         return deserializer;
     }
@@ -293,25 +289,25 @@ public class Config {
      */
     public static Serializer getSerializer(Class clazz) {
 
-        Serializer serializer = instance.serializers.get(clazz);
+        Serializer serializer = serializers.get(clazz);
         if (serializer != null) {
             return serializer;
         }
 
 
         if (Map.class.isAssignableFrom(clazz)) {
-            instance.serializers.put(clazz, MapSerializer.getInstance());
+            serializers.put(clazz, MapSerializer.getInstance());
         } else if (List.class.isAssignableFrom(clazz)) {
-            instance.serializers.put(clazz, CollectionSerializer.getInstance());
+            serializers.put(clazz, CollectionSerializer.getInstance());
         } else if (Collection.class.isAssignableFrom(clazz)) {
-            instance.serializers.put(clazz, CollectionSerializer.getInstance());
+            serializers.put(clazz, CollectionSerializer.getInstance());
         } else if (Date.class.isAssignableFrom(clazz)) {
-            instance.serializers.put(clazz, DateSerializer.getInstance());
+            serializers.put(clazz, DateSerializer.getInstance());
         } else if (clazz.isEnum() || (clazz.getSuperclass() != null && clazz.getSuperclass().isEnum())) {
             // 注册类型
             autoRegisterClass(clazz);
         } else if (clazz.isArray()) {
-            instance.serializers.put(clazz, ArraySerializer.getInstance());
+            serializers.put(clazz, ArraySerializer.getInstance());
         } else {
             boolean isCglibProxy = false;
             boolean isJavassistProxy = false;
@@ -332,19 +328,19 @@ public class Config {
 
             if (isCglibProxy || isJavassistProxy || isAsmProxy) {
                 ObjectAsmProxySerializer superWriter = ObjectAsmProxySerializer.getInstance();
-                instance.serializers.put(clazz, superWriter);
+                serializers.put(clazz, superWriter);
                 return superWriter;
             }
 
             if (Proxy.isProxyClass(clazz)) {
-                instance.serializers.put(clazz, ObjectSerializer.getInstance());// TODO
+                serializers.put(clazz, ObjectSerializer.getInstance());// TODO
             } else {
                 // 注册类型
                 autoRegisterClass(clazz);
             }
         }
 
-        serializer = instance.serializers.get(clazz);
+        serializer = serializers.get(clazz);
 
         if (serializer == null) {
             throw new UnsupportSerializerTypeException(clazz);
@@ -361,7 +357,7 @@ public class Config {
      */
     public static ClassInfo getOrCreateClassInfo(final Class clazz) {
 
-        ClassInfo classInfo = instance.classInfoMap.get(clazz);
+        ClassInfo classInfo = classInfoMap.get(clazz);
         if (classInfo != null) {
             return classInfo;
         }
@@ -370,11 +366,12 @@ public class Config {
         if (clazz.isEnum()) {
 
             classInfo = EnumInfo.valueOf(clazz);
-            instance.classInfoMap.put(clazz, classInfo);
+            classInfoMap.put(clazz, classInfo);
 
         } else {
 
             final List<FieldInfo> fieldInfos = new ArrayList<FieldInfo>();
+            final Map<String, FieldInfo> fieldInfoMap = new HashMap<String, FieldInfo>();
 
             // 遍历属性信息
             ReflectionUtils.doWithFields(clazz, new ReflectionUtils.FieldCallback() {
@@ -394,7 +391,12 @@ public class Config {
                     }
 
                     try {
-                        fieldInfos.add(FieldInfo.valueOf(clazz, field));
+
+                        FieldInfo fieldInfo = FieldInfo.valueOf(clazz, field);
+
+                        fieldInfos.add(fieldInfo);
+                        fieldInfoMap.put(field.getName(), fieldInfo);
+
                     } catch (Exception e) {
                         e.printStackTrace();
                         throw new IllegalAccessException("无法创建属性信息" + clazz.getName() + "#" + field.getName());
@@ -403,10 +405,10 @@ public class Config {
                 }
             });
 
-            int classId = Config.getClassId(clazz);
-            classInfo = ClassInfo.valueOf(clazz, classId, fieldInfos);
+            int classId = TransferConfig.getClassId(clazz);
+            classInfo = ClassInfo.valueOf(clazz, classId, fieldInfos, fieldInfoMap);
 
-            instance.classInfoMap.put(clazz, classInfo);
+            classInfoMap.put(clazz, classInfo);
         }
 
         return classInfo;
@@ -433,19 +435,13 @@ public class Config {
     }
 
 
-    // 获取实例
-    public static Config getInstance() {
-        return instance;
-    }
-
-
     /**
      * 根据Id获取注册类
      * @param id
      * @return
      */
     public static Class<?> getClass(int id) {
-        Class<?> result = instance.classIdMap.get(id);
+        Class<?> result = classIdMap.get(id);
 
         if (result == null) {
             throw new UnsupportClassException(id);
@@ -461,7 +457,7 @@ public class Config {
      * @return
      */
     public static int getClassId(Class<?> clazz) {
-        Integer classId = instance.idClassMap.get(clazz);
+        Integer classId = idClassMap.get(clazz);
 
         if (classId == null) {
             throw new UnsupportClassException(clazz);
@@ -471,7 +467,7 @@ public class Config {
     }
 
 
-    private Config() {
+    static {
 
         deserializers.put(Types.OBJECT, ObjectDeSerializer.getInstance());
         deserializers.put(Types.ARRAY, ArrayDeSerializer.getInstance());
@@ -560,7 +556,6 @@ public class Config {
         serializers.put(StringBuilder.class, StringSerializer.getInstance());
         serializers.put(CharSequence.class, StringSerializer.getInstance());
         serializers.put(Character.class, StringSerializer.getInstance());
-
 
 
     }

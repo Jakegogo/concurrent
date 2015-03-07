@@ -19,4 +19,9 @@ public interface Serializer {
     void serialze(Outputable outputable, Object object, IdentityHashMap referenceMap);
 
 
+    /**
+     * null编码器
+     */
+    NullSerializer NULL_SERIALIZER = NullSerializer.getInstance();
+
 }

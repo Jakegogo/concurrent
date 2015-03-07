@@ -11,13 +11,14 @@ import transfer.anno.Transferable;
 import javax.persistence.Column;
 import javax.persistence.Id;
 import javax.persistence.Transient;
+import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.util.Date;
 import java.util.concurrent.atomic.AtomicInteger;
 
 //@MappedSuperclass
 @Transferable(id = 1)
-public class Entity implements EntityInitializer, IEntity<Long> {
+public class Entity implements EntityInitializer, IEntity<Long>, Serializable {
 
 	public static final String NUM_INDEX = "num_idx";
 

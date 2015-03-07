@@ -1,7 +1,7 @@
 package transfer.deserializer;
 
 import transfer.Inputable;
-import transfer.def.Config;
+import transfer.def.TransferConfig;
 import transfer.def.Types;
 import transfer.exception.IllegalTypeException;
 import transfer.utils.IntegerMap;
@@ -18,13 +18,13 @@ public class BooleanDeserializer implements Deserializer {
     @Override
     public <T> T deserialze(Inputable inputable, Type type, byte flag, IntegerMap referenceMap) {
 
-        byte typeFlag = Config.getType(flag);
+        byte typeFlag = TransferConfig.getType(flag);
 
         if (typeFlag != Types.BOOLEAN) {
             throw new IllegalTypeException(typeFlag, Types.BOOLEAN, type);
         }
 
-        byte extraFlag = Config.getExtra(flag);
+        byte extraFlag = TransferConfig.getExtra(flag);
         if (extraFlag == 0x01) {
             return (T) Boolean.valueOf(true);
         }

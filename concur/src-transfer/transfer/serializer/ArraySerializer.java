@@ -1,7 +1,7 @@
 package transfer.serializer;
 
 import transfer.Outputable;
-import transfer.def.Config;
+import transfer.def.TransferConfig;
 import transfer.def.Types;
 import transfer.utils.IdentityHashMap;
 
@@ -16,7 +16,7 @@ public class ArraySerializer implements Serializer {
     public void serialze(Outputable outputable, Object object, IdentityHashMap referenceMap) {
 
         if (object == null) {
-            Config.NULL_SERIALIZER.serialze(outputable, object, referenceMap);
+            NULL_SERIALIZER.serialze(outputable, object, referenceMap);
             return;
         }
 
@@ -26,7 +26,7 @@ public class ArraySerializer implements Serializer {
 
         for (Object obj : array) {
 
-            Serializer elementSerializer = Config.getSerializer(obj.getClass());
+            Serializer elementSerializer = TransferConfig.getSerializer(obj.getClass());
 
             elementSerializer.serialze(outputable, obj, referenceMap);
         }

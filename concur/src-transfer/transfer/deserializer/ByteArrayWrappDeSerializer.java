@@ -1,7 +1,7 @@
 package transfer.deserializer;
 
 import transfer.Inputable;
-import transfer.def.Config;
+import transfer.def.TransferConfig;
 import transfer.def.Types;
 import transfer.exception.IllegalTypeException;
 import transfer.utils.BitUtils;
@@ -19,7 +19,7 @@ public class ByteArrayWrappDeSerializer implements Deserializer {
     @Override
     public <T> T deserialze(Inputable inputable, Type type, byte flag, IntegerMap referenceMap) {
 
-        byte typeFlag = Config.getType(flag);
+        byte typeFlag = TransferConfig.getType(flag);
 
         if (typeFlag != Types.BYTE_ARRAY) {
             throw new IllegalTypeException(typeFlag, Types.BYTE_ARRAY, type);

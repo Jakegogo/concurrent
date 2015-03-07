@@ -3,17 +3,21 @@ package transfer.serializer;
 import transfer.Outputable;
 import transfer.core.ClassInfo;
 import transfer.core.FieldInfo;
-import transfer.def.TransferConfig;
+import transfer.def.PersistConfig;
 import transfer.def.Types;
 import transfer.utils.BitUtils;
 import transfer.utils.IdentityHashMap;
 import transfer.utils.TypeUtils;
 
 /**
- * 对象编码器
+ * 带标签的对象编码器
  * Created by Jake on 2015/2/23.
  */
-public class ObjectSerializer implements Serializer {
+public class TagObjectSerializer implements Serializer {
+
+
+    // 标签编码器
+    private static final StringSerializer STRING_SERIALIZER = StringSerializer.getInstance();
 
 
     @Override
@@ -26,15 +30,23 @@ public class ObjectSerializer implements Serializer {
 
         Class<?> clazz = object.getClass();
 
-        ClassInfo classInfo = TransferConfig.getOrCreateClassInfo(clazz);
+        ClassInfo classInfo = PersistConfig.getOrCreateClassInfo(clazz);
 
         outputable.putByte(Types.OBJECT);
 
+        // 添加类Id
         BitUtils.putInt2(outputable, classInfo.getClassId());
+
+        // 添加属性个数
+        BitUtils.putInt2(outputable, classInfo.getFieldInfos().size());
 
         for (FieldInfo fieldInfo : classInfo.getFieldInfos()) {
 
-            Serializer fieldSerializer = TransferConfig.getSerializer(TypeUtils.getRawClass(fieldInfo.getType()));
+            // 添加属性标签
+            STRING_SERIALIZER.serialze(outputable, fieldInfo.getFieldName(), referenceMap);
+
+            // 序列化属性值
+            Serializer fieldSerializer = PersistConfig.getSerializer(TypeUtils.getRawClass(fieldInfo.getType()));
 
             Object fieldValue = fieldInfo.getField(object);
 
@@ -45,9 +57,9 @@ public class ObjectSerializer implements Serializer {
     }
 
 
-    private static ObjectSerializer instance = new ObjectSerializer();
+    private static TagObjectSerializer instance = new TagObjectSerializer();
 
-    public static ObjectSerializer getInstance() {
+    public static TagObjectSerializer getInstance() {
         return instance;
     }
 }

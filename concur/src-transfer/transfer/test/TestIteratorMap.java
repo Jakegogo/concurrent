@@ -3,7 +3,7 @@ package transfer.test;
 import transfer.ByteArray;
 import transfer.Transfer;
 import transfer.TypeReference;
-import transfer.def.Config;
+import transfer.def.TransferConfig;
 
 import java.util.HashMap;
 import java.util.Iterator;
@@ -16,7 +16,7 @@ public class TestIteratorMap {
 
     public static void main(String[] args) {
 
-        Config.registerClass(Entity.class, 1);
+        TransferConfig.registerClass(Entity.class, 1);
 
         Map<Integer, Entity> map = new HashMap<Integer, Entity>();
 

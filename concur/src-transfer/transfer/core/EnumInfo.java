@@ -1,5 +1,8 @@
 package transfer.core;
 
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * 枚举信息
  * Created by Jake on 2015/2/25.
@@ -8,6 +11,7 @@ public class EnumInfo extends ClassInfo {
 
     Enum<?>[] values;
 
+    Map<String, Enum<?>> enumMap;
 
     public static EnumInfo valueOf(Class<? extends Enum> enumClass) {
 
@@ -18,6 +22,12 @@ public class EnumInfo extends ClassInfo {
 
         Enum<?>[] values = enumClz.getEnumConstants();
         enumInfo.values = values;
+
+        Map<String, Enum<?>> enumMap = new HashMap<String, Enum<?>>(values.length + 1);
+        for (Enum<?> enumVal : values) {
+            enumMap.put(enumVal.name(), enumVal);
+        }
+        enumInfo.enumMap = enumMap;
 
         return enumInfo;
     }
@@ -33,6 +43,19 @@ public class EnumInfo extends ClassInfo {
             throw new IllegalArgumentException("枚举索引错误:" + clazz + ":" + index);
         }
         return values[index];
+    }
+
+
+    public String toString(Enum<?> enumElement) {
+        return enumElement.name();
+    }
+
+    public Enum<?> toEnum(String enumName) {
+        return enumMap.get(enumName);
+    }
+
+    public Enum<?>[] getValues() {
+        return values;
     }
 
 }
