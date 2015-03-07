@@ -94,6 +94,16 @@ public class BitUtils {
      * @param outputable
      * @param intVal
      */
+    public static void putInt1(final Outputable outputable, final int intVal) {
+        outputable.putByte((byte)(intVal >> 0));
+    }
+    
+    
+    /**
+     * 整数转换成字节
+     * @param outputable
+     * @param intVal
+     */
     public static void putInt2(final Outputable outputable, final int intVal) {
         outputable.putByte((byte)(intVal >> 8), (byte)(intVal >> 0));
     }

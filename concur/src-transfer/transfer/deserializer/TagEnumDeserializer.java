@@ -23,7 +23,7 @@ public class TagEnumDeserializer implements Deserializer {
     /**
      * 枚举名解析器
      */
-    private static final StringDeserializer STRING_DESERIALIZER = StringDeserializer.getInstance();
+    private static final ShortStringDeserializer STRING_DESERIALIZER = ShortStringDeserializer.getInstance();
 
 
     @Override

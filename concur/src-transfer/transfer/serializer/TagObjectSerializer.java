@@ -17,7 +17,7 @@ public class TagObjectSerializer implements Serializer {
 
 
     // 标签编码器
-    private static final StringSerializer STRING_SERIALIZER = StringSerializer.getInstance();
+    private static final ShortStringSerializer STRING_SERIALIZER = ShortStringSerializer.getInstance();
 
 
     @Override

@@ -14,7 +14,7 @@ import transfer.utils.IdentityHashMap;
 public class TagEnumSerializer implements Serializer {
 
     // 标签编码器
-    private static final StringSerializer STRING_SERIALIZER = StringSerializer.getInstance();
+    private static final ShortStringSerializer STRING_SERIALIZER = ShortStringSerializer.getInstance();
 
     @Override
     public void serialze(Outputable outputable, Object object, IdentityHashMap referenceMap) {

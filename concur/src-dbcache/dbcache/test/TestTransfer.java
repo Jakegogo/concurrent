@@ -9,7 +9,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import transfer.ByteArray;
 import transfer.Transfer;
-import transfer.def.Config;
+import transfer.def.TransferConfig;
 
 /**
  * Created by Administrator on 2015/2/26.
@@ -25,7 +25,7 @@ public class TestTransfer {
     @org.junit.Test
     public void t1() {
 
-        Config.registerClass(Entity.class, 1);
+    	TransferConfig.registerClass(Entity.class, 1);
 
         Entity entity = this.cacheService.get(1l);
 

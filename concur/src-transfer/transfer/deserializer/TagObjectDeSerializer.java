@@ -23,7 +23,7 @@ public class TagObjectDeSerializer implements Deserializer {
     /**
      * 属性名解析器
      */
-    private static final StringDeserializer STRING_DESERIALIZER = StringDeserializer.getInstance();
+    private static final ShortStringDeserializer STRING_DESERIALIZER = ShortStringDeserializer.getInstance();
 
 
     @Override
@@ -85,18 +85,19 @@ public class TagObjectDeSerializer implements Deserializer {
             fieldName = STRING_DESERIALIZER.deserialze(inputable, String.class, inputable.getByte(), referenceMap);
 
             fieldInfo = classInfo.getFieldInfo(fieldName);
-            if (fieldInfo == null) {// 略过不存在的属性
-                continue;
-            }
 
             byte fieldFlag = inputable.getByte();
 
-            fieldType = fieldInfo.getType();
+            fieldType = fieldInfo != null ? fieldInfo.getType() : Object.class;
 
             fieldDeserializer = PersistConfig.getDeserializer(fieldType, fieldFlag);
 
             fieldValue = fieldDeserializer.deserialze(inputable, fieldType, fieldFlag, referenceMap);
 
+            if (fieldInfo == null) {// 略过不存在的属性
+                continue;
+            }
+            
             fieldInfo.setField(object, fieldValue);
 
         }
