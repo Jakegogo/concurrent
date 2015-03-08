@@ -1,8 +1,11 @@
 package transfer.serializer;
 
+import org.objectweb.asm.MethodVisitor;
 import transfer.Outputable;
 import transfer.def.Types;
 import transfer.utils.IdentityHashMap;
+
+import java.lang.reflect.Type;
 
 /**
  * 布尔编码器
@@ -29,6 +32,11 @@ public class BooleanSerializer implements Serializer {
         }
 
         outputable.putByte((byte) (Types.BOOLEAN | booleanVal));
+    }
+
+    @Override
+    public void compile(Type type, MethodVisitor mw) {
+
     }
 
 

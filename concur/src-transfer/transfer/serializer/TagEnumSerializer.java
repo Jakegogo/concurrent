@@ -1,11 +1,14 @@
 package transfer.serializer;
 
+import org.objectweb.asm.MethodVisitor;
 import transfer.Outputable;
 import transfer.core.EnumInfo;
 import transfer.def.PersistConfig;
 import transfer.def.Types;
 import transfer.utils.BitUtils;
 import transfer.utils.IdentityHashMap;
+
+import java.lang.reflect.Type;
 
 /**
  * 带标签枚举编码器
@@ -37,6 +40,11 @@ public class TagEnumSerializer implements Serializer {
 
         // 添加标签
         STRING_SERIALIZER.serialze(outputable, enumName, referenceMap);
+
+    }
+
+    @Override
+    public void compile(Type type, MethodVisitor mw) {
 
     }
 

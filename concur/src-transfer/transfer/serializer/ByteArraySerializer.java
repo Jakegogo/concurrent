@@ -1,9 +1,12 @@
 package transfer.serializer;
 
+import org.objectweb.asm.MethodVisitor;
 import transfer.Outputable;
 import transfer.def.Types;
 import transfer.utils.BitUtils;
 import transfer.utils.IdentityHashMap;
+
+import java.lang.reflect.Type;
 
 /**
  * 字节数组编码器
@@ -27,6 +30,11 @@ public class ByteArraySerializer implements Serializer {
         BitUtils.putInt(outputable, bytes.length);
 
         outputable.putBytes(bytes);
+
+    }
+
+    @Override
+    public void compile(Type type, MethodVisitor mw) {
 
     }
 

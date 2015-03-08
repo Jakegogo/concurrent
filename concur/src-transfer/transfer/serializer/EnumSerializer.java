@@ -1,11 +1,14 @@
 package transfer.serializer;
 
+import org.objectweb.asm.MethodVisitor;
 import transfer.Outputable;
 import transfer.core.EnumInfo;
 import transfer.def.TransferConfig;
 import transfer.def.Types;
 import transfer.utils.BitUtils;
 import transfer.utils.IdentityHashMap;
+
+import java.lang.reflect.Type;
 
 /**
  * 枚举编码器
@@ -33,6 +36,11 @@ public class EnumSerializer implements Serializer {
         int enumIndex = enumInfo.toInt(enumVal);
 
         BitUtils.putInt2(outputable, enumIndex);
+    }
+
+    @Override
+    public void compile(Type type, MethodVisitor mw) {
+
     }
 
 

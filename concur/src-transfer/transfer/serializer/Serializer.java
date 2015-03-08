@@ -1,7 +1,10 @@
 package transfer.serializer;
 
+import org.objectweb.asm.MethodVisitor;
 import transfer.Outputable;
 import transfer.utils.IdentityHashMap;
+
+import java.lang.reflect.Type;
 
 /**
  * 类型编码接口
@@ -17,6 +20,14 @@ public interface Serializer {
      * @param referenceMap 引用表
      */
     void serialze(Outputable outputable, Object object, IdentityHashMap referenceMap);
+
+
+    /**
+     * 预编译编码方法
+     * @param type
+     * @param mw serialze方法MethodVisitor
+     */
+    void compile(Type type, MethodVisitor mw);
 
 
     /**

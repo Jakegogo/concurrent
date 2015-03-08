@@ -1,10 +1,12 @@
 package transfer.serializer;
 
+import org.objectweb.asm.MethodVisitor;
 import transfer.Outputable;
 import transfer.def.Types;
 import transfer.utils.BitUtils;
 import transfer.utils.IdentityHashMap;
 
+import java.lang.reflect.Type;
 import java.util.Date;
 
 /**
@@ -27,6 +29,11 @@ public class DateSerializer implements Serializer {
         Date date = (Date) object;
 
         BitUtils.putLong(outputable, date.getTime());
+    }
+
+    @Override
+    public void compile(Type type, MethodVisitor mw) {
+
     }
 
 

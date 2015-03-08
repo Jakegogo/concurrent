@@ -1,10 +1,12 @@
 package transfer.serializer;
 
+import org.objectweb.asm.MethodVisitor;
 import transfer.Outputable;
 import transfer.def.TransferConfig;
 import transfer.def.Types;
 import transfer.utils.IdentityHashMap;
 
+import java.lang.reflect.Type;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -53,6 +55,11 @@ public class NumberSerializer implements Serializer {
 
             DecimalSerializer.getInstance().serialze(outputable, object, referenceMap);
         }
+
+    }
+
+    @Override
+    public void compile(Type type, MethodVisitor mw) {
 
     }
 

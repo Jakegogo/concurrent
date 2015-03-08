@@ -1,9 +1,12 @@
 package transfer.serializer;
 
+import org.objectweb.asm.MethodVisitor;
 import transfer.Outputable;
 import transfer.def.TransferConfig;
 import transfer.def.Types;
 import transfer.utils.IdentityHashMap;
+
+import java.lang.reflect.Type;
 
 /**
  * 数组编码器
@@ -30,6 +33,11 @@ public class ArraySerializer implements Serializer {
 
             elementSerializer.serialze(outputable, obj, referenceMap);
         }
+
+    }
+
+    @Override
+    public void compile(Type type, MethodVisitor mw) {
 
     }
 

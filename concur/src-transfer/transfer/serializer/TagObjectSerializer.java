@@ -1,5 +1,6 @@
 package transfer.serializer;
 
+import org.objectweb.asm.MethodVisitor;
 import transfer.Outputable;
 import transfer.core.ClassInfo;
 import transfer.core.FieldInfo;
@@ -8,6 +9,8 @@ import transfer.def.Types;
 import transfer.utils.BitUtils;
 import transfer.utils.IdentityHashMap;
 import transfer.utils.TypeUtils;
+
+import java.lang.reflect.Type;
 
 /**
  * 带标签的对象编码器
@@ -53,6 +56,11 @@ public class TagObjectSerializer implements Serializer {
             fieldSerializer.serialze(outputable, fieldValue, referenceMap);
 
         }
+
+    }
+
+    @Override
+    public void compile(Type type, MethodVisitor mw) {
 
     }
 

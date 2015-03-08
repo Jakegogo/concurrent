@@ -1,9 +1,12 @@
 package transfer.serializer;
 
+import org.objectweb.asm.MethodVisitor;
 import transfer.Outputable;
 import transfer.def.Types;
 import transfer.utils.BitUtils;
 import transfer.utils.IdentityHashMap;
+
+import java.lang.reflect.Type;
 
 /**
  * 短字符串编码器 最大长度255
@@ -29,6 +32,11 @@ public class ShortStringSerializer implements Serializer {
         BitUtils.putInt1(outputable, bytes.length);
 
         outputable.putBytes(bytes);
+    }
+
+    @Override
+    public void compile(Type type, MethodVisitor mw) {
+
     }
 
 

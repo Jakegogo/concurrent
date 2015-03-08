@@ -1,11 +1,13 @@
 package transfer.serializer;
 
+import org.objectweb.asm.MethodVisitor;
 import transfer.Outputable;
 import transfer.def.TransferConfig;
 import transfer.def.Types;
 import transfer.utils.BitUtils;
 import transfer.utils.IdentityHashMap;
 
+import java.lang.reflect.Type;
 import java.util.Map;
 
 /**
@@ -46,6 +48,11 @@ public class MapSerializer implements Serializer {
 
             valueSerializer.serialze(outputable, value, referenceMap);
         }
+
+    }
+
+    @Override
+    public void compile(Type type, MethodVisitor mw) {
 
     }
 

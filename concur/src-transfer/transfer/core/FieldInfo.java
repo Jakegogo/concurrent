@@ -22,6 +22,11 @@ public class FieldInfo<T> {
      * 属性名
      */
     private String fieldName;
+    
+    /**
+     * 属性
+     */
+    private Field field;
 
     /**
      * 属性获值器
@@ -53,6 +58,7 @@ public class FieldInfo<T> {
         fieldInfo.fieldGetter = AsmAccessHelper.createFieldGetter(clazz, field);
         fieldInfo.fieldSetter = AsmAccessHelper.createFieldSetter(clazz, field);
         fieldInfo.type = field.getGenericType();
+        fieldInfo.field = field;
         return fieldInfo;
     }
 
@@ -83,5 +89,9 @@ public class FieldInfo<T> {
 
     public String getFieldName() {
         return fieldName;
+    }
+
+    public Field getField() {
+        return field;
     }
 }
