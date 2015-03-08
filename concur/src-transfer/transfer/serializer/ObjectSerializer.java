@@ -73,7 +73,7 @@ public class ObjectSerializer implements Serializer, Opcodes {
         mv.visitFrame(Opcodes.F_SAME, 0, null, 0, null);
 
         mv.visitVarInsn(ALOAD, 1);
-        mv.visitIntInsn(BIPUSH, -16);
+        mv.visitIntInsn(BIPUSH, (int) Types.OBJECT);
         mv.visitMethodInsn(INVOKEINTERFACE, "transfer/Outputable", "putByte", "(B)V", true);
 
 
@@ -104,6 +104,7 @@ public class ObjectSerializer implements Serializer, Opcodes {
                 e.printStackTrace();
                 throw new CompileError(e);
             }
+
             //获取get方法
             final Method getMethod = propertyDescriptor.getReadMethod();
             final org.objectweb.asm.Type rt = org.objectweb.asm.Type.getReturnType(getMethod);
@@ -121,7 +122,10 @@ public class ObjectSerializer implements Serializer, Opcodes {
 
             mv.visitVarInsn(ALOAD, 3);
 
-            mv.visitMethodInsn(INVOKEINTERFACE, "transfer/serializer/Serializer", "serialze", "(Ltransfer/Outputable;Ljava/lang/Object;Ltransfer/utils/IdentityHashMap;)V", true);
+            // 执行属性预编译
+            MethodVisitor methodVisitor = context.invokeNextSerialize(fieldInfo.getFieldName());
+
+            fieldSerializer.compile(fieldInfo.getType(), methodVisitor, context);
 
         }
 
