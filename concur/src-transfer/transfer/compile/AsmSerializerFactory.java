@@ -12,7 +12,7 @@ public class AsmSerializerFactory {
 
 
     /**
-     * Asm编译编码器
+     * Asm预编译编码器
      * @param type
      * @return
      */

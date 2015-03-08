@@ -5,6 +5,7 @@ import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 import transfer.Outputable;
+import transfer.compile.AsmContext;
 import transfer.core.ClassInfo;
 import transfer.core.FieldInfo;
 import transfer.def.TransferConfig;
@@ -56,7 +57,7 @@ public class ObjectSerializer implements Serializer, Opcodes {
 
 
     @Override
-    public void compile(Type type, MethodVisitor mv) {
+    public void compile(Type type, MethodVisitor mv, AsmContext context) {
 
         mv.visitVarInsn(ALOAD, 2);
         Label l1 = new Label();

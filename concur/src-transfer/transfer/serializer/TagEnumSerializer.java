@@ -2,6 +2,7 @@ package transfer.serializer;
 
 import org.objectweb.asm.MethodVisitor;
 import transfer.Outputable;
+import transfer.compile.AsmContext;
 import transfer.core.EnumInfo;
 import transfer.def.PersistConfig;
 import transfer.def.Types;
@@ -44,7 +45,7 @@ public class TagEnumSerializer implements Serializer {
     }
 
     @Override
-    public void compile(Type type, MethodVisitor mw) {
+    public void compile(Type type, MethodVisitor mw, AsmContext context) {
 
     }
 

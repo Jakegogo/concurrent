@@ -2,6 +2,7 @@ package transfer.serializer;
 
 import org.objectweb.asm.MethodVisitor;
 import transfer.Outputable;
+import transfer.compile.AsmContext;
 import transfer.def.Types;
 import transfer.utils.BitUtils;
 import transfer.utils.IdentityHashMap;
@@ -34,7 +35,7 @@ public class ByteArraySerializer implements Serializer {
     }
 
     @Override
-    public void compile(Type type, MethodVisitor mw) {
+    public void compile(Type type, MethodVisitor mw, AsmContext context) {
 
     }
 

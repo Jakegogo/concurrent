@@ -2,6 +2,7 @@ package transfer.serializer;
 
 import org.objectweb.asm.MethodVisitor;
 import transfer.Outputable;
+import transfer.compile.AsmContext;
 import transfer.core.ClassInfo;
 import transfer.core.FieldInfo;
 import transfer.def.TransferConfig;
@@ -48,7 +49,7 @@ public class ObjectAsmProxySerializer implements Serializer {
     }
 
     @Override
-    public void compile(Type type, MethodVisitor mw) {
+    public void compile(Type type, MethodVisitor mw, AsmContext context) {
 
     }
 

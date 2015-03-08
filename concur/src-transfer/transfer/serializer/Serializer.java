@@ -2,6 +2,7 @@ package transfer.serializer;
 
 import org.objectweb.asm.MethodVisitor;
 import transfer.Outputable;
+import transfer.compile.AsmContext;
 import transfer.utils.IdentityHashMap;
 
 import java.lang.reflect.Type;
@@ -26,8 +27,9 @@ public interface Serializer {
      * 预编译编码方法
      * @param type
      * @param mw serialze方法MethodVisitor
+     * @param context
      */
-    void compile(Type type, MethodVisitor mw);
+    void compile(Type type, MethodVisitor mw, AsmContext context);
 
 
     /**
