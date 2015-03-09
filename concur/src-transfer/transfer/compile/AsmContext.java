@@ -28,6 +28,16 @@ public class AsmContext implements Opcodes {
     private int methodId = 1;
 
 
+    /**
+     * 构造方法
+     * @param className
+     * @param classWriter
+     */
+    public AsmContext(String className, ClassWriter classWriter) {
+        this.className = className;
+        this.classWriter = classWriter;
+    }
+
 
     /**
      * 执行下一个编码方法
@@ -46,6 +56,9 @@ public class AsmContext implements Opcodes {
 
         return mv;
     }
+
+
+
 
 
 

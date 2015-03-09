@@ -7,6 +7,7 @@ import org.springframework.util.ReflectionUtils;
 import transfer.ByteArray;
 import transfer.anno.Ignore;
 import transfer.anno.Transferable;
+import transfer.compile.AsmSerializerFactory;
 import transfer.core.ClassInfo;
 import transfer.core.EnumInfo;
 import transfer.core.FieldInfo;
@@ -272,8 +273,25 @@ public class TransferConfig {
         // 获取唯一标识
         if (clazz.isAnnotationPresent(Transferable.class)) {
             Transferable transferable = clazz.getAnnotation(Transferable.class);
-            // 注册为对象解析方式
-            registerClass(clazz, transferable.id());
+
+            int classId = transferable.id();
+
+            Class oldClass = classIdMap.get(classId);
+            if (oldClass != null) {
+                logger.warn("注册解析类Id重复: " + clazz + ",Id: " + classId + " , (" + oldClass + ")");
+            }
+
+            classIdMap.put(classId, clazz);
+            idClassMap.put(clazz, classId);
+
+            boolean repeatRegisterSerializers,repeatRegisterDeSerializers;
+
+            repeatRegisterSerializers = serializers.put(clazz, AsmSerializerFactory.compileSerializer(clazz, ObjectSerializer.getInstance()));
+            repeatRegisterDeSerializers = typedDeserializers.put(clazz, ObjectDeSerializer.getInstance());
+
+            if (repeatRegisterSerializers || repeatRegisterDeSerializers) {
+                logger.warn("重复注册解析类:" + clazz + ",Id:" + classId);
+            }
 
             return;
         }

@@ -261,10 +261,10 @@ public class Transfer {
             return buffer.getByteArray();
         }
 
-        Serializer serializer = TransferConfig.getSerializer(object.getClass());
         ByteBuffer buffer = new ByteBuffer(bytesLength);
 
-        serializer.serialze(buffer, object, new IdentityHashMap(16));
+        encode(buffer, object);
+
         return buffer.getByteArray();
     }
 
