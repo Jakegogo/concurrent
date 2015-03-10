@@ -4,6 +4,7 @@ import org.apache.mina.util.ConcurrentHashSet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.ReflectionUtils;
+
 import transfer.ByteArray;
 import transfer.anno.Ignore;
 import transfer.anno.Transferable;
@@ -19,6 +20,7 @@ import transfer.serializer.*;
 import transfer.utils.ByteMap;
 import transfer.utils.IdentityHashMap;
 import transfer.utils.IntegerMap;
+import transfer.utils.TypeUtils;
 
 import java.lang.reflect.*;
 import java.math.BigDecimal;
@@ -42,7 +44,7 @@ public class TransferConfig {
 
     static final IdentityHashMap<Type, Deserializer> typedDeserializers = new IdentityHashMap<Type, Deserializer>();
 
-    static final IdentityHashMap<Class, Serializer> serializers = new IdentityHashMap<Class, Serializer>();
+    static final IdentityHashMap<Type, Serializer> serializers = new IdentityHashMap<Type, Serializer>();
 
     static final IdentityHashMap<Class, ClassInfo> classInfoMap = new IdentityHashMap<Class, ClassInfo>();
 
@@ -274,24 +276,7 @@ public class TransferConfig {
         if (clazz.isAnnotationPresent(Transferable.class)) {
             Transferable transferable = clazz.getAnnotation(Transferable.class);
 
-            int classId = transferable.id();
-
-            Class oldClass = classIdMap.get(classId);
-            if (oldClass != null) {
-                logger.warn("注册解析类Id重复: " + clazz + ",Id: " + classId + " , (" + oldClass + ")");
-            }
-
-            classIdMap.put(classId, clazz);
-            idClassMap.put(clazz, classId);
-
-            boolean repeatRegisterSerializers,repeatRegisterDeSerializers;
-
-            repeatRegisterSerializers = serializers.put(clazz, AsmSerializerFactory.compileSerializer(clazz, ObjectSerializer.getInstance()));
-            repeatRegisterDeSerializers = typedDeserializers.put(clazz, ObjectDeSerializer.getInstance());
-
-            if (repeatRegisterSerializers || repeatRegisterDeSerializers) {
-                logger.warn("重复注册解析类:" + clazz + ",Id:" + classId);
-            }
+            registerClass(clazz, transferable.id());
 
             return;
         }
@@ -366,6 +351,44 @@ public class TransferConfig {
 
         return serializer;
     }
+    
+    
+    /**
+     * 预编译编码器
+     * @param type
+     */
+    public static void preCompileSerializer(Type type) {
+    	
+    	Class<?> clazz = TypeUtils.getRawClass(type);
+    	
+    	// 获取唯一标识
+        if (clazz.isAnnotationPresent(Transferable.class)) {
+        	
+            Transferable transferable = clazz.getAnnotation(Transferable.class);
+            
+			int classId = transferable.id();
+			
+	        classIdMap.put(classId, clazz);
+	        idClassMap.put(clazz, classId);
+		
+	        if (clazz.isEnum() || (clazz.getSuperclass() != null && clazz.getSuperclass().isEnum())) { // 枚举类型
+	            serializers.put(clazz, EnumSerializer.getInstance());
+	            typedDeserializers.put(clazz, EnumDeserializer.getInstance());
+	        } else {
+	            serializers.put(clazz, AsmSerializerFactory.compileSerializer(clazz, ObjectSerializer.getInstance()));
+	            typedDeserializers.put(clazz, ObjectDeSerializer.getInstance());
+	        }
+	        
+        } else {
+        	
+        	Serializer outerSerializer = getSerializer(clazz);
+        	
+        	serializers.put(type, AsmSerializerFactory.compileSerializer(type, outerSerializer));
+            typedDeserializers.put(type, ObjectDeSerializer.getInstance());
+        	
+        }
+        
+	}
 
 
     /**

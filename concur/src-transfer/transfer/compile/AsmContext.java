@@ -43,17 +43,21 @@ public class AsmContext implements Opcodes {
      * 执行下一个编码方法
      * @return
      * @param name
+     * @param curMethodVisitor 
      */
-    public MethodVisitor invokeNextSerialize(String name) {
+    public MethodVisitor invokeNextSerialize(String name, MethodVisitor curMethodVisitor) {
 
         if (name == null) {
             name = "default";
         }
+        
+        String newMethodName = "serialze_" + name + "_" + (methodId ++);
 
-        MethodVisitor mv = classWriter.visitMethod(ACC_PUBLIC, "serialze_" + name + "_" + (methodId ++), "(Ltransfer/Outputable;Ljava/lang/Object;Ltransfer/utils/IdentityHashMap;)V", null, null);
-
-        mv.visitMethodInsn(INVOKEVIRTUAL, AsmUtils.toAsmCls(className), "serialze", "(Ltransfer/Outputable;Ljava/lang/Object;Ltransfer/utils/IdentityHashMap;)V", true);
-
+        curMethodVisitor.visitMethodInsn(INVOKEVIRTUAL, AsmUtils.toAsmCls(className), newMethodName, "(Ltransfer/Outputable;Ljava/lang/Object;Ltransfer/utils/IdentityHashMap;)V", true);
+        
+        MethodVisitor mv = classWriter.visitMethod(ACC_PUBLIC, newMethodName, "(Ltransfer/Outputable;Ljava/lang/Object;Ltransfer/utils/IdentityHashMap;)V", null, null);
+        mv.visitCode();
+        
         return mv;
     }
 

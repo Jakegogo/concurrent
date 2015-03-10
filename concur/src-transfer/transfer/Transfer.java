@@ -1,12 +1,17 @@
 package transfer;
 
+import transfer.compile.AsmSerializerFactory;
 import transfer.core.ByteDataMeta;
 import transfer.def.TransferConfig;
 import transfer.def.Types;
 import transfer.deserializer.CollectionDeSerializer;
 import transfer.deserializer.Deserializer;
 import transfer.deserializer.EntryDeserializer;
+import transfer.deserializer.EnumDeserializer;
 import transfer.deserializer.MapDeSerializer;
+import transfer.deserializer.ObjectDeSerializer;
+import transfer.serializer.EnumSerializer;
+import transfer.serializer.ObjectSerializer;
 import transfer.serializer.Serializer;
 import transfer.utils.IdentityHashMap;
 import transfer.utils.IntegerMap;
@@ -268,5 +273,16 @@ public class Transfer {
         return buffer.getByteArray();
     }
 
+    
+    /**
+     * 解析器预编译
+     * @param type
+     */
+    public static void preCompile(Type type) {
+    	
+    	TransferConfig.preCompileSerializer(type);
+    	
+    }
+    
 
 }

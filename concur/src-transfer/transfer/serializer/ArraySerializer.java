@@ -39,7 +39,7 @@ public class ArraySerializer implements Serializer {
 
     @Override
     public void compile(Type type, MethodVisitor mw, AsmContext context) {
-
+    	
     }
 
 

@@ -59,6 +59,7 @@ public class ObjectSerializer implements Serializer, Opcodes {
     @Override
     public void compile(Type type, MethodVisitor mv, AsmContext context) {
 
+    	mv.visitCode();
         mv.visitVarInsn(ALOAD, 2);
         Label l1 = new Label();
         mv.visitJumpInsn(IFNONNULL, l1);
@@ -82,7 +83,6 @@ public class ObjectSerializer implements Serializer, Opcodes {
         ClassInfo classInfo = TransferConfig.getOrCreateClassInfo(clazz);
 
         mv.visitVarInsn(ALOAD, 1);
-        mv.visitVarInsn(ALOAD, 5);
         mv.visitIntInsn(BIPUSH, classInfo.getClassId());
         mv.visitMethodInsn(INVOKESTATIC, "transfer/utils/BitUtils", "putInt2", "(Ltransfer/Outputable;I)V", false);
 
@@ -93,8 +93,10 @@ public class ObjectSerializer implements Serializer, Opcodes {
 
             String serializerClassName = fieldSerializer.getClass().getName();
 
-            mv.visitMethodInsn(INVOKESTATIC, AsmUtils.toAsmCls(serializerClassName), "getInstance", "()" + "L" + AsmUtils.toAsmCls(serializerClassName) + ";", false);
+         //   mv.visitMethodInsn(INVOKESTATIC, AsmUtils.toAsmCls(serializerClassName), "getInstance", "()" + "L" + AsmUtils.toAsmCls(serializerClassName) + ";", false);
 
+            mv.visitVarInsn(ALOAD, 0);
+            
             mv.visitVarInsn(ALOAD, 1);
 
             PropertyDescriptor propertyDescriptor = null;
@@ -123,12 +125,16 @@ public class ObjectSerializer implements Serializer, Opcodes {
             mv.visitVarInsn(ALOAD, 3);
 
             // 执行属性预编译
-            MethodVisitor methodVisitor = context.invokeNextSerialize(fieldInfo.getFieldName());
+            MethodVisitor methodVisitor = context.invokeNextSerialize(fieldInfo.getFieldName(), mv);
 
             fieldSerializer.compile(fieldInfo.getType(), methodVisitor, context);
 
         }
 
+        
+        mv.visitInsn(RETURN);
+        mv.visitMaxs(2, 4);
+        mv.visitEnd();
 
     }
 

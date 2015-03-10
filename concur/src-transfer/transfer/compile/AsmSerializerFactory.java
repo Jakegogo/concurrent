@@ -27,7 +27,7 @@ public class AsmSerializerFactory implements Opcodes {
     /**
      * asm动态生成编码器ID自增
      */
-    private static AtomicInteger SERIALIZER_ID_GENERATOR = new AtomicInteger(1);
+    private static AtomicInteger SERIALIZER_ID_GENERATOR = new AtomicInteger(0);
 
 
     /**
@@ -42,6 +42,8 @@ public class AsmSerializerFactory implements Opcodes {
 
         byte[] bytes = createSerializerClassBytes(asmClassName, type, outerSerializer);
 
+        AsmUtils.writeClazz(asmClassName, bytes);
+        
         Class<?> serializerClass = (Class<?>) classLoader.defineClass(
                 asmClassName, bytes);
 
@@ -84,13 +86,9 @@ public class AsmSerializerFactory implements Opcodes {
         }
         {
             mv = cw.visitMethod(ACC_PUBLIC, "serialze", "(Ltransfer/Outputable;Ljava/lang/Object;Ltransfer/utils/IdentityHashMap;)V", null, null);
-            mv.visitCode();
 
             outerSerializer.compile(type, mv, new AsmContext(className, cw));
 
-            mv.visitInsn(RETURN);
-            mv.visitMaxs(2, 4);
-            mv.visitEnd();
         }
         {
             mv = cw.visitMethod(ACC_PUBLIC, "compile", "(Ljava/lang/reflect/Type;Lorg/objectweb/asm/MethodVisitor;Ltransfer/compile/AsmContext;)V", null, null);

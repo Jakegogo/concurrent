@@ -13,6 +13,8 @@ public class TestTransfer {
     public static void main(String[] args) {
 
 //        Config.registerClass(Entity.class, 1);
+    	
+    	Transfer.preCompile(Entity.class);
 
         Entity entity = new Entity();
         entity.setId(System.currentTimeMillis());
