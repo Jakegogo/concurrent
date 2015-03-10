@@ -131,9 +131,6 @@ public class CollectionSerializer implements Serializer, Opcodes {
 			mv.visitMethodInsn(INVOKEINTERFACE, "java/util/Iterator", "next", "()Ljava/lang/Object;", true);
 			mv.visitVarInsn(ASTORE, 5);
 			
-			Serializer fieldSerializer = TransferConfig.getSerializer(elementClass);
-            String serializerClassName = fieldSerializer.getClass().getName();
-            
             
 			mv.visitVarInsn(ALOAD, 0);
 			
@@ -144,6 +141,7 @@ public class CollectionSerializer implements Serializer, Opcodes {
 			// 执行属性预编译
             MethodVisitor methodVisitor = context.invokeNextSerialize(null, mv);
 
+            Serializer fieldSerializer = TransferConfig.getSerializer(elementClass);
             fieldSerializer.compile(elementType, methodVisitor, context);
 			
 			mv.visitLabel(l7);

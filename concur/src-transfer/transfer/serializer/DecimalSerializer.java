@@ -1,12 +1,16 @@
 package transfer.serializer;
 
+import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
+import org.objectweb.asm.Opcodes;
+
 import transfer.Outputable;
 import transfer.compile.AsmContext;
 import transfer.def.TransferConfig;
 import transfer.def.Types;
 import transfer.utils.BitUtils;
 import transfer.utils.IdentityHashMap;
+import transfer.utils.TypeUtils;
 
 import java.lang.reflect.Type;
 import java.math.BigDecimal;
@@ -15,7 +19,7 @@ import java.math.BigDecimal;
  * 浮点数编码器
  * Created by Jake on 2015/2/26.
  */
-public class DecimalSerializer implements Serializer {
+public class DecimalSerializer implements Serializer, Opcodes {
 
 
     @Override
@@ -44,8 +48,57 @@ public class DecimalSerializer implements Serializer {
     }
 
     @Override
-    public void compile(Type type, MethodVisitor mw, AsmContext context) {
+    public void compile(Type type, MethodVisitor mv, AsmContext context) {
+    	
+    	mv.visitCode();
+        mv.visitVarInsn(ALOAD, 2);
+        Label l1 = new Label();
+        mv.visitJumpInsn(IFNONNULL, l1);
 
+        mv.visitVarInsn(ALOAD, 1);
+        mv.visitInsn(ICONST_1);
+        mv.visitMethodInsn(INVOKEINTERFACE, "transfer/Outputable", "putByte", "(B)V", true);
+
+        mv.visitInsn(RETURN);
+        mv.visitLabel(l1);
+
+        mv.visitFrame(Opcodes.F_SAME, 0, null, 0, null);
+        
+        
+        mv.visitVarInsn(ALOAD, 2);
+        mv.visitTypeInsn(CHECKCAST, "java/lang/Number");
+        mv.visitVarInsn(ASTORE, 4);
+        
+        Class<?> decimalClass = TypeUtils.getRawClass(type);
+        
+        if (decimalClass == float.class || decimalClass == Float.class) {
+        	
+        	mv.visitVarInsn(ALOAD, 1);
+        	mv.visitIntInsn(BIPUSH, (Types.DECIMAL | TransferConfig.FLOAT));
+        	mv.visitMethodInsn(INVOKEINTERFACE, "transfer/Outputable", "putByte", "(B)V", true);
+        	mv.visitVarInsn(ALOAD, 1);
+        	mv.visitVarInsn(ALOAD, 4);
+        	mv.visitMethodInsn(INVOKEVIRTUAL, "java/lang/Number", "floatValue", "()F", false);
+        	mv.visitMethodInsn(INVOKESTATIC, "java/lang/Float", "floatToRawIntBits", "(F)I", false);
+        	mv.visitMethodInsn(INVOKESTATIC, "transfer/utils/BitUtils", "putInt", "(Ltransfer/Outputable;I)V", false);
+        	
+        } else if (decimalClass == double.class || decimalClass == Double.class) {
+        	
+        	mv.visitVarInsn(ALOAD, 1);
+        	mv.visitIntInsn(BIPUSH, (Types.DECIMAL | TransferConfig.DOUBLE));
+        	mv.visitMethodInsn(INVOKEINTERFACE, "transfer/Outputable", "putByte", "(B)V", true);
+        	mv.visitVarInsn(ALOAD, 1);
+        	mv.visitVarInsn(ALOAD, 4);
+        	mv.visitMethodInsn(INVOKEVIRTUAL, "java/lang/Number", "doubleValue", "()D", false);
+        	mv.visitMethodInsn(INVOKESTATIC, "java/lang/Double", "doubleToRawLongBits", "(D)J", false);
+        	mv.visitMethodInsn(INVOKESTATIC, "transfer/utils/BitUtils", "putLong", "(Ltransfer/Outputable;J)V", false);
+        	
+        }
+    	
+        mv.visitInsn(RETURN);
+        mv.visitMaxs(4, 5);
+        mv.visitEnd();
+        
     }
 
 
