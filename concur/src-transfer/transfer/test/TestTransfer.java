@@ -14,7 +14,7 @@ public class TestTransfer {
 
 //        Config.registerClass(Entity.class, 1);
     	
-    	Transfer.preCompile(Entity.class);
+//    	Transfer.preCompile(Entity.class);
 
         Entity entity = new Entity();
         entity.setId(System.currentTimeMillis());

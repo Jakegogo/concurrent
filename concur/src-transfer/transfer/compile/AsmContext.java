@@ -61,7 +61,10 @@ public class AsmContext implements Opcodes {
         return mv;
     }
 
-
+    		
+	public ClassWriter getClassWriter() {
+		return classWriter;
+	}
 
 
 

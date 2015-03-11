@@ -4,16 +4,20 @@ import dbcache.EntityInitializer;
 import dbcache.IEntity;
 import dbcache.anno.ChangeFields;
 import dbcache.anno.JsonType;
+
 import org.apache.mina.util.ConcurrentHashSet;
 import org.hibernate.annotations.Index;
+
 import transfer.anno.Transferable;
 
 import javax.persistence.Column;
 import javax.persistence.Id;
 import javax.persistence.Transient;
+
 import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.util.Date;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
 //@MappedSuperclass
@@ -46,6 +50,8 @@ public class Entity implements EntityInitializer, IEntity<Long>, Serializable {
 	private String str;
 
 	private Boolean bool;
+	
+	private Map<String,Object> map;
 
 
 	@JsonType
@@ -227,5 +233,13 @@ public class Entity implements EntityInitializer, IEntity<Long>, Serializable {
 
 	public void setBool(Boolean bool) {
 		this.bool = bool;
+	}
+
+	public Map<String,Object> getMap() {
+		return map;
+	}
+
+	public void setMap(Map<String,Object> map) {
+		this.map = map;
 	}
 }

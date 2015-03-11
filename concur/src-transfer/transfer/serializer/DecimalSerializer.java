@@ -8,12 +8,14 @@ import transfer.Outputable;
 import transfer.compile.AsmContext;
 import transfer.def.TransferConfig;
 import transfer.def.Types;
+import transfer.exception.CompileError;
 import transfer.utils.BitUtils;
 import transfer.utils.IdentityHashMap;
 import transfer.utils.TypeUtils;
 
 import java.lang.reflect.Type;
 import java.math.BigDecimal;
+
 
 /**
  * 浮点数编码器
@@ -70,8 +72,9 @@ public class DecimalSerializer implements Serializer, Opcodes {
         mv.visitVarInsn(ASTORE, 4);
         
         Class<?> decimalClass = TypeUtils.getRawClass(type);
-        
-        if (decimalClass == float.class || decimalClass == Float.class) {
+        if (decimalClass == null || decimalClass == Object.class) {
+        	throw new CompileError("浮点类型不确定.(" + type + ")");
+        } else if (decimalClass == float.class || decimalClass == Float.class) {
         	
         	mv.visitVarInsn(ALOAD, 1);
         	mv.visitIntInsn(BIPUSH, (Types.DECIMAL | TransferConfig.FLOAT));

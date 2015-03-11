@@ -10,4 +10,9 @@ public class CompileError extends RuntimeException {
         super("asm 模版编译错误 !", e);
     }
 
+	public CompileError(String arg0) {
+		super(arg0);
+	}
+	
+
 }
