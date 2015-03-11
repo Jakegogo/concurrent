@@ -2,9 +2,11 @@ package transfer.compile;
 
 import dbcache.support.asm.AsmClassLoader;
 import dbcache.support.asm.util.AsmUtils;
+import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
+import org.objectweb.asm.util.CheckClassAdapter;
 import transfer.exception.CompileError;
 import transfer.serializer.Serializer;
 import transfer.utils.TypeUtils;
@@ -70,7 +72,8 @@ public class AsmSerializerFactory implements Opcodes {
      */
     private static byte[] createSerializerClassBytes(String className, Type type, Serializer outerSerializer) {
 
-        ClassWriter cw = new ClassWriter(ClassWriter.COMPUTE_MAXS);
+        ClassWriter cwr = new ClassWriter(ClassWriter.COMPUTE_MAXS);
+        ClassVisitor cw = new CheckClassAdapter(cwr);
         MethodVisitor mv;
 
         cw.visit(V1_6, ACC_PUBLIC + ACC_SUPER, AsmUtils.toAsmCls(className), null, "java/lang/Object", new String[] { "transfer/serializer/Serializer" });
@@ -87,7 +90,7 @@ public class AsmSerializerFactory implements Opcodes {
         {
             mv = cw.visitMethod(ACC_PUBLIC, "serialze", "(Ltransfer/Outputable;Ljava/lang/Object;Ltransfer/utils/IdentityHashMap;)V", null, null);
 
-            outerSerializer.compile(type, mv, new AsmContext(className, cw));
+            outerSerializer.compile(type, mv, new AsmContext(className, cwr));
 
         }
         {
@@ -100,7 +103,7 @@ public class AsmSerializerFactory implements Opcodes {
 
         cw.visitEnd();
 
-        return cw.toByteArray();
+        return cwr.toByteArray();
     }
 
 

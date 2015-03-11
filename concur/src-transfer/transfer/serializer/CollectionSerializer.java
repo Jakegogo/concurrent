@@ -3,8 +3,6 @@ package transfer.serializer;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
-
-import dbcache.support.asm.util.AsmUtils;
 import transfer.Outputable;
 import transfer.compile.AsmContext;
 import transfer.def.TransferConfig;
@@ -67,7 +65,7 @@ public class CollectionSerializer implements Serializer, Opcodes {
         mv.visitFrame(Opcodes.F_SAME, 0, null, 0, null);
 
         mv.visitVarInsn(ALOAD, 1);
-        mv.visitIntInsn(BIPUSH, (int) Types.COLLECTION);
+        mv.visitIntInsn(SIPUSH, (int) Types.COLLECTION);
         mv.visitMethodInsn(INVOKEINTERFACE, "transfer/Outputable", "putByte", "(B)V", true);
 
         
@@ -96,7 +94,7 @@ public class CollectionSerializer implements Serializer, Opcodes {
 			mv.visitJumpInsn(GOTO, l7);
 			Label l8 = new Label();
 			mv.visitLabel(l8);
-			mv.visitFrame(Opcodes.F_FULL, 7, new Object[] {"transfer/serializer/CollectionSerializer", "transfer/Outputable", "java/lang/Object", "transfer/utils/IdentityHashMap", "java/util/Collection", Opcodes.TOP, "java/util/Iterator"}, 0, new Object[] {});
+		//	mv.visitFrame(Opcodes.F_FULL, 7, new Object[] {"transfer/serializer/CollectionSerializer", "transfer/Outputable", "java/lang/Object", "transfer/utils/IdentityHashMap", "java/util/Collection", Opcodes.TOP, "java/util/Iterator"}, 0, new Object[] {});
 			mv.visitVarInsn(ALOAD, 6);
 			mv.visitMethodInsn(INVOKEINTERFACE, "java/util/Iterator", "next", "()Ljava/lang/Object;", true);
 			mv.visitVarInsn(ASTORE, 5);
@@ -126,7 +124,7 @@ public class CollectionSerializer implements Serializer, Opcodes {
 			mv.visitJumpInsn(GOTO, l7);
 			Label l8 = new Label();
 			mv.visitLabel(l8);
-			mv.visitFrame(Opcodes.F_FULL, 7, new Object[] {"transfer/serializer/CollectionSerializer", "transfer/Outputable", "java/lang/Object", "transfer/utils/IdentityHashMap", "java/util/Collection", Opcodes.TOP, "java/util/Iterator"}, 0, new Object[] {});
+		//	mv.visitFrame(Opcodes.F_FULL, 7, new Object[] {"transfer/serializer/CollectionSerializer", "transfer/Outputable", "java/lang/Object", "transfer/utils/IdentityHashMap", "java/util/Collection", Opcodes.TOP, "java/util/Iterator"}, 0, new Object[] {});
 			mv.visitVarInsn(ALOAD, 6);
 			mv.visitMethodInsn(INVOKEINTERFACE, "java/util/Iterator", "next", "()Ljava/lang/Object;", true);
 			mv.visitVarInsn(ASTORE, 5);

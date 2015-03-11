@@ -27,6 +27,11 @@ public class AsmContext implements Opcodes {
      */
     private int methodId = 1;
 
+    /**
+     * 是否增加数字公共方法
+     */
+    private boolean addNumberSerializeCommonMethod = false;
+
 
     /**
      * 构造方法
@@ -53,10 +58,10 @@ public class AsmContext implements Opcodes {
         
         String newMethodName = "serialze_" + name + "_" + (methodId ++);
 
-        curMethodVisitor.visitMethodInsn(INVOKEVIRTUAL, AsmUtils.toAsmCls(className), newMethodName, "(Ltransfer/Outputable;Ljava/lang/Object;Ltransfer/utils/IdentityHashMap;)V", true);
-        
         MethodVisitor mv = classWriter.visitMethod(ACC_PUBLIC, newMethodName, "(Ltransfer/Outputable;Ljava/lang/Object;Ltransfer/utils/IdentityHashMap;)V", null, null);
         mv.visitCode();
+
+        curMethodVisitor.visitMethodInsn(INVOKEINTERFACE, AsmUtils.toAsmCls(className), newMethodName, "(Ltransfer/Outputable;Ljava/lang/Object;Ltransfer/utils/IdentityHashMap;)V", true);
         
         return mv;
     }
@@ -67,8 +72,18 @@ public class AsmContext implements Opcodes {
 	}
 
 
+    public String getClassName() {
+        return className;
+    }
 
 
+    public boolean isAddNumberSerializeCommonMethod() {
+        return addNumberSerializeCommonMethod;
+    }
+
+    public void setAddNumberSerializeCommonMethod(boolean addNumberSerializeCommonMethod) {
+        this.addNumberSerializeCommonMethod = addNumberSerializeCommonMethod;
+    }
 
 
 }
