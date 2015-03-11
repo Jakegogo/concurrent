@@ -73,10 +73,10 @@ public class AsmSerializerFactory implements Opcodes {
     private static byte[] createSerializerClassBytes(String className, Type type, Serializer outerSerializer) {
 
         ClassWriter cwr = new ClassWriter(ClassWriter.COMPUTE_MAXS);
-        ClassVisitor cw = new CheckClassAdapter(cwr);
+        ClassVisitor cw = new CheckClassAdapter(cwr, false);
         MethodVisitor mv;
 
-        cw.visit(V1_6, ACC_PUBLIC + ACC_SUPER, AsmUtils.toAsmCls(className), null, "java/lang/Object", new String[] { "transfer/serializer/Serializer" });
+        cw.visit(V1_6, ACC_PUBLIC, AsmUtils.toAsmCls(className), null, "java/lang/Object", new String[] { "transfer/serializer/Serializer" });
 
         {
             mv = cw.visitMethod(ACC_PUBLIC, "<init>", "()V", null, null);

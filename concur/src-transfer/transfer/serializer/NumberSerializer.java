@@ -332,7 +332,7 @@ public class NumberSerializer implements Serializer, Opcodes {
             mv.visitLabel(l3);
             mv.visitFrame(Opcodes.F_APPEND,2, new Object[] {Opcodes.LONG, Opcodes.INTEGER}, 0, null);
             mv.visitVarInsn(LLOAD, 3);
-            mv.visitIntInsn(SIPUSH, 128);
+            mv.visitLdcInsn(new Long(128L));
             mv.visitInsn(LCMP);
             Label l6 = new Label();
             mv.visitJumpInsn(IFGE, l6);

@@ -80,6 +80,10 @@ public class ObjectSerializer implements Serializer, Opcodes {
 
         Class<?> clazz = TypeUtils.getRawClass(type);
 
+        mv.visitVarInsn(ALOAD, 2);
+        mv.visitTypeInsn(CHECKCAST, AsmUtils.toAsmCls(clazz.getName()));
+        mv.visitVarInsn(ASTORE, 4);
+
         ClassInfo classInfo = TransferConfig.getOrCreateClassInfo(clazz);
 
         mv.visitVarInsn(ALOAD, 1);
@@ -113,7 +117,7 @@ public class ObjectSerializer implements Serializer, Opcodes {
             final org.objectweb.asm.Type mt = org.objectweb.asm.Type.getType(getMethod);
 
             //获取this.target
-            mv.visitVarInsn(ALOAD, 2);
+            mv.visitVarInsn(ALOAD, 4);
 
             mv.visitMethodInsn(INVOKEVIRTUAL,
                     AsmUtils.toAsmCls(clazz.getName()), getMethod.getName(),
@@ -133,7 +137,7 @@ public class ObjectSerializer implements Serializer, Opcodes {
 
         
         mv.visitInsn(RETURN);
-        mv.visitMaxs(2, 4);
+        mv.visitMaxs(3, 5);
         mv.visitEnd();
 
     }
