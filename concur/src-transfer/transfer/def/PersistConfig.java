@@ -363,7 +363,7 @@ public class PersistConfig {
             return classInfo;
         }
 
-        int classId = TransferConfig.getClassId(clazz);
+        int classId = PersistConfig.getClassId(clazz);
         // 枚举类型
         if (clazz.isEnum()) {
 

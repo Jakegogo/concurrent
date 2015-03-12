@@ -31,6 +31,7 @@ public class TestPersister {
         entity.getFriends().add(1l);
         entity.getFriends().add(2l);
         entity.getFriends().add(3l);
+        entity.setA(null);
 
         ByteArray byteArray = Persister.encode(entity, 187);
 
