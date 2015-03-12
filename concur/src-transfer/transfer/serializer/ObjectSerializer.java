@@ -5,7 +5,7 @@ import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 import transfer.Outputable;
-import transfer.compile.AsmContext;
+import transfer.compile.AsmSerializerContext;
 import transfer.core.ClassInfo;
 import transfer.core.FieldInfo;
 import transfer.def.TransferConfig;
@@ -57,7 +57,7 @@ public class ObjectSerializer implements Serializer, Opcodes {
 
 
     @Override
-    public void compile(Type type, MethodVisitor mv, AsmContext context) {
+    public void compile(Type type, MethodVisitor mv, AsmSerializerContext context) {
 
     	mv.visitCode();
         mv.visitVarInsn(ALOAD, 2);
@@ -121,7 +121,7 @@ public class ObjectSerializer implements Serializer, Opcodes {
 
             mv.visitMethodInsn(INVOKEVIRTUAL,
                     AsmUtils.toAsmCls(clazz.getName()), getMethod.getName(),
-                    mt.toString());
+                    mt.toString(), false);
 
             // 处理返回值类型 到 Object类型
             AsmUtils.withBoxingType(mv, rt);

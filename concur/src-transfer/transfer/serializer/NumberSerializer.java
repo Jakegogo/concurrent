@@ -7,7 +7,7 @@ import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 
 import transfer.Outputable;
-import transfer.compile.AsmContext;
+import transfer.compile.AsmSerializerContext;
 import transfer.def.TransferConfig;
 import transfer.def.Types;
 import transfer.exception.CompileError;
@@ -128,7 +128,7 @@ public class NumberSerializer implements Serializer, Opcodes {
     
 
     @Override
-    public void compile(Type type, MethodVisitor mv, AsmContext context) {
+    public void compile(Type type, MethodVisitor mv, AsmSerializerContext context) {
     	
     	this.addPutValMethods(mv, context.getClassWriter(), context);
     	
@@ -178,7 +178,7 @@ public class NumberSerializer implements Serializer, Opcodes {
     }
 
 
-    private void addPutValMethods(MethodVisitor mv, ClassWriter cw, AsmContext context) {
+    private void addPutValMethods(MethodVisitor mv, ClassWriter cw, AsmSerializerContext context) {
 
         if (context.isAddNumberSerializeCommonMethod()) {
             return;

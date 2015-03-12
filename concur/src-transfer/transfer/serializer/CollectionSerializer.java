@@ -4,7 +4,7 @@ import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 import transfer.Outputable;
-import transfer.compile.AsmContext;
+import transfer.compile.AsmSerializerContext;
 import transfer.def.TransferConfig;
 import transfer.def.Types;
 import transfer.utils.BitUtils;
@@ -48,7 +48,7 @@ public class CollectionSerializer implements Serializer, Opcodes {
     }
 
     @Override
-    public void compile(Type type, MethodVisitor mv, AsmContext context) {
+    public void compile(Type type, MethodVisitor mv, AsmSerializerContext context) {
     	
     	mv.visitCode();
         mv.visitVarInsn(ALOAD, 2);

@@ -9,7 +9,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 import org.objectweb.asm.MethodVisitor;
 import transfer.Outputable;
-import transfer.compile.AsmContext;
+import transfer.compile.AsmSerializerContext;
 import transfer.def.TransferConfig;
 import transfer.serializer.Serializer;
 import transfer.utils.BitUtils;
@@ -293,7 +293,7 @@ public class Entity_1
     putLongVal(paramOutputable, localNumber);
   }
 
-  public void compile(Type paramType, MethodVisitor paramMethodVisitor, AsmContext paramAsmContext)
+  public void compile(Type paramType, MethodVisitor paramMethodVisitor, AsmSerializerContext paramAsmContext)
   {
   }
 }

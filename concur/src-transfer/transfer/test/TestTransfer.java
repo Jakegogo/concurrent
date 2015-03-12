@@ -3,7 +3,17 @@ package transfer.test;
 import transfer.ByteArray;
 import transfer.Transfer;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.util.Date;
+import java.util.zip.Deflater;
+
+import org.slf4j.helpers.FormattingTuple;
+import org.slf4j.helpers.MessageFormatter;
+
+import net.jpountz.lz4.LZ4Compressor;
+import net.jpountz.lz4.LZ4Factory;
+import dbcache.utils.JsonUtils;
 
 /**
  * Created by Administrator on 2015/2/26.
@@ -27,13 +37,18 @@ public class TestTransfer {
         entity.getFriends().add(1l);
         entity.getFriends().add(2l);
         entity.getFriends().add(3l);
+        entity.setA(null);
 
         ByteArray byteArray = Transfer.encode(entity, 187);
 
         byte[] bytes = byteArray.toBytes();
         System.out.println(bytes);
         System.out.println("length:" + bytes.length);
-
+        showLZ4CompressSize(bytes);
+        showDeflaterCompressSize(bytes);
+        System.out.println("json length:" + JsonUtils.object2Bytes(entity).length);
+        showLZ4CompressSize(JsonUtils.object2Bytes(entity));
+        showDeflaterCompressSize(JsonUtils.object2Bytes(entity));
 
         Entity entity1 = Transfer.decode(bytes, Entity.class);
         System.out.println(entity1);
@@ -46,5 +61,66 @@ public class TestTransfer {
         System.out.println(entity1.getBool());
         System.out.println(entity1.getFval());
     }
+    
+    
+    private static void showLZ4CompressSize(byte[] data) {
+    	LZ4Factory factory = LZ4Factory.fastestInstance();
+
+        final int decompressedLength = data.length;
+
+        // compress data
+        LZ4Compressor compressor = factory.highCompressor(16);
+        int maxCompressedLength = compressor.maxCompressedLength(decompressedLength);
+        byte[] compressed = new byte[maxCompressedLength];
+        int compressedLength = compressor.compress(data, 0, decompressedLength, compressed, 0, maxCompressedLength);
+        System.out.println("LZ4 compressedLength:" + compressedLength);
+    }
+    
+    
+    private static void showDeflaterCompressSize(byte[] data) {
+    	
+    	byte[] zipbytes = zip(data, 9);
+    	
+        System.out.println("Deflater compressedLength:" + zipbytes.length);
+    }
+    
+    
+    static final int DEFUALT_BUFFER_SIZE = 1024;
+    
+    public static byte[] zip(byte[] src, int level) {
+		if (level < Deflater.NO_COMPRESSION || level > Deflater.BEST_COMPRESSION) {
+			FormattingTuple message = MessageFormatter.format("不合法的压缩等级[{}]", level);
+			throw new IllegalArgumentException(message.getMessage());
+		}
+		ByteArrayOutputStream baos = null;
+		try{
+			Deflater df = new Deflater(level);
+			df.setInput(src);
+			df.finish();
+
+			baos = new ByteArrayOutputStream(DEFUALT_BUFFER_SIZE);
+			byte[] buff = new byte[DEFUALT_BUFFER_SIZE];
+			int whileCount = 0;
+			while (!df.finished()) {
+				if(whileCount >= 9999999){
+					break;
+				}
+				int count = df.deflate(buff);
+				baos.write(buff, 0, count);
+				whileCount ++;
+			}
+			df.end();
+		}finally{
+			if(baos != null){
+				try {
+					baos.close();
+				} catch (IOException e) {
+					// 永远不会执行的
+				}
+			}
+		}
+		return baos.toByteArray();
+	}
+    
 
 }

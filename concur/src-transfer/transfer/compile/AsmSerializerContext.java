@@ -10,7 +10,7 @@ import org.objectweb.asm.Opcodes;
  * 预编译上下文
  * Created by Jake on 2015/3/8.
  */
-public class AsmContext implements Opcodes {
+public class AsmSerializerContext implements Opcodes {
 
     /**
      * 类名
@@ -38,7 +38,7 @@ public class AsmContext implements Opcodes {
      * @param className
      * @param classWriter
      */
-    public AsmContext(String className, ClassWriter classWriter) {
+    public AsmSerializerContext(String className, ClassWriter classWriter) {
         this.className = className;
         this.classWriter = classWriter;
     }

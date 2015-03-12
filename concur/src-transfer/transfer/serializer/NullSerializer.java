@@ -4,7 +4,7 @@ import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 
 import transfer.Outputable;
-import transfer.compile.AsmContext;
+import transfer.compile.AsmSerializerContext;
 import transfer.def.Types;
 import transfer.utils.IdentityHashMap;
 
@@ -25,7 +25,7 @@ public class NullSerializer implements Serializer, Opcodes {
     }
 
     @Override
-    public void compile(Type type, MethodVisitor mv, AsmContext context) {
+    public void compile(Type type, MethodVisitor mv, AsmSerializerContext context) {
     	
     	mv.visitVarInsn(ALOAD, 1);
     	mv.visitInsn(ICONST_1);

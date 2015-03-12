@@ -1,5 +1,6 @@
 package transfer.test;
 
+import dbcache.test.Entity;
 import transfer.ByteArray;
 import transfer.Transfer;
 import transfer.def.TransferConfig;
@@ -12,6 +13,8 @@ public class TestEncodeProfile {
     public static void main(String[] args) {
 
         TransferConfig.registerClass(Entity.class, 1);
+        
+        Transfer.preCompile(Entity.class);
 
         Entity entity = new Entity();
         entity.setUid(101);

@@ -6,7 +6,7 @@ import org.objectweb.asm.Opcodes;
 
 import dbcache.support.asm.util.AsmUtils;
 import transfer.Outputable;
-import transfer.compile.AsmContext;
+import transfer.compile.AsmSerializerContext;
 import transfer.core.ClassInfo;
 import transfer.core.FieldInfo;
 import transfer.def.TransferConfig;
@@ -58,7 +58,7 @@ public class ObjectAsmProxySerializer implements Serializer, Opcodes {
     
 
     @Override
-    public void compile(Type type, MethodVisitor mv, AsmContext context) {
+    public void compile(Type type, MethodVisitor mv, AsmSerializerContext context) {
     	
     	mv.visitCode();
         mv.visitVarInsn(ALOAD, 2);
