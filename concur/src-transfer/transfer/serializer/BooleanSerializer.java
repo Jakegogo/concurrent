@@ -54,11 +54,6 @@ public class BooleanSerializer implements Serializer, Opcodes {
         mv.visitLabel(l1);
 
         mv.visitFrame(Opcodes.F_SAME, 0, null, 0, null);
-
-        mv.visitVarInsn(ALOAD, 1);
-        mv.visitIntInsn(BIPUSH, (int) Types.BOOLEAN);
-        mv.visitMethodInsn(INVOKEINTERFACE, "transfer/Outputable", "putByte", "(B)V", true);
-
         
         mv.visitFrame(Opcodes.F_SAME, 0, null, 0, null);
         mv.visitVarInsn(ALOAD, 2);
@@ -83,7 +78,7 @@ public class BooleanSerializer implements Serializer, Opcodes {
         mv.visitLabel(l8);
         mv.visitFrame(Opcodes.F_APPEND,1, new Object[] {Opcodes.INTEGER}, 0, null);
         mv.visitVarInsn(ALOAD, 1);
-        mv.visitIntInsn(BIPUSH, 48);
+        mv.visitIntInsn(BIPUSH, Types.BOOLEAN);
         mv.visitVarInsn(ILOAD, 5);
         mv.visitInsn(IOR);
         mv.visitInsn(I2B);

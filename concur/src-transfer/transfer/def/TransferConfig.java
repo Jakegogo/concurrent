@@ -403,10 +403,13 @@ public class TransferConfig {
             return classInfo;
         }
 
+        
+        int classId = TransferConfig.getClassId(clazz);
         // 枚举类型
         if (clazz.isEnum()) {
 
-            classInfo = EnumInfo.valueOf(clazz);
+            classInfo = EnumInfo.valueOf(clazz, classId);
+            
             classInfoMap.put(clazz, classInfo);
 
         } else {
@@ -446,7 +449,6 @@ public class TransferConfig {
                 }
             });
 
-            int classId = TransferConfig.getClassId(clazz);
             classInfo = ClassInfo.valueOf(clazz, classId, fieldInfos, fieldInfoMap);
 
             classInfoMap.put(clazz, classInfo);

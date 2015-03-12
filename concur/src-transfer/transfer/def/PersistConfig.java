@@ -4,6 +4,7 @@ import org.apache.mina.util.ConcurrentHashSet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.ReflectionUtils;
+
 import transfer.ByteArray;
 import transfer.anno.Ignore;
 import transfer.anno.Transferable;
@@ -362,10 +363,11 @@ public class PersistConfig {
             return classInfo;
         }
 
+        int classId = TransferConfig.getClassId(clazz);
         // 枚举类型
         if (clazz.isEnum()) {
 
-            classInfo = EnumInfo.valueOf(clazz);
+            classInfo = EnumInfo.valueOf(clazz, classId);
             classInfoMap.put(clazz, classInfo);
 
         } else {
@@ -405,7 +407,6 @@ public class PersistConfig {
                 }
             });
 
-            int classId = PersistConfig.getClassId(clazz);
             classInfo = ClassInfo.valueOf(clazz, classId, fieldInfos, fieldInfoMap);
 
             classInfoMap.put(clazz, classInfo);

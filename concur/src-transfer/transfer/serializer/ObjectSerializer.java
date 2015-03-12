@@ -87,7 +87,7 @@ public class ObjectSerializer implements Serializer, Opcodes {
         ClassInfo classInfo = TransferConfig.getOrCreateClassInfo(clazz);
 
         mv.visitVarInsn(ALOAD, 1);
-        mv.visitIntInsn(BIPUSH, classInfo.getClassId());
+        mv.visitIntInsn(SIPUSH, classInfo.getClassId());
         mv.visitMethodInsn(INVOKESTATIC, "transfer/utils/BitUtils", "putInt2", "(Ltransfer/Outputable;I)V", false);
 
 

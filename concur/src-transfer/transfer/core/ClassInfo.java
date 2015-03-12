@@ -12,7 +12,7 @@ public class ClassInfo {
     /**
      * 传输类唯一标识
      */
-    private int classId;
+	protected int classId;
 
     /**
      * 类

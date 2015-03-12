@@ -13,7 +13,7 @@ public class EnumInfo extends ClassInfo {
 
     Map<String, Enum<?>> enumMap;
 
-    public static EnumInfo valueOf(Class<? extends Enum> enumClass) {
+    public static EnumInfo valueOf(Class<? extends Enum> enumClass, int classId) {
 
         Class<? extends Enum<?>> enumClz = (Class<? extends Enum<?>>) enumClass;
 
@@ -28,6 +28,8 @@ public class EnumInfo extends ClassInfo {
             enumMap.put(enumVal.name(), enumVal);
         }
         enumInfo.enumMap = enumMap;
+        
+        enumInfo.classId = classId;
 
         return enumInfo;
     }

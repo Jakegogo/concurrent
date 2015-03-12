@@ -72,7 +72,7 @@ public class EnumSerializer implements Serializer, Opcodes {
         if (enumInfo != null) {
         	
         	mv.visitVarInsn(ALOAD, 1);
-	        mv.visitVarInsn(BIPUSH, enumInfo.getClassId());
+        	mv.visitIntInsn(SIPUSH, enumInfo.getClassId());
 	        mv.visitMethodInsn(INVOKESTATIC, "transfer/utils/BitUtils", "putInt2", "(Ltransfer/Outputable;I)V", false);
         	
 	        mv.visitVarInsn(ALOAD, 4);
