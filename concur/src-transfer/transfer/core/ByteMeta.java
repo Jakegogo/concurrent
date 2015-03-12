@@ -4,7 +4,7 @@ package transfer.core;
  * 字节数据信息头
  * Created by Jake on 2015/2/23.
  */
-public class ByteDataMeta {
+public class ByteMeta {
 
     /**
      * 数据标记

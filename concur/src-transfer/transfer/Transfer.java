@@ -1,7 +1,7 @@
 package transfer;
 
 import transfer.compile.AsmSerializerFactory;
-import transfer.core.ByteDataMeta;
+import transfer.core.ByteMeta;
 import transfer.def.TransferConfig;
 import transfer.def.Types;
 import transfer.deserializer.CollectionDeSerializer;
@@ -108,7 +108,7 @@ public class Transfer {
     public static <T extends Collection<E>, E> Iterator<E> iterator(final Inputable inputable, TypeReference<T> typeReference) {
 
         // 读取消息头
-        final ByteDataMeta byteDataMeta = CollectionDeSerializer.getInstance().readMeta(inputable);
+        final ByteMeta byteDataMeta = CollectionDeSerializer.getInstance().readMeta(inputable);
 
         // 不可以迭代
         if (byteDataMeta == null || !byteDataMeta.isIteratorAble()) {
@@ -180,7 +180,7 @@ public class Transfer {
      */
     public static <T extends Map<K, V>, K, V> Iterator<Map.Entry<K, V>> iteratorMap(final Inputable inputable, TypeReference<T> typeReference) {
         // 读取消息头
-        final ByteDataMeta byteDataMeta = MapDeSerializer.getInstance().readMeta(inputable);
+        final ByteMeta byteDataMeta = MapDeSerializer.getInstance().readMeta(inputable);
         // 不可以迭代
         if (byteDataMeta == null || !byteDataMeta.isIteratorAble()) {
             throw new UnsupportedOperationException();
@@ -279,9 +279,40 @@ public class Transfer {
      * @param type
      */
     public static void preCompile(Type type) {
-    	
     	TransferConfig.preCompileSerializer(type);
-    	
+    }
+    
+    
+    /**
+     * 编码
+     * @param object 目标对象
+     * @param type 指定预编译目标对象的类型
+     * @param bytesLength 编码字节长度(估算)
+     */
+    public static ByteArray encode(Object object, Type type) {
+    	return encode(object, type, 128);
+    }
+    
+    /**
+     * 编码
+     * @param object 目标对象
+     * @param type 指定预编译目标对象的类型
+     * @param bytesLength 编码字节长度(估算)
+     */
+    public static ByteArray encode(Object object, Type type, int bytesLength) {
+
+        if (object == null) {
+            ByteBuffer buffer = new ByteBuffer(1);
+            Serializer.NULL_SERIALIZER.serialze(buffer, object, null);
+            return buffer.getByteArray();
+        }
+
+        ByteBuffer buffer = new ByteBuffer(bytesLength);
+
+        Serializer serializer = TransferConfig.getCompiledSerializer(type);
+        serializer.serialze(buffer, object, new IdentityHashMap(16));
+
+        return buffer.getByteArray();
     }
     
 

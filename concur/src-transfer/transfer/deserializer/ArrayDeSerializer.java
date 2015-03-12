@@ -1,7 +1,7 @@
 package transfer.deserializer;
 
 import transfer.Inputable;
-import transfer.core.ByteDataMeta;
+import transfer.core.ByteMeta;
 import transfer.def.TransferConfig;
 import transfer.def.Types;
 import transfer.exception.IllegalTypeException;
@@ -74,7 +74,7 @@ public class ArrayDeSerializer implements Deserializer {
     }
 
 
-    public ByteDataMeta readMeta(Inputable inputable) {
+    public ByteMeta readMeta(Inputable inputable) {
 
         byte flag = inputable.getByte();
         byte type = TransferConfig.getType(flag);
@@ -85,7 +85,7 @@ public class ArrayDeSerializer implements Deserializer {
         // 读取集合的大小
         int size = BitUtils.getInt(inputable);
 
-        ByteDataMeta byteDataMeta = new ByteDataMeta();
+        ByteMeta byteDataMeta = new ByteMeta();
         byteDataMeta.setComponentSize(size);
         byteDataMeta.setFlag(flag);
         byteDataMeta.setIteratorAble(true);

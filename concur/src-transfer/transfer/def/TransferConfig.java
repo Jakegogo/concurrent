@@ -373,22 +373,32 @@ public class TransferConfig {
 		
 	        if (clazz.isEnum() || (clazz.getSuperclass() != null && clazz.getSuperclass().isEnum())) { // 枚举类型
 	            serializers.put(clazz, EnumSerializer.getInstance());
-	            typedDeserializers.put(clazz, EnumDeserializer.getInstance());
 	        } else {
 	            serializers.put(clazz, AsmSerializerFactory.compileSerializer(clazz, ObjectSerializer.getInstance()));
-	            typedDeserializers.put(clazz, ObjectDeSerializer.getInstance());
 	        }
 	        
         } else {
         	
         	Serializer outerSerializer = getSerializer(clazz);
-        	
         	serializers.put(type, AsmSerializerFactory.compileSerializer(type, outerSerializer));
-            typedDeserializers.put(type, ObjectDeSerializer.getInstance());
         	
         }
         
 	}
+    
+    
+    /**
+     * 获取编码器
+     * @param type 类型
+     * @return
+     */
+    public static Serializer getCompiledSerializer(Type type) {
+    	Serializer serializer = serializers.get(type);
+    	if (serializer != null) {
+    		return serializer;
+    	}
+    	throw new UnsupportSerializerTypeException(type);
+    }
 
 
     /**

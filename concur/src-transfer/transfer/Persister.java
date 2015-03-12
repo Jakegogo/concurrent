@@ -1,6 +1,6 @@
 package transfer;
 
-import transfer.core.ByteDataMeta;
+import transfer.core.ByteMeta;
 import transfer.def.PersistConfig;
 import transfer.def.Types;
 import transfer.deserializer.CollectionDeSerializer;
@@ -103,7 +103,7 @@ public class Persister {
     public static <T extends Collection<E>, E> Iterator<E> iterator(final Inputable inputable, TypeReference<T> typeReference) {
 
         // 读取消息头
-        final ByteDataMeta byteDataMeta = CollectionDeSerializer.getInstance().readMeta(inputable);
+        final ByteMeta byteDataMeta = CollectionDeSerializer.getInstance().readMeta(inputable);
 
         // 不可以迭代
         if (byteDataMeta == null || !byteDataMeta.isIteratorAble()) {
@@ -175,7 +175,7 @@ public class Persister {
      */
     public static <T extends Map<K, V>, K, V> Iterator<Map.Entry<K, V>> iteratorMap(final Inputable inputable, TypeReference<T> typeReference) {
         // 读取消息头
-        final ByteDataMeta byteDataMeta = MapDeSerializer.getInstance().readMeta(inputable);
+        final ByteMeta byteDataMeta = MapDeSerializer.getInstance().readMeta(inputable);
         // 不可以迭代
         if (byteDataMeta == null || !byteDataMeta.isIteratorAble()) {
             throw new UnsupportedOperationException();

@@ -27,7 +27,7 @@ public class AsmSerializerFactory implements Opcodes {
     public static AsmClassLoader classLoader = new AsmClassLoader();
 
     /**
-     * asm动态生成编码器ID自增
+     * 预编译编码器的自增ID
      */
     private static AtomicInteger SERIALIZER_ID_GENERATOR = new AtomicInteger(0);
 
@@ -46,17 +46,27 @@ public class AsmSerializerFactory implements Opcodes {
 
         AsmUtils.writeClazz(asmClassName, bytes);
         
-        Class<?> serializerClass = (Class<?>) classLoader.defineClass(
-                asmClassName, bytes);
-
+        Class<?> serializerClass;
         try {
+        	
+        	serializerClass = (Class<?>) classLoader.defineClass(
+                    asmClassName, bytes);
+        	
             return (Serializer) serializerClass.newInstance();
-        } catch (InstantiationException e) {
-            e.printStackTrace();
-            throw new CompileError(e);
-        } catch (IllegalAccessException e) {
-            e.printStackTrace();
-            throw new CompileError(e);
+        } catch (Exception e) {
+        	
+            try {
+            	asmClassName = TypeUtils.getRawClass(type).getSimpleName() + "_" + SERIALIZER_ID_GENERATOR.incrementAndGet();
+            	bytes = createSerializerClassBytes(asmClassName, type, outerSerializer);
+            	
+            	serializerClass = (Class<?>) classLoader.defineClass(
+                        asmClassName, bytes);
+            	 return (Serializer) serializerClass.newInstance();
+            } catch (Exception e1) {
+            	e.printStackTrace();
+            	throw new CompileError(e);
+            }
+            
         }
 
     }
@@ -105,7 +115,6 @@ public class AsmSerializerFactory implements Opcodes {
 
         return cwr.toByteArray();
     }
-
 
 
 
