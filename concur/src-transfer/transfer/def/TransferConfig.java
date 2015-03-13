@@ -392,12 +392,9 @@ public class TransferConfig {
      * @param type 类型
      * @return
      */
-    public static Serializer getCompiledSerializer(Type type) {
+    public static Serializer getTypedSerializer(Type type) {
     	Serializer serializer = serializers.get(type);
-    	if (serializer != null) {
-    		return serializer;
-    	}
-    	throw new UnsupportSerializerTypeException(type);
+    	return serializer;
     }
 
 

@@ -276,7 +276,9 @@ public class Transfer {
     
     /**
      * 解析器预编译
+     * <br/>调用此方法可预编译或者Transfer#encode(Object, Type)指定预编译类型
      * @param type
+     * @see transfer.Transfer.encode(Object, Type)
      */
     public static void preCompile(Type type) {
     	TransferConfig.preCompileSerializer(type);
@@ -298,6 +300,7 @@ public class Transfer {
      * @param object 目标对象
      * @param type 指定预编译目标对象的类型
      * @param bytesLength 编码字节长度(估算)
+     * @See transfer.Transfer.preCompile(Type)
      */
     public static ByteArray encode(Object object, Type type, int bytesLength) {
 
@@ -309,7 +312,12 @@ public class Transfer {
 
         ByteBuffer buffer = new ByteBuffer(bytesLength);
 
-        Serializer serializer = TransferConfig.getCompiledSerializer(type);
+        Serializer serializer = TransferConfig.getTypedSerializer(type);
+        if (serializer == null) {
+        	preCompile(type); // 进行预编译
+        	serializer = TransferConfig.getTypedSerializer(type);
+        }
+        
         serializer.serialze(buffer, object, new IdentityHashMap(16));
 
         return buffer.getByteArray();

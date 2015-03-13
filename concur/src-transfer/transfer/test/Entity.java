@@ -17,6 +17,7 @@ import javax.persistence.Transient;
 import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -56,7 +57,7 @@ public class Entity implements EntityInitializer, IEntity<Long>, Serializable {
 
 	@JsonType
 	@Column(columnDefinition="varchar(255) null comment '已经领取过的奖励Id'")
-	private ConcurrentHashSet<Long> friends = new ConcurrentHashSet<Long>();
+	private HashSet<Long> friends = new HashSet<Long>();
 
 	public Entity() {
 //		doAfterLoad();
@@ -183,11 +184,11 @@ public class Entity implements EntityInitializer, IEntity<Long>, Serializable {
 		this.name = name;
 	}
 
-	public ConcurrentHashSet<Long> getFriends() {
+	public HashSet<Long> getFriends() {
 		return friends;
 	}
 
-	public void setFriends(ConcurrentHashSet<Long> friends) {
+	public void setFriends(HashSet<Long> friends) {
 		this.friends = friends;
 	}
 

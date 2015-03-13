@@ -24,8 +24,6 @@ public class TestTransfer {
 
 //        Config.registerClass(Entity.class, 1);
     	
-    	Transfer.preCompile(Entity.class);
-
         Entity entity = new Entity();
         entity.setId(System.currentTimeMillis());
         entity.setUid(-101);
@@ -39,7 +37,7 @@ public class TestTransfer {
         entity.getFriends().add(3l);
         entity.setA(null);
 
-        ByteArray byteArray = Transfer.encode(entity, 187);
+        ByteArray byteArray = Transfer.encode(entity, Entity.class);
 
         byte[] bytes = byteArray.toBytes();
         System.out.println(bytes);

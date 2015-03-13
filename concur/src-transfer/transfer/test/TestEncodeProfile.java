@@ -1,6 +1,5 @@
 package transfer.test;
 
-import dbcache.test.Entity;
 import transfer.ByteArray;
 import transfer.Transfer;
 import transfer.def.TransferConfig;
@@ -12,10 +11,6 @@ public class TestEncodeProfile {
 
     public static void main(String[] args) {
 
-        TransferConfig.registerClass(Entity.class, 1);
-        
-        Transfer.preCompile(Entity.class);
-
         Entity entity = new Entity();
         entity.setUid(101);
         entity.getFriends().add(1l);
@@ -25,7 +20,7 @@ public class TestEncodeProfile {
         long t1 = System.currentTimeMillis();
 
         for (int i = 0; i < 10000000;i++) {
-            ByteArray byteArray = Transfer.encode(entity);
+            ByteArray byteArray = Transfer.encode(entity, Entity.class);
         }
 
         System.out.println(System.currentTimeMillis() - t1);
