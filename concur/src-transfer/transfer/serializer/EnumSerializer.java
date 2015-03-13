@@ -16,108 +16,119 @@ import transfer.utils.TypeUtils;
 import java.lang.reflect.Type;
 
 /**
- * 枚举编码器
- * Created by Jake on 2015/2/26.
+ * 枚举编码器 Created by Jake on 2015/2/26.
  */
 public class EnumSerializer implements Serializer, Opcodes {
 
+	@Override
+	public void serialze(Outputable outputable, Object object,
+			IdentityHashMap referenceMap) {
 
-    @Override
-    public void serialze(Outputable outputable, Object object, IdentityHashMap referenceMap) {
+		if (object == null) {
+			NULL_SERIALIZER.serialze(outputable, object, referenceMap);
+			return;
+		}
 
-        if (object == null) {
-            NULL_SERIALIZER.serialze(outputable, object, referenceMap);
-            return;
-        }
+		outputable.putByte(Types.ENUM);
 
-        outputable.putByte(Types.ENUM);
+		Enum<?> enumVal = (Enum<?>) object;
 
-        Enum<?> enumVal = (Enum<?>) object;
+		EnumInfo enumInfo = (EnumInfo) TransferConfig
+				.getOrCreateClassInfo(enumVal.getDeclaringClass());
 
-        EnumInfo enumInfo = (EnumInfo) TransferConfig.getOrCreateClassInfo(enumVal.getDeclaringClass());
+		BitUtils.putInt2(outputable, enumInfo.getClassId());
 
-        BitUtils.putInt2(outputable, enumInfo.getClassId());
+		int enumIndex = enumInfo.toInt(enumVal);
 
-        int enumIndex = enumInfo.toInt(enumVal);
+		BitUtils.putInt2(outputable, enumIndex);
+	}
 
-        BitUtils.putInt2(outputable, enumIndex);
-    }
+	@Override
+	public void compile(Type type, MethodVisitor mv,
+			AsmSerializerContext context) {
 
-    @Override
-    public void compile(Type type, MethodVisitor mv, AsmSerializerContext context) {
-    	
-    	mv.visitCode();
-        mv.visitVarInsn(ALOAD, 2);
-        Label l1 = new Label();
-        mv.visitJumpInsn(IFNONNULL, l1);
+		mv.visitCode();
+		mv.visitVarInsn(ALOAD, 2);
+		Label l1 = new Label();
+		mv.visitJumpInsn(IFNONNULL, l1);
 
-        mv.visitVarInsn(ALOAD, 1);
-        mv.visitInsn(ICONST_1);
-        mv.visitMethodInsn(INVOKEINTERFACE, "transfer/Outputable", "putByte", "(B)V", true);
+		mv.visitVarInsn(ALOAD, 1);
+		mv.visitInsn(ICONST_1);
+		mv.visitMethodInsn(INVOKEINTERFACE, "transfer/Outputable", "putByte",
+				"(B)V", true);
 
-        mv.visitInsn(RETURN);
-        mv.visitLabel(l1);
+		mv.visitInsn(RETURN);
+		mv.visitLabel(l1);
 
-        mv.visitFrame(Opcodes.F_SAME, 0, null, 0, null);
-        
-        mv.visitVarInsn(ALOAD, 1);
-        mv.visitIntInsn(BIPUSH, Types.ENUM);
-        mv.visitMethodInsn(INVOKEINTERFACE, "transfer/Outputable", "putByte", "(B)V", true);
+		mv.visitFrame(Opcodes.F_SAME, 0, null, 0, null);
 
-        mv.visitVarInsn(ALOAD, 2);
-        mv.visitTypeInsn(CHECKCAST, "java/lang/Enum");
-        mv.visitVarInsn(ASTORE, 4);
-        
-        EnumInfo enumInfo = (EnumInfo) TransferConfig.getOrCreateClassInfo(TypeUtils.getRawClass(type));
-        if (enumInfo != null) {
-        	
-        	mv.visitVarInsn(ALOAD, 1);
-        	mv.visitIntInsn(SIPUSH, enumInfo.getClassId());
-	        mv.visitMethodInsn(INVOKESTATIC, "transfer/utils/BitUtils", "putInt2", "(Ltransfer/Outputable;I)V", false);
-        	
-	        mv.visitVarInsn(ALOAD, 4);
-	        mv.visitMethodInsn(INVOKEVIRTUAL, "java/lang/Enum", "ordinal", "()I", false);
-	        mv.visitVarInsn(ISTORE, 6);
-	        
-        } else {
-        
-//        BitUtils.putInt2(outputable, enumInfo.getClassId());
+		mv.visitVarInsn(ALOAD, 1);
+		mv.visitIntInsn(BIPUSH, Types.ENUM);
+		mv.visitMethodInsn(INVOKEINTERFACE, "transfer/Outputable", "putByte",
+				"(B)V", true);
 
-	        mv.visitVarInsn(ALOAD, 4);
-	        mv.visitMethodInsn(INVOKEVIRTUAL, "java/lang/Enum", "getDeclaringClass", "()Ljava/lang/Class;", false);
-	        mv.visitMethodInsn(INVOKESTATIC, "transfer/def/TransferConfig", "getOrCreateClassInfo", "(Ljava/lang/Class;)Ltransfer/core/ClassInfo;", false);
-	        mv.visitTypeInsn(CHECKCAST, "transfer/core/EnumInfo");
-	        mv.visitVarInsn(ASTORE, 5);
-	        
-	        mv.visitVarInsn(ALOAD, 1);
-	        mv.visitVarInsn(ALOAD, 5);
-	        mv.visitMethodInsn(INVOKEVIRTUAL, "transfer/core/EnumInfo", "getClassId", "()I", false);
-	        mv.visitMethodInsn(INVOKESTATIC, "transfer/utils/BitUtils", "putInt2", "(Ltransfer/Outputable;I)V", false);
+		mv.visitVarInsn(ALOAD, 2);
+		mv.visitTypeInsn(CHECKCAST, "java/lang/Enum");
+		mv.visitVarInsn(ASTORE, 4);
 
-	        mv.visitVarInsn(ALOAD, 5);
-	        mv.visitVarInsn(ALOAD, 4);
-	        mv.visitMethodInsn(INVOKEVIRTUAL, "transfer/core/EnumInfo", "toInt", "(Ljava/lang/Enum;)I", false);
-	        mv.visitVarInsn(ISTORE, 6);
-	        
-        }
+		EnumInfo enumInfo = (EnumInfo) TransferConfig
+				.getOrCreateClassInfo(TypeUtils.getRawClass(type));
+		if (enumInfo != null) {
 
-  
-        mv.visitVarInsn(ALOAD, 1);
-        mv.visitVarInsn(ILOAD, 6);
-        mv.visitMethodInsn(INVOKESTATIC, "transfer/utils/BitUtils", "putInt2", "(Ltransfer/Outputable;I)V", false);
+			mv.visitVarInsn(ALOAD, 1);
+			mv.visitIntInsn(SIPUSH, enumInfo.getClassId());
+			mv.visitMethodInsn(INVOKESTATIC, "transfer/utils/BitUtils",
+					"putInt2", "(Ltransfer/Outputable;I)V", false);
 
-        mv.visitInsn(RETURN);
+			mv.visitVarInsn(ALOAD, 4);
+			mv.visitMethodInsn(INVOKEVIRTUAL, "java/lang/Enum", "ordinal",
+					"()I", false);
+			mv.visitVarInsn(ISTORE, 6);
 
-        mv.visitMaxs(4, 7);
-        mv.visitEnd();
-    	
-    }
+		} else {
 
+			// BitUtils.putInt2(outputable, enumInfo.getClassId());
 
-    private static EnumSerializer instance = new EnumSerializer();
+			mv.visitVarInsn(ALOAD, 4);
+			mv.visitMethodInsn(INVOKEVIRTUAL, "java/lang/Enum",
+					"getDeclaringClass", "()Ljava/lang/Class;", false);
+			mv.visitMethodInsn(INVOKESTATIC, "transfer/def/TransferConfig",
+					"getOrCreateClassInfo",
+					"(Ljava/lang/Class;)Ltransfer/core/ClassInfo;", false);
+			mv.visitTypeInsn(CHECKCAST, "transfer/core/EnumInfo");
+			mv.visitVarInsn(ASTORE, 5);
 
-    public static EnumSerializer getInstance() {
-        return instance;
-    }
+			mv.visitVarInsn(ALOAD, 1);
+			mv.visitVarInsn(ALOAD, 5);
+			mv.visitMethodInsn(INVOKEVIRTUAL, "transfer/core/EnumInfo",
+					"getClassId", "()I", false);
+			mv.visitMethodInsn(INVOKESTATIC, "transfer/utils/BitUtils",
+					"putInt2", "(Ltransfer/Outputable;I)V", false);
+
+			mv.visitVarInsn(ALOAD, 5);
+			mv.visitVarInsn(ALOAD, 4);
+			mv.visitMethodInsn(INVOKEVIRTUAL, "transfer/core/EnumInfo",
+					"toInt", "(Ljava/lang/Enum;)I", false);
+			mv.visitVarInsn(ISTORE, 6);
+
+		}
+
+		mv.visitVarInsn(ALOAD, 1);
+		mv.visitVarInsn(ILOAD, 6);
+		mv.visitMethodInsn(INVOKESTATIC, "transfer/utils/BitUtils", "putInt2",
+				"(Ltransfer/Outputable;I)V", false);
+
+		mv.visitInsn(RETURN);
+
+		mv.visitMaxs(4, 7);
+		mv.visitEnd();
+
+	}
+
+	private static EnumSerializer instance = new EnumSerializer();
+
+	public static EnumSerializer getInstance() {
+		return instance;
+	}
 
 }

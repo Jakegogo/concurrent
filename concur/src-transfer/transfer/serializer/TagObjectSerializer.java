@@ -14,61 +14,62 @@ import transfer.utils.TypeUtils;
 import java.lang.reflect.Type;
 
 /**
- * 带标签的对象编码器
- * Created by Jake on 2015/2/23.
+ * 带标签的对象编码器 Created by Jake on 2015/2/23.
  */
 public class TagObjectSerializer implements Serializer {
 
+	// 标签编码器
+	private static final ShortStringSerializer STRING_SERIALIZER = ShortStringSerializer
+			.getInstance();
 
-    // 标签编码器
-    private static final ShortStringSerializer STRING_SERIALIZER = ShortStringSerializer.getInstance();
+	@Override
+	public void serialze(Outputable outputable, Object object,
+			IdentityHashMap referenceMap) {
 
+		if (object == null) {
+			NULL_SERIALIZER.serialze(outputable, object, referenceMap);
+			return;
+		}
 
-    @Override
-    public void serialze(Outputable outputable, Object object, IdentityHashMap referenceMap) {
+		Class<?> clazz = object.getClass();
 
-        if (object == null) {
-            NULL_SERIALIZER.serialze(outputable, object, referenceMap);
-            return;
-        }
+		ClassInfo classInfo = PersistConfig.getOrCreateClassInfo(clazz);
 
-        Class<?> clazz = object.getClass();
+		outputable.putByte(Types.OBJECT);
 
-        ClassInfo classInfo = PersistConfig.getOrCreateClassInfo(clazz);
+		// 添加类Id
+		BitUtils.putInt2(outputable, classInfo.getClassId());
 
-        outputable.putByte(Types.OBJECT);
+		// 添加属性个数
+		BitUtils.putInt2(outputable, classInfo.getFieldInfos().size());
 
-        // 添加类Id
-        BitUtils.putInt2(outputable, classInfo.getClassId());
+		for (FieldInfo fieldInfo : classInfo.getFieldInfos()) {
 
-        // 添加属性个数
-        BitUtils.putInt2(outputable, classInfo.getFieldInfos().size());
+			// 添加属性标签
+			STRING_SERIALIZER.serialze(outputable, fieldInfo.getFieldName(),
+					referenceMap);
 
-        for (FieldInfo fieldInfo : classInfo.getFieldInfos()) {
+			// 序列化属性值
+			Serializer fieldSerializer = PersistConfig.getSerializer(TypeUtils
+					.getRawClass(fieldInfo.getType()));
 
-            // 添加属性标签
-            STRING_SERIALIZER.serialze(outputable, fieldInfo.getFieldName(), referenceMap);
+			Object fieldValue = fieldInfo.getField(object);
 
-            // 序列化属性值
-            Serializer fieldSerializer = PersistConfig.getSerializer(TypeUtils.getRawClass(fieldInfo.getType()));
+			fieldSerializer.serialze(outputable, fieldValue, referenceMap);
 
-            Object fieldValue = fieldInfo.getField(object);
+		}
 
-            fieldSerializer.serialze(outputable, fieldValue, referenceMap);
+	}
 
-        }
+	@Override
+	public void compile(Type type, MethodVisitor mw,
+			AsmSerializerContext context) {
 
-    }
+	}
 
-    @Override
-    public void compile(Type type, MethodVisitor mw, AsmSerializerContext context) {
+	private static TagObjectSerializer instance = new TagObjectSerializer();
 
-    }
-
-
-    private static TagObjectSerializer instance = new TagObjectSerializer();
-
-    public static TagObjectSerializer getInstance() {
-        return instance;
-    }
+	public static TagObjectSerializer getInstance() {
+		return instance;
+	}
 }

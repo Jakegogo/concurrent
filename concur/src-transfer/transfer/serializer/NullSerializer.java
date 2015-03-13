@@ -11,36 +11,36 @@ import transfer.utils.IdentityHashMap;
 import java.lang.reflect.Type;
 
 /**
- * NULL编码器
- * Created by Jake on 2015/2/26.
+ * NULL编码器 Created by Jake on 2015/2/26.
  */
 public class NullSerializer implements Serializer, Opcodes {
 
+	@Override
+	public void serialze(Outputable outputable, Object object,
+			IdentityHashMap referenceMap) {
 
-    @Override
-    public void serialze(Outputable outputable, Object object, IdentityHashMap referenceMap) {
+		outputable.putByte(Types.NULL);
 
-        outputable.putByte(Types.NULL);
+	}
 
-    }
+	@Override
+	public void compile(Type type, MethodVisitor mv,
+			AsmSerializerContext context) {
 
-    @Override
-    public void compile(Type type, MethodVisitor mv, AsmSerializerContext context) {
-    	
-    	mv.visitVarInsn(ALOAD, 1);
-    	mv.visitInsn(ICONST_1);
-    	mv.visitMethodInsn(INVOKEINTERFACE, "transfer/Outputable", "putByte", "(B)V", true);
-    	mv.visitInsn(RETURN);
-    	mv.visitMaxs(2, 4);
-    	mv.visitEnd();
-    	
-    }
+		mv.visitVarInsn(ALOAD, 1);
+		mv.visitInsn(ICONST_1);
+		mv.visitMethodInsn(INVOKEINTERFACE, "transfer/Outputable", "putByte",
+				"(B)V", true);
+		mv.visitInsn(RETURN);
+		mv.visitMaxs(2, 4);
+		mv.visitEnd();
 
+	}
 
-    private static NullSerializer instance = new NullSerializer();
+	private static NullSerializer instance = new NullSerializer();
 
-    public static NullSerializer getInstance() {
-        return instance;
-    }
+	public static NullSerializer getInstance() {
+		return instance;
+	}
 
 }
