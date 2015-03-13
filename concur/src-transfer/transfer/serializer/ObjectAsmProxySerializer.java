@@ -94,51 +94,106 @@ public class ObjectAsmProxySerializer implements Serializer, Opcodes {
 		mv.visitMethodInsn(INVOKESTATIC, "transfer/utils/BitUtils", "putInt2",
 				"(Ltransfer/Outputable;I)V", false);
 
+		Type fieldType;
 		for (FieldInfo fieldInfo : classInfo.getFieldInfos()) {
 
-			Serializer fieldSerializer = TransferConfig.getSerializer(TypeUtils
-					.getRawClass(fieldInfo.getType()));
+			fieldType = fieldInfo.getType();
 
-			String serializerClassName = fieldSerializer.getClass().getName();
+			if (fieldType == null || fieldType == Object.class) {
 
-			mv.visitVarInsn(ALOAD, 0);
+				//  getFieldValue
+				PropertyDescriptor propertyDescriptor = null;
+				try {
+					propertyDescriptor = new PropertyDescriptor(
+							fieldInfo.getFieldName(), clazz);
+				} catch (IntrospectionException e) {
+					e.printStackTrace();
+					throw new CompileError(e);
+				}
 
-			mv.visitVarInsn(ALOAD, 1);
+				// 获取get方法
+				final Method getMethod = propertyDescriptor.getReadMethod();
+				final org.objectweb.asm.Type rt = org.objectweb.asm.Type
+						.getReturnType(getMethod);
+				final org.objectweb.asm.Type mt = org.objectweb.asm.Type
+						.getType(getMethod);
 
-			PropertyDescriptor propertyDescriptor = null;
-			try {
-				propertyDescriptor = new PropertyDescriptor(
-						fieldInfo.getFieldName(), clazz);
-			} catch (IntrospectionException e) {
-				e.printStackTrace();
-				throw new CompileError(e);
+				// 获取this.target
+				mv.visitVarInsn(ALOAD, 4);
+
+				mv.visitMethodInsn(INVOKEVIRTUAL,
+						AsmUtils.toAsmCls(clazz.getName()), getMethod.getName(),
+						mt.toString(), false);
+
+				// 处理返回值类型 到 Object类型
+				AsmUtils.withBoxingType(mv, rt);
+				mv.visitVarInsn(ASTORE, 5);
+
+
+				mv.visitVarInsn(ALOAD, 5);
+				mv.visitMethodInsn(INVOKEVIRTUAL, "java/lang/Object", "getClass",
+						"()Ljava/lang/Class;", false);
+				mv.visitMethodInsn(INVOKESTATIC, "transfer/def/TransferConfig",
+						"getSerializer",
+						"(Ljava/lang/Class;)Ltransfer/serializer/Serializer;",
+						false);
+
+				mv.visitVarInsn(ALOAD, 1);
+				mv.visitVarInsn(ALOAD, 5);
+				mv.visitVarInsn(ALOAD, 3);
+				mv.visitMethodInsn(
+						INVOKEINTERFACE,
+						"transfer/serializer/Serializer",
+						"serialze",
+						"(Ltransfer/Outputable;Ljava/lang/Object;Ltransfer/utils/IdentityHashMap;)V",
+						true);
+
+			} else {
+
+				Serializer fieldSerializer = TransferConfig.getSerializer(TypeUtils
+						.getRawClass(fieldType));
+
+				String serializerClassName = fieldSerializer.getClass().getName();
+
+				mv.visitVarInsn(ALOAD, 0);
+
+				mv.visitVarInsn(ALOAD, 1);
+
+				PropertyDescriptor propertyDescriptor = null;
+				try {
+					propertyDescriptor = new PropertyDescriptor(
+							fieldInfo.getFieldName(), clazz);
+				} catch (IntrospectionException e) {
+					e.printStackTrace();
+					throw new CompileError(e);
+				}
+
+				// 获取get方法
+				final Method getMethod = propertyDescriptor.getReadMethod();
+				final org.objectweb.asm.Type rt = org.objectweb.asm.Type
+						.getReturnType(getMethod);
+				final org.objectweb.asm.Type mt = org.objectweb.asm.Type
+						.getType(getMethod);
+
+				// 获取this.target
+				mv.visitVarInsn(ALOAD, 2);
+
+				mv.visitMethodInsn(INVOKEVIRTUAL,
+						AsmUtils.toAsmCls(clazz.getName()), getMethod.getName(),
+						mt.toString());
+
+				// 处理返回值类型 到 Object类型
+				AsmUtils.withBoxingType(mv, rt);
+
+				mv.visitVarInsn(ALOAD, 3);
+
+				// 执行属性预编译
+				MethodVisitor methodVisitor = context.invokeNextSerialize(
+						fieldInfo.getFieldName(), mv);
+
+				fieldSerializer
+						.compile(fieldInfo.getType(), methodVisitor, context);
 			}
-
-			// 获取get方法
-			final Method getMethod = propertyDescriptor.getReadMethod();
-			final org.objectweb.asm.Type rt = org.objectweb.asm.Type
-					.getReturnType(getMethod);
-			final org.objectweb.asm.Type mt = org.objectweb.asm.Type
-					.getType(getMethod);
-
-			// 获取this.target
-			mv.visitVarInsn(ALOAD, 2);
-
-			mv.visitMethodInsn(INVOKEVIRTUAL,
-					AsmUtils.toAsmCls(clazz.getName()), getMethod.getName(),
-					mt.toString());
-
-			// 处理返回值类型 到 Object类型
-			AsmUtils.withBoxingType(mv, rt);
-
-			mv.visitVarInsn(ALOAD, 3);
-
-			// 执行属性预编译
-			MethodVisitor methodVisitor = context.invokeNextSerialize(
-					fieldInfo.getFieldName(), mv);
-
-			fieldSerializer
-					.compile(fieldInfo.getType(), methodVisitor, context);
 
 		}
 

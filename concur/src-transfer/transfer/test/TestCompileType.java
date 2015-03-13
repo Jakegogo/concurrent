@@ -1,19 +1,19 @@
 package transfer.test;
 
-import java.lang.reflect.Type;
-import java.util.HashMap;
-import java.util.Map;
-
 import transfer.ByteArray;
 import transfer.Transfer;
 import transfer.TypeReference;
+
+import java.lang.reflect.Type;
+import java.util.HashMap;
+import java.util.Map;
 
 public class TestCompileType {
 	
 	
 	public static void main(String[] args) {
 		
-		TypeReference typeReference = new TypeReference<Map<String,Integer>>(){};
+		TypeReference<Map<String,Integer>> typeReference = new TypeReference<Map<String,Integer>>(){};
 		Type type = typeReference.getType();
 		
 		
