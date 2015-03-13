@@ -210,7 +210,7 @@ public class TransferConfig {
         throw new UnsupportDeserializerTypeException(type);
     }
 
-
+    // 获取解析器
     private static Deserializer getDeserializer(Class<?> clazz, Type type) {
 
         Deserializer deserializer = typedDeserializers.get(type);
@@ -373,15 +373,17 @@ public class TransferConfig {
 		
 	        if (clazz.isEnum() || (clazz.getSuperclass() != null && clazz.getSuperclass().isEnum())) { // 枚举类型
 	            serializers.put(clazz, EnumSerializer.getInstance());
+	            typedDeserializers.put(clazz, EnumDeserializer.getInstance());
 	        } else {
 	            serializers.put(clazz, AsmSerializerFactory.compileSerializer(clazz, ObjectSerializer.getInstance()));
+	            //TODO
 	        }
 	        
         } else {
         	
         	Serializer outerSerializer = getSerializer(clazz);
         	serializers.put(type, AsmSerializerFactory.compileSerializer(type, outerSerializer));
-        	
+        	//TODO
         }
         
 	}
