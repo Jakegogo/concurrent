@@ -1,6 +1,7 @@
 package transfer.deserializer;
 
 import transfer.Inputable;
+import transfer.compile.AsmDeserializerContext;
 import transfer.def.TransferConfig;
 import transfer.def.Types;
 import transfer.exception.IllegalTypeException;
@@ -8,6 +9,8 @@ import transfer.utils.BitUtils;
 import transfer.utils.IntegerMap;
 
 import java.lang.reflect.Type;
+
+import org.objectweb.asm.MethodVisitor;
 
 /**
  * 短字符串解析器 最大长度255
@@ -35,6 +38,13 @@ public class ShortStringDeserializer implements Deserializer {
         return (T) new String(bytes);
     }
 
+
+    
+    @Override
+	public void compile(Type type, MethodVisitor mw,
+			AsmDeserializerContext context) {
+    	
+	}
 
     private static ShortStringDeserializer instance = new ShortStringDeserializer();
 

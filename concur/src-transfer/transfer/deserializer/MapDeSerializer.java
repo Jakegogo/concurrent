@@ -1,6 +1,7 @@
 package transfer.deserializer;
 
 import transfer.Inputable;
+import transfer.compile.AsmDeserializerContext;
 import transfer.core.ByteMeta;
 import transfer.def.TransferConfig;
 import transfer.def.Types;
@@ -15,6 +16,8 @@ import java.lang.reflect.Type;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+
+import org.objectweb.asm.MethodVisitor;
 
 /**
  * Map解析器
@@ -76,6 +79,13 @@ public class MapDeSerializer implements Deserializer {
         return (T) map;
     }
 
+    
+    @Override
+	public void compile(Type type, MethodVisitor mw,
+			AsmDeserializerContext context) {
+    	
+	}
+    
 
     private Object parseElement(Inputable inputable, Type type, byte byteFlag, IntegerMap referenceMap) {
         Deserializer elementDeserializer = TransferConfig.getDeserializer(type, byteFlag);

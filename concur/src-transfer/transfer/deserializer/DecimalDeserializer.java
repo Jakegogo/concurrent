@@ -1,6 +1,7 @@
 package transfer.deserializer;
 
 import transfer.Inputable;
+import transfer.compile.AsmDeserializerContext;
 import transfer.def.TransferConfig;
 import transfer.def.Types;
 import transfer.exception.IllegalTypeException;
@@ -11,6 +12,8 @@ import transfer.utils.TypeUtils;
 import java.lang.reflect.Type;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
+
+import org.objectweb.asm.MethodVisitor;
 
 /**
  * Decimal解析器
@@ -73,6 +76,12 @@ public class DecimalDeserializer implements Deserializer {
         return (T) number;
     }
 
+    
+    @Override
+	public void compile(Type type, MethodVisitor mw,
+			AsmDeserializerContext context) {
+    	
+	}
 
     private static DecimalDeserializer instance = new DecimalDeserializer();
 

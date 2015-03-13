@@ -1,6 +1,7 @@
 package transfer.deserializer;
 
 import transfer.Inputable;
+import transfer.compile.AsmDeserializerContext;
 import transfer.core.EnumInfo;
 import transfer.def.TransferConfig;
 import transfer.def.Types;
@@ -12,6 +13,8 @@ import transfer.utils.IntegerMap;
 import transfer.utils.TypeUtils;
 
 import java.lang.reflect.Type;
+
+import org.objectweb.asm.MethodVisitor;
 
 /**
  * 枚举解析器
@@ -63,6 +66,13 @@ public class EnumDeserializer implements Deserializer {
         return (T) enumInfo.toEnum(enumIndex);
     }
 
+    
+    @Override
+	public void compile(Type type, MethodVisitor mw,
+			AsmDeserializerContext context) {
+    	
+	}
+    
 
     private static EnumDeserializer instance = new EnumDeserializer();
 

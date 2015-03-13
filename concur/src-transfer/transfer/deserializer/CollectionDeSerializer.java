@@ -1,7 +1,10 @@
 package transfer.deserializer;
 
 import org.apache.mina.util.ConcurrentHashSet;
+import org.objectweb.asm.MethodVisitor;
+
 import transfer.Inputable;
+import transfer.compile.AsmDeserializerContext;
 import transfer.core.ByteMeta;
 import transfer.def.TransferConfig;
 import transfer.def.Types;
@@ -137,6 +140,14 @@ public class CollectionDeSerializer implements Deserializer {
         return byteDataMeta;
     }
 
+    
+    @Override
+	public void compile(Type type, MethodVisitor mw,
+			AsmDeserializerContext context) {
+    	
+	}
+    
+    
     private static CollectionDeSerializer instance = new CollectionDeSerializer();
 
     public static CollectionDeSerializer getInstance() {

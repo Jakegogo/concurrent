@@ -7,7 +7,7 @@ import org.objectweb.asm.Opcodes;
 
 
 /**
- * 预编译上下文
+ * 预编译编码器上下文
  * Created by Jake on 2015/3/8.
  */
 public class AsmSerializerContext implements Opcodes {

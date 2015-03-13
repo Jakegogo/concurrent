@@ -1,6 +1,7 @@
 package transfer.deserializer;
 
 import transfer.Inputable;
+import transfer.compile.AsmDeserializerContext;
 import transfer.core.ByteMeta;
 import transfer.def.TransferConfig;
 import transfer.def.Types;
@@ -12,6 +13,8 @@ import transfer.utils.TypeUtils;
 import java.lang.reflect.Array;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+
+import org.objectweb.asm.MethodVisitor;
 
 /**
  * 数组解析器
@@ -93,6 +96,12 @@ public class ArrayDeSerializer implements Deserializer {
         return byteDataMeta;
     }
 
+    
+    @Override
+	public void compile(Type type, MethodVisitor mw,
+			AsmDeserializerContext context) {
+    	
+	}
 
     private static ArrayDeSerializer instance = new ArrayDeSerializer();
 

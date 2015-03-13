@@ -1,6 +1,7 @@
 package transfer.deserializer;
 
 import transfer.Inputable;
+import transfer.compile.AsmDeserializerContext;
 import transfer.def.TransferConfig;
 import transfer.def.Types;
 import transfer.exception.IllegalTypeException;
@@ -8,6 +9,8 @@ import transfer.utils.BitUtils;
 import transfer.utils.IntegerMap;
 
 import java.lang.reflect.Type;
+
+import org.objectweb.asm.MethodVisitor;
 
 /**
  * 字符串解析器
@@ -35,6 +38,12 @@ public class StringDeserializer implements Deserializer {
         return (T) new String(bytes);
     }
 
+    
+    @Override
+	public void compile(Type type, MethodVisitor mw,
+			AsmDeserializerContext context) {
+    	
+	}
 
     private static StringDeserializer instance = new StringDeserializer();
 

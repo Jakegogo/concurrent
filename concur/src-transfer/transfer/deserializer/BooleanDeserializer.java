@@ -1,12 +1,15 @@
 package transfer.deserializer;
 
 import transfer.Inputable;
+import transfer.compile.AsmDeserializerContext;
 import transfer.def.TransferConfig;
 import transfer.def.Types;
 import transfer.exception.IllegalTypeException;
 import transfer.utils.IntegerMap;
 
 import java.lang.reflect.Type;
+
+import org.objectweb.asm.MethodVisitor;
 
 /**
  * 布尔解析器
@@ -32,6 +35,12 @@ public class BooleanDeserializer implements Deserializer {
         return (T) Boolean.valueOf(false);
     }
 
+    
+    @Override
+	public void compile(Type type, MethodVisitor mw,
+			AsmDeserializerContext context) {
+    	
+	}
 
     private static BooleanDeserializer instance = new BooleanDeserializer();
 

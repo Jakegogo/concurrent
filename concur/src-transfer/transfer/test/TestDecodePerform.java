@@ -1,5 +1,7 @@
 package transfer.test;
 
+import java.util.Date;
+
 import dbcache.utils.JsonUtils;
 import transfer.ByteArray;
 import transfer.Transfer;
@@ -15,7 +17,13 @@ public class TestDecodePerform {
         TransferConfig.registerClass(Entity.class, 1);
 
         Entity entity = new Entity();
-        entity.setUid(101);
+        entity.setId(System.currentTimeMillis());
+        entity.setUid(-101);
+        entity.setFval(2.34f);
+        entity.setStatus(AcountStatus.OPEN);
+        entity.setDate(new Date());
+        entity.setStr("jake");
+        entity.setBool(true);
         entity.getFriends().add(1l);
         entity.getFriends().add(2l);
         entity.getFriends().add(3l);

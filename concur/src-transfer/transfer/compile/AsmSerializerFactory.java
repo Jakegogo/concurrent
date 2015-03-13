@@ -40,7 +40,7 @@ public class AsmSerializerFactory implements Opcodes {
      */
     public static Serializer compileSerializer(Type type, Serializer outerSerializer) {
 
-        String asmClassName = TypeUtils.getRawClass(type).getName() + "_" + SERIALIZER_ID_GENERATOR.incrementAndGet();
+        String asmClassName = TypeUtils.getRawClass(type).getName() + "_Serializer_" + SERIALIZER_ID_GENERATOR.incrementAndGet();
 
         byte[] bytes = createSerializerClassBytes(asmClassName, type, outerSerializer);
 
@@ -56,7 +56,7 @@ public class AsmSerializerFactory implements Opcodes {
         } catch (Exception e) {
         	
             try {
-            	asmClassName = TypeUtils.getRawClass(type).getSimpleName() + "_" + SERIALIZER_ID_GENERATOR.incrementAndGet();
+            	asmClassName = TypeUtils.getRawClass(type).getSimpleName() + "_Serializer_" + SERIALIZER_ID_GENERATOR.incrementAndGet();
             	bytes = createSerializerClassBytes(asmClassName, type, outerSerializer);
             	
             	serializerClass = (Class<?>) classLoader.defineClass(

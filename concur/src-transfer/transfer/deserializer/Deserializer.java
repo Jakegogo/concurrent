@@ -1,9 +1,12 @@
 package transfer.deserializer;
 
-import transfer.Inputable;
-import transfer.utils.IntegerMap;
-
 import java.lang.reflect.Type;
+
+import org.objectweb.asm.MethodVisitor;
+
+import transfer.Inputable;
+import transfer.compile.AsmDeserializerContext;
+import transfer.utils.IntegerMap;
 
 /**
  * 类型解析器接口
@@ -24,4 +27,12 @@ public interface Deserializer {
     <T> T deserialze(Inputable inputable, Type type, byte flag, IntegerMap referenceMap);
 
 
+    /**
+     * 预编译编码方法
+     * @param type
+     * @param mw serialze方法MethodVisitor
+     * @param context
+     */
+    void compile(Type type, MethodVisitor mw, AsmDeserializerContext context);
+    
 }

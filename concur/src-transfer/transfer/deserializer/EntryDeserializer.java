@@ -1,6 +1,7 @@
 package transfer.deserializer;
 
 import transfer.Inputable;
+import transfer.compile.AsmDeserializerContext;
 import transfer.def.TransferConfig;
 import transfer.utils.IntegerMap;
 import transfer.utils.TypeUtils;
@@ -8,6 +9,8 @@ import transfer.utils.TypeUtils;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.Map;
+
+import org.objectweb.asm.MethodVisitor;
 
 /**
  * Map.Entry解析器
@@ -41,6 +44,13 @@ public class EntryDeserializer implements Deserializer {
         return (T) new UnmodificationEntry(key, value);
     }
 
+    
+    @Override
+	public void compile(Type type, MethodVisitor mw,
+			AsmDeserializerContext context) {
+    	
+	}
+    
 
     private Object parseElement(Inputable inputable, Type type, byte byteFlag, IntegerMap referenceMap) {
         Deserializer elementDeserializer = TransferConfig.getDeserializer(type, byteFlag);

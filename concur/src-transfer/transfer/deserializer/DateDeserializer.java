@@ -1,6 +1,7 @@
 package transfer.deserializer;
 
 import transfer.Inputable;
+import transfer.compile.AsmDeserializerContext;
 import transfer.def.TransferConfig;
 import transfer.def.Types;
 import transfer.exception.IllegalTypeException;
@@ -9,6 +10,8 @@ import transfer.utils.IntegerMap;
 
 import java.lang.reflect.Type;
 import java.util.Date;
+
+import org.objectweb.asm.MethodVisitor;
 
 /**
  * 日期解析器
@@ -30,6 +33,12 @@ public class DateDeserializer implements Deserializer {
         return (T) new Date(timestamp);
     }
 
+    
+    @Override
+	public void compile(Type type, MethodVisitor mw,
+			AsmDeserializerContext context) {
+    	
+	}
 
     private static DateDeserializer instance = new DateDeserializer();
 

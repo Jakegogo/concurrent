@@ -1,6 +1,7 @@
 package transfer.deserializer;
 
 import transfer.Inputable;
+import transfer.compile.AsmDeserializerContext;
 import transfer.core.EnumInfo;
 import transfer.def.PersistConfig;
 import transfer.def.Types;
@@ -12,6 +13,8 @@ import transfer.utils.IntegerMap;
 import transfer.utils.TypeUtils;
 
 import java.lang.reflect.Type;
+
+import org.objectweb.asm.MethodVisitor;
 
 /**
  * 带标签的枚举解析器
@@ -69,6 +72,12 @@ public class TagEnumDeserializer implements Deserializer {
         return (T) enumInfo.toEnum(enumName);// 不存在的枚举则返回null
     }
 
+    
+    @Override
+	public void compile(Type type, MethodVisitor mw,
+			AsmDeserializerContext context) {
+    	
+	}
 
     private static TagEnumDeserializer instance = new TagEnumDeserializer();
 

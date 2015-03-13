@@ -1,6 +1,7 @@
 package transfer.deserializer;
 
 import transfer.Inputable;
+import transfer.compile.AsmDeserializerContext;
 import transfer.core.ClassInfo;
 import transfer.core.FieldInfo;
 import transfer.def.TransferConfig;
@@ -13,6 +14,8 @@ import transfer.utils.IntegerMap;
 import transfer.utils.TypeUtils;
 
 import java.lang.reflect.Type;
+
+import org.objectweb.asm.MethodVisitor;
 
 /**
  * 对象解析器
@@ -86,7 +89,15 @@ public class ObjectDeSerializer implements Deserializer {
 
         return (T) object;
     }
+    
 
+    
+    @Override
+	public void compile(Type type, MethodVisitor mw,
+			AsmDeserializerContext context) {
+    	
+	}
+    
 
     private static ObjectDeSerializer instance = new ObjectDeSerializer();
 

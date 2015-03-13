@@ -17,8 +17,6 @@ public class TestCompileType {
 		Type type = typeReference.getType();
 		
 		
-		Transfer.preCompile(type);
-		
 		Map<String, Integer> map = new HashMap<String, Integer>();
 		
 		map.put("1", 1);

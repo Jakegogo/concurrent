@@ -1,9 +1,12 @@
 package transfer.deserializer;
 
 import transfer.Inputable;
+import transfer.compile.AsmDeserializerContext;
 import transfer.utils.IntegerMap;
 
 import java.lang.reflect.Type;
+
+import org.objectweb.asm.MethodVisitor;
 
 /**
  * NULL解析器
@@ -11,16 +14,18 @@ import java.lang.reflect.Type;
  */
 public class NullDeserializer implements Deserializer {
 
-
-    public static void setInstance(NullDeserializer instance) {
-        NullDeserializer.instance = instance;
-    }
-
+	
     @Override
     public <T> T deserialze(Inputable inputable, Type type, byte flag, IntegerMap referenceMap) {
         return null;
     }
 
+    
+    @Override
+	public void compile(Type type, MethodVisitor mw,
+			AsmDeserializerContext context) {
+    	
+	}
 
     private static NullDeserializer instance = new NullDeserializer();
 
