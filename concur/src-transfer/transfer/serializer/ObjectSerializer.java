@@ -79,6 +79,9 @@ public class ObjectSerializer implements Serializer, Opcodes {
 
 
         Class<?> clazz = TypeUtils.getRawClass(type);
+        if (clazz == Object.class || clazz.isInterface() || clazz.isAnnotation()) {
+        	throw new CompileError("无法预编译:" + clazz.toString());
+        }
 
         mv.visitVarInsn(ALOAD, 2);
         mv.visitTypeInsn(CHECKCAST, AsmUtils.toAsmCls(clazz.getName()));
@@ -96,8 +99,6 @@ public class ObjectSerializer implements Serializer, Opcodes {
             Serializer fieldSerializer = TransferConfig.getSerializer(TypeUtils.getRawClass(fieldInfo.getType()));
 
             String serializerClassName = fieldSerializer.getClass().getName();
-
-         //   mv.visitMethodInsn(INVOKESTATIC, AsmUtils.toAsmCls(serializerClassName), "getInstance", "()" + "L" + AsmUtils.toAsmCls(serializerClassName) + ";", false);
 
             mv.visitVarInsn(ALOAD, 0);
             

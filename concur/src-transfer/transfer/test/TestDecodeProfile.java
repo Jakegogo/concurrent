@@ -25,7 +25,7 @@ public class TestDecodeProfile {
 
         long t1 = System.currentTimeMillis();
 
-        for (int i = 0; i < 10000000;i++) {
+        for (int i = 0; i < 5000000;i++) {
             Entity entity1 = Transfer.decode(bytes, Entity.class);
         }
 

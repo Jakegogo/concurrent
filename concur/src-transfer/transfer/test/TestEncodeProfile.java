@@ -16,11 +16,14 @@ public class TestEncodeProfile {
         entity.getFriends().add(1l);
         entity.getFriends().add(2l);
         entity.getFriends().add(3l);
+        
+        ByteArray byteArray = Transfer.encode(entity, Entity.class);
+        System.out.println("length:" + byteArray.toBytes().length);
 
         long t1 = System.currentTimeMillis();
 
         for (int i = 0; i < 10000000;i++) {
-            ByteArray byteArray = Transfer.encode(entity, Entity.class);
+            byteArray = Transfer.encode(entity, Entity.class);
         }
 
         System.out.println(System.currentTimeMillis() - t1);

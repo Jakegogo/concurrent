@@ -278,10 +278,11 @@ public class Transfer {
      * 解析器预编译
      * <br/>调用此方法可预编译或者Transfer#encode(Object, Type)指定预编译类型
      * @param type
+     * @return 
      * @see transfer.Transfer.encode(Object, Type)
      */
-    public static void preCompile(Type type) {
-    	TransferConfig.preCompileSerializer(type);
+    public static Serializer preCompile(Type type) {
+    	return TransferConfig.preCompileSerializer(type);
     }
     
     
@@ -314,8 +315,7 @@ public class Transfer {
 
         Serializer serializer = TransferConfig.getTypedSerializer(type);
         if (serializer == null) {
-        	preCompile(type); // 进行预编译
-        	serializer = TransferConfig.getTypedSerializer(type);
+        	serializer = TransferConfig.preCompileSerializer(type); // 进行预编译
         }
         
         serializer.serialze(buffer, object, new IdentityHashMap(16));

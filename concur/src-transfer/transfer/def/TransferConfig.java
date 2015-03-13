@@ -13,6 +13,7 @@ import transfer.core.ClassInfo;
 import transfer.core.EnumInfo;
 import transfer.core.FieldInfo;
 import transfer.deserializer.*;
+import transfer.exception.CompileError;
 import transfer.exception.UnsupportClassException;
 import transfer.exception.UnsupportDeserializerTypeException;
 import transfer.exception.UnsupportSerializerTypeException;
@@ -209,6 +210,7 @@ public class TransferConfig {
 
         throw new UnsupportDeserializerTypeException(type);
     }
+    
 
     // 获取解析器
     private static Deserializer getDeserializer(Class<?> clazz, Type type) {
@@ -356,8 +358,9 @@ public class TransferConfig {
     /**
      * 预编译编码器
      * @param type
+     * @return 
      */
-    public static void preCompileSerializer(Type type) {
+    public static Serializer preCompileSerializer(Type type) {
     	
     	Class<?> clazz = TypeUtils.getRawClass(type);
     	
@@ -374,17 +377,34 @@ public class TransferConfig {
 	        if (clazz.isEnum() || (clazz.getSuperclass() != null && clazz.getSuperclass().isEnum())) { // 枚举类型
 	            serializers.put(clazz, EnumSerializer.getInstance());
 	            typedDeserializers.put(clazz, EnumDeserializer.getInstance());
-	        } else {
-	            serializers.put(clazz, AsmSerializerFactory.compileSerializer(clazz, ObjectSerializer.getInstance()));
-	            //TODO
+	            return EnumSerializer.getInstance();
 	        }
 	        
-        } else {
-        	
-        	Serializer outerSerializer = getSerializer(clazz);
-        	serializers.put(type, AsmSerializerFactory.compileSerializer(type, outerSerializer));
-        	//TODO
+	        
+        	Serializer serializer = null;
+        	try {
+        		serializer = AsmSerializerFactory.compileSerializer(clazz, ObjectSerializer.getInstance());// 自定义传输类
+        		serializers.put(clazz, serializer);
+        		
+        	} catch (CompileError e) {
+        		logger.warn("无法预编译: " + e.getMessage() + ", 将使用默认编码器");
+        		serializer = ObjectSerializer.getInstance();
+        		serializers.put(clazz, serializer);
+        	}
+        	return serializer;
+            //TODO
+	        
         }
+        	
+    	Serializer outerSerializer = getSerializer(clazz);
+    	try {
+    		outerSerializer = AsmSerializerFactory.compileSerializer(type, outerSerializer);
+        	serializers.put(type, outerSerializer);
+    	} catch (CompileError e) {
+    		logger.warn("无法预编译: " + e.getMessage() + ", 将使用默认编码器");
+    	}
+    	return outerSerializer;
+    	//TODO
         
 	}
     
