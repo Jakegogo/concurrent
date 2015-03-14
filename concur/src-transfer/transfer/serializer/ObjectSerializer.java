@@ -54,6 +54,7 @@ public class ObjectSerializer implements Serializer, Opcodes {
 		}
 
 	}
+	
 
 	@Override
 	public void compile(Type type, MethodVisitor mv,
@@ -131,7 +132,19 @@ public class ObjectSerializer implements Serializer, Opcodes {
 				AsmUtils.withBoxingType(mv, rt);
 				mv.visitVarInsn(ASTORE, 5);
 
+				mv.visitVarInsn(ALOAD, 5);
+				Label l3 = new Label();
+				mv.visitJumpInsn(IFNONNULL, l3);
 
+				mv.visitVarInsn(ALOAD, 1);
+				mv.visitInsn(ICONST_1);
+				mv.visitMethodInsn(INVOKEINTERFACE, "transfer/Outputable", "putByte",
+						"(B)V", true);
+				Label l17 = new Label();
+				mv.visitJumpInsn(GOTO, l17);
+				mv.visitLabel(l3);
+				
+				
 				mv.visitVarInsn(ALOAD, 5);
 				mv.visitMethodInsn(INVOKEVIRTUAL, "java/lang/Object", "getClass",
 						"()Ljava/lang/Class;", false);
@@ -149,13 +162,11 @@ public class ObjectSerializer implements Serializer, Opcodes {
 						"serialze",
 						"(Ltransfer/Outputable;Ljava/lang/Object;Ltransfer/utils/IdentityHashMap;)V",
 						true);
-
+				mv.visitLabel(l17);
 			} else {
 
 				Serializer fieldSerializer = TransferConfig.getSerializer(TypeUtils
 						.getRawClass(fieldType));
-
-				String serializerClassName = fieldSerializer.getClass().getName();
 
 				mv.visitVarInsn(ALOAD, 0);
 

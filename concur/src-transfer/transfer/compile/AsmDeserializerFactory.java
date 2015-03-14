@@ -41,7 +41,7 @@ public class AsmDeserializerFactory implements Opcodes {
      * @param outerDeserializer 最外层解码器
      * @return
      */
-    public static Serializer compileDeserializer(Type type, Deserializer outerDeserializer) {
+    public static Deserializer compileDeserializer(Type type, Deserializer outerDeserializer) {
     	
     	String asmClassName = TypeUtils.getRawClass(type).getName() + "_Deserializer_" + DESERIALIZER_ID_GENERATOR.incrementAndGet();
 
@@ -55,7 +55,7 @@ public class AsmDeserializerFactory implements Opcodes {
         	serializerClass = (Class<?>) classLoader.defineClass(
                     asmClassName, bytes);
         	
-            return (Serializer) serializerClass.newInstance();
+            return (Deserializer) serializerClass.newInstance();
         } catch (Exception e) {
         	
             try {
@@ -64,7 +64,7 @@ public class AsmDeserializerFactory implements Opcodes {
             	
             	serializerClass = (Class<?>) classLoader.defineClass(
                         asmClassName, bytes);
-            	 return (Serializer) serializerClass.newInstance();
+            	 return (Deserializer) serializerClass.newInstance();
             } catch (Exception e1) {
             	e.printStackTrace();
             	throw new CompileError(e);

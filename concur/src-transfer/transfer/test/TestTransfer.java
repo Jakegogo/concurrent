@@ -2,10 +2,13 @@ package transfer.test;
 
 import transfer.ByteArray;
 import transfer.Transfer;
+import transfer.def.TransferConfig;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.zip.Deflater;
 
 import org.slf4j.helpers.FormattingTuple;
@@ -24,6 +27,8 @@ public class TestTransfer {
 
 //        Config.registerClass(Entity.class, 1);
     	
+    	TransferConfig.preCompileDeserializer(Entity.class);
+    	
         Entity entity = new Entity();
         entity.setId(System.currentTimeMillis());
         entity.setUid(-101);
@@ -36,6 +41,11 @@ public class TestTransfer {
         entity.getFriends().add(2l);
         entity.getFriends().add(3l);
         entity.setA(null);
+        
+        List<Integer> obj = new ArrayList<Integer>();
+        obj.add(123);
+        obj.add(456);
+        entity.setObj(obj);
 
         ByteArray byteArray = Transfer.encode(entity, Entity.class);
 
@@ -58,6 +68,7 @@ public class TestTransfer {
         System.out.println(entity1.getStr());
         System.out.println(entity1.getBool());
         System.out.println(entity1.getFval());
+        System.out.println(entity1.getObj());
     }
     
     

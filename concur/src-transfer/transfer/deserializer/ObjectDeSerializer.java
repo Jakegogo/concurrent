@@ -1,9 +1,11 @@
 package transfer.deserializer;
 
 import dbcache.support.asm.util.AsmUtils;
+
 import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
+
 import transfer.Inputable;
 import transfer.compile.AsmDeserializerContext;
 import transfer.core.ClassInfo;
@@ -18,6 +20,9 @@ import transfer.utils.BitUtils;
 import transfer.utils.IntegerMap;
 import transfer.utils.TypeUtils;
 
+import java.beans.IntrospectionException;
+import java.beans.PropertyDescriptor;
+import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 
 /**
@@ -105,10 +110,9 @@ public class ObjectDeSerializer implements Deserializer, Opcodes {
 
         mv.visitVarInsn(ILOAD, 5);
         mv.visitIntInsn(BIPUSH, Types.OBJECT);
+        
         Label l5 = new Label();
         mv.visitJumpInsn(IF_ICMPEQ, l5);
-        Label l6 = new Label();
-        mv.visitLabel(l6);
         mv.visitTypeInsn(NEW, "transfer/exception/IllegalTypeException");
         mv.visitInsn(DUP);
         mv.visitVarInsn(ILOAD, 5);
@@ -122,15 +126,6 @@ public class ObjectDeSerializer implements Deserializer, Opcodes {
         mv.visitVarInsn(ALOAD, 1);
         mv.visitMethodInsn(INVOKESTATIC, "transfer/utils/BitUtils", "getInt2", "(Ltransfer/Inputable;)I", false);
         mv.visitVarInsn(ISTORE, 6);
-
-        mv.visitVarInsn(ALOAD, 2);
-        Label l8 = new Label();
-        mv.visitJumpInsn(IFNULL, l8);
-        mv.visitVarInsn(ALOAD, 2);
-        mv.visitLdcInsn(org.objectweb.asm.Type.getType("Ljava/lang/Object;"));
-        Label l9 = new Label();
-        mv.visitJumpInsn(IF_ACMPNE, l9);
-        mv.visitLabel(l8);
 
 
         Class<?> rawClass;
@@ -153,45 +148,66 @@ public class ObjectDeSerializer implements Deserializer, Opcodes {
             throw new UnsupportDeserializerTypeException(rawClass);
         }
 
+        // 判断类型
+        if (rawClass != Object.class) {
+        
+	        mv.visitFrame(Opcodes.F_APPEND,1, new Object[] {"transfer/core/ClassInfo"}, 0, null);
+	        mv.visitVarInsn(ILOAD, 6);
+	        mv.visitIntInsn(SIPUSH, classInfo.getClassId());
+	
+	        Label l14 = new Label();
+	        mv.visitJumpInsn(IF_ICMPEQ, l14);
+	        mv.visitTypeInsn(NEW, "transfer/exception/IllegalClassTypeException");
+	        mv.visitInsn(DUP);
+	        mv.visitVarInsn(ILOAD, 6);
+	        mv.visitVarInsn(ALOAD, 2);
+	        mv.visitMethodInsn(INVOKESPECIAL, "transfer/exception/IllegalClassTypeException", "<init>", "(ILjava/lang/reflect/Type;)V", false);
+	        mv.visitInsn(ATHROW);
+	        mv.visitLabel(l14);
+	        
+        }
 
-        mv.visitFrame(Opcodes.F_APPEND,1, new Object[] {"transfer/core/ClassInfo"}, 0, null);
-        mv.visitVarInsn(ILOAD, 6);
-        mv.visitIntInsn(SIPUSH, classInfo.getClassId());
-
-        Label l14 = new Label();
-        mv.visitJumpInsn(IF_ICMPEQ, l14);
-        mv.visitTypeInsn(NEW, "transfer/exception/IllegalClassTypeException");
-        mv.visitInsn(DUP);
-        mv.visitVarInsn(ILOAD, 6);
-        mv.visitVarInsn(ALOAD, 2);
-        mv.visitMethodInsn(INVOKESPECIAL, "transfer/exception/IllegalClassTypeException", "<init>", "(ILjava/lang/reflect/Type;)V", false);
-        mv.visitInsn(ATHROW);
-        mv.visitLabel(l14);
-
-        //} catch (Exception e) {
+        // new Entity()
         mv.visitFrame(Opcodes.F_SAME, 0, null, 0, null);
 
         mv.visitTypeInsn(NEW, AsmUtils.toAsmCls(rawClass.getName()));
         mv.visitInsn(DUP);
         mv.visitMethodInsn(INVOKESPECIAL, AsmUtils.toAsmCls(rawClass.getName()), "<init>", "()V", false);
-        mv.visitVarInsn(ASTORE, 9);
+        mv.visitVarInsn(ASTORE, 7);
 
 
-        int localIndex = 10;
+        int localIndex = 7;
+        
         Type fieldType;
         Deserializer fieldDeserializer;
         for (FieldInfo fieldInfo : classInfo.getFieldInfos()) {
 
             fieldType = fieldInfo.getType();
-            if (fieldType == null || fieldType == Object.class) {
+            
+            if (fieldType == null || fieldType == Object.class) {// 使用默认解析器
 
+            	mv.visitVarInsn(ALOAD, 1);
+            	mv.visitMethodInsn(INVOKEINTERFACE, "transfer/Inputable", "getByte", "()B", true);
+            	int store1 = ++localIndex;
+            	mv.visitVarInsn(ISTORE, store1);
+            	
+            	
+            	mv.visitLdcInsn(org.objectweb.asm.Type.getType("L" + AsmUtils.toAsmCls(Object.class.getName()) + ";"));
+            	mv.visitVarInsn(ILOAD, store1);
+            	mv.visitMethodInsn(INVOKESTATIC, "transfer/def/TransferConfig", "getDeserializer", "(Ljava/lang/reflect/Type;B)Ltransfer/deserializer/Deserializer;", false);
+            	
+            	mv.visitVarInsn(ALOAD, 1);
+            	mv.visitLdcInsn(org.objectweb.asm.Type.getType("L" + AsmUtils.toAsmCls(Object.class.getName()) + ";"));
+            	mv.visitVarInsn(ILOAD, store1);
+            	mv.visitVarInsn(ALOAD, 4);
+            	mv.visitMethodInsn(INVOKEINTERFACE, "transfer/deserializer/Deserializer", "deserialze", "(Ltransfer/Inputable;Ljava/lang/reflect/Type;BLtransfer/utils/IntegerMap;)Ljava/lang/Object;", true);
+            	mv.visitVarInsn(ASTORE, ++localIndex);
 
-
-            } else {
+            } else {// 使用预编译解析方法
 
                 mv.visitVarInsn(ALOAD, 1);
                 mv.visitMethodInsn(INVOKEINTERFACE, "transfer/Inputable", "getByte", "()B", true);
-                int store1 = localIndex++;
+                int store1 = ++localIndex;
                 mv.visitVarInsn(ISTORE, store1);
 
 
@@ -203,23 +219,50 @@ public class ObjectDeSerializer implements Deserializer, Opcodes {
                 mv.visitVarInsn(ILOAD, store1);
                 mv.visitVarInsn(ALOAD, 4);
                 mv.visitMethodInsn(INVOKEINTERFACE, "transfer/deserializer/Deserializer", "deserialze", "(Ltransfer/Inputable;Ljava/lang/reflect/Type;BLtransfer/utils/IntegerMap;)Ljava/lang/Object;", true);
-                int store2 = localIndex++;
-                mv.visitVarInsn(ASTORE, store2);
+                
 
                 // 执行属性预编译
                 MethodVisitor mv1 = context.invokeNextDeserialize(fieldInfo.getFieldName(), mv);
                 fieldDeserializer.compile(fieldType, mv1, context);
+                
+                mv.visitVarInsn(ASTORE, ++localIndex);
 
-//TODO
-                mv.visitVarInsn(ALOAD, 9);
-                mv.visitVarInsn(ALOAD, store2);
-                mv.visitMethodInsn(INVOKEVIRTUAL, "transfer/core/FieldInfo", "setField", "(Ljava/lang/Object;Ljava/lang/Object;)V", false);
             }
+            
+            // 设置属性
+            PropertyDescriptor propertyDescriptor = null;
+			try {
+				propertyDescriptor = new PropertyDescriptor(fieldInfo.getFieldName(), rawClass);
+			} catch (IntrospectionException e) {
+				e.printStackTrace();
+				throw new CompileError(e);
+			}
+			
+			//获取set方法
+			final Method setMethod = propertyDescriptor.getWriteMethod();
+			final org.objectweb.asm.Type[] mat = org.objectweb.asm.Type.getArgumentTypes(setMethod);
+			final Class<?>[] mpt = setMethod.getParameterTypes();
+			final org.objectweb.asm.Type mrt = org.objectweb.asm.Type.getType(setMethod);
+			
+			//获取this.target
+			mv.visitVarInsn(ALOAD, 7);
+			mv.visitVarInsn(ALOAD, localIndex);
+
+			if(mpt[0].isPrimitive()) {
+				// unBoxing
+				AsmUtils.withUnBoxingType(mv, mat[0]);
+			} else {
+				mv.visitTypeInsn(CHECKCAST, AsmUtils.toAsmCls(mpt[0].getName()));
+			}
+
+			mv.visitMethodInsn(INVOKEVIRTUAL,
+					AsmUtils.toAsmCls(rawClass.getName()), setMethod.getName(),
+					mrt.toString(), false);
 
         }
 
         mv.visitFrame(Opcodes.F_FULL, 10, new Object[] {"transfer/deserializer/ObjectDeSerializer", "transfer/Inputable", "java/lang/reflect/Type", Opcodes.INTEGER, "transfer/utils/IntegerMap", Opcodes.INTEGER, Opcodes.INTEGER, "java/lang/Class", "transfer/core/ClassInfo", "java/lang/Object"}, 0, new Object[] {});
-        mv.visitVarInsn(ALOAD, 9);
+        mv.visitVarInsn(ALOAD, 7);
         mv.visitInsn(ARETURN);
 
         mv.visitMaxs(5, 16);

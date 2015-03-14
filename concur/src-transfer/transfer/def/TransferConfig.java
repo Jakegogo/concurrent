@@ -8,6 +8,7 @@ import org.springframework.util.ReflectionUtils;
 import transfer.ByteArray;
 import transfer.anno.Ignore;
 import transfer.anno.Transferable;
+import transfer.compile.AsmDeserializerFactory;
 import transfer.compile.AsmSerializerFactory;
 import transfer.core.ClassInfo;
 import transfer.core.EnumInfo;
@@ -376,7 +377,6 @@ public class TransferConfig {
 		
 	        if (clazz.isEnum() || (clazz.getSuperclass() != null && clazz.getSuperclass().isEnum())) { // 枚举类型
 	            serializers.put(clazz, EnumSerializer.getInstance());
-	            typedDeserializers.put(clazz, EnumDeserializer.getInstance());
 	            return EnumSerializer.getInstance();
 	        }
 	        
@@ -392,7 +392,6 @@ public class TransferConfig {
         		serializers.put(clazz, serializer);
         	}
         	return serializer;
-            //TODO
 	        
         }
         	
@@ -404,8 +403,56 @@ public class TransferConfig {
     		logger.warn("无法预编译: " + e.getMessage() + ", 将使用默认编码器");
     	}
     	return outerSerializer;
-    	//TODO
-        
+	}
+    
+    
+    /**
+     * 预编译解码器
+     * @param type
+     * @return 
+     */
+    public static Deserializer preCompileDeserializer(Type type) {
+    	
+    	Class<?> clazz = TypeUtils.getRawClass(type);
+    	
+    	// 获取唯一标识
+        if (clazz.isAnnotationPresent(Transferable.class)) {
+        	
+            Transferable transferable = clazz.getAnnotation(Transferable.class);
+            
+			int classId = transferable.id();
+			
+	        classIdMap.put(classId, clazz);
+	        idClassMap.put(clazz, classId);
+		
+	        if (clazz.isEnum() || (clazz.getSuperclass() != null && clazz.getSuperclass().isEnum())) { // 枚举类型
+	            typedDeserializers.put(clazz, EnumDeserializer.getInstance());
+	            return EnumDeserializer.getInstance();
+	        }
+	        
+	        
+	        Deserializer deserializer = null;
+        	try {
+        		deserializer = AsmDeserializerFactory.compileDeserializer(clazz, ObjectDeSerializer.getInstance());// 自定义传输类
+        		typedDeserializers.put(clazz, deserializer);
+        		
+        	} catch (CompileError e) {
+        		logger.warn("无法预编译: " + e.getMessage() + ", 将使用默认解码器");
+        		deserializer = ObjectDeSerializer.getInstance();
+        		typedDeserializers.put(clazz, deserializer);
+        	}
+        	return deserializer;
+	        
+        }
+        	
+        Deserializer outerDeserializer = getDeserializer(clazz);
+    	try {
+    		outerDeserializer = AsmDeserializerFactory.compileDeserializer(type, outerDeserializer);
+    		typedDeserializers.put(type, outerDeserializer);
+    	} catch (CompileError e) {
+    		logger.warn("无法预编译: " + e.getMessage() + ", 将使用默认解码器");
+    	}
+    	return outerDeserializer;
 	}
     
     

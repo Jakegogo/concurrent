@@ -290,7 +290,7 @@ public class AsmAccessHelper implements Opcodes {
 
 						mv.visitMethodInsn(INVOKEVIRTUAL,
 								AsmUtils.toAsmCls(clazz.getName()), setMethod.getName(),
-								mrt.toString());
+								mrt.toString(), false);
 
 						// 处理返回值类型 到 Object类型
 						AsmUtils.withBoxingType(mv, rt);

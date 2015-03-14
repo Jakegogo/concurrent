@@ -53,6 +53,8 @@ public class Entity implements EntityInitializer, IEntity<Long>, Serializable {
 	private Boolean bool;
 	
 	private Map<String,Object> map;
+	
+	private Object obj;
 
 
 	@JsonType
@@ -242,5 +244,13 @@ public class Entity implements EntityInitializer, IEntity<Long>, Serializable {
 
 	public void setMap(Map<String,Object> map) {
 		this.map = map;
+	}
+
+	public Object getObj() {
+		return obj;
+	}
+
+	public void setObj(Object obj) {
+		this.obj = obj;
 	}
 }
