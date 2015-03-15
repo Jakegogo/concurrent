@@ -165,6 +165,8 @@ public class ObjectDeSerializer implements Deserializer, Opcodes {
 	        mv.visitInsn(ATHROW);
 	        mv.visitLabel(l14);
 	        
+        } else {
+            throw new CompileError("不支持编译类型:" + Object.class);
         }
 
         // new Entity()

@@ -1,8 +1,12 @@
 package transfer.test;
 
+import dbcache.utils.JsonUtils;
+import net.jpountz.lz4.LZ4Compressor;
+import net.jpountz.lz4.LZ4Factory;
+import org.slf4j.helpers.FormattingTuple;
+import org.slf4j.helpers.MessageFormatter;
 import transfer.ByteArray;
 import transfer.Transfer;
-import transfer.def.TransferConfig;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -10,13 +14,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.zip.Deflater;
-
-import org.slf4j.helpers.FormattingTuple;
-import org.slf4j.helpers.MessageFormatter;
-
-import net.jpountz.lz4.LZ4Compressor;
-import net.jpountz.lz4.LZ4Factory;
-import dbcache.utils.JsonUtils;
 
 /**
  * Created by Administrator on 2015/2/26.
@@ -27,7 +24,7 @@ public class TestTransfer {
 
 //        Config.registerClass(Entity.class, 1);
     	
-    	TransferConfig.preCompileDeserializer(Entity.class);
+//    	TransferConfig.preCompileDeserializer(Entity.class);
     	
         Entity entity = new Entity();
         entity.setId(System.currentTimeMillis());

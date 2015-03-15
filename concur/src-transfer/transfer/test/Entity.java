@@ -4,16 +4,12 @@ import dbcache.EntityInitializer;
 import dbcache.IEntity;
 import dbcache.anno.ChangeFields;
 import dbcache.anno.JsonType;
-
-import org.apache.mina.util.ConcurrentHashSet;
 import org.hibernate.annotations.Index;
-
 import transfer.anno.Transferable;
 
 import javax.persistence.Column;
 import javax.persistence.Id;
 import javax.persistence.Transient;
-
 import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.util.Date;
@@ -55,6 +51,8 @@ public class Entity implements EntityInitializer, IEntity<Long>, Serializable {
 	private Map<String,Object> map;
 	
 	private Object obj;
+
+	private AcountStatus[] statusHis;
 
 
 	@JsonType
@@ -252,5 +250,13 @@ public class Entity implements EntityInitializer, IEntity<Long>, Serializable {
 
 	public void setObj(Object obj) {
 		this.obj = obj;
+	}
+
+	public AcountStatus[] getStatusHis() {
+		return statusHis;
+	}
+
+	public void setStatusHis(AcountStatus[] statusHis) {
+		this.statusHis = statusHis;
 	}
 }
