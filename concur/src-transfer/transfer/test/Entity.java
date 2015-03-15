@@ -54,6 +54,8 @@ public class Entity implements EntityInitializer, IEntity<Long>, Serializable {
 
 	private AcountStatus[] statusHis;
 
+	private Object[] objArr;
+
 
 	@JsonType
 	@Column(columnDefinition="varchar(255) null comment '已经领取过的奖励Id'")
@@ -258,5 +260,13 @@ public class Entity implements EntityInitializer, IEntity<Long>, Serializable {
 
 	public void setStatusHis(AcountStatus[] statusHis) {
 		this.statusHis = statusHis;
+	}
+
+	public Object[] getObjArr() {
+		return objArr;
+	}
+
+	public void setObjArr(Object[] objArr) {
+		this.objArr = objArr;
 	}
 }

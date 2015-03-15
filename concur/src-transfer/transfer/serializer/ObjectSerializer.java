@@ -44,10 +44,16 @@ public class ObjectSerializer implements Serializer, Opcodes {
 
 		for (FieldInfo fieldInfo : classInfo.getFieldInfos()) {
 
-			Serializer fieldSerializer = TransferConfig.getSerializer(TypeUtils
-					.getRawClass(fieldInfo.getType()));
+			Serializer fieldSerializer;
 
 			Object fieldValue = fieldInfo.getField(object);
+
+			if (fieldValue != null) {
+				fieldSerializer = TransferConfig.getSerializer(fieldValue.getClass());
+			} else {
+				fieldSerializer = TransferConfig.getSerializer(TypeUtils
+						.getRawClass(fieldInfo.getType()));
+			}
 
 			fieldSerializer.serialze(outputable, fieldValue, referenceMap);
 
@@ -163,6 +169,7 @@ public class ObjectSerializer implements Serializer, Opcodes {
 						"(Ltransfer/Outputable;Ljava/lang/Object;Ltransfer/utils/IdentityHashMap;)V",
 						true);
 				mv.visitLabel(l17);
+
 			} else {
 
 				Serializer fieldSerializer = TransferConfig.getSerializer(TypeUtils

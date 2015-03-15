@@ -68,15 +68,13 @@ public class ArraySerializer implements Serializer, Opcodes {
 		Class<?> componentClass = TypeUtils.getRawClass(type)
 				.getComponentType();
 
-		if (componentClass == null || componentClass == Object[].class) {
+		if (componentClass == null || componentClass == Object.class) {
 
 			mv.visitVarInsn(ALOAD, 2);
 			mv.visitTypeInsn(CHECKCAST, "[Ljava/lang/Object;");
 			mv.visitVarInsn(ASTORE, 4);
 
 			mv.visitVarInsn(ALOAD, 4);
-			mv.visitInsn(DUP);
-			mv.visitVarInsn(ASTORE, 8);
 			mv.visitInsn(ARRAYLENGTH);
 			mv.visitVarInsn(ISTORE, 7);
 			mv.visitInsn(ICONST_0);
@@ -92,7 +90,7 @@ public class ArraySerializer implements Serializer, Opcodes {
 					"transfer/utils/IdentityHashMap", "[Ljava/lang/Object;",
 					Opcodes.TOP, Opcodes.INTEGER, Opcodes.INTEGER,
 					"[Ljava/lang/Object;" }, 0, new Object[] {});
-			mv.visitVarInsn(ALOAD, 8);
+			mv.visitVarInsn(ALOAD, 4);
 			mv.visitVarInsn(ILOAD, 6);
 			mv.visitInsn(AALOAD);
 			mv.visitVarInsn(ASTORE, 5);
@@ -117,8 +115,9 @@ public class ArraySerializer implements Serializer, Opcodes {
 					"(Ltransfer/Outputable;Ljava/lang/Object;Ltransfer/utils/IdentityHashMap;)V",
 					true);
 
-			mv.visitIincInsn(6, 1);
+
 			mv.visitLabel(l6);
+			mv.visitIincInsn(6, 1);
 			mv.visitFrame(Opcodes.F_SAME, 0, null, 0, null);
 			mv.visitVarInsn(ILOAD, 6);
 			mv.visitVarInsn(ILOAD, 7);
@@ -131,8 +130,7 @@ public class ArraySerializer implements Serializer, Opcodes {
 			mv.visitVarInsn(ASTORE, 4);
 
 			mv.visitVarInsn(ALOAD, 4);
-			mv.visitInsn(DUP);
-			mv.visitVarInsn(ASTORE, 8);
+
 			mv.visitInsn(ARRAYLENGTH);
 			mv.visitVarInsn(ISTORE, 7);
 			mv.visitInsn(ICONST_0);
@@ -142,19 +140,20 @@ public class ArraySerializer implements Serializer, Opcodes {
 			Label l7 = new Label();
 			mv.visitLabel(l7);
 
-			mv.visitFrame(Opcodes.F_FULL, 9, new Object[] {
+			mv.visitFrame(Opcodes.F_FULL, 9, new Object[]{
 					"transfer/serializer/ArraySerializer",
 					"transfer/Outputable", "java/lang/Object",
 					"transfer/utils/IdentityHashMap", "[Ljava/lang/Object;",
 					Opcodes.TOP, Opcodes.INTEGER, Opcodes.INTEGER,
 					"[Ljava/lang/Object;" }, 0, new Object[] {});
-			mv.visitVarInsn(ALOAD, 8);
+			mv.visitVarInsn(ALOAD, 4);
 			mv.visitVarInsn(ILOAD, 6);
 			mv.visitInsn(AALOAD);
+			mv.visitVarInsn(ASTORE, 8);
 
 			mv.visitVarInsn(ALOAD, 0);
 			mv.visitVarInsn(ALOAD, 1);
-			mv.visitVarInsn(ALOAD, 5);
+			mv.visitVarInsn(ALOAD, 8);
 			mv.visitVarInsn(ALOAD, 3);
 
 			// 执行属性预编译
@@ -164,8 +163,8 @@ public class ArraySerializer implements Serializer, Opcodes {
 					.getSerializer(componentClass);
 			fieldSerializer.compile(componentClass, methodVisitor, context);
 
-			mv.visitIincInsn(6, 1);
 			mv.visitLabel(l6);
+			mv.visitIincInsn(6, 1);
 			mv.visitFrame(Opcodes.F_SAME, 0, null, 0, null);
 			mv.visitVarInsn(ILOAD, 6);
 			mv.visitVarInsn(ILOAD, 7);
