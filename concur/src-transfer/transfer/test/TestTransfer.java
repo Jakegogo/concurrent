@@ -44,6 +44,10 @@ public class TestTransfer {
         obj.add(456);
         entity.setObj(obj);
 
+        AcountStatus[] asa = new AcountStatus[]{AcountStatus.CLOSE, AcountStatus.OPEN};
+        entity.setStatusHis(asa);
+
+
         ByteArray byteArray = Transfer.encode(entity, Entity.class);
 
         byte[] bytes = byteArray.toBytes();

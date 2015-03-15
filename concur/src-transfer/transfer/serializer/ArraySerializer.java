@@ -65,18 +65,25 @@ public class ArraySerializer implements Serializer, Opcodes {
 		mv.visitMethodInsn(INVOKEINTERFACE, "transfer/Outputable", "putByte",
 				"(B)V", true);
 
+		mv.visitVarInsn(ALOAD, 2);
+		mv.visitTypeInsn(CHECKCAST, "[Ljava/lang/Object;");
+		mv.visitVarInsn(ASTORE, 4);
+
+		mv.visitVarInsn(ALOAD, 4);
+		mv.visitInsn(ARRAYLENGTH);
+		mv.visitVarInsn(ISTORE, 7);
+
+		mv.visitVarInsn(ALOAD, 1);
+		mv.visitVarInsn(ILOAD, 7);
+		mv.visitMethodInsn(INVOKESTATIC, "transfer/utils/BitUtils", "putInt",
+				"(Ltransfer/Outputable;I)V", false);
+
+
 		Class<?> componentClass = TypeUtils.getRawClass(type)
 				.getComponentType();
 
 		if (componentClass == null || componentClass == Object.class) {
 
-			mv.visitVarInsn(ALOAD, 2);
-			mv.visitTypeInsn(CHECKCAST, "[Ljava/lang/Object;");
-			mv.visitVarInsn(ASTORE, 4);
-
-			mv.visitVarInsn(ALOAD, 4);
-			mv.visitInsn(ARRAYLENGTH);
-			mv.visitVarInsn(ISTORE, 7);
 			mv.visitInsn(ICONST_0);
 			mv.visitVarInsn(ISTORE, 6);
 			Label l6 = new Label();
@@ -125,14 +132,6 @@ public class ArraySerializer implements Serializer, Opcodes {
 
 		} else {
 
-			mv.visitVarInsn(ALOAD, 2);
-			mv.visitTypeInsn(CHECKCAST, "[Ljava/lang/Object;");
-			mv.visitVarInsn(ASTORE, 4);
-
-			mv.visitVarInsn(ALOAD, 4);
-
-			mv.visitInsn(ARRAYLENGTH);
-			mv.visitVarInsn(ISTORE, 7);
 			mv.visitInsn(ICONST_0);
 			mv.visitVarInsn(ISTORE, 6);
 			Label l6 = new Label();
