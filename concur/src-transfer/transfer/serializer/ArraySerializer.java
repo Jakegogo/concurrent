@@ -122,9 +122,8 @@ public class ArraySerializer implements Serializer, Opcodes {
 					"(Ltransfer/Outputable;Ljava/lang/Object;Ltransfer/utils/IdentityHashMap;)V",
 					true);
 
-
-			mv.visitLabel(l6);
 			mv.visitIincInsn(6, 1);
+			mv.visitLabel(l6);
 			mv.visitFrame(Opcodes.F_SAME, 0, null, 0, null);
 			mv.visitVarInsn(ILOAD, 6);
 			mv.visitVarInsn(ILOAD, 7);
@@ -162,8 +161,8 @@ public class ArraySerializer implements Serializer, Opcodes {
 					.getSerializer(componentClass);
 			fieldSerializer.compile(componentClass, methodVisitor, context);
 
-			mv.visitLabel(l6);
 			mv.visitIincInsn(6, 1);
+			mv.visitLabel(l6);
 			mv.visitFrame(Opcodes.F_SAME, 0, null, 0, null);
 			mv.visitVarInsn(ILOAD, 6);
 			mv.visitVarInsn(ILOAD, 7);
