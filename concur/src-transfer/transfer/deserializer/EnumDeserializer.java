@@ -1,5 +1,6 @@
 package transfer.deserializer;
 
+import org.objectweb.asm.MethodVisitor;
 import transfer.Inputable;
 import transfer.compile.AsmDeserializerContext;
 import transfer.core.EnumInfo;
@@ -13,8 +14,6 @@ import transfer.utils.IntegerMap;
 import transfer.utils.TypeUtils;
 
 import java.lang.reflect.Type;
-
-import org.objectweb.asm.MethodVisitor;
 
 /**
  * 枚举解析器
@@ -47,7 +46,7 @@ public class EnumDeserializer implements Deserializer {
         }
 
         if (rawClass == null) {
-            throw new UnsupportDeserializerTypeException(rawClass);
+            throw new UnsupportDeserializerTypeException(type);
         }
 
         EnumInfo enumInfo = (EnumInfo) TransferConfig.getOrCreateClassInfo(rawClass);

@@ -21,7 +21,7 @@ public class EntityAsmFactory {
 	/**
 	 * 代理类缓存
 	 */
-	public static ConcurrentHashMap<Class<?>, EnhancedClassInfo<?>> ENHANCED_CLASS_CACHE = new ConcurrentHashMap<Class<?>, EnhancedClassInfo<?>>();
+	public static final ConcurrentHashMap<Class<?>, EnhancedClassInfo<?>> ENHANCED_CLASS_CACHE = new ConcurrentHashMap<Class<?>, EnhancedClassInfo<?>>();
 
 	/** 代理类类名 */
 	public static final String SUFIX = "$EnhancedByAsm";
@@ -29,7 +29,7 @@ public class EntityAsmFactory {
 	/**
 	 * 字节码类加载器
 	 */
-	public static AsmClassLoader classLoader = new AsmClassLoader();
+	public static final AsmClassLoader classLoader = new AsmClassLoader();
 	
 	
 	/**
@@ -74,7 +74,7 @@ public class EntityAsmFactory {
 					enhancedClassName, byteCodes);
 
 			EnhancedClassInfo classInfo = new EnhancedClassInfo();
-			classInfo.setProxyClass(clazz);
+			classInfo.setProxyClass(result);
 			
 			// 将代理类存入缓存
 			ENHANCED_CLASS_CACHE.putIfAbsent(clazz, classInfo);

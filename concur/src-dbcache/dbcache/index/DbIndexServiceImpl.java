@@ -52,7 +52,7 @@ public class DbIndexServiceImpl<PK extends Comparable<PK> & Serializable>
 	public Collection<PK> get(String indexName, Object indexValue) {
 
 		// 判断实体是否建立索引
-		if(!cacheConfig.getIndexes().containsKey(indexName)) {
+		if(cacheConfig == null || !cacheConfig.getIndexes().containsKey(indexName)) {
 			throw new IllegalArgumentException("实体类[" + cacheConfig.getClass().getSimpleName() + "]不存在索引[" + indexName + "]!");
 		}
 
@@ -88,6 +88,10 @@ public class DbIndexServiceImpl<PK extends Comparable<PK> & Serializable>
 		// 持久态则返回结果
 		if (indexObject.isDoPersist()) {
 			return indexObject.getIndexValues();
+		}
+
+		if (cacheConfig == null) {
+			throw new RuntimeException("CacheConfig未初始化(" + indexName + ")");
 		}
 
 		synchronized (indexObject) {

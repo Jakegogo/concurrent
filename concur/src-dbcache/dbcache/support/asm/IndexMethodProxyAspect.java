@@ -296,7 +296,7 @@ public class IndexMethodProxyAspect extends AbstractAsmMethodProxyAspect {
 	 * @author Jake
 	 * @date 2014年9月7日下午7:50:42
 	 */
-	class ClassIndexesMetaData {
+	static class ClassIndexesMetaData {
 
 		/**
 		 * 代理类类名

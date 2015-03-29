@@ -60,7 +60,7 @@ public class ConcurrentLRUCache<K, V>
     {
         this(size, lowerWatermark, (int) Math
                 .floor((lowerWatermark + size) / 2), (int) Math
-                .ceil(0.75 * size), false, false, 16, null, null);
+                .ceil(0.75f * size), false, false, 16, null, null);
     }
 
 
@@ -166,7 +166,7 @@ public class ConcurrentLRUCache<K, V>
 
         CacheEntry<K, V> oldCacheEntry = map.put(key, e);
         int currentSize;
-        if (oldCacheEntry == null && oldCacheEntry == NULL_ENTRY) {
+        if (oldCacheEntry == null || oldCacheEntry == NULL_ENTRY) {
             stats.size.increment();
             currentSize = stats.size.intValue();
         }
@@ -855,6 +855,9 @@ public class ConcurrentLRUCache<K, V>
 
         public int compareTo(NullEntry that)
         {
+            if (that == null || that == this) {
+                return 0;
+            }
             return -1;
         }
 

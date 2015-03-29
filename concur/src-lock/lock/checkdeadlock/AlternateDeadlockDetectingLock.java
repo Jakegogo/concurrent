@@ -165,7 +165,7 @@ public class AlternateDeadlockDetectingLock extends ObjectLock {
     registerLock(this);
   }
 
-  private static boolean DDLdeadlockDETECTED = false;
+  private boolean DDLdeadlockDETECTED = false;
 
   //
   // Core Methods

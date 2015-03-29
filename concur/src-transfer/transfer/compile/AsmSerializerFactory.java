@@ -24,7 +24,7 @@ public class AsmSerializerFactory implements Opcodes {
     /**
      * 字节码类加载器
      */
-    public static AsmClassLoader classLoader = new AsmClassLoader();
+    public static final AsmClassLoader classLoader = new AsmClassLoader();
 
     /**
      * 预编译编码器的自增ID

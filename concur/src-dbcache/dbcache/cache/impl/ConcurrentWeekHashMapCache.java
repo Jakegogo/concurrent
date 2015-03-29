@@ -143,7 +143,7 @@ public class ConcurrentWeekHashMapCache implements CacheUnit {
 	
 	@Override
 	public ValueWrapper get(long key) {
-		return this.get(key);
+		return this.get(Long.valueOf(key));
 	}
 	
 
@@ -283,6 +283,11 @@ public class ConcurrentWeekHashMapCache implements CacheUnit {
 		/** 缓存的实体 */
 		@SuppressWarnings("rawtypes")
 		private final WeakCacheObject value;
+
+
+		public SimpleValueWrapper(){
+			this.value = null;
+		}
 
 		/**
 		 * 构造方法

@@ -40,5 +40,23 @@ public class IndexValue<PK extends Comparable<PK> & Serializable> extends IndexK
 		return id;
 	}
 
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) return true;
+		if (o == null || getClass() != o.getClass()) return false;
+		if (!super.equals(o)) return false;
 
+		IndexValue that = (IndexValue) o;
+
+		if (!id.equals(that.id)) return false;
+
+		return true;
+	}
+
+	@Override
+	public int hashCode() {
+		int result = super.hashCode();
+		result = 31 * result + id.hashCode();
+		return result;
+	}
 }

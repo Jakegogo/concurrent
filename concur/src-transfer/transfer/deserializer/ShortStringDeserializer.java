@@ -1,5 +1,6 @@
 package transfer.deserializer;
 
+import org.objectweb.asm.MethodVisitor;
 import transfer.Inputable;
 import transfer.compile.AsmDeserializerContext;
 import transfer.def.TransferConfig;
@@ -9,8 +10,7 @@ import transfer.utils.BitUtils;
 import transfer.utils.IntegerMap;
 
 import java.lang.reflect.Type;
-
-import org.objectweb.asm.MethodVisitor;
+import java.nio.charset.Charset;
 
 /**
  * 短字符串解析器 最大长度255
@@ -35,7 +35,7 @@ public class ShortStringDeserializer implements Deserializer {
 
         inputable.getBytes(bytes);
 
-        return (T) new String(bytes);
+        return (T) new String(bytes, Charset.forName("UTF-8"));
     }
 
 

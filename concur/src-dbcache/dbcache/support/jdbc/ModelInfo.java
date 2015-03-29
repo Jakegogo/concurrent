@@ -397,8 +397,6 @@ public class ModelInfo {
 			if (columnInfo.isPrimaryKey() && columnVal == null) {
 				if (this.defaultIdGenerator != null) {
 					sqlParams[i] = this.defaultIdGenerator.generateId();
-				} else {
-					sqlParams[i] = columnVal;
 				}
 			} else {
 				sqlParams[i] = columnVal;
@@ -426,8 +424,6 @@ public class ModelInfo {
 				IdGenerator<?> idGenerator = this.idGenerators.get(Integer.valueOf(category));
 				if (idGenerator != null) {
 					sqlParams[i] = idGenerator.generateId();
-				} else {
-					sqlParams[i] = columnVal;
 				}
 			} else {
 				sqlParams[i] = columnVal;
@@ -548,7 +544,7 @@ public class ModelInfo {
 			throw new RuntimeException(e);
 		}
 		finally {
-			try {is.close();} catch (IOException e) {throw new RuntimeException(e);}
+			try {if (is != null) is.close();} catch (IOException e) {throw new RuntimeException(e);}
 		}
 	}
 
@@ -567,7 +563,7 @@ public class ModelInfo {
 			throw new RuntimeException(e);
 		}
 		finally {
-			try {reader.close();} catch (IOException e) {throw new RuntimeException(e);}
+			try {if (reader != null) reader.close();} catch (IOException e) {throw new RuntimeException(e);}
 		}
 	}
 

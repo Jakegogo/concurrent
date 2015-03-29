@@ -39,7 +39,7 @@ public class CacheUtils {
     	int flexibleSize = (size * 4 + 3) / 3;
     	return new ConcurrentLRUCache(flexibleSize, size, (int) Math
                 .floor((size + flexibleSize) / 2), (int) Math
-                .ceil(0.75 * flexibleSize), true, false, Runtime.getRuntime().availableProcessors(), null, cleanupThread);
+                .ceil(0.75f * flexibleSize), true, false, Runtime.getRuntime().availableProcessors(), null, cleanupThread);
     }
 
     /**

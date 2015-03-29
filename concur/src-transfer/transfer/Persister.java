@@ -230,7 +230,7 @@ public class Persister {
     public static void encode(Outputable outputable, Object object) {
 
         if (object == null) {
-            Serializer.NULL_SERIALIZER.serialze(outputable, object, null);
+            Serializer.NULL_SERIALIZER.serialze(outputable, null, null);
             return;
         }
 
@@ -257,7 +257,7 @@ public class Persister {
 
         if (object == null) {
             ByteBuffer buffer = new ByteBuffer(1);
-            Serializer.NULL_SERIALIZER.serialze(buffer, object, null);
+            Serializer.NULL_SERIALIZER.serialze(buffer, null, null);
             return buffer.getByteArray();
         }
 

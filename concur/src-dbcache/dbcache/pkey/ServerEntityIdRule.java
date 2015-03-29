@@ -70,7 +70,7 @@ public class ServerEntityIdRule {
 		String valueStr = new StringBuffer().append(valueOfServer)
 											.append(ID_MAX_VALUE_OF_AUTOINCR)
 											.toString();
-		return Long.valueOf(valueStr);
+		return Long.valueOf(valueStr).longValue();
 	}
 	
 	/**
@@ -83,7 +83,7 @@ public class ServerEntityIdRule {
 		String valueStr = new StringBuffer().append(valueOfServer)
 											.append(STR_VALUE_OF_AUTOINCR_ID_MIN_VALUE)
 											.toString();
-		return Long.valueOf(valueStr);
+		return Long.valueOf(valueStr).longValue();
 	}
 	
 	/**

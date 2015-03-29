@@ -23,7 +23,7 @@ public class ArraySerializer implements Serializer, Opcodes {
 			IdentityHashMap referenceMap) {
 
 		if (object == null) {
-			NULL_SERIALIZER.serialze(outputable, object, referenceMap);
+			NULL_SERIALIZER.serialze(outputable, null, referenceMap);
 			return;
 		}
 

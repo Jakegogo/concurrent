@@ -10,8 +10,8 @@ import java.util.Arrays;
 
 public class Base64 {
 
-    public static final char[] CA = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/".toCharArray();
-    public static final int[]  IA = new int[256];
+    protected static final char[] CA = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/".toCharArray();
+    protected static final int[]  IA = new int[256];
     static {
         Arrays.fill(IA, -1);
         for (int i = 0, iS = CA.length; i < iS; i++)

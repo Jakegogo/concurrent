@@ -11,6 +11,7 @@ import transfer.utils.BitUtils;
 import transfer.utils.IdentityHashMap;
 
 import java.lang.reflect.Type;
+import java.nio.charset.Charset;
 
 /**
  * 短字符串编码器 最大长度255 Created by Jake on 2015/2/26.
@@ -21,7 +22,7 @@ public class ShortStringSerializer implements Serializer, Opcodes {
 			IdentityHashMap referenceMap) {
 
 		if (object == null) {
-			NULL_SERIALIZER.serialze(outputable, object, referenceMap);
+			NULL_SERIALIZER.serialze(outputable, null, referenceMap);
 			return;
 		}
 
@@ -30,7 +31,7 @@ public class ShortStringSerializer implements Serializer, Opcodes {
 		CharSequence charSequence = (CharSequence) object;
 		String string = charSequence.toString();
 
-		byte[] bytes = string.getBytes();
+		byte[] bytes = string.getBytes(Charset.forName("UTF-8"));
 
 		BitUtils.putInt1(outputable, bytes.length);
 

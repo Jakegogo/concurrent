@@ -981,7 +981,7 @@ public class DateUtils {
 		return (Date) currentDate.getTime().clone();
 	}
 	
-	public static Date LongToDate(long millis){
+	public static Date longToDate(long millis){
 		Calendar cl = Calendar.getInstance();
 		cl.setTimeInMillis(millis);
 		return cl.getTime();

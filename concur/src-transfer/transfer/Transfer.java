@@ -1,17 +1,12 @@
 package transfer;
 
-import transfer.compile.AsmSerializerFactory;
 import transfer.core.ByteMeta;
 import transfer.def.TransferConfig;
 import transfer.def.Types;
 import transfer.deserializer.CollectionDeSerializer;
 import transfer.deserializer.Deserializer;
 import transfer.deserializer.EntryDeserializer;
-import transfer.deserializer.EnumDeserializer;
 import transfer.deserializer.MapDeSerializer;
-import transfer.deserializer.ObjectDeSerializer;
-import transfer.serializer.EnumSerializer;
-import transfer.serializer.ObjectSerializer;
 import transfer.serializer.Serializer;
 import transfer.utils.IdentityHashMap;
 import transfer.utils.IntegerMap;
@@ -235,7 +230,7 @@ public class Transfer {
     public static void encode(Outputable outputable, Object object) {
 
         if (object == null) {
-            Serializer.NULL_SERIALIZER.serialze(outputable, object, null);
+            Serializer.NULL_SERIALIZER.serialze(outputable, null, null);
             return;
         }
 
@@ -262,7 +257,7 @@ public class Transfer {
 
         if (object == null) {
             ByteBuffer buffer = new ByteBuffer(1);
-            Serializer.NULL_SERIALIZER.serialze(buffer, object, null);
+            Serializer.NULL_SERIALIZER.serialze(buffer, null, null);
             return buffer.getByteArray();
         }
 
@@ -290,12 +285,13 @@ public class Transfer {
      * 编码
      * @param object 目标对象
      * @param type 指定预编译目标对象的类型
-     * @param bytesLength 编码字节长度(估算)
+     * @See transfer.Transfer.preCompile(Type)
      */
     public static ByteArray encode(Object object, Type type) {
     	return encode(object, type, 128);
     }
-    
+
+
     /**
      * 编码
      * @param object 目标对象
@@ -307,7 +303,7 @@ public class Transfer {
 
         if (object == null) {
             ByteBuffer buffer = new ByteBuffer(1);
-            Serializer.NULL_SERIALIZER.serialze(buffer, object, null);
+            Serializer.NULL_SERIALIZER.serialze(buffer, null, null);
             return buffer.getByteArray();
         }
 

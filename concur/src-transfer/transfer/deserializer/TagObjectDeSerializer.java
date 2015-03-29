@@ -1,5 +1,6 @@
 package transfer.deserializer;
 
+import org.objectweb.asm.MethodVisitor;
 import transfer.Inputable;
 import transfer.compile.AsmDeserializerContext;
 import transfer.core.ClassInfo;
@@ -14,8 +15,6 @@ import transfer.utils.IntegerMap;
 import transfer.utils.TypeUtils;
 
 import java.lang.reflect.Type;
-
-import org.objectweb.asm.MethodVisitor;
 
 /**
  * 带标签的对象解析器
@@ -52,7 +51,7 @@ public class TagObjectDeSerializer implements Deserializer {
         }
 
         if (rawClass == null) {
-            throw new UnsupportDeserializerTypeException(rawClass);
+            throw new UnsupportDeserializerTypeException(type);
         }
 
         ClassInfo classInfo = PersistConfig.getOrCreateClassInfo(rawClass);

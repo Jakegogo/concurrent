@@ -13,7 +13,7 @@ public class LinkingRunnableFutureTask<V> extends FutureTask<V> {
     /**
      * PLACE_HOLDER
      */
-    public static LinkingRunnableFutureTask PLACE_HOLDER = new LinkingRunnableFutureTask(new LinkingRunnable() {
+    public static final LinkingRunnableFutureTask PLACE_HOLDER = new LinkingRunnableFutureTask(new LinkingRunnable() {
         @Override
         public AtomicReference<LinkingExecutable> getLastLinkingRunnable() {
             return null;

@@ -119,7 +119,7 @@ public class ConcurrentLinkedHashMapCache implements CacheUnit {
 	
 	@Override
 	public ValueWrapper get(long key) {
-		return this.get(key);
+		return this.get(Long.valueOf(key));
 	}
 
 

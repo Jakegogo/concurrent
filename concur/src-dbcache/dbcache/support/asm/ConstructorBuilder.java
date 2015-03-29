@@ -1,8 +1,6 @@
 package dbcache.support.asm;
 
-import dbcache.index.DbIndexService;
 import dbcache.support.asm.util.AsmUtils;
-
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
@@ -11,7 +9,6 @@ import org.objectweb.asm.Type;
 import java.lang.reflect.Constructor;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicIntegerArray;
 
 /**
  * 构建构造方法
@@ -161,20 +158,6 @@ public class ConstructorBuilder implements Opcodes {
         return null;
     }
 
-
-    /**
-     * 创建代理对象
-     * @param proxyClass 代理类
-     * @param entity 实体 0
-     * @param indexService 索引服务 1
-     * @param modifiedFields 修改的字段index 2
-     * @param <T>
-     * @see ParameterInit#parameterIndexOfgetProxyEntity()
-     * @return
-     */
-    public <T> T getProxyEntity(Class<T> proxyClass, T entity, DbIndexService indexService, AtomicIntegerArray modifiedFields) {
-        return this.getProxyEntity(proxyClass, entity, indexService, modifiedFields);
-    }
 
     // getters
     public Class<?> getOriginalClass() {

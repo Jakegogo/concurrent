@@ -271,7 +271,7 @@ public class CollectionDeSerializer implements Deserializer, Opcodes {
             Label l25 = new Label();
             mv.visitJumpInsn(IF_ICMPGE, l25);
 
-            String deSerializerName = AsmUtils.toAsmCls(defaultComponentDeserializer.getClass().getName());
+//            String deSerializerName = AsmUtils.toAsmCls(defaultComponentDeserializer.getClass().getName());
 
 //            mv.visitMethodInsn(INVOKESTATIC, deSerializerName, "getInstance", "()L" + deSerializerName + ";", false);
             mv.visitVarInsn(ALOAD, 0);

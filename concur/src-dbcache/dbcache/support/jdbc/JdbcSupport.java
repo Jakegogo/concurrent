@@ -384,7 +384,7 @@ public class JdbcSupport {
     	} catch (Exception e) {
 			try {
 				// 若出现异常，对数据库中所有已完成的操作全部撤销，则回滚到事务开始状态
-				if (!conn.isClosed()) {
+				if (conn != null && !conn.isClosed()) {
 					conn.rollback();// 4,当异常发生执行catch中SQLException时，记得要rollback(回滚)；
 					conn.setAutoCommit(true);
 				}

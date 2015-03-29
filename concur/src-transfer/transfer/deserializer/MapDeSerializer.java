@@ -151,7 +151,7 @@ public class MapDeSerializer implements Deserializer {
         byte flag = inputable.getByte();
         byte type = TransferConfig.getType(flag);
 
-        if (type != Types.MAP || type != Types.MAP) {
+        if (type != Types.MAP) {
             throw new IllegalTypeException(type, Types.MAP, null);
         }
         // 读取集合的大小

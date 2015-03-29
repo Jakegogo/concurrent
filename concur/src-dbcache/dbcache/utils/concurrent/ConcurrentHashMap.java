@@ -661,7 +661,7 @@ public class ConcurrentHashMap<K,V> extends AbstractMap<K,V>
             do {
                 K ek;
                 if (e.hash == h &&
-                    ((ek = e.key) != null && ek.getClass() == Long.class && (Long) ek == key))
+                    ((ek = e.key) != null && ek.getClass() == Long.class && (Long) ek == k))
                     return e;
             } while ((e = e.next) != null);
             return null;

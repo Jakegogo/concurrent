@@ -56,7 +56,7 @@ public class ObjectDeSerializer implements Deserializer, Opcodes {
         }
 
         if (rawClass == null) {
-            throw new UnsupportDeserializerTypeException(rawClass);
+            throw new UnsupportDeserializerTypeException(type);
         }
 
         ClassInfo classInfo = TransferConfig.getOrCreateClassInfo(rawClass);

@@ -11,7 +11,7 @@ public class TestAsm {
     /**
      * 字节码类加载器
      */
-    public static AsmClassLoader classLoader = new AsmClassLoader();
+    public static final AsmClassLoader classLoader = new AsmClassLoader();
 
     public static void main(String[] args) throws Exception {
 

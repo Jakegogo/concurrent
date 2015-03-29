@@ -55,7 +55,7 @@ public class ConcurrentLruHashMapCache implements CacheUnit {
 		int size = (entityCacheSize * 4 + 3) / 3;
 		this.store = new ConcurrentLRUCache<Object, ValueWrapper>(size, entityCacheSize, (int) Math
 				.floor((entityCacheSize + size) / 2), (int) Math
-				.ceil(0.75 * size), true, false, concurrencyLevel, new ConcurrentLRUCache.EvictionListener<Object, ValueWrapper>() {
+				.ceil(0.75f * size), true, false, concurrencyLevel, new ConcurrentLRUCache.EvictionListener<Object, ValueWrapper>() {
 
 			@Override
 			public void evictedEntry(Object key, ValueWrapper value) {

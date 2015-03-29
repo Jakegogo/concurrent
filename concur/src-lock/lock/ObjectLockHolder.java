@@ -26,7 +26,7 @@ public class ObjectLockHolder {
 	 * 单一类的锁持有者
 	 * @author frank
 	 */
-	public class Holder {
+	public static class Holder {
 
 		/** 持有的对象类型，先放在应该会有用的 */
 		@SuppressWarnings("unused")

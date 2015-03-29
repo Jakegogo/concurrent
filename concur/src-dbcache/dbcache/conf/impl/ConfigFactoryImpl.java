@@ -1,19 +1,13 @@
 package dbcache.conf.impl;
 
-import dbcache.DbCacheMBean;
-import dbcache.DbCacheService;
+import dbcache.*;
 import dbcache.cache.CacheUnit;
 import dbcache.conf.*;
+import dbcache.exceptions.DbCacheInitError;
 import dbcache.index.DbIndexService;
-import dbcache.pkey.IdGenerator;
-import dbcache.CacheObject;
-import dbcache.IEntity;
-import dbcache.WeakCacheEntity;
-import dbcache.WeakCacheObject;
 import dbcache.persist.service.DbPersistService;
-import dbcache.DbCacheServiceImpl;
+import dbcache.pkey.IdGenerator;
 import dbcache.support.asm.*;
-import dbcache.utils.IntegerCounter;
 import dbcache.utils.ThreadUtils;
 import dbcache.utils.executors.SimpleLinkingRunnable;
 import org.slf4j.Logger;
@@ -216,8 +210,12 @@ public class ConfigFactoryImpl implements ConfigFactory, DbCacheMBean {
 			// 初始化DbCache服务
 			service.init();
 
-		} catch(Exception e) {
+		} catch(NoSuchFieldException e) {
 			e.printStackTrace();
+			throw new DbCacheInitError("初始化实体DbCacheService异常" ,e);
+		} catch(IllegalAccessException e) {
+			e.printStackTrace();
+			throw new DbCacheInitError("初始化实体DbCacheService异常" ,e);
 		}
 
 		return service;
@@ -283,7 +281,6 @@ public class ConfigFactoryImpl implements ConfigFactory, DbCacheMBean {
 			cacheConfig = CacheConfig.valueOf(clz);
 
 			final Map<String, ValueGetter<?>> indexes = new HashMap<String, ValueGetter<?>>();
-			final IntegerCounter fieldIndexCounter = new IntegerCounter();
 
 			ReflectionUtils.doWithFields(clz, new FieldCallback() {
 				public void doWith(Field field) throws IllegalArgumentException, IllegalAccessException {
@@ -293,7 +290,6 @@ public class ConfigFactoryImpl implements ConfigFactory, DbCacheMBean {
 						return;
 					}
 					
-					int fieldIndex = fieldIndexCounter.getAndIncrement();
 					// 处理索引注解
 					if (field.isAnnotationPresent(org.hibernate.annotations.Index.class) ||
 							field.isAnnotationPresent(dbcache.anno.Index.class)) {
@@ -309,7 +305,7 @@ public class ConfigFactoryImpl implements ConfigFactory, DbCacheMBean {
 						try {
 							indexes.put(indexName, AsmAccessHelper.createFieldGetter(clz, field));
 						} catch (Exception e) {
-							logger.equals("获取实体配置出错:生成索引失败(" + clz.getName() + "." + field.getName() + ").");
+							logger.error("获取实体配置出错:生成索引失败(" + clz.getName() + "." + field.getName() + ").");
 							e.printStackTrace();
 						}
 					}

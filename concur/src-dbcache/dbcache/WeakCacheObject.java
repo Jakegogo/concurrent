@@ -77,6 +77,9 @@ public class WeakCacheObject<T extends IEntity<?>, R extends WeakCacheEntity<T,?
 		if(obj == null) {
 			return false;
 		}
+		if (!(obj instanceof CacheObject)) {
+			return false;
+		}
 		return obj.hashCode() == this.hashCode;
 	}
 

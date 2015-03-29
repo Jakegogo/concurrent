@@ -27,7 +27,7 @@ public class TagObjectSerializer implements Serializer {
 			IdentityHashMap referenceMap) {
 
 		if (object == null) {
-			NULL_SERIALIZER.serialze(outputable, object, referenceMap);
+			NULL_SERIALIZER.serialze(outputable, null, referenceMap);
 			return;
 		}
 

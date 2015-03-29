@@ -1,5 +1,6 @@
 package dbcache.support.asm;
 
+import dbcache.exceptions.AsmAccessError;
 import dbcache.support.asm.util.AsmUtils;
 import dbcache.support.asm.util.ReflectUtils;
 import javassist.bytecode.Opcode;
@@ -58,7 +59,7 @@ public class AsmAccessHelper implements Opcodes {
 	/**
 	 * 字节码类加载器
 	 */
-	public static AsmClassLoader classLoader = new AsmClassLoader();
+	public static final AsmClassLoader classLoader = new AsmClassLoader();
 	
 	// innder caches
 	// fieldGetter缓存
@@ -105,9 +106,14 @@ public class AsmAccessHelper implements Opcodes {
 			} catch (IntrospectionException e) {
 				logger.error("无法获取get方法:" + clazz.getName() + "(" + field.getName() + ")");
 				e.printStackTrace();
+				throw new AsmAccessError("无法获取get方法:" + clazz.getName() + "(" + field.getName() + ")", e);
 			}
 			//获取get方法
 			final Method getMethod = propertyDescriptor.getReadMethod();
+			if (getMethod == null)  {
+				logger.error("无法获取get方法:" + clazz.getName() + "(" + field.getName() + ")");
+				throw new AsmAccessError("无法获取get方法:" + clazz.getName() + "(" + field.getName() + ")", null);
+			}
 			final Type mt = Type.getType(getMethod);
 			final Type rt = Type.getReturnType(getMethod);
 
@@ -245,9 +251,14 @@ public class AsmAccessHelper implements Opcodes {
 			} catch (IntrospectionException e) {
 				logger.error("无法获取set方法:" + clazz.getName() + "(" + field.getName() + ")");
 				e.printStackTrace();
+				throw new AsmAccessError("无法获取set方法:" + clazz.getName() + "(" + field.getName() + ")", e);
 			}
 			//获取set方法
 			final Method setMethod = propertyDescriptor.getWriteMethod();
+			if (setMethod == null)  {
+				logger.error("无法获取set方法:" + clazz.getName() + "(" + field.getName() + ")");
+				throw new AsmAccessError("无法获取set方法:" + clazz.getName() + "(" + field.getName() + ")", null);
+			}
 			final Type[] mat = Type.getArgumentTypes(setMethod);
 			final Class<?>[] mpt = setMethod.getParameterTypes();
 			final Type rt = Type.getReturnType(setMethod);

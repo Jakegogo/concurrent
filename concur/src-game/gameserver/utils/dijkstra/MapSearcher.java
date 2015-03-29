@@ -169,9 +169,10 @@ public class MapSearcher<T> {
 			return;
 		}
 		Map<Maps.Node<T>, Integer> childs = nearest.getChilds();
-		for (Maps.Node<T> child : childs.keySet()) {
+		for (Map.Entry<Maps.Node<T>, Integer> entry: childs.entrySet()) {
+			Maps.Node<T> child = entry.getKey();
 			if (open.contains(child)) {// 如果子节点在open中
-				Integer newCompute = path.get(nearest) + childs.get(child);
+				Integer newCompute = path.get(nearest) + entry.getValue();
 				if (path.get(child) > newCompute) {// 之前设置的距离大于新计算出来的距离
 					path.put(child, newCompute);
 
@@ -191,12 +192,13 @@ public class MapSearcher<T> {
 	private Maps.Node<T> getShortestPath(Maps.Node<T> node) {
 		Maps.Node<T> res = null;
 		int minDis = Integer.MAX_VALUE;
-		for (Maps.Node<T> entry : path.keySet()) {
-			if (open.contains(entry)) {
-				int distance = path.get(entry);
+		for (Map.Entry<Maps.Node<T>, Integer> entry : path.entrySet()) {
+			Maps.Node<T> node1 = entry.getKey();
+			if (open.contains(node1)) {
+				int distance = entry.getValue();
 				if (distance < minDis) {
 					minDis = distance;
-					res = entry;
+					res = node1;
 				}
 			}
 		}
