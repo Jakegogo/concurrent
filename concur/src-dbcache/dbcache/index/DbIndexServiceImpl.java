@@ -7,8 +7,10 @@ import dbcache.conf.CacheConfig;
 import dbcache.conf.CacheRule;
 import dbcache.conf.Inject;
 import dbcache.dbaccess.DbAccessService;
+import dbcache.exceptions.DbCacheInitError;
 import dbcache.persist.PersistStatus;
 import dbcache.support.asm.ValueGetter;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
@@ -50,10 +52,13 @@ public class DbIndexServiceImpl<PK extends Comparable<PK> & Serializable>
 
 	@Override
 	public Collection<PK> get(String indexName, Object indexValue) {
-
+		if (cacheConfig == null) {
+			throw new DbCacheInitError("CacheConfig未初始化,索引[" + indexName + "]!");
+		}
+		
 		// 判断实体是否建立索引
-		if(cacheConfig == null || !cacheConfig.getIndexes().containsKey(indexName)) {
-			throw new IllegalArgumentException("实体类[" + cacheConfig.getClass().getSimpleName() + "]不存在索引[" + indexName + "]!");
+		if(!cacheConfig.getIndexes().containsKey(indexName)) {
+			throw new IllegalArgumentException("实体类[" + cacheConfig.getClazz().getSimpleName() + "]不存在索引[" + indexName + "]!");
 		}
 
 		final Map<PK, Boolean> indexValues = this.getPersist(indexName, indexValue);

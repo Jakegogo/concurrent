@@ -6,6 +6,11 @@ package dbcache.exceptions;
  */
 public class DbCacheInitError extends RuntimeException {
 
+	// 构造方法
+    public DbCacheInitError(String message) {
+        super(message);
+    }
+	
     // 构造方法
     public DbCacheInitError(String message, Throwable cause) {
         super(message, cause);
