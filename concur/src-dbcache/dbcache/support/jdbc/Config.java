@@ -1,15 +1,14 @@
 package dbcache.support.jdbc;
 
+import org.apache.commons.lang.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
+import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-
-import javax.sql.DataSource;
-
-import org.apache.commons.lang.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 
 @Component
 public class Config {
@@ -162,8 +161,8 @@ public class Config {
 	 * ThreadLocal support declare transaction.
 	 */
 	public final void close(ResultSet rs, Statement st, Connection conn) {
-		if (rs != null) {try {rs.close();} catch (SQLException e) {}}
-		if (st != null) {try {st.close();} catch (SQLException e) {}}
+		if (rs != null) {try {rs.close();} catch (SQLException e) {e.printStackTrace();}}
+		if (st != null) {try {st.close();} catch (SQLException e) {e.printStackTrace();}}
 
 		if (threadLocal.get() == null) {	// in transaction if conn in threadlocal
 			if (conn != null) {try {conn.close();}
