@@ -283,6 +283,9 @@ public class TransferConfig {
 
             return;
         }
+//        
+//        // 使用默认Id
+//        registerClass(clazz, new Random().nextInt(30000));
 
         throw new UnsupportDeserializerTypeException(clazz);
     }

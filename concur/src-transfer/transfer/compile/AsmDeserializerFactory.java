@@ -109,7 +109,7 @@ public class AsmDeserializerFactory implements Opcodes {
 		}
 
 		{
-			mv = cw.visitMethod(ACC_PUBLIC, "compile", "(Ljava/lang/reflect/Type;Lorg/objectweb/asm/MethodVisitor;Ltransfer/compile/AsmDeserializerContext;)V", null, null);
+			mv = cw.visitMethod(ACC_PUBLIC, "compile", "(Ljava/lang/reflect/Type;Lorg/objectweb/asm/MethodVisitor;" + org.objectweb.asm.Type.getDescriptor(AsmDeserializerContext.class) + ")V", null, null);
 			mv.visitCode();
 			Label l0 = new Label();
 			mv.visitLabel(l0);

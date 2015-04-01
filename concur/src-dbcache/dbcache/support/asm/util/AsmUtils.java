@@ -352,6 +352,35 @@ public class AsmUtils implements Opcodes {
 				break;
 		}
 	}
+	
+	
+	/**
+	 * 获取加载数组元素指令
+	 * @param type 数组元素类型
+	 * @return
+	 */
+	public static int loadArrayCode(org.objectweb.asm.Type type) {
+		switch (type.getSort()) {
+			case Type.OBJECT:
+				return AALOAD;
+			case Type.BOOLEAN:
+				return BALOAD;
+			case Type.CHAR:
+				return CALOAD;
+			case Type.SHORT:
+				return SALOAD;
+			case Type.INT:
+				return IALOAD;
+			case Type.FLOAT:
+				return FALOAD;
+			case Type.LONG:
+				return LALOAD;
+			case Type.DOUBLE:
+				return DALOAD;
+		}
+		
+		return AALOAD;
+	}
 
 
 	/**

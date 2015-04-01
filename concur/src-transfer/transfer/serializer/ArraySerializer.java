@@ -4,13 +4,16 @@ import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 
+import dbcache.support.asm.util.AsmUtils;
 import transfer.Outputable;
 import transfer.compile.AsmSerializerContext;
 import transfer.def.TransferConfig;
 import transfer.def.Types;
+import transfer.utils.BitUtils;
 import transfer.utils.IdentityHashMap;
 import transfer.utils.TypeUtils;
 
+import java.lang.reflect.Array;
 import java.lang.reflect.Type;
 
 /**
@@ -29,13 +32,14 @@ public class ArraySerializer implements Serializer, Opcodes {
 
 		outputable.putByte(Types.ARRAY);
 
-		Object[] array = (Object[]) object;
-
-		for (Object obj : array) {
-
+		int length = Array.getLength(object);
+		// 设置数组大小
+		BitUtils.putInt(outputable, length);
+		
+	    for (int i = 0; i < length; i ++) {
+	        Object obj = Array.get(object, i);
 			Serializer elementSerializer = TransferConfig.getSerializer(obj
 					.getClass());
-
 			elementSerializer.serialze(outputable, obj, referenceMap);
 		}
 
@@ -65,8 +69,10 @@ public class ArraySerializer implements Serializer, Opcodes {
 		mv.visitMethodInsn(INVOKEINTERFACE, "transfer/Outputable", "putByte",
 				"(B)V", true);
 
+		Class<?> arrayClass = TypeUtils.getRawClass(type);
+		
 		mv.visitVarInsn(ALOAD, 2);
-		mv.visitTypeInsn(CHECKCAST, "[Ljava/lang/Object;");
+		mv.visitTypeInsn(CHECKCAST, org.objectweb.asm.Type.getDescriptor(arrayClass));
 		mv.visitVarInsn(ASTORE, 4);
 
 		mv.visitVarInsn(ALOAD, 4);
@@ -78,10 +84,7 @@ public class ArraySerializer implements Serializer, Opcodes {
 		mv.visitMethodInsn(INVOKESTATIC, "transfer/utils/BitUtils", "putInt",
 				"(Ltransfer/Outputable;I)V", false);
 
-
-		Class<?> componentClass = TypeUtils.getRawClass(type)
-				.getComponentType();
-
+		Class<?> componentClass = arrayClass.getComponentType();
 		if (componentClass == null || componentClass == Object.class) {
 
 			mv.visitInsn(ICONST_0);
@@ -146,7 +149,10 @@ public class ArraySerializer implements Serializer, Opcodes {
 					"[Ljava/lang/Object;" }, 0, new Object[] {});
 			mv.visitVarInsn(ALOAD, 4);
 			mv.visitVarInsn(ILOAD, 6);
-			mv.visitInsn(AALOAD);
+			mv.visitInsn(AsmUtils.loadArrayCode(org.objectweb.asm.Type.getType(componentClass)));
+			
+			AsmUtils.withBoxingType(mv, org.objectweb.asm.Type.getType(componentClass));
+			
 			mv.visitVarInsn(ASTORE, 8);
 
 			mv.visitVarInsn(ALOAD, 0);

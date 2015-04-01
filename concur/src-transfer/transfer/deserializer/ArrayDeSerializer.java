@@ -50,7 +50,7 @@ public class ArrayDeSerializer implements Deserializer, Opcodes {
         }
 
 
-        Object[] array = (Object[]) Array.newInstance(TypeUtils.getRawClass(itemType), size);
+        Object array = Array.newInstance(TypeUtils.getRawClass(itemType), size);
 
 
         Deserializer defaultComponentDeserializer = null;
@@ -66,12 +66,12 @@ public class ArrayDeSerializer implements Deserializer, Opcodes {
                 byte elementFlag = inputable.getByte();
                 Deserializer componentDeserializer = TransferConfig.getDeserializer(itemType, elementFlag);// 元素解析器
                 component =  componentDeserializer.deserialze(inputable, itemType, elementFlag, referenceMap);
-                array[i] = component;
+                Array.set(array, i, component);
             }
         } else {
             for (int i = 0; i < size;i++) {
                 component = defaultComponentDeserializer.deserialze(inputable, itemType, inputable.getByte(), referenceMap);
-                array[i] = component;
+                Array.set(array, i, component);
             }
         }
 

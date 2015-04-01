@@ -104,7 +104,7 @@ public class AsmSerializerFactory implements Opcodes {
 
         }
         {
-            mv = cw.visitMethod(ACC_PUBLIC, "compile", "(Ljava/lang/reflect/Type;Lorg/objectweb/asm/MethodVisitor;Ltransfer/compile/AsmContext;)V", null, null);
+            mv = cw.visitMethod(ACC_PUBLIC, "compile", "(Ljava/lang/reflect/Type;Lorg/objectweb/asm/MethodVisitor;" + org.objectweb.asm.Type.getDescriptor(AsmSerializerContext.class) + ")V", null, null);
             mv.visitCode();
             mv.visitInsn(RETURN);
             mv.visitMaxs(0, 4);
