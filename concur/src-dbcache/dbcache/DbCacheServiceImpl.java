@@ -4,16 +4,14 @@ import dbcache.anno.ThreadSafe;
 import dbcache.cache.CacheUnit;
 import dbcache.conf.CacheConfig;
 import dbcache.conf.ConfigFactory;
-import dbcache.conf.DbRuleService;
 import dbcache.conf.Inject;
 import dbcache.dbaccess.DbAccessService;
 import dbcache.index.DbIndexService;
-import dbcache.pkey.IdGenerator;
 import dbcache.index.IndexValue;
 import dbcache.persist.PersistStatus;
 import dbcache.persist.service.DbPersistService;
+import dbcache.pkey.IdGenerator;
 import dbcache.support.asm.ValueGetter;
-import dbcache.utils.HashMap8;
 import dbcache.utils.JsonUtils;
 import dbcache.utils.concurrent.ConcurrentHashMap;
 import org.slf4j.Logger;
@@ -104,22 +102,13 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 	@Inject
 	@Autowired
 	private DbIndexService<PK> indexService;
-	
-	/**
-	 * 入库规则服务
-	 */
-	@Autowired
-	private DbRuleService dbRuleService;
+
 
 	/**
 	 * 等待锁map {key:lock}
 	 */
 	private final ConcurrentMap<Object, Lock> WAITING_LOCK_MAP = new ConcurrentHashMap<Object, Lock>();
 
-	/**
-	 * 线程缓存
-	 */
-	private final ConcurrentMap<Thread, HashMap8<Object, CacheObject<T>>> threadLocalCache = new ConcurrentHashMap<Thread, HashMap8<Object, CacheObject<T>>>();
 
 	/**
 	 * dbCache 初始化
@@ -187,19 +176,14 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 	 */
 	@SuppressWarnings("unchecked")
 	private CacheObject<T> getCacheObject(PK key) {
-		
-		// 从本地线程获取
-		CacheObject<T> cacheObject = this.getCacheObjectFromThreadLocal(key);
-		if (cacheObject != null) {
-			return cacheObject;
-		}
-		
+
 		// 从共用缓存获取
 		CacheUnit.ValueWrapper wrapper = (CacheUnit.ValueWrapper) cacheUnit.get(key);
 		if(wrapper != null) {	// 已经缓存
 			return (CacheObject<T>) wrapper.get();
 		}
 
+		CacheObject<T> cacheObject = null;
 
 		// 获取缓存唯一锁
 		Lock lock = new ReentrantLock();;
@@ -246,9 +230,6 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 			WAITING_LOCK_MAP.remove(key);
 			lock.unlock();
 		}
-		
-		// 存储到本地缓存
-		this.putCacheObjectToThreadLocal(key, cacheObject);
 
 		return cacheObject;
 	}
@@ -261,12 +242,6 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 	 */
 	@SuppressWarnings({ "unchecked" })
 	private CacheObject<T> getCacheObject(long key) {
-		
-		// 从本地线程获取
-		CacheObject<T> cacheObject = this.getCacheObjectFromThreadLocal(key);
-		if (cacheObject != null) {
-			return cacheObject;
-		}
 		
 		// 从共用缓存获取
 		CacheUnit.ValueWrapper wrapper = (CacheUnit.ValueWrapper) cacheUnit.get(key);
@@ -498,39 +473,6 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 			// 提交持久化任务
 			inTimeDbPersistService.handleDelete(cacheObject, this.dbAccessService, id, this.cacheUnit);
 		}
-	}
-
-
-
-	// 从ThreadLocal中获取
-	private CacheObject<T> getCacheObjectFromThreadLocal(PK key) {
-		return this.getThreadMap().get(key);
-	}
-
-
-	// 从ThreadLocal中获取
-	private CacheObject<T> getCacheObjectFromThreadLocal(long key) {
-		return this.getThreadMap().get(key);
-	}
-
-
-	// 存储到ThreadLocal
-	private void putCacheObjectToThreadLocal(PK key, CacheObject<T> cacheObject) {
-		this.getThreadMap().put(key, cacheObject);
-	}
-
-
-	// 获取ThreadLocalMap
-	private HashMap8<Object, CacheObject<T>> getThreadMap() {
-		HashMap8<Object, CacheObject<T>> threadMap = threadLocalCache.get(Thread.currentThread());
-		if (threadMap == null) {
-			threadMap = new HashMap8<Object, CacheObject<T>>();
-			HashMap8<Object, CacheObject<T>> oldThreadMap = threadLocalCache.putIfAbsent(Thread.currentThread(), threadMap);
-			if (oldThreadMap != null) {
-				return oldThreadMap;
-			}
-		}
-		return threadMap;
 	}
 
 
