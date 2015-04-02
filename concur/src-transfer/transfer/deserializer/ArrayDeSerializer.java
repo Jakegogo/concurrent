@@ -1,9 +1,11 @@
 package transfer.deserializer;
 
 import dbcache.support.asm.util.AsmUtils;
+
 import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
+
 import transfer.Inputable;
 import transfer.compile.AsmDeserializerContext;
 import transfer.core.ByteMeta;
@@ -15,6 +17,7 @@ import transfer.utils.IntegerMap;
 import transfer.utils.TypeUtils;
 
 import java.lang.reflect.Array;
+import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 
@@ -53,8 +56,12 @@ public class ArrayDeSerializer implements Deserializer, Opcodes {
         Object array = Array.newInstance(TypeUtils.getRawClass(itemType), size);
 
 
+        Class<?> componentClass = TypeUtils.getRawClass(itemType);
         Deserializer defaultComponentDeserializer = null;
-        if (itemType != null && itemType != Object.class) {
+        if (itemType != null 
+        		&& itemType != Object.class
+        		&& !componentClass.isInterface()
+				&& !Modifier.isAbstract(componentClass.getModifiers())) {
             defaultComponentDeserializer = TransferConfig.getDeserializer(itemType);// 元素解析器
         }
 

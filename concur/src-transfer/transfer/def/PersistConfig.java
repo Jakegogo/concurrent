@@ -192,8 +192,14 @@ public class PersistConfig {
         }
 
         if (type instanceof Class<?>) {
-
-            return getDeserializer((Class<?>) type, type);
+        	
+        	Class<?> rawClass = (Class<?>) type;
+        	if (rawClass.isInterface()
+    				|| Modifier.isAbstract(rawClass.getModifiers())) {
+        		return deserializers.get(TransferConfig.getType(flag));
+        	}
+        	
+            return getDeserializer(rawClass, type);
         }
 
         if (type instanceof ParameterizedType) {

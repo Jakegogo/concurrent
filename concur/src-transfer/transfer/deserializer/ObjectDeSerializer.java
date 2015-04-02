@@ -23,6 +23,7 @@ import transfer.utils.TypeUtils;
 import java.beans.IntrospectionException;
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.lang.reflect.Type;
 
 /**
@@ -45,14 +46,14 @@ public class ObjectDeSerializer implements Deserializer, Opcodes {
         // 读取对象类型
         int classId = BitUtils.getInt2(inputable);
 
-        Class<?> rawClass;
+        Class<?> rawClass = TypeUtils.getRawClass(type);
 
-        if (type == null || type == Object.class) {
+        if (type == null 
+        		|| type == Object.class
+        		|| rawClass.isInterface()
+				|| Modifier.isAbstract(rawClass.getModifiers())) {
 
             rawClass = TransferConfig.getClass(classId);
-        } else {
-
-            rawClass = TypeUtils.getRawClass(type);
         }
 
         if (rawClass == null) {

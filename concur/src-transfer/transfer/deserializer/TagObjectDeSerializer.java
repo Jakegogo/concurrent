@@ -1,6 +1,7 @@
 package transfer.deserializer;
 
 import org.objectweb.asm.MethodVisitor;
+
 import transfer.Inputable;
 import transfer.compile.AsmDeserializerContext;
 import transfer.core.ClassInfo;
@@ -14,6 +15,7 @@ import transfer.utils.BitUtils;
 import transfer.utils.IntegerMap;
 import transfer.utils.TypeUtils;
 
+import java.lang.reflect.Modifier;
 import java.lang.reflect.Type;
 
 /**
@@ -40,14 +42,13 @@ public class TagObjectDeSerializer implements Deserializer {
         // 读取对象类型
         int classId = BitUtils.getInt2(inputable);
 
-        Class<?> rawClass;
+        Class<?> rawClass = TypeUtils.getRawClass(type);
 
-        if (type == null || type == Object.class) {
+        if (type == null || type == Object.class
+        		|| rawClass.isInterface()
+				|| Modifier.isAbstract(rawClass.getModifiers())) {
 
             rawClass = PersistConfig.getClass(classId);
-        } else {
-
-            rawClass = TypeUtils.getRawClass(type);
         }
 
         if (rawClass == null) {

@@ -39,7 +39,11 @@ import java.util.concurrent.atomic.AtomicLong;
 public class TransferConfig {
 
     private static final Logger logger = LoggerFactory.getLogger(TransferConfig.class);
-
+    /** 是否使用自增ID */
+    private static boolean useAutoIncrementId = false;
+    /** 传输类自增ID */
+    private static final AtomicInteger CLASS_ID_GENERTOR = new AtomicInteger(1);
+    
     public static final NullDeserializer NULL_DESERIALIZER = NullDeserializer.getInstance();
 
     static final ByteMap<Deserializer> deserializers = new ByteMap<Deserializer>();
@@ -196,8 +200,14 @@ public class TransferConfig {
         }
 
         if (type instanceof Class<?>) {
-
-            return getDeserializer((Class<?>) type, type);
+        	
+        	Class<?> rawClass = (Class<?>) type;
+        	if (rawClass.isInterface()
+    				|| Modifier.isAbstract(rawClass.getModifiers())) {
+        		return deserializers.get(TransferConfig.getType(flag));
+        	}
+        	
+            return getDeserializer(rawClass, type);
         }
 
         if (type instanceof ParameterizedType) {
@@ -283,11 +293,14 @@ public class TransferConfig {
 
             return;
         }
-//        
-//        // 使用默认Id
-//        registerClass(clazz, new Random().nextInt(30000));
+        
+        // 使用自增Id
+        if (useAutoIncrementId) {
+        	registerClass(clazz, CLASS_ID_GENERTOR.incrementAndGet());
+        } else {
+        	throw new UnsupportDeserializerTypeException(clazz);
+        }
 
-        throw new UnsupportDeserializerTypeException(clazz);
     }
 
 
@@ -588,8 +601,17 @@ public class TransferConfig {
         return classId.intValue();
     }
 
+    /**
+     * 设置是否使用自增Id
+     * <br/>默认为false
+     * @param useAutoIncrementId 是否使用自增Id
+     */
+    public static void setUseAutoIncrementId(boolean useAutoIncrementId) {
+		TransferConfig.useAutoIncrementId = useAutoIncrementId;
+	}
 
-    static {
+
+	static {
 
         deserializers.put(Types.OBJECT, ObjectDeSerializer.getInstance());
         deserializers.put(Types.ARRAY, ArrayDeSerializer.getInstance());

@@ -1,6 +1,7 @@
 package transfer.deserializer;
 
 import org.objectweb.asm.MethodVisitor;
+
 import transfer.Inputable;
 import transfer.compile.AsmDeserializerContext;
 import transfer.core.EnumInfo;
@@ -13,6 +14,7 @@ import transfer.utils.BitUtils;
 import transfer.utils.IntegerMap;
 import transfer.utils.TypeUtils;
 
+import java.lang.reflect.Modifier;
 import java.lang.reflect.Type;
 
 /**
@@ -40,15 +42,16 @@ public class TagEnumDeserializer implements Deserializer {
         // 读取枚举类型
         int enumType = BitUtils.getInt2(inputable);
 
-        Class<?> rawClass;
+        Class<?> rawClass = TypeUtils.getRawClass(type);
 
-        if (type == null || type == Object.class || type == Enum.class) {
+        if (type == null 
+        		|| type == Object.class 
+        		|| type == Enum.class 
+        		|| rawClass.isInterface()
+				|| Modifier.isAbstract(rawClass.getModifiers())) {
 
             rawClass = PersistConfig.getClass(enumType);
 
-        } else {
-
-            rawClass = TypeUtils.getRawClass(type);
         }
 
         if (rawClass == null) {
