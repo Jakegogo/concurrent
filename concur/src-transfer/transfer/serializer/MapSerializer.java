@@ -12,6 +12,7 @@ import transfer.utils.BitUtils;
 import transfer.utils.IdentityHashMap;
 import transfer.utils.TypeUtils;
 
+import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.Map;
@@ -123,7 +124,9 @@ public class MapSerializer implements Serializer, Opcodes {
 
 		int localNumAppend = 0;
 
-		if ((keyClass == null || keyClass == Object.class)) {
+		if ((keyClass == null || keyClass == Object.class
+				|| keyClass.isInterface()
+				|| Modifier.isAbstract(keyClass.getModifiers()))) {
 
 			mv.visitVarInsn(ALOAD, 5);
 			mv.visitMethodInsn(INVOKEVIRTUAL, "java/lang/Object", "getClass",
@@ -170,7 +173,9 @@ public class MapSerializer implements Serializer, Opcodes {
 				"()Ljava/lang/Object;", true);
 		mv.visitVarInsn(ASTORE, 6);
 
-		if (valueClass == null || valueClass == Object.class) {
+		if (valueClass == null || valueClass == Object.class
+				|| valueClass.isInterface()
+				|| Modifier.isAbstract(valueClass.getModifiers())) {
 
 			mv.visitVarInsn(ALOAD, 6);
 			mv.visitMethodInsn(INVOKEVIRTUAL, "java/lang/Object", "getClass",

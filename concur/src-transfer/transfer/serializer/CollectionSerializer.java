@@ -3,6 +3,7 @@ package transfer.serializer;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
+
 import transfer.Outputable;
 import transfer.compile.AsmSerializerContext;
 import transfer.def.TransferConfig;
@@ -11,6 +12,7 @@ import transfer.utils.BitUtils;
 import transfer.utils.IdentityHashMap;
 import transfer.utils.TypeUtils;
 
+import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.Collection;
@@ -90,7 +92,9 @@ public class CollectionSerializer implements Serializer, Opcodes {
 					(ParameterizedType) type, 0);
 		}
 
-		if (elementClass == null || elementClass == Object.class) {
+		if (elementClass == null || elementClass == Object.class
+				|| elementClass.isInterface()
+				|| Modifier.isAbstract(elementClass.getModifiers())) {
 
 			mv.visitVarInsn(ALOAD, 4);
 			mv.visitMethodInsn(INVOKEINTERFACE, "java/util/Collection",

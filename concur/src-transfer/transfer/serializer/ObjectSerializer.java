@@ -1,9 +1,11 @@
 package transfer.serializer;
 
 import dbcache.support.asm.util.AsmUtils;
+
 import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
+
 import transfer.Outputable;
 import transfer.compile.AsmSerializerContext;
 import transfer.core.ClassInfo;
@@ -18,6 +20,7 @@ import transfer.utils.TypeUtils;
 import java.beans.IntrospectionException;
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.lang.reflect.Type;
 
 /**
@@ -107,8 +110,11 @@ public class ObjectSerializer implements Serializer, Opcodes {
 		for (FieldInfo fieldInfo : classInfo.getFieldInfos()) {
 
 			fieldType = fieldInfo.getType();
-
-			if (fieldType == null || fieldType == Object.class) {
+			
+			Class<?> fieldRawClass = TypeUtils.getRawClass(fieldType);
+			if (fieldType == null || fieldType == Object.class
+					|| fieldRawClass.isInterface()
+					|| Modifier.isAbstract(fieldRawClass.getModifiers())) {
 
 				//  getFieldValue
 				PropertyDescriptor propertyDescriptor = null;

@@ -19,6 +19,7 @@ import transfer.utils.TypeUtils;
 import java.beans.IntrospectionException;
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.lang.reflect.Type;
 
 /**
@@ -99,7 +100,10 @@ public class ObjectAsmProxySerializer implements Serializer, Opcodes {
 
 			fieldType = fieldInfo.getType();
 
-			if (fieldType == null || fieldType == Object.class) {
+			Class<?> fieldRawClass = TypeUtils.getRawClass(fieldType);
+			if (fieldType == null || fieldType == Object.class
+					|| fieldRawClass.isInterface()
+					|| Modifier.isAbstract(fieldRawClass.getModifiers())) {
 
 				//  getFieldValue
 				PropertyDescriptor propertyDescriptor = null;

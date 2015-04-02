@@ -14,6 +14,7 @@ import transfer.utils.IdentityHashMap;
 import transfer.utils.TypeUtils;
 
 import java.lang.reflect.Array;
+import java.lang.reflect.Modifier;
 import java.lang.reflect.Type;
 
 /**
@@ -85,7 +86,9 @@ public class ArraySerializer implements Serializer, Opcodes {
 				"(Ltransfer/Outputable;I)V", false);
 
 		Class<?> componentClass = arrayClass.getComponentType();
-		if (componentClass == null || componentClass == Object.class) {
+		if (componentClass == null || componentClass == Object.class
+				|| componentClass.isInterface()
+				|| Modifier.isAbstract(componentClass.getModifiers())) {
 
 			mv.visitInsn(ICONST_0);
 			mv.visitVarInsn(ISTORE, 6);
