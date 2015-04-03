@@ -40,10 +40,6 @@ public class ArrayDeSerializer implements Deserializer, Opcodes {
 
         // 读取数组的大小
         int size = BitUtils.getInt(inputable);
-        if (size == 0) {
-            return (T) new Object[0];
-        }
-
 
         Type itemType = null;
         if (type instanceof Class<?> && ((Class<?>)type).isArray()) {
@@ -54,6 +50,9 @@ public class ArrayDeSerializer implements Deserializer, Opcodes {
 
 
         Object array = Array.newInstance(TypeUtils.getRawClass(itemType), size);
+        if (size == 0) {
+            return (T) array;
+        }
 
 
         Class<?> componentClass = TypeUtils.getRawClass(itemType);
@@ -163,10 +162,13 @@ public class ArrayDeSerializer implements Deserializer, Opcodes {
         mv.visitVarInsn(ILOAD, 6);
         mv.visitTypeInsn(ANEWARRAY, AsmUtils.toAsmCls(TypeUtils.getRawClass(itemType).getName()));
         mv.visitVarInsn(ASTORE, 7);
-
-
+        
+        
+        Class<?> componentClass = TypeUtils.getRawClass(itemType);
         Deserializer defaultComponentDeserializer = null;
-        if (itemType != null && itemType != Object.class) {
+        if (itemType != null && itemType != Object.class
+        		&& !componentClass.isInterface()
+				&& !Modifier.isAbstract(componentClass.getModifiers())) {
             defaultComponentDeserializer = TransferConfig.getDeserializer(itemType);// 元素解析器
         }
 
@@ -206,7 +208,7 @@ public class ArrayDeSerializer implements Deserializer, Opcodes {
             mv.visitVarInsn(ALOAD, 7);
             mv.visitVarInsn(ILOAD, 8);
             mv.visitVarInsn(ALOAD, 11);
-            mv.visitInsn(AASTORE);
+            mv.visitInsn(AsmUtils.storeArrayCode(org.objectweb.asm.Type.getType(componentClass)));
 
             mv.visitIincInsn(8, 1);
             mv.visitJumpInsn(GOTO, l18);
@@ -230,9 +232,7 @@ public class ArrayDeSerializer implements Deserializer, Opcodes {
             Label l25 = new Label();
             mv.visitJumpInsn(IF_ICMPGE, l25);
 
-//            String deSerializerName = AsmUtils.toAsmCls(defaultComponentDeserializer.getClass().getName());
 
-//            mv.visitMethodInsn(INVOKESTATIC, deSerializerName, "getInstance", "()L" + deSerializerName + ";", false);
             mv.visitVarInsn(ALOAD, 0);
             mv.visitVarInsn(ALOAD, 1);
             mv.visitLdcInsn(org.objectweb.asm.Type.getType("L" + AsmUtils.toAsmCls(TypeUtils.getRawClass(itemType).getName()) + ";"));
@@ -243,14 +243,13 @@ public class ArrayDeSerializer implements Deserializer, Opcodes {
             context.invokeNextDeserialize(null, mv);
             defaultComponentDeserializer.compile(itemType, mv, context);
 
-//            mv.visitMethodInsn(INVOKEINTERFACE, "transfer/deserializer/Deserializer", "deserialze", "(Ltransfer/Inputable;Ljava/lang/reflect/Type;BLtransfer/utils/IntegerMap;)Ljava/lang/Object;", true);
             mv.visitVarInsn(ASTORE, 10);
 
             //array[i] = obj;
             mv.visitVarInsn(ALOAD, 7);
             mv.visitVarInsn(ILOAD, 8);
             mv.visitVarInsn(ALOAD, 10);
-            mv.visitInsn(AASTORE);
+            mv.visitInsn(AsmUtils.storeArrayCode(org.objectweb.asm.Type.getType(componentClass)));
 
             mv.visitIincInsn(8, 1);
             mv.visitJumpInsn(GOTO, l26);

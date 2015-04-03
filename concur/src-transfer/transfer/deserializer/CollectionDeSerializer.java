@@ -214,8 +214,11 @@ public class CollectionDeSerializer implements Deserializer, Opcodes {
         }
 
 
+        Class<?> componentClass = TypeUtils.getRawClass(itemType);
         Deserializer defaultComponentDeserializer = null;
-        if (itemType != null && itemType != Object.class) {
+        if (itemType != null && itemType != Object.class
+        		&& !componentClass.isInterface()
+				&& !Modifier.isAbstract(componentClass.getModifiers())) {
             defaultComponentDeserializer = TransferConfig.getDeserializer(itemType);// 元素解析器
         }
 
@@ -278,9 +281,7 @@ public class CollectionDeSerializer implements Deserializer, Opcodes {
             Label l25 = new Label();
             mv.visitJumpInsn(IF_ICMPGE, l25);
 
-//            String deSerializerName = AsmUtils.toAsmCls(defaultComponentDeserializer.getClass().getName());
 
-//            mv.visitMethodInsn(INVOKESTATIC, deSerializerName, "getInstance", "()L" + deSerializerName + ";", false);
             mv.visitVarInsn(ALOAD, 0);
             mv.visitVarInsn(ALOAD, 1);
             mv.visitLdcInsn(org.objectweb.asm.Type.getType("L" + AsmUtils.toAsmCls(TypeUtils.getRawClass(itemType).getName()) + ";"));
@@ -291,7 +292,6 @@ public class CollectionDeSerializer implements Deserializer, Opcodes {
             context.invokeNextDeserialize(null, mv);
             defaultComponentDeserializer.compile(itemType, mv, context);
 
-//            mv.visitMethodInsn(INVOKEINTERFACE, "transfer/deserializer/Deserializer", "deserialze", "(Ltransfer/Inputable;Ljava/lang/reflect/Type;BLtransfer/utils/IntegerMap;)Ljava/lang/Object;", true);
             mv.visitVarInsn(ASTORE, 10);
 
             mv.visitVarInsn(ALOAD, 6);
