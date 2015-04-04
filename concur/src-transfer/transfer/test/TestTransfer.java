@@ -38,6 +38,7 @@ public class TestTransfer {
         entity.getFriends().add(2l);
         entity.getFriends().add(3l);
         entity.setA(null);
+        entity.setIArr(new int[]{4,5,6});
         
         List<Integer> obj = new ArrayList<Integer>();
         obj.add(123);
@@ -70,6 +71,7 @@ public class TestTransfer {
         System.out.println(entity1.getBool());
         System.out.println(entity1.getFval());
         System.out.println(entity1.getObj());
+        System.out.println(entity1.getIArr());
     }
     
     

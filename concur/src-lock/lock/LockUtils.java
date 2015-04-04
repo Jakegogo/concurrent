@@ -34,6 +34,10 @@ public class LockUtils {
 	 */
 	public static List<? extends Lock> loadLocks(Object...objects) {
 
+		if (objects == null) {
+			throw new IllegalArgumentException("objects不能为NULL.");
+		}
+
 		if(objects.length == 1) {
 			ObjectLock lock = holder.getLock(objects[0]);
 			return Collections.singletonList(lock);

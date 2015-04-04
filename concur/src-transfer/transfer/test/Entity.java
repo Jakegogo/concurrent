@@ -1,5 +1,7 @@
 package transfer.test;
 
+import com.baidu.bjf.remoting.protobuf.FieldType;
+import com.baidu.bjf.remoting.protobuf.annotation.Protobuf;
 import dbcache.EntityInitializer;
 import dbcache.IEntity;
 import dbcache.anno.ChangeFields;
@@ -24,28 +26,36 @@ public class Entity implements EntityInitializer, IEntity<Long>, Serializable {
 	public static final String NUM_INDEX = "num_idx";
 
 	@Id
+	@Protobuf(fieldType = FieldType.INT64, order = 1, required = true)
 	public Long id;
 
+	@Protobuf(fieldType = FieldType.INT32, order = 2, required = true)
 	private int uid;
 
 	@Index(name=NUM_INDEX)
+	@Protobuf(fieldType = FieldType.INT32, order = 3, required = true)
 	public int num;
 
+	@Protobuf(fieldType = FieldType.STRING, order = 4, required = true)
 	private String name;
 
+	@Protobuf(fieldType = FieldType.BYTES, order = 5, required = true)
 	public byte[] a = new byte[100];
 
 	@Transient
 	private AtomicInteger idgenerator;
 
+	@Protobuf(fieldType = FieldType.FLOAT, order = 6, required = true)
 	private float fval = 1.23f;
 
 	private AcountStatus status;
 
 	private Date date;
 
+	@Protobuf(fieldType = FieldType.STRING, order = 7, required = true)
 	private String str;
 
+	@Protobuf(fieldType = FieldType.BOOL, order = 8, required = true)
 	private Boolean bool;
 	
 	private Map<String,Object> map;
@@ -55,6 +65,8 @@ public class Entity implements EntityInitializer, IEntity<Long>, Serializable {
 	private AcountStatus[] statusHis;
 
 	private Object[] objArr;
+
+	private int[] iArr = new int[]{1,2,3};
 
 
 	@JsonType
@@ -268,5 +280,13 @@ public class Entity implements EntityInitializer, IEntity<Long>, Serializable {
 
 	public void setObjArr(Object[] objArr) {
 		this.objArr = objArr;
+	}
+
+	public int[] getIArr() {
+		return iArr;
+	}
+
+	public void setIArr(int[] iArr) {
+		this.iArr = iArr;
 	}
 }

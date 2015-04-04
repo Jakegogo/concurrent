@@ -1,9 +1,13 @@
 package transfer.test;
 
+import com.baidu.bjf.remoting.protobuf.Codec;
+import com.baidu.bjf.remoting.protobuf.ProtobufProxy;
 import dbcache.utils.JsonUtils;
 import transfer.ByteArray;
 import transfer.Transfer;
 import transfer.def.TransferConfig;
+
+import java.io.IOException;
 
 /**
  * Created by Administrator on 2015/2/26.
@@ -17,12 +21,36 @@ public class TestEncodePerform {
         Transfer.preCompile(Entity.class);
 
         Entity entity = new Entity();
+        entity.setId(1L);
+        entity.setName("Jake");
+        entity.setStr("str");
+        entity.setBool(true);
         entity.setUid(101);
         entity.getFriends().add(1l);
         entity.getFriends().add(2l);
         entity.getFriends().add(3l);
 
         long t1 = 0l;
+
+        Codec<Entity> simpleTypeCodec = ProtobufProxy
+                .create(Entity.class);
+
+        try {
+            byte[] bb0 = simpleTypeCodec.encode(entity);
+            System.out.println(bb0.length);
+
+            t1 = System.currentTimeMillis();
+            for (int i = 0; i < 10000000;i++) {
+
+                // 序列化
+                byte[] bb = simpleTypeCodec.encode(entity);
+                // 反序列化
+    //            SimpleTypeTest newStt = simpleTypeCodec.decode(bb);
+            }
+            System.out.println(System.currentTimeMillis() - t1);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
 
         t1 = System.currentTimeMillis();
@@ -45,7 +73,7 @@ public class TestEncodePerform {
         ByteArray byteArray = Transfer.encode(entity);
         System.out.println(byteArray.toBytes().length);
         for (int i = 0; i < 10000000;i++) {
-            byteArray = Transfer.encode(entity);
+            byteArray = Transfer.encode(entity, Entity.class);
         }
         System.out.println(System.currentTimeMillis() - t1);
         

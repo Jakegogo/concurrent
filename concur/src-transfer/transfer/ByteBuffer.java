@@ -6,7 +6,7 @@ package transfer;
  */
 public class ByteBuffer implements Outputable {
 
-    static final int EXPAND_STEP_SIZE = 128;
+    static final int EXPAND_STEP_SIZE = 256;
 
     private ByteArr rootByteArray;
 
