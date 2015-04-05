@@ -29,7 +29,7 @@ public class ShortStringDeserializer implements Deserializer {
         }
 
         // 读取字符串字节数组的大小
-        int length = BitUtils.getInt1(inputable);
+        int length = BitUtils.getInt(inputable);
 
         byte[] bytes = new byte[length];
 

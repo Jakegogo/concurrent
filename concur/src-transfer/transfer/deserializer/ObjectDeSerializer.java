@@ -44,7 +44,7 @@ public class ObjectDeSerializer implements Deserializer, Opcodes {
         }
 
         // 读取对象类型
-        int classId = BitUtils.getInt2(inputable);
+        int classId = BitUtils.getInt(inputable);
 
         Class<?> rawClass = TypeUtils.getRawClass(type);
 
@@ -125,7 +125,7 @@ public class ObjectDeSerializer implements Deserializer, Opcodes {
 
         mv.visitFrame(Opcodes.F_APPEND,1, new Object[] {Opcodes.INTEGER}, 0, null);
         mv.visitVarInsn(ALOAD, 1);
-        mv.visitMethodInsn(INVOKESTATIC, "transfer/utils/BitUtils", "getInt2", "(Ltransfer/Inputable;)I", false);
+        mv.visitMethodInsn(INVOKESTATIC, "transfer/utils/BitUtils", "getInt", "(Ltransfer/Inputable;)I", false);
         mv.visitVarInsn(ISTORE, 6);
 
 

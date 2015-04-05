@@ -43,7 +43,7 @@ public class ObjectSerializer implements Serializer, Opcodes {
 
 		outputable.putByte(Types.OBJECT);
 
-		BitUtils.putInt2(outputable, classInfo.getClassId());
+		BitUtils.putInt(outputable, classInfo.getClassId());
 
 		for (FieldInfo fieldInfo : classInfo.getFieldInfos()) {
 
@@ -103,7 +103,7 @@ public class ObjectSerializer implements Serializer, Opcodes {
 
 		mv.visitVarInsn(ALOAD, 1);
 		mv.visitIntInsn(SIPUSH, classInfo.getClassId());
-		mv.visitMethodInsn(INVOKESTATIC, "transfer/utils/BitUtils", "putInt2",
+		mv.visitMethodInsn(INVOKESTATIC, "transfer/utils/BitUtils", "putInt",
 				"(Ltransfer/Outputable;I)V", false);
 
 		Type fieldType;

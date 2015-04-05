@@ -5,12 +5,12 @@ import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
-
 import transfer.Outputable;
 import transfer.compile.AsmSerializerContext;
 import transfer.def.TransferConfig;
 import transfer.def.Types;
 import transfer.exception.CompileError;
+import transfer.utils.BitUtils;
 import transfer.utils.IdentityHashMap;
 import transfer.utils.TypeUtils;
 
@@ -74,24 +74,8 @@ public class NumberSerializer implements Serializer, Opcodes {
 			sign = FLAG_NEGATIVE;
 		}
 
-		if (value < FLAG_0X80) {
-
-			outputable.putByte(
-					(byte) (Types.NUMBER | sign | TransferConfig.INT1),
-					(byte) value);
-		} else {
-
-			byte[] bytes = new byte[4];
-
-			int i = 4;
-			while (value > 0) {
-				bytes[--i] = (byte) value;
-				value >>= 8;
-			}
-
-			outputable.putByte((byte) (Types.NUMBER | sign | (3 - i)));
-			outputable.putBytes(bytes, i, 4 - i);
-		}
+		outputable.putByte((byte) (Types.NUMBER | sign | TransferConfig.VARINT));
+		BitUtils.putInt(outputable, value);
 
 	}
 
@@ -105,26 +89,11 @@ public class NumberSerializer implements Serializer, Opcodes {
 			sign = FLAG_NEGATIVE;
 		}
 
-		if (value < FLAG_0X80) {
-
-			outputable.putByte(
-					(byte) (Types.NUMBER | sign | TransferConfig.INT1),
-					(byte) value);
-		} else {
-
-			byte[] bytes = new byte[8];
-
-			int i = 8;
-			while (value > 0) {
-				bytes[--i] = (byte) value;
-				value >>= 8;
-			}
-
-			outputable.putByte((byte) (Types.NUMBER | sign | (7 - i)));
-			outputable.putBytes(bytes, i, 8 - i);
-		}
+		outputable.putByte((byte) (Types.NUMBER | sign | TransferConfig.VARLONG));
+		BitUtils.putLong(outputable, value);
 
 	}
+
 
 	@Override
 	public void compile(Type type, MethodVisitor mv,
@@ -196,8 +165,7 @@ public class NumberSerializer implements Serializer, Opcodes {
 			Label l0 = new Label();
 			mv.visitLabel(l0);
 			mv.visitVarInsn(ALOAD, 2);
-			mv.visitMethodInsn(INVOKEVIRTUAL, "java/lang/Number", "intValue",
-					"()I", false);
+			mv.visitMethodInsn(INVOKEVIRTUAL, "java/lang/Number", "intValue", "()I", false);
 			mv.visitVarInsn(ISTORE, 3);
 			Label l1 = new Label();
 			mv.visitLabel(l1);
@@ -218,99 +186,26 @@ public class NumberSerializer implements Serializer, Opcodes {
 			mv.visitIntInsn(BIPUSH, 8);
 			mv.visitVarInsn(ISTORE, 4);
 			mv.visitLabel(l3);
-			mv.visitFrame(Opcodes.F_APPEND, 2, new Object[] { Opcodes.INTEGER,
-					Opcodes.INTEGER }, 0, null);
-			mv.visitVarInsn(ILOAD, 3);
-			mv.visitIntInsn(SIPUSH, 128);
+			mv.visitFrame(Opcodes.F_APPEND,2, new Object[] {Opcodes.INTEGER, Opcodes.INTEGER}, 0, null);
+			mv.visitVarInsn(ALOAD, 1);
+			mv.visitIntInsn(BIPUSH, 16);
+			mv.visitVarInsn(ILOAD, 4);
+			mv.visitInsn(IOR);
+			mv.visitInsn(ICONST_0);
+			mv.visitInsn(IOR);
+			mv.visitInsn(I2B);
+			mv.visitMethodInsn(INVOKEINTERFACE, "transfer/Outputable", "putByte", "(B)V", true);
 			Label l6 = new Label();
-			mv.visitJumpInsn(IF_ICMPGE, l6);
+			mv.visitLabel(l6);
+			mv.visitVarInsn(ALOAD, 1);
+			mv.visitVarInsn(ILOAD, 3);
+			mv.visitMethodInsn(INVOKESTATIC, "transfer/utils/BitUtils", "putInt", "(Ltransfer/Outputable;I)V", false);
 			Label l7 = new Label();
 			mv.visitLabel(l7);
-			mv.visitVarInsn(ALOAD, 1);
-			mv.visitInsn(ICONST_2);
-			mv.visitIntInsn(NEWARRAY, T_BYTE);
-			mv.visitInsn(DUP);
-			mv.visitInsn(ICONST_0);
-			mv.visitIntInsn(BIPUSH, 16);
-			mv.visitVarInsn(ILOAD, 4);
-			mv.visitInsn(IOR);
-			mv.visitInsn(ICONST_0);
-			mv.visitInsn(IOR);
-			mv.visitInsn(I2B);
-			mv.visitInsn(BASTORE);
-			mv.visitInsn(DUP);
-			mv.visitInsn(ICONST_1);
-			mv.visitVarInsn(ILOAD, 3);
-			mv.visitInsn(I2B);
-			mv.visitInsn(BASTORE);
-			mv.visitMethodInsn(INVOKEINTERFACE, "transfer/Outputable",
-					"putByte", "([B)V", true);
+			mv.visitInsn(RETURN);
 			Label l8 = new Label();
 			mv.visitLabel(l8);
-			Label l9 = new Label();
-			mv.visitJumpInsn(GOTO, l9);
-			mv.visitLabel(l6);
-			mv.visitFrame(Opcodes.F_SAME, 0, null, 0, null);
-			mv.visitInsn(ICONST_4);
-			mv.visitIntInsn(NEWARRAY, T_BYTE);
-			mv.visitVarInsn(ASTORE, 5);
-			Label l10 = new Label();
-			mv.visitLabel(l10);
-			mv.visitInsn(ICONST_4);
-			mv.visitVarInsn(ISTORE, 6);
-			Label l11 = new Label();
-			mv.visitLabel(l11);
-			Label l12 = new Label();
-			mv.visitJumpInsn(GOTO, l12);
-			Label l13 = new Label();
-			mv.visitLabel(l13);
-			mv.visitFrame(Opcodes.F_APPEND, 2, new Object[] { "[B",
-					Opcodes.INTEGER }, 0, null);
-			mv.visitVarInsn(ALOAD, 5);
-			mv.visitIincInsn(6, -1);
-			mv.visitVarInsn(ILOAD, 6);
-			mv.visitVarInsn(ILOAD, 3);
-			mv.visitInsn(I2B);
-			mv.visitInsn(BASTORE);
-			Label l14 = new Label();
-			mv.visitLabel(l14);
-			mv.visitVarInsn(ILOAD, 3);
-			mv.visitIntInsn(BIPUSH, 8);
-			mv.visitInsn(ISHR);
-			mv.visitVarInsn(ISTORE, 3);
-			mv.visitLabel(l12);
-			mv.visitFrame(Opcodes.F_SAME, 0, null, 0, null);
-			mv.visitVarInsn(ILOAD, 3);
-			mv.visitJumpInsn(IFGT, l13);
-			Label l15 = new Label();
-			mv.visitLabel(l15);
-			mv.visitVarInsn(ALOAD, 1);
-			mv.visitIntInsn(BIPUSH, 16);
-			mv.visitVarInsn(ILOAD, 4);
-			mv.visitInsn(IOR);
-			mv.visitInsn(ICONST_3);
-			mv.visitVarInsn(ILOAD, 6);
-			mv.visitInsn(ISUB);
-			mv.visitInsn(IOR);
-			mv.visitInsn(I2B);
-			mv.visitMethodInsn(INVOKEINTERFACE, "transfer/Outputable",
-					"putByte", "(B)V", true);
-			Label l16 = new Label();
-			mv.visitLabel(l16);
-			mv.visitVarInsn(ALOAD, 1);
-			mv.visitVarInsn(ALOAD, 5);
-			mv.visitVarInsn(ILOAD, 6);
-			mv.visitInsn(ICONST_4);
-			mv.visitVarInsn(ILOAD, 6);
-			mv.visitInsn(ISUB);
-			mv.visitMethodInsn(INVOKEINTERFACE, "transfer/Outputable",
-					"putBytes", "([BII)V", true);
-			mv.visitLabel(l9);
-			mv.visitFrame(Opcodes.F_CHOP, 2, null, 0, null);
-			mv.visitInsn(RETURN);
-			Label l17 = new Label();
-			mv.visitLabel(l17);
-			mv.visitMaxs(6, 7);
+			mv.visitMaxs(3, 5);
 			mv.visitEnd();
 		}
 		{
@@ -320,8 +215,7 @@ public class NumberSerializer implements Serializer, Opcodes {
 			Label l0 = new Label();
 			mv.visitLabel(l0);
 			mv.visitVarInsn(ALOAD, 2);
-			mv.visitMethodInsn(INVOKEVIRTUAL, "java/lang/Number", "longValue",
-					"()J", false);
+			mv.visitMethodInsn(INVOKEVIRTUAL, "java/lang/Number", "longValue", "()J", false);
 			mv.visitVarInsn(LSTORE, 3);
 			Label l1 = new Label();
 			mv.visitLabel(l1);
@@ -344,104 +238,26 @@ public class NumberSerializer implements Serializer, Opcodes {
 			mv.visitIntInsn(BIPUSH, 8);
 			mv.visitVarInsn(ISTORE, 5);
 			mv.visitLabel(l3);
-			mv.visitFrame(Opcodes.F_APPEND, 2, new Object[] { Opcodes.LONG,
-					Opcodes.INTEGER }, 0, null);
-			mv.visitVarInsn(LLOAD, 3);
-			mv.visitLdcInsn(new Long(128L));
-			mv.visitInsn(LCMP);
+			mv.visitFrame(Opcodes.F_APPEND,2, new Object[] {Opcodes.LONG, Opcodes.INTEGER}, 0, null);
+			mv.visitVarInsn(ALOAD, 1);
+			mv.visitIntInsn(BIPUSH, 16);
+			mv.visitVarInsn(ILOAD, 5);
+			mv.visitInsn(IOR);
+			mv.visitInsn(ICONST_1);
+			mv.visitInsn(IOR);
+			mv.visitInsn(I2B);
+			mv.visitMethodInsn(INVOKEINTERFACE, "transfer/Outputable", "putByte", "(B)V", true);
 			Label l6 = new Label();
-			mv.visitJumpInsn(IFGE, l6);
+			mv.visitLabel(l6);
+			mv.visitVarInsn(ALOAD, 1);
+			mv.visitVarInsn(LLOAD, 3);
+			mv.visitMethodInsn(INVOKESTATIC, "transfer/utils/BitUtils", "putLong", "(Ltransfer/Outputable;J)V", false);
 			Label l7 = new Label();
 			mv.visitLabel(l7);
-			mv.visitVarInsn(ALOAD, 1);
-			mv.visitInsn(ICONST_2);
-			mv.visitIntInsn(NEWARRAY, T_BYTE);
-			mv.visitInsn(DUP);
-			mv.visitInsn(ICONST_0);
-			mv.visitIntInsn(BIPUSH, 16);
-			mv.visitVarInsn(ILOAD, 5);
-			mv.visitInsn(IOR);
-			mv.visitInsn(ICONST_0);
-			mv.visitInsn(IOR);
-			mv.visitInsn(I2B);
-			mv.visitInsn(BASTORE);
-			mv.visitInsn(DUP);
-			mv.visitInsn(ICONST_1);
-			mv.visitVarInsn(LLOAD, 3);
-			mv.visitInsn(L2I);
-			mv.visitInsn(I2B);
-			mv.visitInsn(BASTORE);
-			mv.visitMethodInsn(INVOKEINTERFACE, "transfer/Outputable",
-					"putByte", "([B)V", true);
+			mv.visitInsn(RETURN);
 			Label l8 = new Label();
 			mv.visitLabel(l8);
-			Label l9 = new Label();
-			mv.visitJumpInsn(GOTO, l9);
-			mv.visitLabel(l6);
-			mv.visitFrame(Opcodes.F_SAME, 0, null, 0, null);
-			mv.visitIntInsn(BIPUSH, 8);
-			mv.visitIntInsn(NEWARRAY, T_BYTE);
-			mv.visitVarInsn(ASTORE, 6);
-			Label l10 = new Label();
-			mv.visitLabel(l10);
-			mv.visitIntInsn(BIPUSH, 8);
-			mv.visitVarInsn(ISTORE, 7);
-			Label l11 = new Label();
-			mv.visitLabel(l11);
-			Label l12 = new Label();
-			mv.visitJumpInsn(GOTO, l12);
-			Label l13 = new Label();
-			mv.visitLabel(l13);
-			mv.visitFrame(Opcodes.F_APPEND, 2, new Object[] { "[B",
-					Opcodes.INTEGER }, 0, null);
-			mv.visitVarInsn(ALOAD, 6);
-			mv.visitIincInsn(7, -1);
-			mv.visitVarInsn(ILOAD, 7);
-			mv.visitVarInsn(LLOAD, 3);
-			mv.visitInsn(L2I);
-			mv.visitInsn(I2B);
-			mv.visitInsn(BASTORE);
-			Label l14 = new Label();
-			mv.visitLabel(l14);
-			mv.visitVarInsn(LLOAD, 3);
-			mv.visitIntInsn(BIPUSH, 8);
-			mv.visitInsn(LSHR);
-			mv.visitVarInsn(LSTORE, 3);
-			mv.visitLabel(l12);
-			mv.visitFrame(Opcodes.F_SAME, 0, null, 0, null);
-			mv.visitVarInsn(LLOAD, 3);
-			mv.visitInsn(LCONST_0);
-			mv.visitInsn(LCMP);
-			mv.visitJumpInsn(IFGT, l13);
-			Label l15 = new Label();
-			mv.visitLabel(l15);
-			mv.visitVarInsn(ALOAD, 1);
-			mv.visitIntInsn(BIPUSH, 16);
-			mv.visitVarInsn(ILOAD, 5);
-			mv.visitInsn(IOR);
-			mv.visitIntInsn(BIPUSH, 7);
-			mv.visitVarInsn(ILOAD, 7);
-			mv.visitInsn(ISUB);
-			mv.visitInsn(IOR);
-			mv.visitInsn(I2B);
-			mv.visitMethodInsn(INVOKEINTERFACE, "transfer/Outputable",
-					"putByte", "(B)V", true);
-			Label l16 = new Label();
-			mv.visitLabel(l16);
-			mv.visitVarInsn(ALOAD, 1);
-			mv.visitVarInsn(ALOAD, 6);
-			mv.visitVarInsn(ILOAD, 7);
-			mv.visitIntInsn(BIPUSH, 8);
-			mv.visitVarInsn(ILOAD, 7);
-			mv.visitInsn(ISUB);
-			mv.visitMethodInsn(INVOKEINTERFACE, "transfer/Outputable",
-					"putBytes", "([BII)V", true);
-			mv.visitLabel(l9);
-			mv.visitFrame(Opcodes.F_CHOP, 2, null, 0, null);
-			mv.visitInsn(RETURN);
-			Label l17 = new Label();
-			mv.visitLabel(l17);
-			mv.visitMaxs(6, 8);
+			mv.visitMaxs(4, 6);
 			mv.visitEnd();
 		}
 

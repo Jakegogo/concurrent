@@ -92,7 +92,7 @@ public class ObjectAsmProxySerializer implements Serializer, Opcodes {
 
 		mv.visitVarInsn(ALOAD, 1);
 		mv.visitIntInsn(BIPUSH, classInfo.getClassId());
-		mv.visitMethodInsn(INVOKESTATIC, "transfer/utils/BitUtils", "putInt2",
+		mv.visitMethodInsn(INVOKESTATIC, "transfer/utils/BitUtils", "putInt",
 				"(Ltransfer/Outputable;I)V", false);
 
 		Type fieldType;

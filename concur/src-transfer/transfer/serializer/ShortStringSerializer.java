@@ -33,7 +33,7 @@ public class ShortStringSerializer implements Serializer, Opcodes {
 
 		byte[] bytes = string.getBytes(Charset.forName("UTF-8"));
 
-		BitUtils.putInt1(outputable, bytes.length);
+		BitUtils.putInt(outputable, bytes.length);
 
 		outputable.putBytes(bytes);
 	}
@@ -79,7 +79,7 @@ public class ShortStringSerializer implements Serializer, Opcodes {
 		mv.visitVarInsn(ALOAD, 1);
 		mv.visitVarInsn(ALOAD, 6);
 		mv.visitInsn(ARRAYLENGTH);
-		mv.visitMethodInsn(INVOKESTATIC, "transfer/utils/BitUtils", "putInt1",
+		mv.visitMethodInsn(INVOKESTATIC, "transfer/utils/BitUtils", "putInt",
 				"(Ltransfer/Outputable;I)V", false);
 
 		mv.visitVarInsn(ALOAD, 1);

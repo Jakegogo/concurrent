@@ -38,10 +38,10 @@ public class TagObjectSerializer implements Serializer {
 		outputable.putByte(Types.OBJECT);
 
 		// 添加类Id
-		BitUtils.putInt2(outputable, classInfo.getClassId());
+		BitUtils.putInt(outputable, classInfo.getClassId());
 
 		// 添加属性个数
-		BitUtils.putInt2(outputable, classInfo.getFieldInfos().size());
+		BitUtils.putInt(outputable, classInfo.getFieldInfos().size());
 
 		for (FieldInfo fieldInfo : classInfo.getFieldInfos()) {
 

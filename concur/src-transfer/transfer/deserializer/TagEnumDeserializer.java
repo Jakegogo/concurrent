@@ -40,7 +40,7 @@ public class TagEnumDeserializer implements Deserializer {
         }
 
         // 读取枚举类型
-        int enumType = BitUtils.getInt2(inputable);
+        int enumType = BitUtils.getInt(inputable);
 
         Class<?> rawClass = TypeUtils.getRawClass(type);
 

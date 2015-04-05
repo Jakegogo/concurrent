@@ -67,14 +67,8 @@ public class TransferConfig {
 
 
     // Number类型标记
-    public static final byte INT1 = 0x00;// int 1字节
-    public static final byte INT2 = 0x01;// int 2字节
-    public static final byte INT3 = 0x02;// int 3字节
-    public static final byte INT4 = 0x03;// int 4字节
-    public static final byte INT5 = 0x04;// long 5字节
-    public static final byte INT6 = 0x05;// long 6字节
-    public static final byte INT7 = 0x06;// long 7字节
-    public static final byte INT8 = 0x07;// long 8字节
+    public static final byte VARINT = 0x00;// int 1-9字节
+    public static final byte VARLONG = 0x01;// int 1-9字节
 
     // Decimal类型标记
     public static final byte FLOAT = 0x00;// float 4字节

@@ -1,5 +1,6 @@
 package transfer.deserializer;
 
+import org.objectweb.asm.MethodVisitor;
 import transfer.Inputable;
 import transfer.compile.AsmDeserializerContext;
 import transfer.def.TransferConfig;
@@ -12,8 +13,6 @@ import transfer.utils.TypeUtils;
 import java.lang.reflect.Type;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
-
-import org.objectweb.asm.MethodVisitor;
 
 /**
  * Number解析器
@@ -45,49 +44,13 @@ public class NumberDeserializer implements Deserializer {
 
         Number number = null;
         switch (len) {
-            case TransferConfig.INT1:
-                number = BitUtils.getInt1(inputable) * sign;
-                if (type == int.class || type == Integer.class) {
-                    return (T) number;
-                }
-                break;
-            case TransferConfig.INT2:
-                number = BitUtils.getInt2(inputable) * sign;
-                if (type == int.class || type == Integer.class) {
-                    return (T) number;
-                }
-                break;
-            case TransferConfig.INT3:
-                number = BitUtils.getInt3(inputable) * sign;
-                if (type == int.class || type == Integer.class) {
-                    return (T) number;
-                }
-                break;
-            case TransferConfig.INT4:
+            case TransferConfig.VARINT:
                 number = BitUtils.getInt(inputable) * sign;
                 if (type == int.class || type == Integer.class) {
                     return (T) number;
                 }
                 break;
-            case TransferConfig.INT5:
-                number = BitUtils.getLong5(inputable) * sign;
-                if (type == long.class || type == Long.class) {
-                    return (T) number;
-                }
-                break;
-            case TransferConfig.INT6:
-                number = BitUtils.getLong6(inputable) * sign;
-                if (type == long.class || type == Long.class) {
-                    return (T) number;
-                }
-                break;
-            case TransferConfig.INT7:
-                number = BitUtils.getLong7(inputable) * sign;
-                if (type == long.class || type == Long.class) {
-                    return (T) number;
-                }
-                break;
-            case TransferConfig.INT8:
+            case TransferConfig.VARLONG:
                 number = BitUtils.getLong(inputable) * sign;
                 if (type == long.class || type == Long.class) {
                     return (T) number;

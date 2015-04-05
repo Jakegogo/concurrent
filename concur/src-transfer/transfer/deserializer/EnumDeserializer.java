@@ -34,7 +34,7 @@ public class EnumDeserializer implements Deserializer {
         }
 
         // 读取枚举类型
-        int enumType = BitUtils.getInt2(inputable);
+        int enumType = BitUtils.getInt(inputable);
 
         Class<?> rawClass = TypeUtils.getRawClass(type);
 
@@ -63,7 +63,7 @@ public class EnumDeserializer implements Deserializer {
         }
 
         // 读取枚举索引
-        int enumIndex = BitUtils.getInt2(inputable);
+        int enumIndex = BitUtils.getInt(inputable);
 
         return (T) enumInfo.toEnum(enumIndex);
     }

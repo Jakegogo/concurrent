@@ -36,11 +36,11 @@ public class EnumSerializer implements Serializer, Opcodes {
 		EnumInfo enumInfo = (EnumInfo) TransferConfig
 				.getOrCreateClassInfo(enumVal.getDeclaringClass());
 
-		BitUtils.putInt2(outputable, enumInfo.getClassId());
+		BitUtils.putInt(outputable, enumInfo.getClassId());
 
 		int enumIndex = enumInfo.toInt(enumVal);
 
-		BitUtils.putInt2(outputable, enumIndex);
+		BitUtils.putInt(outputable, enumIndex);
 	}
 
 	@Override
@@ -78,7 +78,7 @@ public class EnumSerializer implements Serializer, Opcodes {
 			mv.visitVarInsn(ALOAD, 1);
 			mv.visitIntInsn(SIPUSH, enumInfo.getClassId());
 			mv.visitMethodInsn(INVOKESTATIC, "transfer/utils/BitUtils",
-					"putInt2", "(Ltransfer/Outputable;I)V", false);
+					"putInt", "(Ltransfer/Outputable;I)V", false);
 
 			mv.visitVarInsn(ALOAD, 4);
 			mv.visitMethodInsn(INVOKEVIRTUAL, "java/lang/Enum", "ordinal",
@@ -103,7 +103,7 @@ public class EnumSerializer implements Serializer, Opcodes {
 			mv.visitMethodInsn(INVOKEVIRTUAL, "transfer/core/EnumInfo",
 					"getClassId", "()I", false);
 			mv.visitMethodInsn(INVOKESTATIC, "transfer/utils/BitUtils",
-					"putInt2", "(Ltransfer/Outputable;I)V", false);
+					"putInt", "(Ltransfer/Outputable;I)V", false);
 
 			mv.visitVarInsn(ALOAD, 5);
 			mv.visitVarInsn(ALOAD, 4);
@@ -115,7 +115,7 @@ public class EnumSerializer implements Serializer, Opcodes {
 
 		mv.visitVarInsn(ALOAD, 1);
 		mv.visitVarInsn(ILOAD, 6);
-		mv.visitMethodInsn(INVOKESTATIC, "transfer/utils/BitUtils", "putInt2",
+		mv.visitMethodInsn(INVOKESTATIC, "transfer/utils/BitUtils", "putInt",
 				"(Ltransfer/Outputable;I)V", false);
 
 		mv.visitInsn(RETURN);

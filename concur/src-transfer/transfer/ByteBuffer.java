@@ -46,14 +46,6 @@ public class ByteBuffer implements Outputable {
     }
 
 
-    @Override
-    public void putByte(byte... bytes) {
-        this.curByteArray.checkBounds(bytes.length, this)
-                .putBytes(bytes);
-        offset += bytes.length;
-    }
-
-
     /**
      * 获取字节
      * @return

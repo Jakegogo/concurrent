@@ -22,13 +22,6 @@ public interface Outputable {
 
 
     /**
-     * 写入字节
-     * @param bytes
-     */
-    public void putByte(byte... bytes);
-
-
-    /**
      * 写入字节数组
      * @param bytes
      */

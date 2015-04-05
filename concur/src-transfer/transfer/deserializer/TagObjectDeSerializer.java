@@ -40,7 +40,7 @@ public class TagObjectDeSerializer implements Deserializer {
         }
 
         // 读取对象类型
-        int classId = BitUtils.getInt2(inputable);
+        int classId = BitUtils.getInt(inputable);
 
         Class<?> rawClass = TypeUtils.getRawClass(type);
 
@@ -81,7 +81,7 @@ public class TagObjectDeSerializer implements Deserializer {
         Deserializer fieldDeserializer;
 
         // 读取属性数量
-        int fieldNum = BitUtils.getInt2(inputable);
+        int fieldNum = BitUtils.getInt(inputable);
 
         for (int i = 0;i < fieldNum;i++) {
 

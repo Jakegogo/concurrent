@@ -26,7 +26,8 @@ public class BitUtils {
      * @param shortVal
      */
     public static void putShort(final Outputable outputable, final short shortVal) {
-        outputable.putByte((byte)(shortVal >> 8), (byte)(shortVal >> 0));
+        outputable.putByte((byte)(shortVal >> 8));
+        outputable.putByte((byte)(shortVal >> 0));
     }
 
 
@@ -36,46 +37,36 @@ public class BitUtils {
      * @return
      */
     public static int getInt(final Inputable inputable) {
-        byte[] longBytes = new byte[4];
-        inputable.getBytes(longBytes);
-        return ((((longBytes[0] & 0xff) << 24) |
-                ((longBytes[1] & 0xff) << 16) |
-                ((longBytes[2] & 0xff) <<  8) |
-                ((longBytes[3] & 0xff) <<  0)));
-    }
-
-
-    /**
-     * 读取整数
-     * @param inputable
-     * @return
-     */
-    public static int getInt1(final Inputable inputable) {
-        return inputable.getByte() & 0xff;
-    }
-
-
-    /**
-     * 读取整数
-     * @param inputable
-     * @return
-     */
-    public static int getInt2(final Inputable inputable) {
-        return ((inputable.getByte() & 0xff) <<  8) |
-                ((inputable.getByte() & 0xff) <<  0);
-    }
-
-    /**
-     * 读取整数
-     * @param inputable
-     * @return
-     */
-    public static int getInt3(final Inputable inputable) {
-        byte[] longBytes = new byte[3];
-        inputable.getBytes(longBytes);
-        return ((((longBytes[0] & 0xff) << 16) |
-                ((longBytes[1] & 0xff) <<  8) |
-                ((longBytes[2] & 0xff) <<  0)));
+        byte tmp = inputable.getByte();
+        if (tmp >= 0) {
+            return tmp;
+        }
+        int result = tmp & 0x7f;
+        if ((tmp = inputable.getByte()) >= 0) {
+            result |= tmp << 7;
+        } else {
+            result |= (tmp & 0x7f) << 7;
+            if ((tmp = inputable.getByte()) >= 0) {
+                result |= tmp << 14;
+            } else {
+                result |= (tmp & 0x7f) << 14;
+                if ((tmp = inputable.getByte()) >= 0) {
+                    result |= tmp << 21;
+                } else {
+                    result |= (tmp & 0x7f) << 21;
+                    result |= (tmp = inputable.getByte()) << 28;
+                    if (tmp < 0) {
+                        // Discard upper 32 bits.
+                        for (int i = 0; i < 5; i++) {
+                            if (inputable.getByte() >= 0) {
+                                return result;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return result;
     }
 
 
@@ -84,28 +75,18 @@ public class BitUtils {
      * @param outputable
      * @param intVal
      */
-    public static void putInt(final Outputable outputable, final int intVal) {
-        outputable.putByte((byte)(intVal >> 24), (byte)(intVal >> 16), (byte)(intVal >> 8), (byte)(intVal >> 0));
-    }
+    public static void putInt(final Outputable outputable, int intVal) {
 
+        while (true) {
+            if ((intVal & ~0x7F) == 0) {
+                outputable.putByte((byte) intVal);
+                return;
+            } else {
+                outputable.putByte((byte) ((intVal & 0x7F) | 0x80));
+                intVal >>>= 7;
+            }
+        }
 
-    /**
-     * 整数转换成字节
-     * @param outputable
-     * @param intVal
-     */
-    public static void putInt1(final Outputable outputable, final int intVal) {
-        outputable.putByte((byte)(intVal >> 0));
-    }
-    
-    
-    /**
-     * 整数转换成字节
-     * @param outputable
-     * @param intVal
-     */
-    public static void putInt2(final Outputable outputable, final int intVal) {
-        outputable.putByte((byte)(intVal >> 8), (byte)(intVal >> 0));
     }
 
 
@@ -115,67 +96,17 @@ public class BitUtils {
      * @return
      */
     public static long getLong(final Inputable inputable) {
-        byte[] longBytes = new byte[8];
-        inputable.getBytes(longBytes);
-        return ((((long) longBytes[0] & 0xff) << 56) |
-                (((long) longBytes[1] & 0xff) << 48) |
-                (((long) longBytes[2] & 0xff) << 40) |
-                (((long) longBytes[3] & 0xff) << 32) |
-                (((long) longBytes[4] & 0xff) << 24) |
-                (((long) longBytes[5] & 0xff) << 16) |
-                (((long) longBytes[6] & 0xff) <<  8) |
-                (((long) longBytes[7] & 0xff) <<  0));
-    }
-
-
-    /**
-     * 读取长整型
-     * @param inputable
-     * @return
-     */
-    public static long getLong5(final Inputable inputable) {
-        byte[] longBytes = new byte[5];
-        inputable.getBytes(longBytes);
-        return ((((long) longBytes[0] & 0xff) << 32) |
-                (((long) longBytes[1] & 0xff) << 24) |
-                (((long) longBytes[2] & 0xff) << 16) |
-                (((long) longBytes[3] & 0xff) <<  8) |
-                (((long) longBytes[4] & 0xff) <<  0));
-    }
-
-
-    /**
-     * 读取长整型
-     * @param inputable
-     * @return
-     */
-    public static long getLong6(final Inputable inputable) {
-        byte[] longBytes = new byte[6];
-        inputable.getBytes(longBytes);
-        return ((((long) longBytes[0] & 0xff) << 40) |
-                (((long) longBytes[1] & 0xff) << 32) |
-                (((long) longBytes[2] & 0xff) << 24) |
-                (((long) longBytes[3] & 0xff) << 16) |
-                (((long) longBytes[4] & 0xff) <<  8) |
-                (((long) longBytes[5] & 0xff) <<  0));
-    }
-
-
-    /**
-     * 读取长整型
-     * @param inputable
-     * @return
-     */
-    public static long getLong7(final Inputable inputable) {
-        byte[] longBytes = new byte[7];
-        inputable.getBytes(longBytes);
-        return ((((long) longBytes[0] & 0xff) << 48) |
-                (((long) longBytes[1] & 0xff) << 40) |
-                (((long) longBytes[2] & 0xff) << 32) |
-                (((long) longBytes[3] & 0xff) << 24) |
-                (((long) longBytes[4] & 0xff) << 16) |
-                (((long) longBytes[5] & 0xff) <<  8) |
-                (((long) longBytes[6] & 0xff) <<  0));
+        int shift = 0;
+        long result = 0;
+        while (shift < 64) {
+            final byte b = inputable.getByte();
+            result |= (long)(b & 0x7F) << shift;
+            if ((b & 0x80) == 0) {
+                return result;
+            }
+            shift += 7;
+        }
+        return result;
     }
 
 
@@ -185,9 +116,19 @@ public class BitUtils {
      * @param outputable
      * @param longVal
      */
-    public static void putLong(final Outputable outputable, final long longVal) {
-        outputable.putByte((byte)(longVal >> 56), (byte)(longVal >> 48), (byte)(longVal >> 40), (byte)(longVal >> 32),
-                (byte)(longVal >> 24), (byte)(longVal >> 16), (byte)(longVal >> 8), (byte)(longVal >> 0));
+    public static void putLong(final Outputable outputable, long longVal) {
+
+
+        while (true) {
+            if ((longVal & ~0x7F) == 0) {
+                outputable.putByte((byte) longVal);
+                return;
+            } else {
+                outputable.putByte((byte) ((((int) longVal) & 0x7F) | 0x80));
+                longVal >>>= 7;
+            }
+        }
+
     }
 
 
@@ -247,7 +188,8 @@ public class BitUtils {
      * @param charVal
      */
     public static void putChar(final Outputable outputable, final char charVal) {
-        outputable.putByte((byte)(charVal >> 8), (byte)(charVal >> 0));
+        outputable.putByte((byte)(charVal >> 8));
+        outputable.putByte((byte)(charVal >> 0));
     }
 
 
