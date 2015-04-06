@@ -81,6 +81,7 @@ public class ByteArray implements Inputable {
     public void getBytes(byte[] bytes) {
 
         int length = bytes.length;
+        this.curIndex += length;
 
         if (this.curIndex + length > this.endIndex) {
             throw new EOFBytesException();
@@ -88,7 +89,6 @@ public class ByteArray implements Inputable {
 
         System.arraycopy(byteArr, this.curIndex, bytes, 0, length);
 
-        this.curIndex += length;
     }
 
 

@@ -8,9 +8,9 @@ public class ByteBuffer implements Outputable {
 
     static final int EXPAND_STEP_SIZE = 256;
 
-    private ByteArr rootByteArray;
+    protected ByteArr rootByteArray;
 
-    private ByteArr curByteArray;
+    protected ByteArr curByteArray;
 
     private int offset;
 
@@ -25,9 +25,9 @@ public class ByteBuffer implements Outputable {
 
     @Override
     public void putByte(byte byte1) {
-        this.curByteArray.checkBounds(1, this)
+        this.curByteArray.checkBounds(this)
                 .putByte(byte1);
-        offset += 1;
+        offset ++;
     }
 
 
@@ -101,56 +101,5 @@ public class ByteBuffer implements Outputable {
         return this.offset;
     }
 
-
-    /**
-     * 字节数组段
-     */
-    static class ByteArr {
-
-        byte[] byteArray;
-
-        private int offset;
-
-        ByteArr next;
-
-        int length;
-
-        public ByteArr(int initLen) {
-            this.byteArray = new byte[initLen];
-            this.length = initLen;
-        }
-
-        public ByteArr expandNext(int length) {
-            this.next = new ByteArr(length);
-            return this.next;
-        }
-
-        public void putByte(byte byte1) {
-            this.byteArray[offset++] = byte1;
-        }
-
-        public void putBytes(byte[] bytes) {
-            System.arraycopy(bytes, 0, this.byteArray, offset, bytes.length);
-            offset += bytes.length;
-        }
-
-        public void putBytes(byte[] bytes, int start, int len) {
-            System.arraycopy(bytes, start, this.byteArray, offset, len);
-            offset += len;
-        }
-
-        private ByteArr checkBounds(int expandLength, ByteBuffer byteBuffer) {
-            if (this.offset + expandLength > this.length) {
-                if (expandLength < EXPAND_STEP_SIZE) {
-                    expandLength = EXPAND_STEP_SIZE;
-                }
-                ByteArr newByteArr = this.expandNext(expandLength);
-                byteBuffer.curByteArray = newByteArr;
-                return newByteArr;
-            }
-            return this;
-        }
-
-    }
 
 }

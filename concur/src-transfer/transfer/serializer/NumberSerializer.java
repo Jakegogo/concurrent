@@ -64,32 +64,34 @@ public class NumberSerializer implements Serializer, Opcodes {
 
 	}
 
+
 	private void putIntVal(Outputable outputable, Number number) {
 
 		int value = number.intValue();
 
-		byte sign = FLAG_NOT_NEGATIVE;
-		if (value < 0) {
+		if (value >= 0) {
+			outputable.putByte((byte) (Types.NUMBER | FLAG_NOT_NEGATIVE | TransferConfig.VARINT));
+		} else {
 			value = -value;
-			sign = FLAG_NEGATIVE;
+			outputable.putByte((byte) (Types.NUMBER | FLAG_NEGATIVE | TransferConfig.VARINT));
 		}
 
-		outputable.putByte((byte) (Types.NUMBER | sign | TransferConfig.VARINT));
 		BitUtils.putInt(outputable, value);
 
 	}
+
 
 	private void putLongVal(Outputable outputable, Number number) {
 
 		long value = number.longValue();
 
-		byte sign = FLAG_NOT_NEGATIVE;
-		if (value < 0) {
+		if (value >= 0) {
+			outputable.putByte((byte) (Types.NUMBER | FLAG_NOT_NEGATIVE | TransferConfig.VARLONG));
+		} else {
 			value = -value;
-			sign = FLAG_NEGATIVE;
+			outputable.putByte((byte) (Types.NUMBER | FLAG_NEGATIVE | TransferConfig.VARLONG));
 		}
 
-		outputable.putByte((byte) (Types.NUMBER | sign | TransferConfig.VARLONG));
 		BitUtils.putLong(outputable, value);
 
 	}
