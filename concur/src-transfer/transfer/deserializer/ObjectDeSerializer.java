@@ -51,7 +51,7 @@ public class ObjectDeSerializer implements Deserializer, Opcodes {
         if (type == null 
         		|| type == Object.class
         		|| rawClass.isInterface()
-				|| Modifier.isAbstract(rawClass.getModifiers())) {
+				|| Modifier.isAbstract(rawClass.getModifiers()) && !rawClass.isArray()) {
 
             rawClass = TransferConfig.getClass(classId);
         }

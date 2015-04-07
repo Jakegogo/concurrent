@@ -103,7 +103,7 @@ public class ObjectAsmProxySerializer implements Serializer, Opcodes {
 			Class<?> fieldRawClass = TypeUtils.getRawClass(fieldType);
 			if (fieldType == null || fieldType == Object.class
 					|| fieldRawClass.isInterface()
-					|| Modifier.isAbstract(fieldRawClass.getModifiers())) {
+					|| Modifier.isAbstract(fieldRawClass.getModifiers()) && !fieldRawClass.isArray()) {
 
 				//  getFieldValue
 				PropertyDescriptor propertyDescriptor = null;

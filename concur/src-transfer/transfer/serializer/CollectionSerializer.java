@@ -94,7 +94,7 @@ public class CollectionSerializer implements Serializer, Opcodes {
 
 		if (elementClass == null || elementClass == Object.class
 				|| elementClass.isInterface()
-				|| Modifier.isAbstract(elementClass.getModifiers())) {
+				|| Modifier.isAbstract(elementClass.getModifiers()) && !elementClass.isArray()) {
 
 			mv.visitVarInsn(ALOAD, 4);
 			mv.visitMethodInsn(INVOKEINTERFACE, "java/util/Collection",

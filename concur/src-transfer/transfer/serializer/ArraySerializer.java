@@ -88,7 +88,7 @@ public class ArraySerializer implements Serializer, Opcodes {
 		Class<?> componentClass = arrayClass.getComponentType();
 		if (componentClass == null || componentClass == Object.class
 				|| componentClass.isInterface()
-				|| Modifier.isAbstract(componentClass.getModifiers())) {
+				|| Modifier.isAbstract(componentClass.getModifiers()) && !componentClass.isArray() && !componentClass.isPrimitive()) {
 
 			mv.visitInsn(ICONST_0);
 			mv.visitVarInsn(ISTORE, 6);

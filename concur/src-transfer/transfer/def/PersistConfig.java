@@ -195,7 +195,7 @@ public class PersistConfig {
         	
         	Class<?> rawClass = (Class<?>) type;
         	if (rawClass.isInterface()
-    				|| Modifier.isAbstract(rawClass.getModifiers())) {
+    				|| Modifier.isAbstract(rawClass.getModifiers()) && !rawClass.isArray()) {
         		return deserializers.get(TransferConfig.getType(flag));
         	}
         	

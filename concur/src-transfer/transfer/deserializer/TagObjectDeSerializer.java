@@ -46,7 +46,7 @@ public class TagObjectDeSerializer implements Deserializer {
 
         if (type == null || type == Object.class
         		|| rawClass.isInterface()
-				|| Modifier.isAbstract(rawClass.getModifiers())) {
+				|| Modifier.isAbstract(rawClass.getModifiers()) && !rawClass.isArray()) {
 
             rawClass = PersistConfig.getClass(classId);
         }

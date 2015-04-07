@@ -42,7 +42,7 @@ public class EnumDeserializer implements Deserializer {
         		|| type == Object.class 
         		|| type == Enum.class
         		|| rawClass.isInterface()
-				|| Modifier.isAbstract(rawClass.getModifiers())) {
+				|| Modifier.isAbstract(rawClass.getModifiers()) && !rawClass.isArray()) {
 
             rawClass = TransferConfig.getClass(enumType);
 

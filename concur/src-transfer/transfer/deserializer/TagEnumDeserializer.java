@@ -48,7 +48,7 @@ public class TagEnumDeserializer implements Deserializer {
         		|| type == Object.class 
         		|| type == Enum.class 
         		|| rawClass.isInterface()
-				|| Modifier.isAbstract(rawClass.getModifiers())) {
+				|| Modifier.isAbstract(rawClass.getModifiers()) && !rawClass.isArray()) {
 
             rawClass = PersistConfig.getClass(enumType);
 

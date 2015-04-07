@@ -126,7 +126,7 @@ public class MapSerializer implements Serializer, Opcodes {
 
 		if ((keyClass == null || keyClass == Object.class
 				|| keyClass.isInterface()
-				|| Modifier.isAbstract(keyClass.getModifiers()))) {
+				|| Modifier.isAbstract(keyClass.getModifiers())) && !keyClass.isArray()) {
 
 			mv.visitVarInsn(ALOAD, 5);
 			mv.visitMethodInsn(INVOKEVIRTUAL, "java/lang/Object", "getClass",
@@ -175,7 +175,7 @@ public class MapSerializer implements Serializer, Opcodes {
 
 		if (valueClass == null || valueClass == Object.class
 				|| valueClass.isInterface()
-				|| Modifier.isAbstract(valueClass.getModifiers())) {
+				|| Modifier.isAbstract(valueClass.getModifiers()) && !valueClass.isArray()) {
 
 			mv.visitVarInsn(ALOAD, 6);
 			mv.visitMethodInsn(INVOKEVIRTUAL, "java/lang/Object", "getClass",
