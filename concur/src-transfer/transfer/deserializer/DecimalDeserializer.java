@@ -13,13 +13,15 @@ import java.lang.reflect.Type;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
+import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
+import org.objectweb.asm.Opcodes;
 
 /**
  * Decimal解析器
  * Created by Jake on 2015/2/24.
  */
-public class DecimalDeserializer implements Deserializer {
+public class DecimalDeserializer implements Deserializer, Opcodes {
 
 
     @Override
@@ -49,7 +51,7 @@ public class DecimalDeserializer implements Deserializer {
                 break;
         }
 
-        if (type == null || type == Number.class) {
+        if (type == null || type == Number.class || type == Object.class) {
             return (T) number;
         }
 
@@ -78,9 +80,134 @@ public class DecimalDeserializer implements Deserializer {
 
     
     @Override
-	public void compile(Type type, MethodVisitor mw,
+	public void compile(Type type, MethodVisitor mv,
 			AsmDeserializerContext context) {
+    	mv.visitCode();
     	
+    	mv.visitVarInsn(ILOAD, 3);
+    	mv.visitMethodInsn(INVOKESTATIC, "transfer/def/TransferConfig", "getType", "(B)B", false);
+    	mv.visitVarInsn(ISTORE, 5);
+
+    	mv.visitVarInsn(ILOAD, 5);
+    	mv.visitIntInsn(BIPUSH, Types.DECIMAL);
+    	Label l2 = new Label();
+    	mv.visitJumpInsn(IF_ICMPEQ, l2);
+    	mv.visitTypeInsn(NEW, "transfer/exception/IllegalTypeException");
+    	mv.visitInsn(DUP);
+    	mv.visitVarInsn(ILOAD, 5);
+    	mv.visitIntInsn(BIPUSH, Types.DECIMAL);
+    	mv.visitVarInsn(ALOAD, 2);
+    	mv.visitMethodInsn(INVOKESPECIAL, "transfer/exception/IllegalTypeException", "<init>", "(BBLjava/lang/reflect/Type;)V", false);
+    	mv.visitInsn(ATHROW);
+    	mv.visitLabel(l2);
+    	
+    	mv.visitFrame(Opcodes.F_APPEND,1, new Object[] {Opcodes.INTEGER}, 0, null);
+    	mv.visitVarInsn(ILOAD, 3);
+    	mv.visitMethodInsn(INVOKESTATIC, "transfer/def/TransferConfig", "getExtra", "(B)B", false);
+    	mv.visitVarInsn(ISTORE, 6);
+    	mv.visitInsn(ACONST_NULL);
+    	mv.visitVarInsn(ASTORE, 7);
+    	mv.visitVarInsn(ILOAD, 6);
+    	
+    	Label l6 = new Label();
+    	Label l7 = new Label();
+    	Label l8 = new Label();
+    	mv.visitTableSwitchInsn(0, 1, l8, new Label[] { l6, l7 });
+    	mv.visitLabel(l6);
+    	mv.visitFrame(Opcodes.F_APPEND,2, new Object[] {Opcodes.INTEGER, "java/lang/Number"}, 0, null);
+    	mv.visitVarInsn(ALOAD, 1);
+    	mv.visitMethodInsn(INVOKESTATIC, "transfer/utils/BitUtils", "getFloat", "(Ltransfer/Inputable;)F", false);
+    	mv.visitMethodInsn(INVOKESTATIC, "java/lang/Float", "valueOf", "(F)Ljava/lang/Float;", false);
+    	if (type == float.class || type == Float.class) {
+    		mv.visitInsn(ARETURN);
+        } else {
+        	mv.visitVarInsn(ASTORE, 7);
+        }
+    	mv.visitJumpInsn(GOTO, l8);
+    	mv.visitLabel(l7);
+    	mv.visitFrame(Opcodes.F_SAME, 0, null, 0, null);
+    	mv.visitVarInsn(ALOAD, 1);
+    	mv.visitMethodInsn(INVOKESTATIC, "transfer/utils/BitUtils", "getDouble", "(Ltransfer/Inputable;)D", false);
+    	mv.visitMethodInsn(INVOKESTATIC, "java/lang/Double", "valueOf", "(D)Ljava/lang/Double;", false);
+    	if (type == double.class || type == Double.class) {
+    		mv.visitInsn(ARETURN);
+        } else {
+        	mv.visitVarInsn(ASTORE, 7);
+        }
+    	mv.visitLabel(l8);
+    	mv.visitFrame(Opcodes.F_SAME, 0, null, 0, null);
+    	
+    	
+    	if (type == null || type == Number.class || type == Object.class) {
+    		mv.visitVarInsn(ALOAD, 7);
+        	mv.visitInsn(ARETURN);
+        	return;
+        }
+    	
+    	if (type == float.class || type == Float.class) {
+    		mv.visitVarInsn(ALOAD, 7);
+    		mv.visitMethodInsn(INVOKEVIRTUAL, "java/lang/Number", "floatValue", "()F", false);
+    		mv.visitMethodInsn(INVOKESTATIC, "java/lang/Float", "valueOf", "(F)Ljava/lang/Float;", false);
+    		mv.visitInsn(ARETURN);
+        } else if (type == double.class || type == Double.class) {
+        	mv.visitVarInsn(ALOAD, 7);
+        	mv.visitMethodInsn(INVOKEVIRTUAL, "java/lang/Number", "doubleValue", "()D", false);
+        	mv.visitMethodInsn(INVOKESTATIC, "java/lang/Double", "valueOf", "(D)Ljava/lang/Double;", false);
+        	mv.visitInsn(ARETURN);
+        } else if (type == short.class || type == Short.class) {
+        	mv.visitVarInsn(ALOAD, 7);
+        	mv.visitMethodInsn(INVOKEVIRTUAL, "java/lang/Number", "shortValue", "()S", false);
+        	mv.visitMethodInsn(INVOKESTATIC, "java/lang/Short", "valueOf", "(S)Ljava/lang/Short;", false);
+        	mv.visitInsn(ARETURN);
+        } else if (type == int.class || type == Integer.class) {
+        	mv.visitVarInsn(ALOAD, 7);
+        	mv.visitMethodInsn(INVOKEVIRTUAL, "java/lang/Number", "intValue", "()I", false);
+        	mv.visitMethodInsn(INVOKESTATIC, "java/lang/Integer", "valueOf", "(I)Ljava/lang/Integer;", false);
+        	mv.visitInsn(ARETURN);
+        } else if (type == long.class || type == Long.class) {
+        	mv.visitVarInsn(ALOAD, 7);
+        	mv.visitMethodInsn(INVOKEVIRTUAL, "java/lang/Number", "longValue", "()J", false);
+        	mv.visitMethodInsn(INVOKESTATIC, "java/lang/Long", "valueOf", "(J)Ljava/lang/Long;", false);
+        	mv.visitInsn(ARETURN);
+        } else if (type == byte.class || type == Byte.class) {
+        	mv.visitVarInsn(ALOAD, 7);
+        	mv.visitMethodInsn(INVOKESTATIC, "transfer/utils/TypeUtils", "castToByte", "(Ljava/lang/Object;)Ljava/lang/Byte;", false);
+        	mv.visitInsn(ARETURN);
+        } else if (type == boolean.class || type == Boolean.class) {
+        	mv.visitVarInsn(ALOAD, 7);
+        	mv.visitMethodInsn(INVOKEVIRTUAL, "java/lang/Number", "intValue", "()I", false);
+        	mv.visitInsn(ICONST_1);
+        	Label l29 = new Label();
+        	mv.visitJumpInsn(IF_ICMPNE, l29);
+        	mv.visitInsn(ICONST_1);
+        	Label l30 = new Label();
+        	mv.visitJumpInsn(GOTO, l30);
+        	mv.visitLabel(l29);
+        	mv.visitFrame(Opcodes.F_SAME, 0, null, 0, null);
+        	mv.visitInsn(ICONST_0);
+        	mv.visitLabel(l30);
+        	mv.visitFrame(Opcodes.F_SAME1, 0, null, 1, new Object[] {Opcodes.INTEGER});
+        	mv.visitMethodInsn(INVOKESTATIC, "java/lang/Boolean", "valueOf", "(Z)Ljava/lang/Boolean;", false);
+        	mv.visitInsn(ARETURN);
+        } else if (type == AtomicInteger.class) {
+        	mv.visitTypeInsn(NEW, "java/util/concurrent/atomic/AtomicInteger");
+        	mv.visitInsn(DUP);
+        	mv.visitVarInsn(ALOAD, 7);
+        	mv.visitMethodInsn(INVOKEVIRTUAL, "java/lang/Number", "intValue", "()I", false);
+        	mv.visitMethodInsn(INVOKESPECIAL, "java/util/concurrent/atomic/AtomicInteger", "<init>", "(I)V", false);
+        	mv.visitInsn(ARETURN);
+        } else if (type == AtomicLong.class) {
+        	mv.visitTypeInsn(NEW, "java/util/concurrent/atomic/AtomicLong");
+        	mv.visitInsn(DUP);
+        	mv.visitVarInsn(ALOAD, 7);
+        	mv.visitMethodInsn(INVOKEVIRTUAL, "java/lang/Number", "longValue", "()J", false);
+        	mv.visitMethodInsn(INVOKESPECIAL, "java/util/concurrent/atomic/AtomicLong", "<init>", "(J)V", false);
+        	mv.visitInsn(ARETURN);
+        } else {
+        	mv.visitVarInsn(ALOAD, 7);
+        	mv.visitInsn(ARETURN);
+        }
+
 	}
 
     private static DecimalDeserializer instance = new DecimalDeserializer();

@@ -21,7 +21,7 @@ public class TestTransferProfile {
 
         for (int i = 0; i < 10000000; i++) {
 
-            ByteArray byteArray = Transfer.encode(entity);
+            ByteArray byteArray = Transfer.encode(entity, Entity.class);
 
             byte[] bytes = byteArray.toBytes();
 

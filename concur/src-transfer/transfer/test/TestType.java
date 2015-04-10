@@ -19,7 +19,11 @@ public class TestType {
         System.out.println(new TypeReference<Map<String,Entity>>(){}.getType().hashCode());
 
         System.out.println(new TypeReference<Map<String,Entity>>(){}.getType().hashCode());
+        
+        System.out.println(System.identityHashCode(new TypeReference<Map<String,Entity>>(){}.getType()));
 
+        System.out.println(System.identityHashCode(new TypeReference<Map<String,Entity>>(){}.getType()));
+        
     }
 
 

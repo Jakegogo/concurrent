@@ -150,26 +150,24 @@ public class ObjectDeSerializer implements Deserializer, Opcodes {
         }
 
         // 判断类型
-        if (rawClass != Object.class) {
-        
-	        mv.visitFrame(Opcodes.F_APPEND,1, new Object[] {"transfer/core/ClassInfo"}, 0, null);
-	        mv.visitVarInsn(ILOAD, 6);
-	        mv.visitIntInsn(SIPUSH, classInfo.getClassId());
-	
-	        Label l14 = new Label();
-	        mv.visitJumpInsn(IF_ICMPEQ, l14);
-	        mv.visitTypeInsn(NEW, "transfer/exception/IllegalClassTypeException");
-	        mv.visitInsn(DUP);
-	        mv.visitVarInsn(ILOAD, 6);
-	        mv.visitVarInsn(ALOAD, 2);
-	        mv.visitMethodInsn(INVOKESPECIAL, "transfer/exception/IllegalClassTypeException", "<init>", "(ILjava/lang/reflect/Type;)V", false);
-	        mv.visitInsn(ATHROW);
-	        mv.visitLabel(l14);
-	        
-        } else {
+        if (rawClass == Object.class) {
             throw new CompileError("不支持编译类型:" + Object.class);
         }
 
+        mv.visitFrame(Opcodes.F_APPEND,1, new Object[] {"transfer/core/ClassInfo"}, 0, null);
+        mv.visitVarInsn(ILOAD, 6);
+        mv.visitIntInsn(SIPUSH, classInfo.getClassId());
+
+        Label l14 = new Label();
+        mv.visitJumpInsn(IF_ICMPEQ, l14);
+        mv.visitTypeInsn(NEW, "transfer/exception/IllegalClassTypeException");
+        mv.visitInsn(DUP);
+        mv.visitVarInsn(ILOAD, 6);
+        mv.visitVarInsn(ALOAD, 2);
+        mv.visitMethodInsn(INVOKESPECIAL, "transfer/exception/IllegalClassTypeException", "<init>", "(ILjava/lang/reflect/Type;)V", false);
+        mv.visitInsn(ATHROW);
+        mv.visitLabel(l14);
+        
         // new Entity()
         mv.visitFrame(Opcodes.F_SAME, 0, null, 0, null);
 
@@ -187,7 +185,10 @@ public class ObjectDeSerializer implements Deserializer, Opcodes {
 
             fieldType = fieldInfo.getType();
             
-            if (fieldType == null || fieldType == Object.class) {// 使用默认解析器
+            Class<?> fieldRawClass = TypeUtils.getRawClass(fieldType);
+            if (fieldType == null || fieldType == Object.class
+					|| fieldRawClass.isInterface()
+					|| Modifier.isAbstract(fieldRawClass.getModifiers()) && !fieldRawClass.isArray()) {// 使用默认解析器
 
             	mv.visitVarInsn(ALOAD, 1);
             	mv.visitMethodInsn(INVOKEINTERFACE, "transfer/Inputable", "getByte", "()B", true);

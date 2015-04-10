@@ -6,18 +6,20 @@ import transfer.def.TransferConfig;
 import transfer.utils.IntegerMap;
 import transfer.utils.TypeUtils;
 
+import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.Map;
 
 import org.objectweb.asm.MethodVisitor;
+import org.objectweb.asm.Opcodes;
 
 /**
  * Map.Entry解析器
  * <br/>尽量指定泛型类型,可提升解析性能
  * Created by Jake on 2015/2/24.
  */
-public class EntryDeserializer implements Deserializer {
+public class EntryDeserializer implements Deserializer, Opcodes {
 
 
     @Override
@@ -46,9 +48,21 @@ public class EntryDeserializer implements Deserializer {
 
     
     @Override
-	public void compile(Type type, MethodVisitor mw,
+	public void compile(Type type, MethodVisitor mv,
 			AsmDeserializerContext context) {
-    	
+    	Type keyType = null;
+
+        if (type instanceof ParameterizedType) {
+            keyType = TypeUtils.getParameterizedType((ParameterizedType) type, 0);
+        }
+        
+        Class<?> keyRawClass = TypeUtils.getRawClass(keyType);
+        if (keyType == null || keyType == Object.class
+				|| keyRawClass.isInterface()
+				|| Modifier.isAbstract(keyRawClass.getModifiers()) && !keyRawClass.isArray()) {// 使用默认解析器
+        	
+        }
+        
 	}
     
 
