@@ -128,7 +128,7 @@ public class ConfigFactoryImpl implements ConfigFactory, DbCacheMBean {
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	private DbCacheService createCacheService(Class<? extends IEntity> clz) {
 
-		DbCacheService service = null;
+		DbCacheServiceImpl service = null;
 
 		try {
 			//获取缓存配置

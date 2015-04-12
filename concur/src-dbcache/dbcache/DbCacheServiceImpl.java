@@ -10,7 +10,6 @@ import dbcache.index.DbIndexService;
 import dbcache.index.IndexValue;
 import dbcache.persist.PersistStatus;
 import dbcache.persist.service.DbPersistService;
-import dbcache.pkey.IdGenerator;
 import dbcache.support.asm.ValueGetter;
 import dbcache.utils.JsonUtils;
 import dbcache.utils.concurrent.ConcurrentHashMap;
@@ -112,8 +111,8 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 
 	/**
 	 * dbCache 初始化
+	 * 系统生成DbCacheService实例时将调用
 	 */
-	@Override
 	public void init() {
 
 		//注册jvm关闭钩子
@@ -497,15 +496,6 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 		return indexService;
 	}
 
-	@Override
-	public void registerEntityIdGenerator(IdGenerator<?> idGenerator) {
-		configFactory.registerEntityIdGenerator(this.clazz, idGenerator);
-	}
-
-	@Override
-	public void registerEntityIdGenerator(int serverId, IdGenerator<?> idGenerator) {
-		configFactory.registerEntityIdGenerator(serverId, this.clazz, idGenerator);
-	}
 
 	@Override
 	public String toString() {

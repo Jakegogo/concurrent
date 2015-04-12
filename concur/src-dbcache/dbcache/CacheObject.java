@@ -10,7 +10,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 
 /**
- * 实体缓存辅助类
+ * 单个实体缓存数据结构
  *
  * @author jake
  * @date 2014-7-31-下午8:18:03

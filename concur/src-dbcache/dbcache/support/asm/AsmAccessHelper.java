@@ -3,7 +3,6 @@ package dbcache.support.asm;
 import dbcache.exceptions.AsmAccessError;
 import dbcache.support.asm.util.AsmUtils;
 import dbcache.support.asm.util.ReflectUtils;
-import javassist.bytecode.Opcode;
 import org.objectweb.asm.*;
 import org.objectweb.asm.tree.*;
 import org.slf4j.Logger;
@@ -407,7 +406,7 @@ public class AsmAccessHelper implements Opcodes {
             		AbstractInsnNode node = it.next();
             		if (node instanceof FieldInsnNode) {
             			FieldInsnNode fieldNode = ((FieldInsnNode) node);
-            			if (fieldNode.getOpcode() == Opcode.PUTFIELD) {
+            			if (fieldNode.getOpcode() == Opcodes.PUTFIELD) {
             				if (method == null) {
             					method = toClassMethod(clazz, md);
             				}
@@ -467,7 +466,7 @@ public class AsmAccessHelper implements Opcodes {
 					AbstractInsnNode node = it.next();
 					if (node instanceof FieldInsnNode) {
 						FieldInsnNode fieldNode = ((FieldInsnNode) node);
-						if (fieldNode.getOpcode() == Opcode.PUTFIELD) {
+						if (fieldNode.getOpcode() == Opcodes.PUTFIELD) {
 							if (method == null) {
 								method = toClassMethod(clazz, md);
 							}

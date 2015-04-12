@@ -2,7 +2,6 @@ package dbcache;
 
 import dbcache.cache.CacheUnit;
 import dbcache.index.DbIndexService;
-import dbcache.pkey.IdGenerator;
 
 import java.io.Serializable;
 import java.util.Collection;
@@ -13,9 +12,9 @@ import java.util.concurrent.ExecutorService;
 /**
  * 数据库缓存接口
  * <br/>集成了Cache,调用接口将同时修改缓存并同步到数据库
- * <br/>集成了DbIndexService,需要修改数据索引,需启用dbcache.anno.Cached#enableIndex(),直接调用实体更改的方法即可
+ * <br/>集成了DbIndexService,支持自动维护单列索引。需要修改数据索引,需启用dbcache.anno.Cached#enableIndex(),直接调用实体更改的方法即可
  * <br/>仅采用Hibernate的自动建表工具,数据库交互使用Jdbc,@see {@link dbcache.support.jdbc.JdbcSupport}
- * <br/>数据库交互不使用事务,需要业务逻辑维护缓存的事务特性
+ * <br/>数据库交互不使用事务,需要业务逻辑维护缓存的事务性.
  * @author jake
  * @date 2014-7-31-下午6:06:15
  */
@@ -105,22 +104,10 @@ public interface DbCacheService<T extends IEntity<PK>, PK extends Comparable<PK>
 	 * @param indexName 索引名
 	 * @param indexValue 索引值
 	 * @param page 页码
-	 * @param size 大小
+	 * @param size 每页大小
 	 * @return
 	 */
 	List<T> pageByIndex(String indexName, Object indexValue, int page, int size);
-
-
-	/**
-	 * DbCache初始化
-	 */
-	public void init();
-
-
-	/**
-	 * 关闭应用时回调
-	 */
-	void onCloseApplication();
 
 
 	/**
@@ -146,20 +133,5 @@ public interface DbCacheService<T extends IEntity<PK>, PK extends Comparable<PK>
 	 * @return
 	 */
 	DbIndexService<PK> getIndexService();
-
-
-	/**
-	 * 注册实体默认的主键id生成器
-	 * @param idGenerator 主键id生成器接口
-	 */
-	void registerEntityIdGenerator(IdGenerator<?> idGenerator);
-
-
-	/**
-	 * 注册实体主键id生成器
-	 * @param serverId 服标识
-	 * @param idGenerator 主键id生成器接口
-	 */
-	void registerEntityIdGenerator(int serverId, IdGenerator<?> idGenerator);
 
 }

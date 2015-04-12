@@ -2,8 +2,8 @@ package dbcache;
 
 /**
  * 代理接口
- * <br/>代理类都会实现该接口
- * <br/>可通过 (obj instanceof EntityAsmFactory)判断
+ * <br/>ASM字节码增强的实体类都会实现该接口
+ * <br/>可通过 (obj instanceof EnhancedEntity)判断
  * @see dbcache.support.asm.EntityAsmFactory
  * @author Jake
  */

@@ -4,19 +4,19 @@
 package dbcache;
 
 /**
- * 实体初始化回调
+ * 实体回调接口
  * @author jake
  * @date 2014-7-31-下午9:21:33
  */
 public interface EntityInitializer {
 	
 	/**
-	 * 实现此方法做一些初始化
+	 * 加载Bean后回调
 	 */
 	void doAfterLoad();
 	
 	/**
-	 * 持久化前操作
+	 * 持久化前回调
 	 */
 	void doBeforePersist();
 	

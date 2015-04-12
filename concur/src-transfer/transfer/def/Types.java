@@ -15,12 +15,8 @@ public interface Types {
 	byte DATE_TIME = (byte) 0xA0;
 	// 1001 #### (144 - (byte)0x90)
 	byte COLLECTION = (byte) 0x90;
-	// 1000 #### (128 - (byte)0x80)
-	// 0111 #### (112 - (byte)0x70)
-	// 0110 #### (96 - (byte)0x60)
 	// 0101 #### (80 - (byte)0x50)
 	byte ENUM = (byte) 0x50;
-	// 0100 #### (64 - (byte)0x40)
 	// 0011 #### (48 - (byte)0x30),
 	byte BOOLEAN = (byte) 0x30;
 	// 0010 #### (32 - (byte)0x32),

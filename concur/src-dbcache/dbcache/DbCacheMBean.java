@@ -3,7 +3,7 @@ package dbcache;
 import java.util.Map;
 
 /**
- * DbCache的JMX扩展
+ * DbCacheService的JMX接口支持
  * @author Jake
  * @date 2014年9月14日下午9:51:08
  */

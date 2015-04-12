@@ -5,7 +5,7 @@ import java.lang.ref.ReferenceQueue;
 import java.lang.ref.WeakReference;
 
 /**
- * 软引用实体缓存对象
+ * 软引用实体包装
  * @author jake
  *
  * @param <T>

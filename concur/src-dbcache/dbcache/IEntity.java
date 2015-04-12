@@ -3,9 +3,9 @@ package dbcache;
 import java.io.Serializable;
 
 /**
- * 实体标识接口
+ * 实体(Entity)类统一接口
  * <br/>所有实体必须实现此接口
- * <br/>可告知锁创建器具体类实例是实体对象
+ * <br/>getId()方法回去唯一标识可用于锁链
  * @author jake
  */
 public interface IEntity<PK extends Comparable<PK> & Serializable> {
