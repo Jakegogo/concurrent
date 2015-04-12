@@ -16,7 +16,7 @@ public class TestSimpleEncodeProfile {
 
         TransferConfig.registerClass(SimpleEntity.class, 1);
 
-        Serializer serializer = Transfer.preCompile(SimpleEntity.class);
+        Serializer serializer = Transfer.encodePreCompile(SimpleEntity.class);
 
         SimpleEntity entity = new SimpleEntity();
         entity.setId(1L);

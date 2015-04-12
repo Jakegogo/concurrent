@@ -18,7 +18,7 @@ public class TestEncodePerform {
 
         TransferConfig.registerClass(Entity.class, 1);
         
-        Transfer.preCompile(Entity.class);
+        Transfer.encodePreCompile(Entity.class);
 
         Entity entity = new Entity();
         entity.setId(1L);

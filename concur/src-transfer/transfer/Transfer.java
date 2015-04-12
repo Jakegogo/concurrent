@@ -18,7 +18,7 @@ import java.util.Iterator;
 import java.util.Map;
 
 /**
- * 字节传输协议
+ * 字节传输协议(编解码)
  * <br/>定义传输类的属性按定义属性的先后顺序传输
  * <br/>定义传输类必须调用Config#registerClass(java.lang.Class<?>, int)进行注册, 或使用注解@Transferable
  * Created by Jake on 2015/2/22.
@@ -31,6 +31,105 @@ public class Transfer {
     // Inputable、Outputable适配网络框架的readBuffer、writeBuffer
     // TypeReference指定泛型类型将预编译,可提升解析速度
     //
+
+
+
+    /**
+     * 编码
+     * @param outputable 输出接口
+     * @param object 目标对象
+     */
+    public static void encode(Outputable outputable, Object object) {
+
+        if (object == null) {
+            Serializer.NULL_SERIALIZER.serialze(outputable, null, null);
+            return;
+        }
+
+        Serializer serializer = TransferConfig.getSerializer(object.getClass());
+        serializer.serialze(outputable, object, new IdentityHashMap(16));
+    }
+
+
+    /**
+     * 编码
+     * @param object 目标对象
+     */
+    public static ByteArray encode(Object object) {
+        return encode(object, 128);
+    }
+
+
+    /**
+     * 编码
+     * @param object 目标对象
+     * @param bytesLength 编码字节长度(估算)
+     */
+    public static ByteArray encode(Object object, int bytesLength) {
+
+        if (object == null) {
+            ByteBuffer buffer = new ByteBuffer(1);
+            Serializer.NULL_SERIALIZER.serialze(buffer, null, null);
+            return buffer.getByteArray();
+        }
+
+        ByteBuffer buffer = new ByteBuffer(bytesLength);
+
+        encode(buffer, object);
+
+        return buffer.getByteArray();
+    }
+
+
+    /**
+     * 编码器预编译
+     * <br/>调用此方法可预编译或者Transfer#encode(Object, Type)指定预编译类型
+     * @param type
+     * @return
+     * @see transfer.Transfer.encode(Object, Type)
+     */
+    public static Serializer encodePreCompile(Type type) {
+        return TransferConfig.preCompileSerializer(type);
+    }
+
+
+    /**
+     * 编码
+     * @param object 目标对象
+     * @param type 指定预编译目标对象的类型
+     * @See transfer.Transfer.encodePreCompile(Type)
+     */
+    public static ByteArray encode(Object object, Type type) {
+        return encode(object, type, 128);
+    }
+
+
+    /**
+     * 编码
+     * @param object 目标对象
+     * @param type 指定预编译目标对象的类型
+     * @param bytesLength 编码字节长度(估算)
+     * @See transfer.Transfer.encodePreCompile(Type)
+     */
+    public static ByteArray encode(Object object, Type type, int bytesLength) {
+
+        if (object == null) {
+            ByteBuffer buffer = new ByteBuffer(1);
+            Serializer.NULL_SERIALIZER.serialze(buffer, null, null);
+            return buffer.getByteArray();
+        }
+
+        ByteBuffer buffer = new ByteBuffer(bytesLength);
+
+        Serializer serializer = TransferConfig.getTypedSerializer(type);
+        if (serializer == null) {
+            serializer = TransferConfig.preCompileSerializer(type); // 进行预编译
+        }
+
+        serializer.serialze(buffer, object, new IdentityHashMap(16));
+
+        return buffer.getByteArray();
+    }
 
 
     /**
@@ -222,102 +321,5 @@ public class Transfer {
     }
 
 
-    /**
-     * 编码
-     * @param outputable 输出接口
-     * @param object 目标对象
-     */
-    public static void encode(Outputable outputable, Object object) {
-
-        if (object == null) {
-            Serializer.NULL_SERIALIZER.serialze(outputable, null, null);
-            return;
-        }
-
-        Serializer serializer = TransferConfig.getSerializer(object.getClass());
-        serializer.serialze(outputable, object, new IdentityHashMap(16));
-    }
-
-
-    /**
-     * 编码
-     * @param object 目标对象
-     */
-    public static ByteArray encode(Object object) {
-        return encode(object, 128);
-    }
-
-
-    /**
-     * 编码
-     * @param object 目标对象
-     * @param bytesLength 编码字节长度(估算)
-     */
-    public static ByteArray encode(Object object, int bytesLength) {
-
-        if (object == null) {
-            ByteBuffer buffer = new ByteBuffer(1);
-            Serializer.NULL_SERIALIZER.serialze(buffer, null, null);
-            return buffer.getByteArray();
-        }
-
-        ByteBuffer buffer = new ByteBuffer(bytesLength);
-
-        encode(buffer, object);
-
-        return buffer.getByteArray();
-    }
-
-    
-    /**
-     * 解析器预编译
-     * <br/>调用此方法可预编译或者Transfer#encode(Object, Type)指定预编译类型
-     * @param type
-     * @return 
-     * @see transfer.Transfer.encode(Object, Type)
-     */
-    public static Serializer preCompile(Type type) {
-    	return TransferConfig.preCompileSerializer(type);
-    }
-    
-    
-    /**
-     * 编码
-     * @param object 目标对象
-     * @param type 指定预编译目标对象的类型
-     * @See transfer.Transfer.preCompile(Type)
-     */
-    public static ByteArray encode(Object object, Type type) {
-    	return encode(object, type, 128);
-    }
-
-
-    /**
-     * 编码
-     * @param object 目标对象
-     * @param type 指定预编译目标对象的类型
-     * @param bytesLength 编码字节长度(估算)
-     * @See transfer.Transfer.preCompile(Type)
-     */
-    public static ByteArray encode(Object object, Type type, int bytesLength) {
-
-        if (object == null) {
-            ByteBuffer buffer = new ByteBuffer(1);
-            Serializer.NULL_SERIALIZER.serialze(buffer, null, null);
-            return buffer.getByteArray();
-        }
-
-        ByteBuffer buffer = new ByteBuffer(bytesLength);
-
-        Serializer serializer = TransferConfig.getTypedSerializer(type);
-        if (serializer == null) {
-        	serializer = TransferConfig.preCompileSerializer(type); // 进行预编译
-        }
-        
-        serializer.serialze(buffer, object, new IdentityHashMap(16));
-
-        return buffer.getByteArray();
-    }
-    
 
 }
