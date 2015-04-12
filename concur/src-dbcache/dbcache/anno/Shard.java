@@ -1,14 +1,14 @@
 package dbcache.anno;
 
+import dbcache.conf.shard.ShardStrategy;
+
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import dbcache.conf.shard.ShardStrategy;
-
 /**
- * 分表注解
+ * 分表注解 TODO 未实现
  * 
  * @author Jake
  */

@@ -9,6 +9,7 @@ import java.util.Collection;
 
 /**
  * 实体索引服务接口
+ * <br/>框架自己维护
  * @author Jake
  * @date 2014年8月30日下午12:48:30
  */

@@ -11,7 +11,7 @@ import java.io.Serializable;
 import java.util.concurrent.atomic.AtomicIntegerArray;
 
 /**
- * DbCached缓存模块配置服务接口
+ * DbCache缓存模块配置服务接口
  * @author Jake
  * @date 2014年9月14日下午8:57:08
  */

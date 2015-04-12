@@ -15,7 +15,7 @@ import dbcache.utils.JsonUtils;
 import java.util.*;
 
 /**
- * 缓存配置
+ * 缓存配置Bean
  * @author Jake
  * @date 2014年9月14日下午5:05:51
  */

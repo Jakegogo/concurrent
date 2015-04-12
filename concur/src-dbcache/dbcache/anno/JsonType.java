@@ -7,7 +7,8 @@ import java.lang.annotation.Target;
 
 /**
  * json属性注解<br/>
- * json属性定义务必使用线程安全的实现类类型,如ConcurrentHashSet,ConcurrentHashMap。
+ * <br/>可达到json字段自动转换存储
+ * 对应的临时属性的定义需使用线程安全的实现类类型,如ConcurrentHashSet,ConcurrentHashMap。
  * @use fast-json
  * @author Jake
  */

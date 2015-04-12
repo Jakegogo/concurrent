@@ -5,7 +5,7 @@ import java.util.Collection;
 import java.util.concurrent.atomic.AtomicIntegerArray;
 
 /**
- * 通用数据库管理器接口
+ * 通用数据库存取接口
  */
 public interface DbAccessService {
 

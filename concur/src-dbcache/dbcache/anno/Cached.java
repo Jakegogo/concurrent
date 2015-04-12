@@ -11,10 +11,9 @@ import java.lang.annotation.Target;
 /**
  * <h5>实体缓存配置注解</h5>
  * <br/>没有标注此注解的实体类则使用默认配置
- * <br/>实体持久化属性需使用基本类型或String,byte,byte[]等
- * <br/>启用DynamicUpdate后:
- * <br/>1,含有json格式的持久化属性对应瞬时态的Map,List等结构时需使用@ChangeFields("对应json串字段")注解标明所有会修改到json属性的方法
- * <br/>2,外部put/add瞬时态的属性的情况需要单独提供getMapForUpdate()方法用于修改,并注解@ChangeFields("对应json串字段")
+ * <br/>实体需要持久化的属性需使用基本类型或String,byte,byte[]等
+ * <br/>使用DynamicUpdate后:
+ * <br/>由于采用字节码增强实现监听属性变化的方式,外部put/add瞬时的如Map,List等结构时的属性,需要在update之前再次set一遍
  * @see dbcache.anno.Index
  * @see dbcache.anno.DynamicUpdate
  * @see JsonType
@@ -61,6 +60,7 @@ public @interface Cached {
 
 	/**
 	 * 是否启用索引服务
+	 * <br/>未开启索引服务时,dbcache.anno.Index将不会生效
 	 * @return
 	 */
 	public boolean enableIndex() default false;

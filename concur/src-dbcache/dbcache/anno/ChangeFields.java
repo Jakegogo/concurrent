@@ -7,7 +7,7 @@ import java.lang.annotation.Target;
 
 /**
  * 实体方法修改注解
- * <br/> 标注该方法将会修改到对应的索引属性value[]的值
+ * <br/> 由于采用字节码增强实现监听属性变化的方式,外部put/add瞬时的如Map,List等结构时的属性,需要在update之前再次set一遍,或者加上次注解代替
  * @author Jake
  * @date 2014年9月6日上午12:44:53
  */

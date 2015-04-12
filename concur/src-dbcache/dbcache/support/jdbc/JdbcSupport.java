@@ -36,7 +36,7 @@ import java.util.concurrent.atomic.AtomicIntegerArray;
  * @see javax.persistence.Column
  * @see javax.persistence.Transient
  * @see javax.persistence.Entity
- * @see javax.persistence.MappedSuperclass //TODO
+ * @see javax.persistence.MappedSuperclass
  * Created by Jake on 2015/1/10.
  */
 @Component
