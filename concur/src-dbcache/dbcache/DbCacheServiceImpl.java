@@ -198,6 +198,7 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 
 				T entity = dbAccessService.get(clazz, key);
 				if (entity != null) {
+
 					// 创建缓存对象
 					cacheObject = configFactory.createCacheObject(entity, clazz, indexService, key, cacheUnit, cacheConfig);
 
@@ -212,6 +213,13 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 						if(cacheConfig.isEnableIndex()) {
 							for (ValueGetter<T> indexGetter : cacheConfig.getIndexList()) {
 								this.indexService.create(IndexValue.valueOf(indexGetter.getName(), indexGetter.get(entity), key));
+							}
+						}
+
+						// 实体加载监听接口回调
+						if (cacheConfig.isHasListeners()) {
+							for (EntityLoadEventListener listener : cacheConfig.getEntityLoadEventListeners()) {
+								listener.onLoad(entity);
 							}
 						}
 					}
@@ -359,11 +367,13 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 		//存储到缓存
 		CacheObject<T> cacheObject = null;
 		final Object key = entity.getId();
+
 		CacheUnit.ValueWrapper wrapper = (CacheUnit.ValueWrapper) cacheUnit.get(key);
 		if(wrapper != null) {
 			cacheObject = (CacheObject<T>) wrapper.get();
 		}
 
+		boolean exists = false;// 缓存中是否还有实体
 		if (wrapper == null) {//缓存还不存在
 
 			cacheObject = configFactory.createCacheObject(entity, entity.getClass(), indexService, key, cacheUnit, cacheConfig);
@@ -372,9 +382,6 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 			if (wrapper != null && wrapper.get() != null) {
 				cacheObject = (CacheObject<T>) wrapper.get();
 			}
-
-			// 加载回调
-			cacheObject.doAfterLoad();
 
 		} else if(cacheObject == null) {// 缓存为NULL
 
@@ -385,9 +392,6 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 				cacheObject = (CacheObject<T>) wrapper.get();
 			}
 
-			// 加载回调
-			cacheObject.doAfterLoad();
-
 		}  else {
 
 			if(cacheObject.getPersistStatus() == PersistStatus.DELETED) {//已被删除
@@ -395,10 +399,16 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 				cacheObject.setPersistStatus(PersistStatus.TRANSIENT);
 			}
 
+			exists = true;
 		}
 
 		//入库
 		if (cacheObject != null) {
+
+			if (!exists) {
+				// 加载回调
+				cacheObject.doAfterLoad();
+			}
 
 			//更新索引
 			if(cacheConfig.isEnableIndex()) {
@@ -407,6 +417,16 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 					this.indexService.create(IndexValue.valueOf(indexGetter.getName(), indexGetter.get(entity), entity.getId()));
 				}
 			}
+
+			if (!exists) {
+				// 实体加载监听接口回调
+				if (cacheConfig.isHasListeners()) {
+					for (EntityLoadEventListener listener : cacheConfig.getEntityLoadEventListeners()) {
+						listener.onLoad(entity);
+					}
+				}
+			}
+
 
 			// 提交持久化
 			inTimeDbPersistService.handleSave(cacheObject, this.dbAccessService, this.cacheConfig);

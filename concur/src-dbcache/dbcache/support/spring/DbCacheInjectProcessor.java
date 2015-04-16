@@ -1,8 +1,11 @@
 package dbcache.support.spring;
 
 import dbcache.DbCacheService;
+import dbcache.EntityLoadEventListener;
 import dbcache.IEntity;
+import dbcache.conf.CacheConfig;
 import dbcache.conf.ConfigFactory;
+import dbcache.exceptions.DbCacheInitError;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.helpers.FormattingTuple;
@@ -19,7 +22,7 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 
 /**
- * DbCache自动注入处理器
+ * DbCacheService自动注入处理器
  * @author Jake
  * @date 2014年8月24日下午7:58:00
  */
@@ -39,27 +42,34 @@ public class DbCacheInjectProcessor extends InstantiationAwareBeanPostProcessorA
 	@Override
 	public Object postProcessAfterInitialization(final Object bean, final String beanName)
 			throws BeansException {
+
+		// 处理DbCacheService属性
 		ReflectionUtils.doWithFields(bean.getClass(), new FieldCallback() {
 			public void doWith(Field field) throws IllegalArgumentException, IllegalAccessException {
-				if (field.getType().equals(DbCacheService.class)) {
-					// 注入实体单位缓存服务
-					injectDbCacheService(bean, beanName, field);
-				}
+				processDbCacheService(bean, beanName, field);
 			}
 		});
+
+		//处理EntityLoadEventListener接口
+		processEntityLoadEventListener(bean);
+
 		return super.postProcessAfterInitialization(bean, beanName);
 	}
 
 
 	/**
-	 * 注入DbCache
+	 * 处理DbCacheService属性
 	 * @param bean bean
 	 * @param beanName beanName
 	 * @param field field
 	 */
 	@SuppressWarnings({ "unchecked", "rawtypes" })
-	protected void injectDbCacheService(Object bean, String beanName,
+	protected void processDbCacheService(Object bean, String beanName,
 			Field field) {
+
+		if (!field.getType().equals(DbCacheService.class)) {
+			return;
+		}
 
 		Class<? extends IEntity> clz = null;
 		DbCacheService service = null;
@@ -82,6 +92,35 @@ public class DbCacheInjectProcessor extends InstantiationAwareBeanPostProcessorA
 
 		//注入DbCacheService
 		inject(bean, field, service);
+
+	}
+
+
+	/**
+	 * 收集EntityLoadEventListener bean
+	 * @param bean
+	 */
+	protected void processEntityLoadEventListener(Object bean) {
+
+		if (!(bean instanceof EntityLoadEventListener)) {
+			return;
+		}
+
+		EntityLoadEventListener entityLoadEventListenerBean = (EntityLoadEventListener) bean;
+
+		Class<?>[] listenClasses = entityLoadEventListenerBean.listenClass();
+		if (listenClasses == null || listenClasses.length == 0) {
+			return;
+		}
+
+		for (Class<?> clazz : listenClasses) {
+			CacheConfig<?> cacheConfig =  configFactory.getCacheConfig(clazz);
+			if (cacheConfig == null) {
+				throw new DbCacheInitError("无法监听加载的实体类型:" + clazz);
+			}
+			cacheConfig.setHasListeners(true);
+			cacheConfig.getEntityLoadEventListeners().add(entityLoadEventListenerBean);
+		}
 
 	}
 

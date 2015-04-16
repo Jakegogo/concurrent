@@ -1,12 +1,13 @@
 package dbcache.conf;
 
+import dbcache.EntityLoadEventListener;
 import dbcache.anno.Cached;
 import dbcache.anno.DynamicUpdate;
 import dbcache.anno.EnableIndex;
 import dbcache.anno.Shard;
+import dbcache.cache.impl.ConcurrentLinkedHashMapCache;
 import dbcache.conf.shard.ShardStrategy;
 import dbcache.pkey.IdGenerator;
-import dbcache.cache.impl.ConcurrentLinkedHashMapCache;
 import dbcache.support.asm.ConstructorBuilder;
 import dbcache.support.asm.ValueGetter;
 import dbcache.utils.AnnotationUtils;
@@ -76,7 +77,14 @@ public class CacheConfig<T> {
 	
 	/** 分表策略类,null为不分表 */
 	private ShardStrategy shardStrategy;
-	
+
+	/** 实体加载监听bean集合 */
+	private Set<EntityLoadEventListener> entityLoadEventListeners = new TreeSet<EntityLoadEventListener>();
+
+	/** 是否存在实体加载监听类 */
+	private boolean hasListeners = false;
+
+
 	/**
 	 * 获取实例
 	 * @param entityClass 实体类
@@ -320,5 +328,17 @@ public class CacheConfig<T> {
 
 	public void setShardStrategy(ShardStrategy shardStrategy) {
 		this.shardStrategy = shardStrategy;
+	}
+
+	public Set<EntityLoadEventListener> getEntityLoadEventListeners() {
+		return entityLoadEventListeners;
+	}
+
+	public boolean isHasListeners() {
+		return hasListeners;
+	}
+
+	public void setHasListeners(boolean hasListeners) {
+		this.hasListeners = hasListeners;
 	}
 }

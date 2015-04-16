@@ -5,6 +5,7 @@ package dbcache;
 
 /**
  * 实体回调接口
+ * <br/>适用于实体类
  * @author jake
  * @date 2014-7-31-下午9:21:33
  */
