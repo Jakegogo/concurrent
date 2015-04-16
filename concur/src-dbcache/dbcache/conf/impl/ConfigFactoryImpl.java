@@ -3,7 +3,7 @@ package dbcache.conf.impl;
 import dbcache.*;
 import dbcache.cache.CacheUnit;
 import dbcache.conf.*;
-import dbcache.exceptions.DbCacheInitError;
+import dbcache.DbCacheInitError;
 import dbcache.index.DbIndexService;
 import dbcache.persist.service.DbPersistService;
 import dbcache.pkey.IdGenerator;

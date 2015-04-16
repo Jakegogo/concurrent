@@ -1,4 +1,4 @@
-package dbcache.exceptions;
+package dbcache;
 
 /**
  * Db cache Service初始化异常

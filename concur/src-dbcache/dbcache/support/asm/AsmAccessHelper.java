@@ -1,6 +1,6 @@
 package dbcache.support.asm;
 
-import dbcache.exceptions.AsmAccessError;
+import dbcache.EnhanceAccessError;
 import dbcache.support.asm.util.AsmUtils;
 import dbcache.support.asm.util.ReflectUtils;
 import org.objectweb.asm.*;
@@ -105,13 +105,13 @@ public class AsmAccessHelper implements Opcodes {
 			} catch (IntrospectionException e) {
 				logger.error("无法获取get方法:" + clazz.getName() + "(" + field.getName() + ")");
 				e.printStackTrace();
-				throw new AsmAccessError("无法获取get方法:" + clazz.getName() + "(" + field.getName() + ")", e);
+				throw new EnhanceAccessError("无法获取get方法:" + clazz.getName() + "(" + field.getName() + ")", e);
 			}
 			//获取get方法
 			final Method getMethod = propertyDescriptor.getReadMethod();
 			if (getMethod == null)  {
 				logger.error("无法获取get方法:" + clazz.getName() + "(" + field.getName() + ")");
-				throw new AsmAccessError("无法获取get方法:" + clazz.getName() + "(" + field.getName() + ")", null);
+				throw new EnhanceAccessError("无法获取get方法:" + clazz.getName() + "(" + field.getName() + ")", null);
 			}
 			final Type mt = Type.getType(getMethod);
 			final Type rt = Type.getReturnType(getMethod);
@@ -250,13 +250,13 @@ public class AsmAccessHelper implements Opcodes {
 			} catch (IntrospectionException e) {
 				logger.error("无法获取set方法:" + clazz.getName() + "(" + field.getName() + ")");
 				e.printStackTrace();
-				throw new AsmAccessError("无法获取set方法:" + clazz.getName() + "(" + field.getName() + ")", e);
+				throw new EnhanceAccessError("无法获取set方法:" + clazz.getName() + "(" + field.getName() + ")", e);
 			}
 			//获取set方法
 			final Method setMethod = propertyDescriptor.getWriteMethod();
 			if (setMethod == null)  {
 				logger.error("无法获取set方法:" + clazz.getName() + "(" + field.getName() + ")");
-				throw new AsmAccessError("无法获取set方法:" + clazz.getName() + "(" + field.getName() + ")", null);
+				throw new EnhanceAccessError("无法获取set方法:" + clazz.getName() + "(" + field.getName() + ")", null);
 			}
 			final Type[] mat = Type.getArgumentTypes(setMethod);
 			final Class<?>[] mpt = setMethod.getParameterTypes();

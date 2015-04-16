@@ -5,7 +5,7 @@ import dbcache.EntityLoadListener;
 import dbcache.IEntity;
 import dbcache.conf.CacheConfig;
 import dbcache.conf.ConfigFactory;
-import dbcache.exceptions.DbCacheInitError;
+import dbcache.DbCacheInitError;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.helpers.FormattingTuple;

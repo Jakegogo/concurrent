@@ -7,7 +7,7 @@ import dbcache.conf.CacheConfig;
 import dbcache.conf.CacheRule;
 import dbcache.conf.Inject;
 import dbcache.dbaccess.DbAccessService;
-import dbcache.exceptions.DbCacheInitError;
+import dbcache.DbCacheInitError;
 import dbcache.persist.PersistStatus;
 import dbcache.support.asm.ValueGetter;
 
