@@ -1,7 +1,7 @@
 package dbcache.support.spring;
 
 import dbcache.DbCacheService;
-import dbcache.EntityLoadEventListener;
+import dbcache.EntityLoadListener;
 import dbcache.IEntity;
 import dbcache.conf.CacheConfig;
 import dbcache.conf.ConfigFactory;
@@ -102,11 +102,11 @@ public class DbCacheInjectProcessor extends InstantiationAwareBeanPostProcessorA
 	 */
 	protected void processEntityLoadEventListener(Object bean) {
 
-		if (!(bean instanceof EntityLoadEventListener)) {
+		if (!(bean instanceof EntityLoadListener)) {
 			return;
 		}
 
-		EntityLoadEventListener entityLoadEventListenerBean = (EntityLoadEventListener) bean;
+		EntityLoadListener entityLoadEventListenerBean = (EntityLoadListener) bean;
 
 		Class<?>[] listenClasses = entityLoadEventListenerBean.listenClass();
 		if (listenClasses == null || listenClasses.length == 0) {

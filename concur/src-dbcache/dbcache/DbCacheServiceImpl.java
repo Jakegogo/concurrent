@@ -218,7 +218,7 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 
 						// 实体加载监听接口回调
 						if (cacheConfig.isHasListeners()) {
-							for (EntityLoadEventListener listener : cacheConfig.getEntityLoadEventListeners()) {
+							for (EntityLoadListener listener : cacheConfig.getEntityLoadEventListeners()) {
 								listener.onLoad(entity);
 							}
 						}
@@ -421,7 +421,7 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 			if (!exists) {
 				// 实体加载监听接口回调
 				if (cacheConfig.isHasListeners()) {
-					for (EntityLoadEventListener listener : cacheConfig.getEntityLoadEventListeners()) {
+					for (EntityLoadListener listener : cacheConfig.getEntityLoadEventListeners()) {
 						listener.onLoad(entity);
 					}
 				}

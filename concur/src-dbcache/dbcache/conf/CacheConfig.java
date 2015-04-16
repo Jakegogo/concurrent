@@ -1,6 +1,6 @@
 package dbcache.conf;
 
-import dbcache.EntityLoadEventListener;
+import dbcache.EntityLoadListener;
 import dbcache.anno.Cached;
 import dbcache.anno.DynamicUpdate;
 import dbcache.anno.EnableIndex;
@@ -79,7 +79,7 @@ public class CacheConfig<T> {
 	private ShardStrategy shardStrategy;
 
 	/** 实体加载监听bean集合 */
-	private Set<EntityLoadEventListener> entityLoadEventListeners = new TreeSet<EntityLoadEventListener>();
+	private Set<EntityLoadListener> entityLoadEventListeners = new TreeSet<EntityLoadListener>();
 
 	/** 是否存在实体加载监听类 */
 	private boolean hasListeners = false;
@@ -330,7 +330,7 @@ public class CacheConfig<T> {
 		this.shardStrategy = shardStrategy;
 	}
 
-	public Set<EntityLoadEventListener> getEntityLoadEventListeners() {
+	public Set<EntityLoadListener> getEntityLoadEventListeners() {
 		return entityLoadEventListeners;
 	}
 

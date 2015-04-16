@@ -6,7 +6,7 @@ package dbcache;
  * <br/>如:给实体初始化临时属性,并且要求线程安全(原子性操作)的情形
  * Created by Jake on 2015/4/17.
  */
-public interface EntityLoadEventListener {
+public interface EntityLoadListener {
 
     /**
      * 监听的实体类
