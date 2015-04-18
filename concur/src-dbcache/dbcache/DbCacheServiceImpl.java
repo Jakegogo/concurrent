@@ -109,42 +109,6 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 	private final ConcurrentMap<Object, Lock> WAITING_LOCK_MAP = new ConcurrentHashMap<Object, Lock>();
 
 
-	/**
-	 * dbCache 初始化
-	 * 系统生成DbCacheService实例时将调用
-	 */
-	public void init() {
-
-		//注册jvm关闭钩子
-		Runtime.getRuntime().addShutdownHook(new Thread() {
-
-			@Override
-			public void run() {
-				dbPersistService.logHadNotPersistEntity();
-			}
-
-		});
-
-	}
-
-
-	@Override
-	public void onApplicationEvent(ContextClosedEvent event) {
-		this.onCloseApplication();
-	}
-
-
-	/**
-	 * 关闭应用时回调
-	 */
-	public void onCloseApplication() {
-		//等待入库执行完毕
-		dbPersistService.destroy();
-		//输出为持久化的实体日志
-		dbPersistService.logHadNotPersistEntity();
-	}
-
-
 	@Override
 	public T get(PK id) {
 
@@ -178,11 +142,9 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 
 		// 从共用缓存获取
 		CacheUnit.ValueWrapper wrapper = (CacheUnit.ValueWrapper) cacheUnit.get(key);
-		if(wrapper != null) {	// 已经缓存
+		if (wrapper != null) {	// 已经缓存
 			return (CacheObject<T>) wrapper.get();
 		}
-
-		CacheObject<T> cacheObject = null;
 
 		// 获取缓存唯一锁
 		Lock lock = new ReentrantLock();;
@@ -194,51 +156,52 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 		try {
 
 			wrapper = (CacheUnit.ValueWrapper) cacheUnit.get(key);
-			if (wrapper == null) {
+			if (wrapper != null) {
+				return (CacheObject<T>) wrapper.get();
+			}
 
-				T entity = dbAccessService.get(clazz, key);
-				if (entity != null) {
+			T entity = dbAccessService.get(clazz, key);
+			if (entity == null) {
+				// 缓存NULL value
+				wrapper = cacheUnit.putIfAbsent(key, null);
+				if (wrapper != null) {
+					return (CacheObject<T>) wrapper.get();
+				}
+			}
+			
+			
+			// 创建缓存对象
+			CacheObject<T> cacheObject = configFactory.createCacheObject(entity, clazz, indexService, key, cacheUnit, cacheConfig);
+			wrapper = cacheUnit.putIfAbsent(key, cacheObject);
+			
+			if (wrapper == null || wrapper.get() == null) {
+				return null;
+			}
+			
+			cacheObject = (CacheObject<T>) wrapper.get();
+			// 初始化
+			cacheObject.doInit(cacheConfig);
 
-					// 创建缓存对象
-					cacheObject = configFactory.createCacheObject(entity, clazz, indexService, key, cacheUnit, cacheConfig);
-
-					wrapper = cacheUnit.putIfAbsent(key, cacheObject);
-					if (wrapper != null && wrapper.get() != null) {
-
-						cacheObject = (CacheObject<T>) wrapper.get();
-						// 初始化
-						cacheObject.doInit(cacheConfig);
-
-						// 更新索引 需要外层加锁
-						if(cacheConfig.isEnableIndex()) {
-							for (ValueGetter<T> indexGetter : cacheConfig.getIndexList()) {
-								this.indexService.create(IndexValue.valueOf(indexGetter.getName(), indexGetter.get(entity), key));
-							}
-						}
-
-						// 实体加载监听接口回调
-						if (cacheConfig.isHasListeners()) {
-							for (EntityLoadListener listener : cacheConfig.getEntityLoadEventListeners()) {
-								listener.onLoad(entity);
-							}
-						}
-					}
-
-				} else {
-					// 缓存NULL value
-					wrapper = cacheUnit.putIfAbsent(key, null);
-					if (wrapper != null && wrapper.get() != null) {
-						cacheObject = (CacheObject<T>) wrapper.get();
-					}
+			// 更新索引 需要外层加锁
+			if(cacheConfig.isEnableIndex()) {
+				for (ValueGetter<T> indexGetter : cacheConfig.getIndexList()) {
+					this.indexService.create(IndexValue.valueOf(indexGetter.getName(), indexGetter.get(entity), key));
 				}
 			}
 
+			// 实体加载监听接口回调
+			if (cacheConfig.isHasListeners()) {
+				for (EntityLoadListener listener : cacheConfig.getEntityLoadEventListeners()) {
+					listener.onLoad(entity);
+				}
+			}
+			
+			return cacheObject;
 		} finally {
 			WAITING_LOCK_MAP.remove(key);
 			lock.unlock();
 		}
 
-		return cacheObject;
 	}
 
 
@@ -289,13 +252,13 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 		}
 
 		final List<T> result = new ArrayList<T>(idList.size());
-		T temp = null;
 		for(PK id : idList) {
-			temp = this.get(id);
+			T temp = this.get(id);
 			if(temp != null) {
 				result.add(temp);
 			}
 		}
+		
 		return result;
 	}
 
@@ -326,9 +289,8 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 		}
 
 		List<T> result = new ArrayList<T>();
-		T temp = null;
+		
 		int index = 0;
-
 		for(PK id : idList) {
 			//分页操作
 			if(index < startIndex) {
@@ -337,7 +299,7 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 				break;
 			}
 
-			temp = this.get(id);
+			T temp = this.get(id);
 			if(temp != null) {
 				result.add(temp);
 				index ++;
@@ -351,7 +313,7 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 	@Override
 	public T submitCreate(T entity) {
 
-		//生成主键
+		// 生成主键
 		if (entity.getId() == null) {
 
 			Object id = cacheConfig.getIdAutoGenerateValue();
@@ -364,7 +326,7 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 			entity.setId( (PK) id);
 		}
 
-		//存储到缓存
+		// 存储到缓存
 		CacheObject<T> cacheObject = null;
 		final Object key = entity.getId();
 
@@ -373,70 +335,62 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 			cacheObject = (CacheObject<T>) wrapper.get();
 		}
 
+		
 		boolean exists = false;// 缓存中是否还有实体
-		if (wrapper == null) {//缓存还不存在
-
+		if (wrapper == null) {// 缓存还不存在
 			cacheObject = configFactory.createCacheObject(entity, entity.getClass(), indexService, key, cacheUnit, cacheConfig);
-
 			wrapper = cacheUnit.putIfAbsent(key, cacheObject);
 			if (wrapper != null && wrapper.get() != null) {
 				cacheObject = (CacheObject<T>) wrapper.get();
 			}
-
 		} else if(cacheObject == null) {// 缓存为NULL
-
 			cacheObject = configFactory.createCacheObject(entity, entity.getClass(), indexService, key, cacheUnit, cacheConfig);
-
 			wrapper = cacheUnit.replace(key, null, cacheObject);
 			if (wrapper != null && wrapper.get() != null) {
 				cacheObject = (CacheObject<T>) wrapper.get();
 			}
-
 		}  else {
-
-			if(cacheObject.getPersistStatus() == PersistStatus.DELETED) {//已被删除
-				//删除再保存，实际上很少出现这种情况
+			if(cacheObject.getPersistStatus() == PersistStatus.DELETED) {// 已被删除
+				// 删除再保存，实际上很少出现这种情况
 				cacheObject.setPersistStatus(PersistStatus.TRANSIENT);
 			}
-
 			exists = true;
 		}
 
-		//入库
-		if (cacheObject != null) {
-
-			if (!exists) {
-				// 加载回调
-				cacheObject.doAfterLoad();
-			}
-
-			//更新索引
-			if(cacheConfig.isEnableIndex()) {
-				entity = cacheObject.getEntity();
-				for(ValueGetter<T> indexGetter : cacheConfig.getIndexList()) {
-					this.indexService.create(IndexValue.valueOf(indexGetter.getName(), indexGetter.get(entity), entity.getId()));
-				}
-			}
-
-			if (!exists) {
-				// 实体加载监听接口回调
-				if (cacheConfig.isHasListeners()) {
-					for (EntityLoadListener listener : cacheConfig.getEntityLoadEventListeners()) {
-						listener.onLoad(entity);
-					}
-				}
-			}
-
-
-			// 提交持久化
-			inTimeDbPersistService.handleSave(cacheObject, this.dbAccessService, this.cacheConfig);
-
+		if (cacheObject == null) {
+			return null;
 		}
 
-		if (cacheObject != null && cacheObject.getPersistStatus() != PersistStatus.DELETED) {
-			return cacheObject.getProxyEntity();
+		// 入库 
+		if (!exists) {
+			// 加载回调
+			cacheObject.doAfterLoad();
 		}
-		return null;
+
+		// 更新索引
+		if (cacheConfig.isEnableIndex()) {
+			entity = cacheObject.getEntity();
+			for(ValueGetter<T> indexGetter : cacheConfig.getIndexList()) {
+				this.indexService.create(IndexValue.valueOf(indexGetter.getName(), indexGetter.get(entity), entity.getId()));
+			}
+		}
+
+		if (!exists) {
+			// 实体加载监听接口回调
+			if (cacheConfig.isHasListeners()) {
+				for (EntityLoadListener listener : cacheConfig.getEntityLoadEventListeners()) {
+					listener.onLoad(entity);
+				}
+			}
+		}
+
+		// 提交持久化
+		inTimeDbPersistService.handleSave(cacheObject, this.dbAccessService, this.cacheConfig);
+		
+		if (cacheObject.getPersistStatus() == PersistStatus.DELETED) {
+			return null;
+		}
+		return cacheObject.getProxyEntity();
 	}
 
 
@@ -444,25 +398,26 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 	public void submitUpdate(T entity) {
 
 		final CacheObject<T> cacheObject = this.getCacheObject(entity.getId());
-
-		if (cacheObject != null) {
-			// 验证缓存操作原子性(缓存实体必须唯一)
-			if(cacheObject.getProxyEntity() != entity) {
-				String msg = "实体使用期间缓存对象CacheObject被修改过:无法保证原子性和实体唯一,请重试[user:"
-						+ JsonUtils.object2JsonString(entity) + ", current:" + JsonUtils.object2JsonString(cacheObject.getProxyEntity()) + "]";
-				logger.error(msg);
-				throw new IllegalStateException(msg);// 抛出异常则为内部实现错误
-			}
-
-			// 提交持久化任务
-			dbPersistService.handleUpdate(cacheObject, this.dbAccessService, this.cacheConfig);
+		if (cacheObject == null) {
+			return;
 		}
+		
+		// 验证缓存操作原子性(缓存实体必须唯一)
+		if(cacheObject.getProxyEntity() != entity) {
+			String msg = "实体使用期间缓存对象CacheObject被修改过:无法保证原子性和实体唯一,请重试[user:"
+					+ JsonUtils.object2JsonString(entity) + ", current:" + JsonUtils.object2JsonString(cacheObject.getProxyEntity()) + "]";
+			logger.error(msg);
+			throw new IllegalStateException(msg);// 抛出异常则为内部实现错误
+		}
+
+		// 提交持久化任务
+		dbPersistService.handleUpdate(cacheObject, this.dbAccessService, this.cacheConfig);
 	}
 
 
 	@Override
 	public void submitDelete(T entity) {
-		submitDelete(entity.getId());
+		this.submitDelete(entity.getId());
 	}
 
 
@@ -470,31 +425,64 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 	public void submitDelete(final PK id) {
 
 		final CacheObject<T> cacheObject = this.getCacheObject(id);
-
-		if (cacheObject != null) {
-
-			// 是否已经被删除
-			if(cacheObject.getPersistStatus() == PersistStatus.DELETED) {
-				return;
-			}
-
-			// 标记为已经删除
-			cacheObject.setPersistStatus(PersistStatus.DELETED);
-
-			// 更新索引
-			if(cacheConfig.isEnableIndex()) {
-				T entity = cacheObject.getEntity();
-				for(ValueGetter<T> indexGetter : cacheConfig.getIndexList()) {
-					this.indexService.remove(IndexValue.valueOf(indexGetter.getName(), indexGetter.get(entity), entity.getId()));
-				}
-			}
-
-			// 提交持久化任务
-			inTimeDbPersistService.handleDelete(cacheObject, this.dbAccessService, id, this.cacheUnit);
+		if (cacheObject == null) {
+			return;
 		}
+
+		// 是否已经被删除
+		if(cacheObject.getPersistStatus() == PersistStatus.DELETED) {
+			return;
+		}
+
+		// 标记为已经删除
+		cacheObject.setPersistStatus(PersistStatus.DELETED);
+
+		// 更新索引
+		if(cacheConfig.isEnableIndex()) {
+			T entity = cacheObject.getEntity();
+			for(ValueGetter<T> indexGetter : cacheConfig.getIndexList()) {
+				this.indexService.remove(IndexValue.valueOf(indexGetter.getName(), indexGetter.get(entity), entity.getId()));
+			}
+		}
+
+		// 提交持久化任务
+		inTimeDbPersistService.handleDelete(cacheObject, this.dbAccessService, id, this.cacheUnit);
 	}
 
 
+
+	/**
+	 * dbCache 初始化
+	 * 系统生成DbCacheService实例时将调用
+	 */
+	public void init() {
+		//注册jvm关闭钩子
+		Runtime.getRuntime().addShutdownHook(new Thread() {
+			@Override
+			public void run() {
+				dbPersistService.logHadNotPersistEntity();
+			}
+		});
+	}
+
+
+	@Override
+	public void onApplicationEvent(ContextClosedEvent event) {
+		this.onCloseApplication();
+	}
+
+
+	/**
+	 * 关闭应用时回调
+	 */
+	public void onCloseApplication() {
+		//等待入库执行完毕
+		dbPersistService.destroy();
+		//输出为持久化的实体日志
+		dbPersistService.logHadNotPersistEntity();
+	}
+	
+	
 	@Override
 	public ExecutorService getThreadPool() {
 		return this.dbPersistService.getThreadPool();
