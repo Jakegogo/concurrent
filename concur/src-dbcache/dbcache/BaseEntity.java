@@ -11,7 +11,7 @@ import java.io.Serializable;
  * @param <PK> 主键ID类型
  * @param <Serializable>
  */
-public abstract class BaseModel<PK extends Comparable<PK> & Serializable> implements IEntity<PK>, Serializable{
+public abstract class BaseEntity<PK extends Comparable<PK> & Serializable> implements IEntity<PK>, Serializable{
 
 	/** */
 	private static final long serialVersionUID = -8011061374263995942L;
@@ -52,7 +52,7 @@ public abstract class BaseModel<PK extends Comparable<PK> & Serializable> implem
 			return true;
 		}
 
-		if (!(o instanceof BaseModel)) {
+		if (!(o instanceof BaseEntity)) {
             return false;
 		}
 
@@ -60,7 +60,7 @@ public abstract class BaseModel<PK extends Comparable<PK> & Serializable> implem
 			return false;
 		}
 
-		BaseModel rhs = (BaseModel) o;
+		BaseEntity rhs = (BaseEntity) o;
 
 		if(this.getId() == null || rhs.getId() == null) {
 			return false;
