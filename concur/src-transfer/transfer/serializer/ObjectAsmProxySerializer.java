@@ -49,7 +49,7 @@ public class ObjectAsmProxySerializer implements Serializer, Opcodes {
 			Serializer fieldSerializer = TransferConfig.getSerializer(TypeUtils
 					.getRawClass(fieldInfo.getType()));
 
-			Object fieldValue = fieldInfo.getFieldGetter().get(object);
+			Object fieldValue = fieldInfo.getField(object);
 
 			fieldSerializer.serialze(outputable, fieldValue, referenceMap);
 

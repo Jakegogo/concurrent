@@ -3,6 +3,7 @@ package transfer.core;
 import dbcache.support.asm.AsmAccessHelper;
 import dbcache.support.asm.ValueGetter;
 import dbcache.support.asm.ValueSetter;
+import transfer.exception.EnhanceAccessException;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Type;
@@ -12,6 +13,11 @@ import java.lang.reflect.Type;
  * Created by Jake on 2015/2/23.
  */
 public class FieldInfo<T> {
+
+    /**
+     * 属性信息所属类
+     */
+    private Class<T> clazz;
 
     /**
      * 属性信息
@@ -51,27 +57,42 @@ public class FieldInfo<T> {
      * @param <T>
      * @return
      */
-    public static <T> FieldInfo<T> valueOf(Class<T> clazz, Field field) throws Exception {
+    public static <T> FieldInfo<T> valueOf(Class<T> clazz, Field field) {
         FieldInfo<T> fieldInfo = new FieldInfo<T>();
+        fieldInfo.clazz = clazz;
         fieldInfo.name = clazz.getName() + "#" + field.getName();
         fieldInfo.fieldName = field.getName();
-        fieldInfo.fieldGetter = AsmAccessHelper.createFieldGetter(clazz, field);
-        fieldInfo.fieldSetter = AsmAccessHelper.createFieldSetter(clazz, field);
         fieldInfo.type = field.getGenericType();
         fieldInfo.field = field;
         return fieldInfo;
     }
-
+    public Class<T> getClazz() {
+        return clazz;
+    }
 
     public String getName() {
         return name;
     }
 
-    public ValueGetter<T> getFieldGetter() {
+    protected ValueGetter<T> getFieldGetter() {
+        if (this.fieldGetter == null) {
+            try {
+                this.fieldGetter = AsmAccessHelper.createFieldGetter(clazz, field);
+            } catch (Exception e) {
+                throw new EnhanceAccessException("无法创建字节码增强属性获取器:" + name, e);
+            }
+        }
         return fieldGetter;
     }
 
-    public ValueSetter<T> getFieldSetter() {
+    protected ValueSetter<T> getFieldSetter() {
+        if (this.fieldSetter == null) {
+            try {
+                this.fieldSetter = AsmAccessHelper.createFieldSetter(clazz, field);
+            } catch (Exception e) {
+                throw new EnhanceAccessException("无法创建字节码增强属性获取器:" + name, e);
+            }
+        }
         return fieldSetter;
     }
 
@@ -80,11 +101,11 @@ public class FieldInfo<T> {
     }
 
     public void setField(T object, Object fieldValue) {
-        this.fieldSetter.set(object, fieldValue);
+        this.getFieldSetter().set(object, fieldValue);
     }
 
     public Object getField(T object) {
-        return this.fieldGetter.get(object);
+        return this.getFieldGetter().get(object);
     }
 
     public String getFieldName() {

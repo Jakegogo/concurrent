@@ -520,17 +520,9 @@ public class TransferConfig {
                         return;
                     }
 
-                    try {
-
-                        FieldInfo fieldInfo = FieldInfo.valueOf(clazz, field);
-
-                        fieldInfos.add(fieldInfo);
-                        fieldInfoMap.put(field.getName(), fieldInfo);
-
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                        throw new IllegalAccessException("无法创建属性信息" + clazz.getName() + "#" + field.getName());
-                    }
+                    FieldInfo fieldInfo = FieldInfo.valueOf(clazz, field);
+                    fieldInfos.add(fieldInfo);
+                    fieldInfoMap.put(field.getName(), fieldInfo);
 
                 }
             });
