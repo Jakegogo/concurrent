@@ -12,7 +12,7 @@ import dbcache.persist.PersistStatus;
 import dbcache.persist.service.DbPersistService;
 import dbcache.support.asm.ValueGetter;
 import dbcache.utils.JsonUtils;
-import dbcache.utils.concurrent.ConcurrentHashMap;
+import dbcache.utils.concurrent.ConcurrentHashMapV8;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -106,7 +106,7 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 	/**
 	 * 等待锁map {key:lock}
 	 */
-	private final ConcurrentMap<Object, Lock> WAITING_LOCK_MAP = new ConcurrentHashMap<Object, Lock>();
+	private final ConcurrentMap<Object, Lock> WAITING_LOCK_MAP = new ConcurrentHashMapV8<Object, Lock>();
 
 
 	@Override
@@ -120,17 +120,6 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 		return null;
 	}
 	
-	
-	@Override
-	public T get(long id) {
-		
-		final CacheObject<T> cacheObject = this.getCacheObject(id);
-		if (cacheObject != null && cacheObject.getPersistStatus() != PersistStatus.DELETED) {
-			return (T) cacheObject.getProxyEntity();
-		}
-
-		return null;
-	}
 
 	/**
 	 * 获取缓存对象
@@ -202,24 +191,6 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 			lock.unlock();
 		}
 
-	}
-
-
-	/**
-	 * 获取缓存对象
-	 * @param key long 实体id
-	 * @return
-	 */
-	@SuppressWarnings({ "unchecked" })
-	private CacheObject<T> getCacheObject(long key) {
-		
-		// 从共用缓存获取
-		CacheUnit.ValueWrapper wrapper = (CacheUnit.ValueWrapper) cacheUnit.get(key);
-		if(wrapper != null) {	// 已经缓存
-			return (CacheObject<T>) wrapper.get();
-		}
-
-		return this.getCacheObject((PK)((Object) Long.valueOf(key)));
 	}
 
 

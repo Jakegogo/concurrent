@@ -1,6 +1,6 @@
 package dbcache.test;
 
-import dbcache.utils.concurrent.ConcurrentHashMap;
+import dbcache.utils.concurrent.ConcurrentHashMapV8;
 import dbcache.utils.concurrent.ConcurrentLinkedHashMap8;
 
 import java.util.Map;
@@ -9,7 +9,7 @@ import java.util.concurrent.ConcurrentMap;
 public class TestMap3 {
 
 	public static void main(String[] args) {
-		ConcurrentMap<Integer, Integer> map = new ConcurrentHashMap<Integer, Integer>();//jdk8
+		ConcurrentMap<Integer, Integer> map = new ConcurrentHashMapV8<Integer, Integer>();//jdk8
 
 		ConcurrentMap<Integer, Integer> map1 = new java.util.concurrent.ConcurrentHashMap<Integer, Integer>();//jdk6
 

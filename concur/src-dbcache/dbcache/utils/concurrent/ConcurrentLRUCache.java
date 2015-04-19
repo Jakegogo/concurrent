@@ -40,7 +40,7 @@ public class ConcurrentLRUCache<K, V>
     //private static Logger log = Logger.getLogger(ConcurrentLRUCache.class
     //        .getName());
 
-    private final ConcurrentHashMap<Object, CacheEntry<K, V>> map;
+    private final ConcurrentHashMapV8<Object, CacheEntry<K, V>> map;
     private final int upperWaterMark;
     private final int lowerWaterMark;
     private final ReentrantLock markAndSweepLock = new ReentrantLock(true);
@@ -78,7 +78,7 @@ public class ConcurrentLRUCache<K, V>
             throw new IllegalArgumentException(
                     "lowerWaterMark must be  < upperWaterMark");
         }
-        map = new ConcurrentHashMap<Object, CacheEntry<K, V>>(initialSize, 0.75f, concurrencyLevel);
+        map = new ConcurrentHashMapV8<Object, CacheEntry<K, V>>(initialSize, 0.75f, concurrencyLevel);
         newThreadForCleanup = runNewThreadForCleanup;
         this.upperWaterMark = upperWaterMark;
         this.lowerWaterMark = lowerWaterMark;
@@ -119,27 +119,6 @@ public class ConcurrentLRUCache<K, V>
         }
         return e.value;
     }
-
-
-    public V get(long key)
-    {
-        CacheEntry<K, V> e = map.get(key);
-        if (e == null || e == NULL_ENTRY)
-        {
-            if (islive)
-            {
-                stats.missCounter.increment();
-            }
-            return null;
-        }
-        if (islive)
-        {
-            stats.accessCounter.increment();
-            e.lastAccessed = stats.accessCounter.longValue();
-        }
-        return e.value;
-    }
-
 
     public V remove(K key)
     {

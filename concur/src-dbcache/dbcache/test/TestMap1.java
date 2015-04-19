@@ -1,6 +1,6 @@
 package dbcache.test;
 
-import dbcache.utils.concurrent.ConcurrentHashMap;
+import dbcache.utils.concurrent.ConcurrentHashMapV8;
 import dbcache.utils.concurrent.ConcurrentLinkedHashMap8;
 
 import java.util.Map;
@@ -10,7 +10,7 @@ import java.util.concurrent.CountDownLatch;
 public class TestMap1 {
 
 	public static void main(String[] args) {
-		final ConcurrentMap<Integer, Integer> map = new ConcurrentHashMap<Integer, Integer>();//jdk8
+		final ConcurrentMap<Integer, Integer> map = new ConcurrentHashMapV8<Integer, Integer>();//jdk8
 		
 		final ConcurrentMap<Integer, Integer> map1 = new java.util.concurrent.ConcurrentHashMap<Integer, Integer>();//jdk6
 

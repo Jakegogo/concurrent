@@ -18,13 +18,6 @@ public interface CacheUnit {
 	ValueWrapper get(Object key);
 	
 	/**
-	 * 获取缓存包装对象
-	 * @param long key
-	 * @return 为空表示未缓存,如果值为null,ValueWrapper.get()的值将为空
-	 */
-	ValueWrapper get(long key);
-
-	/**
 	 * 存入缓存
 	 * @param key 键
 	 * @param value 值

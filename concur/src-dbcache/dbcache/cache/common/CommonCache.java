@@ -3,7 +3,7 @@ package dbcache.cache.common;
 import dbcache.DbCacheService;
 import dbcache.cache.CacheUnit;
 import dbcache.cache.impl.ConcurrentLruHashMapCache;
-import dbcache.utils.concurrent.ConcurrentHashMap;
+import dbcache.utils.concurrent.ConcurrentHashMapV8;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 
 import java.util.concurrent.ConcurrentMap;
@@ -31,7 +31,7 @@ public class CommonCache<R> {
     /**
      * 等待锁map {key:lock}
      */
-    private final ConcurrentMap<Integer, Lock> WAITING_LOCK_MAP = new ConcurrentHashMap<Integer, Lock>();
+    private final ConcurrentMap<Integer, Lock> WAITING_LOCK_MAP = new ConcurrentHashMapV8<Integer, Lock>();
 
     /**
      * 缓存单元

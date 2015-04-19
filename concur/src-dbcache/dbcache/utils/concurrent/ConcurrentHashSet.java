@@ -42,7 +42,7 @@ import java.util.Set;
  */
 public class ConcurrentHashSet<E> implements Set<E> {
 
-    final private ConcurrentHashMap<E, Object> map;
+    final private ConcurrentHashMapV8<E, Object> map;
 
     // Dummy value to associate with an Object in the backing Map
     private static final Object PRESENT = new Object();
@@ -52,7 +52,7 @@ public class ConcurrentHashSet<E> implements Set<E> {
      * default initial capacity (16) and load factor (0.75).
      */
     public ConcurrentHashSet() {
-        map = new ConcurrentHashMap<E, Object>();
+        map = new ConcurrentHashMapV8<E, Object>();
     }
 
     /**

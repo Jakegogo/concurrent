@@ -1,7 +1,5 @@
 package dbcache.test;
 
-import dbcache.utils.concurrent.ConcurrentHashMap;
-
 //class TestMap2 {
 //
 //	public static void main(String[] args) {

@@ -95,25 +95,6 @@ public class ConcurrentLruHashMapCache implements CacheUnit {
 
 
 	@Override
-	public ValueWrapper get(long key) {
-		Object value = this.store.get(key);
-		if(value != null) {
-			return (ValueWrapper) fromStoreValue(value);
-		}
-		value = this.evictions.get(key);
-		if(value != null) {
-			// 添加到主缓存
-			this.putIfAbsent(key, value);
-			// 从临时缓存中移除
-			this.evictions.remove(key);
-
-			return this.get(key);
-		}
-		return null;
-	}
-
-
-	@Override
 	public ValueWrapper put(Object key, Object value) {
 		return this.store.put(key, toStoreValue(value));
 	}

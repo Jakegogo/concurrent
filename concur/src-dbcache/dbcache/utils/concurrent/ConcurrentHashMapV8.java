@@ -220,7 +220,7 @@ import java.util.concurrent.locks.ReentrantLock;
  * @param <V> the type of mapped values
  */
 @SuppressWarnings("all")
-public class ConcurrentHashMap<K,V> extends AbstractMap<K,V>
+public class ConcurrentHashMapV8<K,V> extends AbstractMap<K,V>
     implements ConcurrentMap<K,V>, Serializable {
     private static final long serialVersionUID = 7249069246763182397L;
 
@@ -652,21 +652,6 @@ public class ConcurrentHashMap<K,V> extends AbstractMap<K,V>
             }
             return null;
         }
-
-        /**
-         * Virtualized support for map.get(); overridden in subclasses.
-         */
-        Node<K,V> find(int h, long k) {
-            Node<K,V> e = this;
-            do {
-                K ek;
-                if (e.hash == h &&
-                    ((ek = e.key) != null && ek.getClass() == Long.class && (Long) ek == k))
-                    return e;
-            } while ((e = e.next) != null);
-            return null;
-        }
-
     }
 
     /* ---------------- Static utilities -------------- */
@@ -831,7 +816,7 @@ public class ConcurrentHashMap<K,V> extends AbstractMap<K,V>
     /**
      * Creates a new, empty map with the default initial table size (16).
      */
-    public ConcurrentHashMap() {
+    public ConcurrentHashMapV8() {
     }
 
     /**
@@ -844,7 +829,7 @@ public class ConcurrentHashMap<K,V> extends AbstractMap<K,V>
      * @throws IllegalArgumentException if the initial capacity of
      * elements is negative
      */
-    public ConcurrentHashMap(int initialCapacity) {
+    public ConcurrentHashMapV8(int initialCapacity) {
         if (initialCapacity < 0)
             throw new IllegalArgumentException();
         int cap = ((initialCapacity >= (MAXIMUM_CAPACITY >>> 1)) ?
@@ -858,7 +843,7 @@ public class ConcurrentHashMap<K,V> extends AbstractMap<K,V>
      *
      * @param m the map
      */
-    public ConcurrentHashMap(Map<? extends K, ? extends V> m) {
+    public ConcurrentHashMapV8(Map<? extends K, ? extends V> m) {
         this.sizeCtl = DEFAULT_CAPACITY;
         putAll(m);
     }
@@ -878,7 +863,7 @@ public class ConcurrentHashMap<K,V> extends AbstractMap<K,V>
      *
      * @since 1.6
      */
-    public ConcurrentHashMap(int initialCapacity, float loadFactor) {
+    public ConcurrentHashMapV8(int initialCapacity, float loadFactor) {
         this(initialCapacity, loadFactor, 1);
     }
 
@@ -900,8 +885,8 @@ public class ConcurrentHashMap<K,V> extends AbstractMap<K,V>
      * negative or the load factor or concurrencyLevel are
      * nonpositive
      */
-    public ConcurrentHashMap(int initialCapacity,
-                             float loadFactor, int concurrencyLevel) {
+    public ConcurrentHashMapV8(int initialCapacity,
+                               float loadFactor, int concurrencyLevel) {
         if (!(loadFactor > 0.0f) || initialCapacity < 0 || concurrencyLevel <= 0)
             throw new IllegalArgumentException();
         if (initialCapacity < concurrencyLevel)   // Use at least as many bins
@@ -965,28 +950,7 @@ public class ConcurrentHashMap<K,V> extends AbstractMap<K,V>
         return null;
     }
 
-
-    public V get(long key) {
-        Node<K,V>[] tab; Node<K,V> e, p; int n, eh; K ek;
-        int h = spread((int)(key ^ (key >>> 32)));
-        if ((tab = table) != null && (n = tab.length) > 0 &&
-            (e = tabAt(tab, (n - 1) & h)) != null) {
-            if ((eh = e.hash) == h) {
-                if ((ek = e.key) != null && ek.getClass() == Long.class && (Long) ek == key)
-                    return e.val;
-            }
-            else if (eh < 0)
-                return (p = e.find(h, key)) != null ? p.val : null;
-            while ((e = e.next) != null) {
-                if (e.hash == h && (ek = e.key) != null && ek.getClass() == Long.class && (Long) ek == key)
-                    return e.val;
-            }
-        }
-        return null;
-    }
-
-
-	/**
+    /**
      * Tests if the specified object is a key in this table.
      *
      * @param  key possible key
@@ -2165,7 +2129,7 @@ public class ConcurrentHashMap<K,V> extends AbstractMap<K,V>
      */
     public static <K> KeySetView<K,Boolean> newKeySet() {
         return new KeySetView<K,Boolean>
-            (new ConcurrentHashMap<K,Boolean>(), Boolean.TRUE);
+            (new ConcurrentHashMapV8<K,Boolean>(), Boolean.TRUE);
     }
 
     /**
@@ -2181,7 +2145,7 @@ public class ConcurrentHashMap<K,V> extends AbstractMap<K,V>
      */
     public static <K> KeySetView<K,Boolean> newKeySet(int initialCapacity) {
         return new KeySetView<K,Boolean>
-            (new ConcurrentHashMap<K,Boolean>(initialCapacity), Boolean.TRUE);
+            (new ConcurrentHashMapV8<K,Boolean>(initialCapacity), Boolean.TRUE);
     }
 
     /**
@@ -3266,10 +3230,10 @@ final Node<K,V> find(int h, Object k) {
      * Traverser to support iterator.remove.
      */
     static class BaseIterator<K,V> extends Traverser<K,V> {
-        final ConcurrentHashMap<K,V> map;
+        final ConcurrentHashMapV8<K,V> map;
         Node<K,V> lastReturned;
         BaseIterator(Node<K,V>[] tab, int size, int index, int limit,
-                    ConcurrentHashMap<K,V> map) {
+                    ConcurrentHashMapV8<K,V> map) {
             super(tab, size, index, limit);
             this.map = map;
             advance();
@@ -3290,7 +3254,7 @@ final Node<K,V> find(int h, Object k) {
     static final class KeyIterator<K,V> extends BaseIterator<K,V>
         implements Iterator<K>, Enumeration<K> {
         KeyIterator(Node<K,V>[] tab, int index, int size, int limit,
-                    ConcurrentHashMap<K,V> map) {
+                    ConcurrentHashMapV8<K,V> map) {
             super(tab, index, size, limit, map);
         }
 
@@ -3312,7 +3276,7 @@ final Node<K,V> find(int h, Object k) {
     static final class ValueIterator<K,V> extends BaseIterator<K,V>
         implements Iterator<V>, Enumeration<V> {
         ValueIterator(Node<K,V>[] tab, int index, int size, int limit,
-                      ConcurrentHashMap<K,V> map) {
+                      ConcurrentHashMapV8<K,V> map) {
             super(tab, index, size, limit, map);
         }
 
@@ -3334,7 +3298,7 @@ final Node<K,V> find(int h, Object k) {
     static final class EntryIterator<K,V> extends BaseIterator<K,V>
         implements Iterator<Map.Entry<K,V>> {
         EntryIterator(Node<K,V>[] tab, int index, int size, int limit,
-                      ConcurrentHashMap<K,V> map) {
+                      ConcurrentHashMapV8<K,V> map) {
             super(tab, index, size, limit, map);
         }
 
@@ -3357,8 +3321,8 @@ final Node<K,V> find(int h, Object k) {
     static final class MapEntry<K,V> implements Map.Entry<K,V> {
         final K key; // non-null
         V val;       // non-null
-        final ConcurrentHashMap<K,V> map;
-        MapEntry(K key, V val, ConcurrentHashMap<K,V> map) {
+        final ConcurrentHashMapV8<K,V> map;
+        MapEntry(K key, V val, ConcurrentHashMapV8<K,V> map) {
             this.key = key;
             this.val = val;
             this.map = map;
@@ -3480,10 +3444,10 @@ final Node<K,V> find(int h, Object k) {
 
     static final class EntrySpliterator<K,V> extends Traverser<K,V>
         implements ConcurrentHashMapSpliterator<Map.Entry<K,V>> {
-        final ConcurrentHashMap<K,V> map; // To export MapEntry
+        final ConcurrentHashMapV8<K,V> map; // To export MapEntry
         long est;               // size estimate
         EntrySpliterator(Node<K,V>[] tab, int size, int index, int limit,
-                         long est, ConcurrentHashMap<K,V> map) {
+                         long est, ConcurrentHashMapV8<K,V> map) {
             super(tab, size, index, limit);
             this.map = map;
             this.est = est;
@@ -3527,15 +3491,15 @@ final Node<K,V> find(int h, Object k) {
     abstract static class CollectionView<K,V,E>
         implements Collection<E>, java.io.Serializable {
         private static final long serialVersionUID = 7249069246763182397L;
-        final ConcurrentHashMap<K,V> map;
-        CollectionView(ConcurrentHashMap<K,V> map)  { this.map = map; }
+        final ConcurrentHashMapV8<K,V> map;
+        CollectionView(ConcurrentHashMapV8<K,V> map)  { this.map = map; }
 
         /**
          * Returns the map backing this view.
          *
          * @return the map backing this view
          */
-        public ConcurrentHashMap<K,V> getMap() { return map; }
+        public ConcurrentHashMapV8<K,V> getMap() { return map; }
 
         /**
          * Removes all of the elements from this view, by removing all
@@ -3701,7 +3665,7 @@ final Node<K,V> find(int h, Object k) {
         implements Set<K>, java.io.Serializable {
         private static final long serialVersionUID = 7249069246763182397L;
         private final V value;
-        KeySetView(ConcurrentHashMap<K,V> map, V value) {  // non-public
+        KeySetView(ConcurrentHashMapV8<K,V> map, V value) {  // non-public
             super(map);
             this.value = value;
         }
@@ -3740,7 +3704,7 @@ final Node<K,V> find(int h, Object k) {
         @Override
         public Iterator<K> iterator() {
             Node<K,V>[] t;
-            ConcurrentHashMap<K,V> m = map;
+            ConcurrentHashMapV8<K,V> m = map;
             int f = (t = m.table) == null ? 0 : t.length;
             return new KeyIterator<K,V>(t, f, 0, f, m);
         }
@@ -3805,7 +3769,7 @@ final Node<K,V> find(int h, Object k) {
 
         public ConcurrentHashMapSpliterator<K> spliterator() {
             Node<K,V>[] t;
-            ConcurrentHashMap<K,V> m = map;
+            ConcurrentHashMapV8<K,V> m = map;
             long n = m.sumCount();
             int f = (t = m.table) == null ? 0 : t.length;
             return new KeySpliterator<K,V>(t, f, 0, f, n < 0L ? 0L : n);
@@ -3830,7 +3794,7 @@ final Node<K,V> find(int h, Object k) {
     static final class ValuesView<K,V> extends CollectionView<K,V,V>
         implements Collection<V>, java.io.Serializable {
         private static final long serialVersionUID = 2249069246763182397L;
-        ValuesView(ConcurrentHashMap<K,V> map) { super(map); }
+        ValuesView(ConcurrentHashMapV8<K,V> map) { super(map); }
         @Override
         public final boolean contains(Object o) {
             return map.containsValue(o);
@@ -3851,7 +3815,7 @@ final Node<K,V> find(int h, Object k) {
 
         @Override
         public final Iterator<V> iterator() {
-            ConcurrentHashMap<K,V> m = map;
+            ConcurrentHashMapV8<K,V> m = map;
             Node<K,V>[] t;
             int f = (t = m.table) == null ? 0 : t.length;
             return new ValueIterator<K,V>(t, f, 0, f, m);
@@ -3868,7 +3832,7 @@ final Node<K,V> find(int h, Object k) {
 
         public ConcurrentHashMapSpliterator<V> spliterator() {
             Node<K,V>[] t;
-            ConcurrentHashMap<K,V> m = map;
+            ConcurrentHashMapV8<K,V> m = map;
             long n = m.sumCount();
             int f = (t = m.table) == null ? 0 : t.length;
             return new ValueSpliterator<K,V>(t, f, 0, f, n < 0L ? 0L : n);
@@ -3893,7 +3857,7 @@ final Node<K,V> find(int h, Object k) {
     static final class EntrySetView<K,V> extends CollectionView<K,V,Map.Entry<K,V>>
         implements Set<Map.Entry<K,V>>, java.io.Serializable {
         private static final long serialVersionUID = 2249069246763182397L;
-        EntrySetView(ConcurrentHashMap<K,V> map) { super(map); }
+        EntrySetView(ConcurrentHashMapV8<K,V> map) { super(map); }
 
         @Override
         public boolean contains(Object o) {
@@ -3919,7 +3883,7 @@ final Node<K,V> find(int h, Object k) {
          */
         @Override
         public Iterator<Map.Entry<K,V>> iterator() {
-            ConcurrentHashMap<K,V> m = map;
+            ConcurrentHashMapV8<K,V> m = map;
             Node<K,V>[] t;
             int f = (t = m.table) == null ? 0 : t.length;
             return new EntryIterator<K,V>(t, f, 0, f, m);
@@ -3963,7 +3927,7 @@ final Node<K,V> find(int h, Object k) {
 
         public ConcurrentHashMapSpliterator<Map.Entry<K,V>> spliterator() {
             Node<K,V>[] t;
-            ConcurrentHashMap<K,V> m = map;
+            ConcurrentHashMapV8<K,V> m = map;
             long n = m.sumCount();
             int f = (t = m.table) == null ? 0 : t.length;
             return new EntrySpliterator<K,V>(t, f, 0, f, n < 0L ? 0L : n, m);
@@ -4136,7 +4100,7 @@ final Node<K,V> find(int h, Object k) {
     static {
         try {
             U = getUnsafe();
-            Class<?> k = ConcurrentHashMap.class;
+            Class<?> k = ConcurrentHashMapV8.class;
             SIZECTL = U.objectFieldOffset
                 (k.getDeclaredField("sizeCtl"));
             TRANSFERINDEX = U.objectFieldOffset

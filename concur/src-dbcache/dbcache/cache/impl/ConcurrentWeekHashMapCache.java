@@ -3,7 +3,7 @@ package dbcache.cache.impl;
 import dbcache.WeakCacheEntity;
 import dbcache.WeakCacheObject;
 import dbcache.cache.CacheUnit;
-import dbcache.utils.concurrent.ConcurrentHashMap;
+import dbcache.utils.concurrent.ConcurrentHashMapV8;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -116,7 +116,7 @@ public class ConcurrentWeekHashMapCache implements CacheUnit {
 	@Override
 	public void init(String name, int entityCacheSize, int concurrencyLevel) {
 		this.name = name;
-		this.store = new ConcurrentHashMap<Object, SimpleValueWrapper>(DEFAULT_CAPACITY_OF_ENTITY_CACHE, 0.7f, concurrencyLevel);
+		this.store = new ConcurrentHashMapV8<Object, SimpleValueWrapper>(DEFAULT_CAPACITY_OF_ENTITY_CACHE, 0.7f, concurrencyLevel);
 		referenceQueues.add(this.referenceQueue);
 	}
 
@@ -140,12 +140,6 @@ public class ConcurrentWeekHashMapCache implements CacheUnit {
 		return value;
 	}
 
-	
-	@Override
-	public ValueWrapper get(long key) {
-		return this.get(Long.valueOf(key));
-	}
-	
 
 	@SuppressWarnings("rawtypes")
 	@Override

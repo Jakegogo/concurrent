@@ -28,10 +28,10 @@ public class LongAdderTable<K> implements Serializable {
     private static final long serialVersionUID = 7249369246863182397L;
 
     /** The underlying map */
-    private final ConcurrentHashMap<K, LongAdder> map;
+    private final ConcurrentHashMapV8<K, LongAdder> map;
 
     static final class CreateAdder
-        implements ConcurrentHashMap.Fun<Object, LongAdder> {
+        implements ConcurrentHashMapV8.Fun<Object, LongAdder> {
         public LongAdder apply(Object unused) { return new LongAdder(); }
     }
 
@@ -41,7 +41,7 @@ public class LongAdderTable<K> implements Serializable {
      * Creates a new empty table.
      */
     public LongAdderTable() {
-        map = new ConcurrentHashMap<K, LongAdder>();
+        map = new ConcurrentHashMapV8<K, LongAdder>();
     }
 
     /**
