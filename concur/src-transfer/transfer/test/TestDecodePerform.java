@@ -2,7 +2,7 @@ package transfer.test;
 
 import java.util.Date;
 
-import dbcache.utils.JsonUtils;
+import utils.JsonUtils;
 import transfer.ByteArray;
 import transfer.Transfer;
 import transfer.def.TransferConfig;

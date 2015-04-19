@@ -1,9 +1,9 @@
 package transfer.core;
 
-import dbcache.support.asm.AsmAccessHelper;
-import dbcache.support.asm.ValueGetter;
-import dbcache.support.asm.ValueSetter;
-import transfer.exception.EnhanceAccessException;
+import utils.enhance.asm.AsmAccessHelper;
+import utils.enhance.asm.ValueGetter;
+import utils.enhance.asm.ValueSetter;
+import utils.enhance.asm.EnhanceAccessException;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Type;

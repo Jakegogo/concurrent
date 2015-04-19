@@ -4,7 +4,7 @@ import transfer.Inputable;
 import transfer.compile.AsmDeserializerContext;
 import transfer.def.TransferConfig;
 import transfer.def.Types;
-import transfer.exception.IllegalTypeException;
+import transfer.exceptions.IllegalTypeException;
 import transfer.utils.BitUtils;
 import transfer.utils.IntegerMap;
 
@@ -54,12 +54,12 @@ public class ByteArrayDeSerializer implements Deserializer, Opcodes {
     	
     	Label l2 = new Label();
     	mv.visitJumpInsn(IF_ICMPEQ, l2);
-    	mv.visitTypeInsn(NEW, "transfer/exception/IllegalTypeException");
+    	mv.visitTypeInsn(NEW, "transfer/exceptions/IllegalTypeException");
     	mv.visitInsn(DUP);
     	mv.visitVarInsn(ILOAD, 5);
     	mv.visitIntInsn(BIPUSH, Types.BYTE_ARRAY);
     	mv.visitVarInsn(ALOAD, 2);
-    	mv.visitMethodInsn(INVOKESPECIAL, "transfer/exception/IllegalTypeException", "<init>", "(BBLjava/lang/reflect/Type;)V", false);
+    	mv.visitMethodInsn(INVOKESPECIAL, "transfer/exceptions/IllegalTypeException", "<init>", "(BBLjava/lang/reflect/Type;)V", false);
     	mv.visitInsn(ATHROW);
     	mv.visitLabel(l2);
     	

@@ -1,9 +1,9 @@
 package dbcache.test;
 
-import dbcache.utils.NamedThreadFactory;
-import dbcache.utils.executors.LinkingExecutable;
-import dbcache.utils.executors.LinkingRunnable;
-import dbcache.utils.executors.OrderedThreadPoolExecutor;
+import utils.thread.NamedThreadFactory;
+import utils.thread.LinkingExecutable;
+import utils.thread.LinkingRunnable;
+import utils.thread.OrderedThreadPoolExecutor;
 
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;

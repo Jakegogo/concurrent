@@ -1,7 +1,7 @@
 package dbcache.test;
 
-import dbcache.support.asm.AsmAccessHelper;
-import dbcache.support.asm.ValueGetter;
+import utils.enhance.asm.AsmAccessHelper;
+import utils.enhance.asm.ValueGetter;
 
 import java.lang.reflect.Field;
 

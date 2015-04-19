@@ -5,8 +5,8 @@ import dbcache.cache.CacheUnit;
 import dbcache.DbCacheService;
 import dbcache.cache.common.CommonCache;
 import dbcache.cache.impl.ConcurrentLruHashMapCache;
-import dbcache.utils.concurrent.CleanupThread;
-import dbcache.utils.concurrent.ConcurrentLRUCache;
+import utils.collections.concurrent.CleanupThread;
+import utils.collections.concurrent.ConcurrentLRUCache;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;

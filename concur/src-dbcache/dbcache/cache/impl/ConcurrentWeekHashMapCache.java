@@ -3,7 +3,7 @@ package dbcache.cache.impl;
 import dbcache.WeakCacheEntity;
 import dbcache.WeakCacheObject;
 import dbcache.cache.CacheUnit;
-import dbcache.utils.concurrent.ConcurrentHashMapV8;
+import utils.collections.concurrent.ConcurrentHashMapV8;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

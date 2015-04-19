@@ -2,7 +2,7 @@ package transfer.test;
 
 import com.baidu.bjf.remoting.protobuf.Codec;
 import com.baidu.bjf.remoting.protobuf.ProtobufProxy;
-import dbcache.utils.JsonUtils;
+import utils.JsonUtils;
 import transfer.ByteArray;
 import transfer.Transfer;
 import transfer.def.TransferConfig;

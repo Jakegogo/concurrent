@@ -1,6 +1,6 @@
 package dbcache.test;
 
-import dbcache.utils.concurrent.LongAdder;
+import utils.collections.concurrent.LongAdder;
 
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicLong;

@@ -1,7 +1,7 @@
 package dbcache.test;
 
-import dbcache.utils.concurrent.ConcurrentHashMapV8;
-import dbcache.utils.concurrent.ConcurrentLinkedHashMap8;
+import utils.collections.concurrent.ConcurrentHashMapV8;
+import utils.collections.concurrent.ConcurrentLinkedHashMap8;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentMap;

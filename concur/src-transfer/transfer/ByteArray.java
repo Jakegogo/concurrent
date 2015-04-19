@@ -1,6 +1,6 @@
 package transfer;
 
-import transfer.exception.EOFBytesException;
+import transfer.exceptions.EOFBytesException;
 
 /**
  * 字节数组

@@ -9,7 +9,7 @@ import dbcache.conf.Inject;
 import dbcache.dbaccess.DbAccessService;
 import dbcache.DbCacheInitError;
 import dbcache.persist.PersistStatus;
-import dbcache.support.asm.ValueGetter;
+import utils.enhance.asm.ValueGetter;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;

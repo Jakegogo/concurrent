@@ -1,7 +1,7 @@
 package dbcache.test;
 
-import dbcache.utils.typesafe.SafeActor;
-import dbcache.utils.typesafe.SafeType;
+import utils.typesafe.SafeActor;
+import utils.typesafe.SafeType;
 
 import java.util.concurrent.CountDownLatch;
 

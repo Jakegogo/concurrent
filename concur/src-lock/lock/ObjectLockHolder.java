@@ -1,10 +1,10 @@
 package lock;
 
-import com.jake.utils.ConcurrentWeakHashMap;
-import dbcache.utils.JsonUtils;
 import lock.checkdeadlock.AlternateDeadlockDetectingLock;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import utils.JsonUtils;
+import utils.collections.concurrent.ConcurrentWeakHashMap;
 
 import java.util.HashMap;
 import java.util.Map;

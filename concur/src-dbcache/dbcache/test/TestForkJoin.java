@@ -2,8 +2,8 @@ package dbcache.test;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
-import dbcache.utils.concurrent.ForkJoinPool;
-import dbcache.utils.concurrent.RecursiveTask;
+import utils.collections.concurrent.ForkJoinPool;
+import utils.collections.concurrent.RecursiveTask;
 
 
 class Sum extends RecursiveTask<Long> {

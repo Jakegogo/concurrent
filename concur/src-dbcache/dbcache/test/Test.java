@@ -9,7 +9,8 @@ import dbcache.conf.DbRuleService;
 import dbcache.support.asm.EntityAsmFactory;
 import dbcache.support.jdbc.JdbcSupport;
 import dbcache.utils.*;
-import dbcache.utils.concurrent.ConcurrentWeakHashMap;
+import utils.JsonUtils;
+import utils.collections.concurrent.ConcurrentWeakHashMap;
 import javassist.CannotCompileException;
 import javassist.NotFoundException;
 
@@ -21,6 +22,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.util.ReflectionUtils;
+import utils.thread.ThreadUtils;
 
 import javax.annotation.Resource;
 

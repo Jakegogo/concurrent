@@ -5,7 +5,7 @@ import transfer.Inputable;
 import transfer.compile.AsmDeserializerContext;
 import transfer.def.TransferConfig;
 import transfer.def.Types;
-import transfer.exception.IllegalTypeException;
+import transfer.exceptions.IllegalTypeException;
 import transfer.utils.BitUtils;
 import transfer.utils.IntegerMap;
 

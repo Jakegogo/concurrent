@@ -9,9 +9,9 @@ import dbcache.cache.impl.ConcurrentLinkedHashMapCache;
 import dbcache.conf.shard.ShardStrategy;
 import dbcache.pkey.IdGenerator;
 import dbcache.support.asm.ConstructorBuilder;
-import dbcache.support.asm.ValueGetter;
-import dbcache.utils.AnnotationUtils;
-import dbcache.utils.JsonUtils;
+import utils.enhance.asm.ValueGetter;
+import utils.reflect.AnnotationUtils;
+import utils.JsonUtils;
 
 import java.util.*;
 

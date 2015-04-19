@@ -129,9 +129,9 @@ public class AlternateDeadlockDetectingLock extends ObjectLock {
   }
 
   // Options: variable to control behavior
-  //    FastFail: if set true, deadlock exception will thrown for every call
+  //    FastFail: if set true, deadlock exceptions will thrown for every call
   // after
-  //              first exception is detected
+  //              first exceptions is detected
   //     CleanUp: if set true, lock will cleanup deadlock condition -- allowing
   //              for continued operation after failure. FastFail must be off.
   //    HWSWTime: # of seconds before a Softwait is to be considered as a

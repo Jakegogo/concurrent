@@ -2,7 +2,8 @@ package dbcache.support.asm;
 
 import dbcache.IEntity;
 import dbcache.index.DbIndexService;
-import dbcache.support.asm.util.AsmUtils;
+import utils.enhance.asm.AsmAccessHelper;
+import utils.enhance.asm.util.AsmUtils;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;

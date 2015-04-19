@@ -56,7 +56,7 @@ public class EMFMain {
 			t.join();
 		} catch (Exception e) {
 			System.err
-					.println("An unrecoverable exception occured trying to start the EMFServerThread: "
+					.println("An unrecoverable exceptions occured trying to start the EMFServerThread: "
 							+ e);
 			e.printStackTrace(System.err);
 			System.exit(-1);

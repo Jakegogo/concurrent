@@ -1,6 +1,6 @@
 package transfer.deserializer;
 
-import dbcache.support.asm.util.AsmUtils;
+import utils.enhance.asm.util.AsmUtils;
 
 import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
@@ -11,7 +11,7 @@ import transfer.compile.AsmDeserializerContext;
 import transfer.core.ByteMeta;
 import transfer.def.TransferConfig;
 import transfer.def.Types;
-import transfer.exception.IllegalTypeException;
+import transfer.exceptions.IllegalTypeException;
 import transfer.utils.BitUtils;
 import transfer.utils.IntegerMap;
 import transfer.utils.TypeUtils;
@@ -123,12 +123,12 @@ public class ArrayDeSerializer implements Deserializer, Opcodes {
         mv.visitJumpInsn(IF_ICMPEQ, l2);
         Label l3 = new Label();
         mv.visitLabel(l3);
-        mv.visitTypeInsn(NEW, "transfer/exception/IllegalTypeException");
+        mv.visitTypeInsn(NEW, "transfer/exceptions/IllegalTypeException");
         mv.visitInsn(DUP);
         mv.visitVarInsn(ILOAD, 5);
         mv.visitIntInsn(BIPUSH, Types.COLLECTION);
         mv.visitVarInsn(ALOAD, 2);
-        mv.visitMethodInsn(INVOKESPECIAL, "transfer/exception/IllegalTypeException", "<init>", "(BBLjava/lang/reflect/Type;)V", false);
+        mv.visitMethodInsn(INVOKESPECIAL, "transfer/exceptions/IllegalTypeException", "<init>", "(BBLjava/lang/reflect/Type;)V", false);
         mv.visitInsn(ATHROW);
         mv.visitLabel(l2);
 

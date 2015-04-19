@@ -1,7 +1,8 @@
 package dbcache.support.asm;
 
 import dbcache.anno.ChangeFields;
-import dbcache.support.asm.util.AsmUtils;
+import utils.enhance.asm.AsmAccessHelper;
+import utils.enhance.asm.util.AsmUtils;
 import dbcache.utils.IntegerCounter;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.MethodVisitor;

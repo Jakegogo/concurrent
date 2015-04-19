@@ -2,7 +2,7 @@ package dbcache;
 
 import dbcache.conf.CacheConfig;
 import dbcache.persist.PersistStatus;
-import dbcache.utils.executors.SimpleLinkingRunnable;
+import utils.thread.SimpleLinkingRunnable;
 import org.apache.commons.lang.builder.EqualsBuilder;
 
 import java.util.concurrent.atomic.AtomicIntegerArray;

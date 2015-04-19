@@ -1,7 +1,7 @@
 package dbcache.test;
 
-import dbcache.support.asm.AsmAccessHelper;
-import dbcache.support.asm.ValueSetter;
+import utils.enhance.asm.AsmAccessHelper;
+import utils.enhance.asm.ValueSetter;
 
 import org.apache.mina.util.ConcurrentHashSet;
 

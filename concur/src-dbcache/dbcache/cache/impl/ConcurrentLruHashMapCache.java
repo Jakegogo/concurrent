@@ -2,9 +2,9 @@ package dbcache.cache.impl;
 
 import dbcache.cache.CacheUnit;
 import dbcache.utils.CacheUtils;
-import dbcache.utils.concurrent.ConcurrentLRUCache;
-import dbcache.utils.concurrent.ConcurrentReferenceHashMap;
-import dbcache.utils.concurrent.ConcurrentReferenceHashMap.ReferenceType;
+import utils.collections.concurrent.ConcurrentLRUCache;
+import utils.collections.concurrent.ConcurrentReferenceHashMap;
+import utils.collections.concurrent.ConcurrentReferenceHashMap.ReferenceType;
 
 import org.springframework.stereotype.Component;
 

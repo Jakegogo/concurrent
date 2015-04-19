@@ -1,7 +1,7 @@
 package dbcache.index;
 
 import dbcache.persist.PersistStatus;
-import dbcache.utils.concurrent.ConcurrentLinkedHashMap8;
+import utils.collections.concurrent.ConcurrentLinkedHashMap8;
 
 import java.io.Serializable;
 import java.util.concurrent.ConcurrentMap;

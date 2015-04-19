@@ -1,11 +1,11 @@
 package readwritelock;
 
-import com.jake.utils.ConcurrentWeakHashMap;
-import dbcache.utils.JsonUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import readwritelock.checkdeadlock.DebugReentrantReadWriteLock;
 import readwritelock.checkdeadlock.LockedThreadInfo;
+import utils.JsonUtils;
+import utils.collections.concurrent.ConcurrentWeakHashMap;
 
 import java.text.SimpleDateFormat;
 import java.util.*;

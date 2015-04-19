@@ -3,10 +3,10 @@ package dbcache.support.jdbc;
 import dbcache.anno.Shard;
 import dbcache.conf.shard.ShardStrategy;
 import dbcache.pkey.IdGenerator;
-import dbcache.support.asm.util.AsmUtils;
+import utils.enhance.asm.util.AsmUtils;
 import dbcache.utils.MutableInteger;
-import dbcache.utils.StringUtils;
-import dbcache.utils.concurrent.IdentityHashMap;
+import utils.StringUtils;
+import utils.collections.concurrent.IdentityHashMap;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;

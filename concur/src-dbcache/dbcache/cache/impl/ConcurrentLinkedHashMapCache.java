@@ -4,8 +4,8 @@ import com.googlecode.concurrentlinkedhashmap.ConcurrentLinkedHashMap;
 import com.googlecode.concurrentlinkedhashmap.EvictionListener;
 
 import dbcache.cache.CacheUnit;
-import dbcache.utils.concurrent.ConcurrentReferenceHashMap;
-import dbcache.utils.concurrent.ConcurrentReferenceHashMap.ReferenceType;
+import utils.collections.concurrent.ConcurrentReferenceHashMap;
+import utils.collections.concurrent.ConcurrentReferenceHashMap.ReferenceType;
 
 import org.springframework.stereotype.Component;
 
