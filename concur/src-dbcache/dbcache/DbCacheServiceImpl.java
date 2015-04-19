@@ -234,49 +234,9 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 	}
 
 
-
 	@Override
 	public Collection<PK> listIdByIndex(String indexName, Object indexValue) {
 		return this.indexService.get(indexName, indexValue);
-	}
-
-
-	@Override
-	public List<T> pageByIndex(String indexName, Object indexValue, int page,
-			int size) {
-
-		final Collection<PK> idList = this.indexService.get(indexName, indexValue);
-		if(idList == null || idList.isEmpty()) {
-			return Collections.emptyList();
-		}
-
-		int startIndex = (page - 1) * size;
-		int endIndex = page * size;
-		if(startIndex < 0) {
-			startIndex = 0;
-		}
-		if(endIndex > idList.size()) {
-			endIndex = idList.size();
-		}
-
-		List<T> result = new ArrayList<T>();
-		
-		int index = 0;
-		for(PK id : idList) {
-			//分页操作
-			if(index < startIndex) {
-				continue;
-			} else if(index > endIndex) {
-				break;
-			}
-
-			T temp = this.get(id);
-			if(temp != null) {
-				result.add(temp);
-				index ++;
-			}
-		}
-		return result;
 	}
 
 

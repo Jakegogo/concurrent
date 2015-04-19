@@ -91,19 +91,6 @@ public interface DbCacheService<T extends IEntity<PK>, PK extends Comparable<PK>
 
 
 	/**
-	 * 根据索引获取实体列表
-	 * <br/>内部已维护索引表
-	 * @see dbcache.index.DbIndexService <PK>
-	 * @param indexName 索引名
-	 * @param indexValue 索引值
-	 * @param page 页码
-	 * @param size 每页大小
-	 * @return
-	 */
-	List<T> pageByIndex(String indexName, Object indexValue, int page, int size);
-
-
-	/**
 	 * 获取入库线程池
 	 * @return ExecutorService
 	 */
