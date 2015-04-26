@@ -48,7 +48,7 @@ public class CommonCache<R> {
     private CacheQuerier<R> cacheQuery;
 
 
-    public CommonCache() {
+    protected CommonCache() {
     }
 
     public CommonCache(CacheQuerier<R> cacheQuery) {
