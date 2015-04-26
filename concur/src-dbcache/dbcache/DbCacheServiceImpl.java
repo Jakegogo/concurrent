@@ -269,13 +269,13 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 		
 		boolean exists = false;// 缓存中是否还有实体
 		if (wrapper == null) {// 缓存还不存在
-			cacheObject = configFactory.createCacheObject(entity, entity.getClass(), indexService, key, cacheUnit, cacheConfig);
+			cacheObject = configFactory.createCacheObject(entity, this.clazz, indexService, key, cacheUnit, cacheConfig);
 			wrapper = cacheUnit.putIfAbsent(key, cacheObject);
 			if (wrapper != null && wrapper.get() != null) {
 				cacheObject = (CacheObject<T>) wrapper.get();
 			}
 		} else if(cacheObject == null) {// 缓存为NULL
-			cacheObject = configFactory.createCacheObject(entity, entity.getClass(), indexService, key, cacheUnit, cacheConfig);
+			cacheObject = configFactory.createCacheObject(entity, this.clazz, indexService, key, cacheUnit, cacheConfig);
 			wrapper = cacheUnit.replace(key, null, cacheObject);
 			if (wrapper != null && wrapper.get() != null) {
 				cacheObject = (CacheObject<T>) wrapper.get();

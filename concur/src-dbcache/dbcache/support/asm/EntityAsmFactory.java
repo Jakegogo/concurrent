@@ -1,10 +1,10 @@
 package dbcache.support.asm;
 
-import utils.enhance.asm.AsmClassLoader;
-import utils.enhance.asm.util.AsmUtils;
-
+import dbcache.EnhanceAccessError;
 import org.apache.http.annotation.ThreadSafe;
 import org.objectweb.asm.*;
+import utils.enhance.asm.AsmClassLoader;
+import utils.enhance.asm.util.AsmUtils;
 
 import java.io.IOException;
 import java.util.concurrent.ConcurrentHashMap;
@@ -113,7 +113,7 @@ public class EntityAsmFactory {
 		try {
 			reader = new ClassReader(clazz.getName());
 		} catch (IOException ioexception) {
-			throw new RuntimeException(ioexception);
+			throw new EnhanceAccessError("无法获取类信息:" + clazz.getName(), ioexception);
 		}
 		ClassWriter writer = new ClassWriter(ClassWriter.COMPUTE_MAXS);
 

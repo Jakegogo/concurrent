@@ -1,19 +1,18 @@
 package dbcache.test;
 
-import dbcache.EnhancedEntity;
-import dbcache.cache.common.CacheQuerier;
-import dbcache.cache.CacheUnit;
 import dbcache.DbCacheService;
+import dbcache.DbService;
+import dbcache.EnhancedEntity;
+import dbcache.cache.CacheUnit;
+import dbcache.cache.common.CacheQuerier;
 import dbcache.cache.common.CommonCache;
 import dbcache.conf.DbRuleService;
 import dbcache.support.asm.EntityAsmFactory;
 import dbcache.support.jdbc.JdbcSupport;
-import dbcache.utils.*;
-import utils.JsonUtils;
-import utils.collections.concurrent.ConcurrentWeakHashMap;
+import dbcache.utils.CacheUtils;
+import dbcache.utils.JdbcUtil;
 import javassist.CannotCompileException;
 import javassist.NotFoundException;
-
 import org.apache.mina.util.ConcurrentHashSet;
 import org.junit.Assert;
 import org.junit.runner.RunWith;
@@ -22,10 +21,11 @@ import org.springframework.stereotype.Component;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.util.ReflectionUtils;
+import utils.JsonUtils;
+import utils.collections.concurrent.ConcurrentWeakHashMap;
 import utils.thread.ThreadUtils;
 
 import javax.annotation.Resource;
-
 import java.io.Serializable;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
@@ -33,7 +33,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(locations = { "classpath:applicationContext.xml" })
@@ -42,6 +41,9 @@ public class Test {
 
 	@Autowired
 	private DbCacheService<Entity, Long> cacheService;
+
+	@Autowired
+	private DbService dbService;
 	
 	@Autowired
 	private JdbcSupport jdbcSupport;
@@ -96,7 +98,7 @@ public class Test {
 
 		for(int i = 0;i <= 100000000;i++) {
 			for (long j = 1; j < 10; j++) {
-				Entity entity = this.cacheService.get(j);
+				Entity entity = this.dbService.get(Entity.class, j);
 				entity.addNum();
 //			if(i % 1000000 == 0) {
 //				entity.addNum(1);
@@ -111,11 +113,11 @@ public class Test {
 //			Thread.sleep(10);
 //			}
 				
-				ConcurrentHashSet<Long> friends = entity.getFriends();
-				friends.add(Long.valueOf(new Random().nextInt(3)));
-				entity.setFriends(friends);
+//				ConcurrentHashSet<Long> friends = entity.getFriends();
+//				friends.add(Long.valueOf(new Random().nextInt(3)));
+//				entity.setFriends(friends);
 
-				this.cacheService.submitUpdate(entity);
+				this.dbService.submitUpdate(entity);
 				if (i % 10000000 == 0) {
 //				System.out.println("processing");
 				System.out.println(ThreadUtils.dumpThreadPool("入库线程池", this.cacheService.getThreadPool()));

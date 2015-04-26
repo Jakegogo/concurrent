@@ -40,7 +40,7 @@ public interface ConfigFactory {
 	 * @return
 	 */
 	@SuppressWarnings("rawtypes")
-	public <T extends IEntity<PK>, PK extends Comparable<PK> & Serializable> CacheObject<T> createCacheObject(T entity, Class<? extends IEntity> class1, DbIndexService<?> indexService, Object key, CacheUnit cacheUnit, CacheConfig<T> cacheConfig);
+	public <T extends IEntity<PK>, PK extends Comparable<PK> & Serializable> CacheObject<T> createCacheObject(T entity, Class<T> class1, DbIndexService<?> indexService, Object key, CacheUnit cacheUnit, CacheConfig<T> cacheConfig);
 
 
 	/**
@@ -49,7 +49,7 @@ public interface ConfigFactory {
 	 * @return
 	 */
 	@SuppressWarnings("rawtypes")
-	public DbCacheService getDbCacheServiceBean(Class<? extends IEntity> clz);
+	public <T extends IEntity<PK>, PK extends Comparable<PK> & Serializable> DbCacheService<T, PK> getDbCacheServiceBean(Class<T> clz);
 
 
 	/**

@@ -3,15 +3,10 @@ package dbcache.conf.impl;
 import dbcache.*;
 import dbcache.cache.CacheUnit;
 import dbcache.conf.*;
-import dbcache.DbCacheInitError;
 import dbcache.index.DbIndexService;
 import dbcache.persist.service.DbPersistService;
 import dbcache.pkey.IdGenerator;
 import dbcache.support.asm.*;
-import utils.thread.ThreadUtils;
-import utils.thread.SimpleLinkingRunnable;
-import utils.enhance.asm.AsmAccessHelper;
-import utils.enhance.asm.ValueGetter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.helpers.FormattingTuple;
@@ -22,6 +17,11 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
 import org.springframework.util.ReflectionUtils;
 import org.springframework.util.ReflectionUtils.FieldCallback;
+import utils.collections.concurrent.ConcurrentHashMapV8;
+import utils.enhance.asm.AsmAccessHelper;
+import utils.enhance.asm.ValueGetter;
+import utils.thread.SimpleLinkingRunnable;
+import utils.thread.ThreadUtils;
 
 import javax.annotation.PostConstruct;
 import javax.management.*;
@@ -33,7 +33,6 @@ import java.lang.reflect.Modifier;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicIntegerArray;
 import java.util.concurrent.atomic.AtomicReference;
@@ -96,22 +95,22 @@ public class ConfigFactoryImpl implements ConfigFactory, DbCacheMBean {
 	 * DbCacheService实例映射
 	 */
 	@SuppressWarnings("rawtypes")
-	private ConcurrentMap<Class<? extends IEntity>, DbCacheService> dbCacheServiceBeanMap = new ConcurrentHashMap<Class<? extends IEntity>, DbCacheService>();
+	private ConcurrentMap<Class<? extends IEntity>, DbCacheService> dbCacheServiceBeanMap = new ConcurrentHashMapV8<Class<? extends IEntity>, DbCacheService>();
 
 	/**
 	 * 配置映射
 	 */
-	private ConcurrentMap<Class<?>, CacheConfig<?>> cacheConfigMap = new ConcurrentHashMap<Class<?>, CacheConfig<?>>();
+	private ConcurrentMap<Class<?>, CacheConfig<?>> cacheConfigMap = new ConcurrentHashMapV8<Class<?>, CacheConfig<?>>();
 
 	/**
 	 * 持久化服务
 	 */
-	private ConcurrentMap<PersistType, DbPersistService> persistServiceMap = new ConcurrentHashMap<PersistType, DbPersistService>();
+	private ConcurrentMap<PersistType, DbPersistService> persistServiceMap = new ConcurrentHashMapV8<PersistType, DbPersistService>();
 
 
 	@SuppressWarnings({ "rawtypes" })
 	@Override
-	public DbCacheService getDbCacheServiceBean(Class<? extends IEntity> clz) {
+	public <T extends IEntity<PK>, PK extends Comparable<PK> & Serializable> DbCacheService<T, PK> getDbCacheServiceBean(Class<T> clz) {
 
 		DbCacheService service = this.dbCacheServiceBeanMap.get(clz);
 		if(service != null) {
@@ -128,16 +127,14 @@ public class ConfigFactoryImpl implements ConfigFactory, DbCacheMBean {
 
 
 	@SuppressWarnings({ "rawtypes", "unchecked" })
-	private DbCacheService createCacheService(Class<? extends IEntity> clz) {
-
-		DbCacheServiceImpl service = null;
+	private <T extends IEntity<PK>, PK extends Comparable<PK> & Serializable> DbCacheService<T, PK> createCacheService(Class<T> clz) {
 
 		try {
 			//获取缓存配置
 			CacheConfig cacheConfig = this.getCacheConfig(clz);
 
 			//创建新的bean
-			service = applicationContext.getAutowireCapableBeanFactory().createBean(DbCacheServiceImpl.class);
+			DbCacheServiceImpl service = applicationContext.getAutowireCapableBeanFactory().createBean(DbCacheServiceImpl.class);
 
 
 			//设置实体类
@@ -211,7 +208,7 @@ public class ConfigFactoryImpl implements ConfigFactory, DbCacheMBean {
 
 			// 初始化DbCache服务
 			service.init();
-
+			return service;
 		} catch(NoSuchFieldException e) {
 			e.printStackTrace();
 			throw new DbCacheInitError("初始化实体DbCacheService异常" ,e);
@@ -220,7 +217,6 @@ public class ConfigFactoryImpl implements ConfigFactory, DbCacheMBean {
 			throw new DbCacheInitError("初始化实体DbCacheService异常" ,e);
 		}
 
-		return service;
 	}
 
 	
@@ -368,7 +364,7 @@ public class ConfigFactoryImpl implements ConfigFactory, DbCacheMBean {
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	@Override
 	public <T extends IEntity<PK>, PK extends Comparable<PK> & Serializable> CacheObject<T> createCacheObject(
-			T entity, Class<? extends IEntity> entityClazz,
+			T entity, Class<T> entityClazz,
 			DbIndexService<?> indexService, Object key, CacheUnit cacheUnit, CacheConfig<T> cacheConfig) {
 
 		// 启用动态更新
