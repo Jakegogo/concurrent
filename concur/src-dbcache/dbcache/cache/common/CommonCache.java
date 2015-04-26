@@ -4,7 +4,6 @@ import dbcache.DbCacheService;
 import dbcache.cache.CacheUnit;
 import dbcache.cache.impl.ConcurrentLruHashMapCache;
 import utils.collections.concurrent.ConcurrentHashMapV8;
-import org.apache.commons.lang.builder.HashCodeBuilder;
 
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.locks.Lock;
@@ -20,7 +19,7 @@ public class CommonCache<R> {
      * 默认缓存
      */
     private static CacheUnit defaultCacheUnit = new ConcurrentLruHashMapCache() {{
-        this.init("DEFAULT_COMMON_CACHE", 100000, Runtime.getRuntime().availableProcessors());
+        this.init("DEFAULT_COMMON_CACHE", 10000, Runtime.getRuntime().availableProcessors());
     }};
 
     /**
@@ -31,7 +30,7 @@ public class CommonCache<R> {
     /**
      * 等待锁map {key:lock}
      */
-    private final ConcurrentMap<Integer, Lock> WAITING_LOCK_MAP = new ConcurrentHashMapV8<Integer, Lock>();
+    private final ConcurrentMap<Object, Lock> WAITING_LOCK_MAP = new ConcurrentHashMapV8<Object, Lock>();
 
     /**
      * 缓存单元
@@ -57,7 +56,8 @@ public class CommonCache<R> {
     }
 
     public R get(Object... key) {
-        Integer cachedKey = new HashCodeBuilder().append(this).append(key).toHashCode();
+
+        String cachedKey = buildCacheKey(key);
         CacheUnit.ValueWrapper cacheWrapper = getCacheUnit().get(cachedKey);
         if(cacheWrapper != null) {
             return (R) cacheWrapper.get();
@@ -93,9 +93,17 @@ public class CommonCache<R> {
         return null;
     }
 
+    private String buildCacheKey(Object... key) {
+        StringBuilder keyBuilder = new StringBuilder();
+        for (Object key1 : key) {
+            keyBuilder.append(key1).append("_");
+        }
+        return keyBuilder.toString();
+    }
+
 
     public R put(Object key, Object value) {
-        CacheUnit.ValueWrapper cacheWrapper = getCacheUnit().put(new HashCodeBuilder().append(this).append(key).toHashCode(), value);
+        CacheUnit.ValueWrapper cacheWrapper = getCacheUnit().put(buildCacheKey(key), value);
         if(cacheWrapper != null) {
             return (R) cacheWrapper.get();
         }
@@ -104,7 +112,7 @@ public class CommonCache<R> {
 
 
     public R put(Object[] key, Object value) {
-        CacheUnit.ValueWrapper cacheWrapper = getCacheUnit().put(new HashCodeBuilder().append(this).append(key).toHashCode(), value);
+        CacheUnit.ValueWrapper cacheWrapper = getCacheUnit().put(buildCacheKey(key), value);
         if(cacheWrapper != null) {
             return (R) cacheWrapper.get();
         }
@@ -114,7 +122,7 @@ public class CommonCache<R> {
 
     public R putIfAbsent(Object key, Object value) {
         this.get(key);
-        CacheUnit.ValueWrapper cacheWrapper = getCacheUnit().putIfAbsent(new HashCodeBuilder().append(this).append(key).toHashCode(), value);
+        CacheUnit.ValueWrapper cacheWrapper = getCacheUnit().putIfAbsent(buildCacheKey(key), value);
         if(cacheWrapper != null) {
             return (R) cacheWrapper.get();
         }
@@ -124,7 +132,7 @@ public class CommonCache<R> {
 
     public R putIfAbsent(Object[] key, Object value) {
         this.get(key);
-        CacheUnit.ValueWrapper cacheWrapper = getCacheUnit().putIfAbsent(new HashCodeBuilder().append(this).append(key).toHashCode(), value);
+        CacheUnit.ValueWrapper cacheWrapper = getCacheUnit().putIfAbsent(buildCacheKey(key), value);
         if(cacheWrapper != null) {
             return (R) cacheWrapper.get();
         }
@@ -133,7 +141,7 @@ public class CommonCache<R> {
 
 
     public R replace(Object key, Object oldValue, Object newValue) {
-        CacheUnit.ValueWrapper cacheWrapper = getCacheUnit().replace(new HashCodeBuilder().append(this).append(key).toHashCode(), oldValue, newValue);
+        CacheUnit.ValueWrapper cacheWrapper = getCacheUnit().replace(buildCacheKey(key), oldValue, newValue);
         if(cacheWrapper != null) {
             return (R) cacheWrapper.get();
         }
@@ -142,7 +150,7 @@ public class CommonCache<R> {
 
 
     public R replace(Object[] key, Object oldValue, Object newValue) {
-        CacheUnit.ValueWrapper cacheWrapper = getCacheUnit().replace(new HashCodeBuilder().append(this).append(key).toHashCode(), oldValue, newValue);
+        CacheUnit.ValueWrapper cacheWrapper = getCacheUnit().replace(buildCacheKey(key), oldValue, newValue);
         if(cacheWrapper != null) {
             return (R) cacheWrapper.get();
         }
@@ -151,7 +159,7 @@ public class CommonCache<R> {
 
 
     public R evict(Object... key) {
-        CacheUnit.ValueWrapper cacheWrapper = getCacheUnit().evict(new HashCodeBuilder().append(this).append(key).toHashCode());
+        CacheUnit.ValueWrapper cacheWrapper = getCacheUnit().evict(buildCacheKey(key));
         if(cacheWrapper != null) {
             return (R) cacheWrapper.get();
         }
