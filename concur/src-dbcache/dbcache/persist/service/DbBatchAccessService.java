@@ -18,7 +18,6 @@ public interface DbBatchAccessService extends DbAccessService {
 	 */
 	public void save(Class<?> clzz, Collection<Object> entitys);
 
-
 	/**
 	 * 批量更新实体对象
 	 * @param clzz 实体类
