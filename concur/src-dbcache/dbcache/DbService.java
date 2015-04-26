@@ -5,7 +5,7 @@ import java.util.Collection;
 import java.util.List;
 
 /**
- * 通用DbCacheService
+ * 通用DbCacheService,默认使用LRU回收策略
  * @see DbCacheService
  * Created by Jake on 2015/4/26.
  */

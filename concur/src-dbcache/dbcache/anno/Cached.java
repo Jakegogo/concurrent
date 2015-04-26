@@ -47,16 +47,16 @@ public @interface Cached {
 
 
 	/**
-	 * 索引缓存大小,不设置则用entityCache同一个缓存的entitySize
+	 * 索引缓存大小,不设置则共用entityCache缓存(大小为entitySize)
 	 * @return
 	 */
 	public int indexSize() default 0;
 
 	/**
-	 * 并发线程数,默认为运行时CPU核数
+	 * 并发线程数,默认为运行时CPU核数(Runtime.getRuntime().availableProcessors())
 	 * @return
 	 */
-	public int concurrencyLevel() default 0;
+	public int concurrencyLevel() default 16;
 
 	/**
 	 * 是否启用索引服务
