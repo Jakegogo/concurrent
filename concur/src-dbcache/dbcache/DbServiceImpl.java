@@ -1,7 +1,7 @@
 package dbcache;
 
 import dbcache.anno.ThreadSafe;
-import dbcache.conf.ConfigFactory;
+import dbcache.conf.DbConfigFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -19,7 +19,7 @@ import java.util.List;
 public class DbServiceImpl implements DbService {
 
     @Autowired
-    private ConfigFactory configFactory;
+    private DbConfigFactory configFactory;
 
     @Override
     public <T extends IEntity<PK>, PK extends Comparable<PK> & Serializable> T get(Class<T> clazz, PK id) {

@@ -4,7 +4,7 @@ import dbcache.DbCacheService;
 import dbcache.EntityLoadListener;
 import dbcache.IEntity;
 import dbcache.conf.CacheConfig;
-import dbcache.conf.ConfigFactory;
+import dbcache.conf.DbConfigFactory;
 import dbcache.DbCacheInitError;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,7 +36,7 @@ public class DbCacheInjectProcessor extends InstantiationAwareBeanPostProcessorA
 
 
 	@Autowired
-	private ConfigFactory configFactory;
+	private DbConfigFactory configFactory;
 
 
 	@Override

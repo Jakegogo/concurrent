@@ -15,7 +15,7 @@ import java.util.concurrent.atomic.AtomicIntegerArray;
  * @author Jake
  * @date 2014年9月14日下午8:57:08
  */
-public interface ConfigFactory {
+public interface DbConfigFactory {
 
 
 	/**

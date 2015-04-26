@@ -8,7 +8,7 @@ import java.lang.annotation.Target;
 
 /**
  * 内部自动注入
- * @see dbcache.conf.impl.ConfigFactoryImpl.createCacheService(Class<? extends IEntity>)
+ * @see DbConfigFactory#getDbCacheServiceBean(java.lang.Class<T>)
  * @author Jake
  * @date 2014年9月21日下午4:50:14
  */

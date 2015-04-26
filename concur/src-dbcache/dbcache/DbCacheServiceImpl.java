@@ -3,7 +3,7 @@ package dbcache;
 import dbcache.anno.ThreadSafe;
 import dbcache.cache.CacheUnit;
 import dbcache.conf.CacheConfig;
-import dbcache.conf.ConfigFactory;
+import dbcache.conf.DbConfigFactory;
 import dbcache.conf.Inject;
 import dbcache.dbaccess.DbAccessService;
 import dbcache.index.DbIndexService;
@@ -72,7 +72,7 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 	private CacheConfig<T> cacheConfig;
 
 	@Autowired
-	private ConfigFactory configFactory;
+	private DbConfigFactory configFactory;
 
 	@Autowired
 	@Qualifier("jdbcDbAccessServiceImpl")

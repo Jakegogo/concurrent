@@ -43,12 +43,12 @@ import java.util.concurrent.atomic.AtomicReference;
  * @date 2014年9月14日下午8:57:54
  */
 @Component
-public class ConfigFactoryImpl implements ConfigFactory, DbCacheMBean {
+public class DbConfigFactoryImpl implements DbConfigFactory, DbCacheMBean {
 
 	/**
 	 * logger
 	 */
-	private static final Logger logger = LoggerFactory.getLogger(ConfigFactoryImpl.class);
+	private static final Logger logger = LoggerFactory.getLogger(DbConfigFactory.class);
 
 
 	private static final String entityClassProperty = "clazz";
