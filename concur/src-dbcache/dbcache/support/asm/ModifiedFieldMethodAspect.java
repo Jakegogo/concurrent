@@ -1,9 +1,7 @@
 package dbcache.support.asm;
 
 import dbcache.anno.ChangeFields;
-import utils.enhance.asm.AsmAccessHelper;
-import utils.enhance.asm.util.AsmUtils;
-import dbcache.utils.IntegerCounter;
+import dbcache.utils.MutableInteger;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
@@ -12,6 +10,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.ReflectionUtils;
 import org.springframework.util.ReflectionUtils.FieldCallback;
 import org.springframework.util.ReflectionUtils.MethodCallback;
+import utils.enhance.asm.AsmAccessHelper;
+import utils.enhance.asm.util.AsmUtils;
 
 import java.beans.IntrospectionException;
 import java.beans.PropertyDescriptor;
@@ -80,7 +80,7 @@ public class ModifiedFieldMethodAspect extends AbstractAsmMethodProxyAspect {
 		final Map<String, FieldMetaData> fieldsMap = indexesMetaData.fields;// 属性名 - 属性信息
 
 		//扫描属性注解
-		final IntegerCounter fieldIndexCounter = new IntegerCounter();
+		final MutableInteger fieldIndexCounter = new MutableInteger();
 		ReflectionUtils.doWithFields(clazz, new FieldCallback() {
 			public void doWith(Field field) throws IllegalArgumentException, IllegalAccessException {
 				// 忽略静态属性和临时属性

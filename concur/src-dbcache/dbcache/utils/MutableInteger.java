@@ -7,7 +7,10 @@ package dbcache.utils;
  *
  */
 public class MutableInteger {
-	private int val;
+
+	private int val = 0;
+
+	public MutableInteger(){}
 
 	public MutableInteger(int val) {
 		this.val = val;
@@ -23,6 +26,14 @@ public class MutableInteger {
 
 	public int incrementAndGet() {
 		return ++this.val;
+	}
+
+	public int getAndIncrement() {
+		return this.val++;
+	}
+
+	public void increment() {
+		this.val++ ;
 	}
 
 	// 为了方便打印
