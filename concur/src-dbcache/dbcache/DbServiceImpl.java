@@ -63,6 +63,9 @@ public class DbServiceImpl implements DbService {
 
     // 获取DbCacheService
     private <T extends IEntity<PK>, PK extends Comparable<PK> & Serializable> DbCacheService<T, PK> getDbCacheService(Class<T> clazz) {
+        if (clazz == null) {
+            throw new DbCacheInitError("无法获取DbCacheService:null");
+        }
         DbCacheService<T, PK> dbCacheService = configFactory.getDbCacheServiceBean(clazz);
         if (dbCacheService == null) {
             throw new DbCacheInitError("无法获取DbCacheService<" + clazz.getSimpleName() + ",?>");
