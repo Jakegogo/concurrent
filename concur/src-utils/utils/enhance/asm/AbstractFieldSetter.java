@@ -18,7 +18,7 @@ public abstract class AbstractFieldSetter<T> implements ValueSetter<T>, Cloneabl
 
     @Override
     @SuppressWarnings("unchecked")
-    public ValueSetter<T> clone() {
+    public ValueSetter<T> doClone() {
         try {
             return (ValueSetter<T>) super.clone();
         } catch (CloneNotSupportedException e) {

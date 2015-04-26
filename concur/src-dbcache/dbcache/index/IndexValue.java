@@ -48,9 +48,7 @@ public class IndexValue<PK extends Comparable<PK> & Serializable> extends IndexK
 
 		IndexValue that = (IndexValue) o;
 
-		if (!id.equals(that.id)) return false;
-
-		return true;
+		return id.equals(that.id);
 	}
 
 	@Override

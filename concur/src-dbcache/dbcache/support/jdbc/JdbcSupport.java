@@ -1025,7 +1025,7 @@ public class JdbcSupport {
 
 
 	@SuppressWarnings("rawtypes")
-	private static final void buildTypes(ResultSetMetaData rsmd, Map<String, AttributeInfo> attrTypeMap) throws SQLException {
+	private static void buildTypes(ResultSetMetaData rsmd, Map<String, AttributeInfo> attrTypeMap) throws SQLException {
 		int i = 1;
     	for (AttributeInfo attributeInfo : attrTypeMap.values()) {
 			attributeInfo.setSqlType(rsmd.getColumnType(i));

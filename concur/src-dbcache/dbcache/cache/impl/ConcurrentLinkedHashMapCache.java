@@ -191,8 +191,7 @@ public class ConcurrentLinkedHashMapCache implements CacheUnit {
 
 		@Override
 		public boolean equals(Object o) {
-			if (null == o) return true;
-			return false;
+			return o == null;
 		}
 
 		@Override
@@ -235,14 +234,20 @@ public class ConcurrentLinkedHashMapCache implements CacheUnit {
 
 		@Override
 		public boolean equals(Object o) {
-			if (this == o) return true;
-			if (o == null || !(o instanceof ValueWrapper)) return false;
+			if (this == o) {
+				return true;
+			}
+			if (o == null || !(o instanceof ValueWrapper)) {
+				return false;
+			}
 
 			SimpleValueWrapper that = (SimpleValueWrapper) o;
 
-			if (value != null ? !value.equals(that.value) : that.value != null) return false;
+			if (this.value == null) {
+				return that.value == null;
+			}
 
-			return true;
+			return value.equals(that.value);
 		}
 
 		@Override

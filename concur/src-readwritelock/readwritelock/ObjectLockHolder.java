@@ -118,8 +118,7 @@ public class ObjectLockHolder {
 	 */
 	public ObjectLock getLock(Object object) {
 		Holder holder = getHolder(object.getClass());
-		ObjectLock lock = holder.getLock(object);
-		return lock;
+		return holder.getLock(object);
 	}
 
 	/**

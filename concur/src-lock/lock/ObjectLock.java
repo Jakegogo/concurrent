@@ -1,9 +1,9 @@
 package lock;
 
-import java.util.concurrent.locks.ReentrantLock;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * 对象锁对象<br/>
@@ -32,7 +32,7 @@ public class ObjectLock extends ReentrantLock implements Comparable<ObjectLock> 
 	/** 锁的排序依据 */
 	private final Comparable value;
 	/** 该对象锁所锁定的是否实体 */
-	private final boolean entity;
+	private final boolean isEntity;
 
 	/**
 	 * 构造指定对象的对象锁
@@ -53,13 +53,9 @@ public class ObjectLock extends ReentrantLock implements Comparable<ObjectLock> 
 		if (object instanceof IEntity) {
 			value = ((IEntity) object).getIdentity();
 		} else {
-			value = new Integer(System.identityHashCode(object));
+			value = Integer.valueOf(System.identityHashCode(object));
 		}
-		if (IENTITY_CLASS.isAssignableFrom(clz)) {
-			entity = true;
-		} else {
-			entity = false;
-		}
+		isEntity = IENTITY_CLASS.isAssignableFrom(clz);
 	}
 
 	/**
@@ -71,10 +67,7 @@ public class ObjectLock extends ReentrantLock implements Comparable<ObjectLock> 
 		if (this.clz != other.clz) {
 			return false;
 		}
-		if (this.value.compareTo(other.value) == 0) {
-			return true;
-		}
-		return false;
+		return this.value.compareTo(other.value) == 0;
 	}
 
 	// Getter ...
@@ -100,7 +93,7 @@ public class ObjectLock extends ReentrantLock implements Comparable<ObjectLock> 
 	 * @return
 	 */
 	public boolean isEntity() {
-		return entity;
+		return isEntity;
 	}
 
 	@Override

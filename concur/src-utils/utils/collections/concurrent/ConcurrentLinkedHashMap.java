@@ -32,20 +32,14 @@
 
 package utils.collections.concurrent;
 
+import utils.collections.concurrent.ConcurrentLinkedHashMap.Node.State;
+
 import java.io.Serializable;
-import java.util.AbstractMap;
-import java.util.AbstractSet;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
-
-import utils.collections.concurrent.ConcurrentLinkedHashMap.Node.State;
 
 // 支持FIFO,LRU,SECOND_CHANCE
 
@@ -502,7 +496,7 @@ public class ConcurrentLinkedHashMap<K, V> extends AbstractMap<K, V> implements 
                 AtomicReferenceFieldUpdater.newUpdater(Node.class, Node.class, "next");
 
         public static enum State {
-            SENTINEL, UNLINKED, UNLINKING, LINKING, LINKED;
+            SENTINEL, UNLINKED, UNLINKING, LINKING, LINKED
         }
 
         private final K key;

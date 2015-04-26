@@ -76,7 +76,7 @@ public class ConcurrentWeekHashMapCache implements CacheUnit {
 				try {
 
 					long waitTimmer = TimeUnit.SECONDS.toMillis(1);
-					while (true) {
+					while (!Thread.interrupted()) {
 						try {
 							for (Iterator<FinalizableReferenceQueue> it = referenceQueues.iterator(); it.hasNext(); ) {
 								it.next().cleanUp(waitTimmer);
@@ -256,8 +256,7 @@ public class ConcurrentWeekHashMapCache implements CacheUnit {
 
 		@Override
 		public boolean equals(Object o) {
-			if (null == o) return true;
-			return false;
+			return o == null;
 		}
 
 		@Override
@@ -323,9 +322,11 @@ public class ConcurrentWeekHashMapCache implements CacheUnit {
 
 			SimpleValueWrapper that = (SimpleValueWrapper) o;
 
-			if (value != null ? !value.equals(that.value) : that.value != null) return false;
+			if (this.value == null) {
+				return that.value == null;
+			}
 
-			return true;
+			return value.equals(that.value);
 		}
 
 		@Override

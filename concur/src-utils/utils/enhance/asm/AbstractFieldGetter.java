@@ -19,7 +19,7 @@ public abstract class AbstractFieldGetter<T> implements ValueGetter<T>, Cloneabl
 
 	@Override
 	@SuppressWarnings("unchecked")
-	public ValueGetter<T> clone() {
+	public ValueGetter<T> doClone() {
 		try {
 			return (ValueGetter<T>) super.clone();
 		} catch (CloneNotSupportedException e) {

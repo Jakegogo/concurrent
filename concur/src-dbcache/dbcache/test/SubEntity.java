@@ -1,6 +1,5 @@
 package dbcache.test;
 
-import javax.persistence.Table;
 import javax.persistence.Transient;
 import java.util.HashSet;
 import java.util.Set;

@@ -21,9 +21,8 @@ public class NamedThreadFactory implements ThreadFactory {
 	}
 
 	public Thread newThread(Runnable r) {
-		Thread t = new Thread(group, r, namePrefix
+		return new Thread(group, r, namePrefix
 				+ threadNumber.getAndIncrement(), 0);
-		return t;
 	}
 
 }

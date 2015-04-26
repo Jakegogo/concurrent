@@ -26,7 +26,7 @@ public abstract class AbstractAsmMethodProxyAspect implements Opcodes {
 	 * 初始化类
 	 * @param constructorBuilder 构造方法构建器
 	 */
-	public void doInitClass(ConstructorBuilder constructorBuilder){};
+	public void doInitClass(ConstructorBuilder constructorBuilder){}
 	
 	/**
 	 * 方法执行前执行

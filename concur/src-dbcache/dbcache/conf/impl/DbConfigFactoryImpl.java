@@ -239,10 +239,6 @@ public class DbConfigFactoryImpl implements DbConfigFactory, DbCacheMBean {
 	public void registerEntityIdGenerator(Class<?> clazz, IdGenerator<?> idGenerator) {
 		//获取缓存配置
 		CacheConfig<?> cacheConfig = this.getCacheConfig(clazz);
-		if(cacheConfig == null) {
-			throw new IllegalArgumentException("找不到类:" + clazz.getName() + "配置.");
-		}
-
 		cacheConfig.setDefaultIdGenerator(idGenerator);
 	}
 
@@ -251,9 +247,6 @@ public class DbConfigFactoryImpl implements DbConfigFactory, DbCacheMBean {
 	public void registerEntityIdGenerator(int serverId, Class<?> clazz, IdGenerator<?> idGenerator) {
 		//获取缓存配置
 		CacheConfig<?> cacheConfig = this.getCacheConfig(clazz);
-		if(cacheConfig == null) {
-			throw new IllegalArgumentException("找不到类:" + clazz.getName() + "配置.");
-		}
 
 		Map<Integer, IdGenerator<?>> classIdGeneratorMap = cacheConfig.getIdGenerators();
 		if (idGenerator == null) {

@@ -42,15 +42,10 @@ public class CleanupThread extends Thread
     }
 
     @Override
-    public void start() {
+    public synchronized void start() {
         if(!started) {
-            synchronized (this)
-            {
-                if(!started) {
-                    super.start();
-                    started = true;
-                }
-            }
+            super.start();
+            started = true;
         }
     }
 
@@ -58,7 +53,7 @@ public class CleanupThread extends Thread
     public void run()
     {
 
-        while (true)
+        while (!Thread.interrupted())
         {
         	ConcurrentLRUCache c = null;
         	if (cleanQueue.peek() == null) {
@@ -101,7 +96,6 @@ public class CleanupThread extends Thread
                 c = cache.get();
                 if (c == null) {
                     caches.remove(cache);
-                    continue;
                 }
             }
         }

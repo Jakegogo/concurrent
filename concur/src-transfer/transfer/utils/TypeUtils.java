@@ -143,7 +143,7 @@ public class TypeUtils {
     }
 
 
-    public static final Byte castToByte(Object value) {
+    public static Byte castToByte(Object value) {
         if (value == null) {
             return null;
         }

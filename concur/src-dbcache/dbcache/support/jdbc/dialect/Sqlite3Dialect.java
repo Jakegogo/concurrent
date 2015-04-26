@@ -20,7 +20,6 @@ import dbcache.support.jdbc.Dialect;
 import dbcache.support.jdbc.TableInfo;
 
 import java.util.Collection;
-import java.util.Map.Entry;
 
 
 /**

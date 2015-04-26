@@ -90,11 +90,6 @@ public class DbRuleServiceImpl implements DbRuleService {
 	private String location = "classpath:ServerCfg.properties";
 
 	/**
-	 * 配置文件属性
-	 */
-	private Properties properties;
-
-	/**
 	 * 服标识ID列表
 	 */
 	private List<Integer> serverIdList;
@@ -185,7 +180,7 @@ public class DbRuleServiceImpl implements DbRuleService {
 
 		// 加载配置文件
 		Resource resource = this.applicationContext.getResource(location);
-		properties = new Properties();
+		Properties properties = new Properties();
 		try {
 			properties.load(resource.getInputStream());
 		} catch (IOException e) {
@@ -402,7 +397,7 @@ public class DbRuleServiceImpl implements DbRuleService {
 		String valueStr = new StringBuffer().append(valueOfServer)
 											.append(ID_MAX_VALUE_OF_AUTOINCR)
 											.toString();
-		return Long.valueOf(valueStr).longValue();
+		return Long.parseLong(valueStr);
 	}
 
 	/**
@@ -415,7 +410,7 @@ public class DbRuleServiceImpl implements DbRuleService {
 		String valueStr = new StringBuffer().append(valueOfServer)
 											.append(STR_VALUE_OF_AUTOINCR_ID_MIN_VALUE)
 											.toString();
-		return Long.valueOf(valueStr).longValue();
+		return Long.parseLong(valueStr);
 	}
 
 	/**
@@ -468,7 +463,7 @@ public class DbRuleServiceImpl implements DbRuleService {
 
 	@Override
 	public boolean isServerMerged() {
-		return this.serverIdList != null && this.serverIdList.size() > 1 ? true : false;
+		return this.serverIdList != null && this.serverIdList.size() > 1;
 	}
 
 	@Override

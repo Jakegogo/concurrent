@@ -731,9 +731,6 @@ public class DateUtils {
 	 * @return
 	 */
 	public static boolean beforeToday(Date date) {
-		if (date == null) {
-			return true;
-		}
 		return getTodayStartPointer().after(date);
 	}
 
@@ -865,7 +862,7 @@ public class DateUtils {
 		Date date = getStartDatePointer(startDate);
 		while (date.before(endDate)) {
 			dayList.add(date);
-			date = add(date, Calendar.MONTH, 1);;
+			date = add(date, Calendar.MONTH, 1);
 		}
 
 		return dayList;

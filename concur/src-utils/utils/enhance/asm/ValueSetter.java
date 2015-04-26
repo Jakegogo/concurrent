@@ -25,7 +25,7 @@ public interface ValueSetter<T> {
      * 克隆对象
      * @return
      */
-    public ValueSetter<T> clone();
+    public ValueSetter<T> doClone();
 
 
 }

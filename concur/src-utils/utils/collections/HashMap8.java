@@ -1793,7 +1793,7 @@ public class HashMap8<K,V> extends AbstractMap<K,V>
     }
 
     /**
-     * Reset to initial default state.  Called by clone and readObject.
+     * Reset to initial default state.  Called by doClone and readObject.
      */
     void reinitialize() {
         table = null;

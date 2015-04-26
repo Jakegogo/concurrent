@@ -1,8 +1,5 @@
 package transfer.test;
 
-import transfer.ByteArray;
-import transfer.Transfer;
-
 public class TestStringEncode {
 	public static void main(String[] args) {
 

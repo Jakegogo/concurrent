@@ -27,7 +27,7 @@ public class BitUtils {
      */
     public static void putShort(final Outputable outputable, final short shortVal) {
         outputable.putByte((byte)(shortVal >> 8));
-        outputable.putByte((byte)(shortVal >> 0));
+        outputable.putByte((byte) shortVal);
     }
 
 
@@ -189,7 +189,7 @@ public class BitUtils {
      */
     public static void putChar(final Outputable outputable, final char charVal) {
         outputable.putByte((byte)(charVal >> 8));
-        outputable.putByte((byte)(charVal >> 0));
+        outputable.putByte((byte) charVal);
     }
 
 

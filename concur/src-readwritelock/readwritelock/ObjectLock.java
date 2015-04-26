@@ -1,10 +1,10 @@
 package readwritelock;
 
-import java.util.concurrent.locks.ReentrantLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.concurrent.locks.ReentrantLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 /**
  * 对象锁对象<br/>
@@ -33,7 +33,7 @@ public class ObjectLock extends ReentrantReadWriteLock implements Comparable<Obj
 	/** 锁的排序依据 */
 	private final Comparable value;
 	/** 该对象锁所锁定的是否实体 */
-	private final boolean entity;
+	private final boolean isEntity;
 	/** 最后一次加锁位置堆栈  */
 	private String lastLocked;
 
@@ -56,13 +56,9 @@ public class ObjectLock extends ReentrantReadWriteLock implements Comparable<Obj
 		if (object instanceof ILockEntity) {
 			value = ((ILockEntity) object).getIdentity();
 		} else {
-			value = new Integer(System.identityHashCode(object));
+			value = Integer.valueOf(System.identityHashCode(object));
 		}
-		if (IENTITY_CLASS.isAssignableFrom(clz)) {
-			entity = true;
-		} else {
-			entity = false;
-		}
+		isEntity = IENTITY_CLASS.isAssignableFrom(clz);
 	}
 
 	/**
@@ -71,13 +67,7 @@ public class ObjectLock extends ReentrantReadWriteLock implements Comparable<Obj
 	 * @return 当返回 true，表示这两个锁的进入次序无法预知
 	 */
 	public boolean isTie(ObjectLock other) {
-		if (this.clz != other.clz) {
-			return false;
-		}
-		if (this.value.compareTo(other.value) == 0) {
-			return true;
-		}
-		return false;
+		return this.clz == other.clz && this.value.compareTo(other.value) == 0;
 	}
 
 	// Getter ...
@@ -103,7 +93,7 @@ public class ObjectLock extends ReentrantReadWriteLock implements Comparable<Obj
 	 * @return
 	 */
 	public boolean isEntity() {
-		return entity;
+		return isEntity;
 	}
 
 	@Override

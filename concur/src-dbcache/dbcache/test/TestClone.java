@@ -23,7 +23,7 @@ public abstract class TestClone {
 //			public String getName() {
 //				// TODO Auto-generated method stub
 //				return null;
-//			}}.clone();
+//			}}.doClone();
 
 	}
 

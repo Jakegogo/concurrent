@@ -168,8 +168,7 @@ public class ConcurrentLruHashMapCache implements CacheUnit {
 
 		@Override
 		public boolean equals(Object o) {
-			if (null == o) return true;
-			return false;
+			return o == null;
 		}
 
 		@Override
@@ -217,9 +216,11 @@ public class ConcurrentLruHashMapCache implements CacheUnit {
 
 			SimpleValueWrapper that = (SimpleValueWrapper) o;
 
-			if (value != null ? !value.equals(that.value) : that.value != null) return false;
+			if (this.value == null) {
+				return that.value == null;
+			}
 
-			return true;
+			return value.equals(that.value);
 		}
 
 		@Override

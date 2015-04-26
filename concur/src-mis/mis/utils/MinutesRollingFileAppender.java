@@ -19,20 +19,16 @@
 
 package mis.utils;
 
-import java.io.IOException;
-import java.io.File;
-import java.io.InterruptedIOException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.GregorianCalendar;
-import java.util.Calendar;
-import java.util.TimeZone;
-import java.util.Locale;
-
 import org.apache.log4j.FileAppender;
 import org.apache.log4j.Layout;
 import org.apache.log4j.helpers.LogLog;
 import org.apache.log4j.spi.LoggingEvent;
+
+import java.io.File;
+import java.io.IOException;
+import java.io.InterruptedIOException;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 /**
    DailyRollingFileAppender extends {@link FileAppender} so that the
@@ -182,8 +178,6 @@ public class MinutesRollingFileAppender extends FileAppender {
   SimpleDateFormat sdf;
 
   RollingCalendar rc = null;
-
-  int checkPeriod = TOP_OF_TROUBLE;
 
   // The gmtTimeZone is used only in computeCheckPeriod() method.
   static final TimeZone gmtTimeZone = TimeZone.getTimeZone("GMT");

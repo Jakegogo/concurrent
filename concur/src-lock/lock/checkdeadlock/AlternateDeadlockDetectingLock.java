@@ -122,10 +122,7 @@ public class AlternateDeadlockDetectingLock extends ObjectLock {
     // matter.
     //     Testing for no owner ensures none of the threads in the thread wait
     //     tree will grab it later -- as all locks in the tree are owned.
-    if (l.getOwner() == null) {
-      return true;
-    }
-    return canThreadWaitOnLock0(t, l);
+    return l.getOwner() == null || canThreadWaitOnLock0(t, l);
   }
 
   // Options: variable to control behavior

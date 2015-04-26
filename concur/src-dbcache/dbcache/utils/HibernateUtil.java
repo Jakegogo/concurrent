@@ -23,7 +23,7 @@ public class HibernateUtil extends DaoSupport {
     /**
      * Return the Hibernate SessionFactory used by this DAO.
      */
-    public static final SessionFactory getSessionFactory() {
+    public static SessionFactory getSessionFactory() {
         return (hibernateTemplate != null ? hibernateTemplate.getSessionFactory() : null);
     }
 
@@ -31,22 +31,22 @@ public class HibernateUtil extends DaoSupport {
      * Set the HibernateTemplate for this DAO explicitly,
      * as an alternative to specifying a SessionFactory.
      */
-    public static final void setHibernateTemplate(HibernateTemplate hibernateTemplate) {
+    public static void setHibernateTemplate(HibernateTemplate hibernateTemplate) {
         HibernateUtil.hibernateTemplate = hibernateTemplate;
     }
 
-    public static final HibernateTemplate getHibernateTemplate() {
+    public static HibernateTemplate getHibernateTemplate() {
         return hibernateTemplate;
     }
 
 
-    public static final Session getSession()
+    public static Session getSession()
             throws DataAccessResourceFailureException, IllegalStateException {
 
         return getSession(hibernateTemplate.isAllowCreate());
     }
 
-    public static final Session getSession(boolean allowCreate)
+    public static Session getSession(boolean allowCreate)
             throws DataAccessResourceFailureException, IllegalStateException {
 
         return (!allowCreate ?

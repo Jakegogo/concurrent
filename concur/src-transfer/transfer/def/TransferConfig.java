@@ -472,8 +472,7 @@ public class TransferConfig {
      * @return
      */
     public static Serializer getTypedSerializer(Type type) {
-    	Serializer serializer = serializers.get(type);
-    	return serializer;
+    	return serializers.get(type);
     }
 
 

@@ -92,6 +92,7 @@ public abstract class ThreadUtils {
 				field.setAccessible(true);
 				queue = (BlockingQueue<?>)field.get(threadPoolExecutor);
 			} catch (Exception e2) {
+				e2.printStackTrace();
 			}
 		}
 		return queue;
@@ -112,6 +113,7 @@ public abstract class ThreadUtils {
 				field.setAccessible(true);
 				queue = (BlockingQueue<?>)field.get(threadPoolExecutor);
 			} catch (Exception e2) {
+				e2.printStackTrace();
 			}
 		}
 		return queue;

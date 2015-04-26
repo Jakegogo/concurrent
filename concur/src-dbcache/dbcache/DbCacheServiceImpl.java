@@ -136,7 +136,7 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 		}
 
 		// 获取缓存唯一锁
-		Lock lock = new ReentrantLock();;
+		Lock lock = new ReentrantLock();
 		Lock prevLock = WAITING_LOCK_MAP.putIfAbsent(key, lock);
 		lock = prevLock != null ? prevLock : lock;
 		

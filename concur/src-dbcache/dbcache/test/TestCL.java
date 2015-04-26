@@ -1,13 +1,7 @@
 package dbcache.test;  
   
-import java.io.BufferedReader;  
-import java.io.InputStreamReader;  
-import java.lang.reflect.Field;  
-import java.lang.reflect.InvocationTargetException;  
-import java.lang.reflect.Method;  
-  
-import java.net.MalformedURLException;  
-import java.net.URL;  
+import java.lang.reflect.Method;
+import java.net.URL;
 import java.net.URLClassLoader;  
   
 /* 

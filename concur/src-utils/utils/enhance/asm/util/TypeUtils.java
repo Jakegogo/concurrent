@@ -15,9 +15,9 @@
  */
 package utils.enhance.asm.util;
 
-import java.util.*;
-
 import org.objectweb.asm.Type;
+
+import java.util.*;
 
 public class TypeUtils {
     private static final Map transforms = new HashMap();
@@ -41,9 +41,9 @@ public class TypeUtils {
     }
 
     public static void reverse(Map source, Map target) {
-        for (Iterator it = source.keySet().iterator(); it.hasNext();) {
-            Object key = it.next();
-            target.put(source.get(key), key);
+        for (Iterator<Map.Entry> it = source.entrySet().iterator(); it.hasNext();) {
+            Map.Entry entry = it.next();
+            target.put(entry.getValue(), entry.getKey());
         }
     }
     

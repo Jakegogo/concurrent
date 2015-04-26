@@ -1,5 +1,8 @@
 package utils.enhance.asm.util;
 
+import org.objectweb.asm.*;
+import utils.StringUtils;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -9,15 +12,6 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.LinkedHashMap;
 import java.util.Map;
-
-import org.objectweb.asm.ClassReader;
-import org.objectweb.asm.ClassVisitor;
-import org.objectweb.asm.Label;
-import org.objectweb.asm.MethodVisitor;
-import org.objectweb.asm.Opcodes;
-import org.objectweb.asm.Type;
-
-import utils.StringUtils;
 
 /**
  * 类操作的工具集
@@ -361,7 +355,6 @@ public class AsmUtils implements Opcodes {
 	 */
 	public static void withUnBoxingType(MethodVisitor mWriter, Type fieldType) {
 		if(fieldType == Type.VOID_TYPE) {
-			return;
 		} else if(fieldType == Type.INT_TYPE) {
 			mWriter.visitTypeInsn(CHECKCAST, "java/lang/Integer");
 			mWriter.visitMethodInsn(INVOKEVIRTUAL, "java/lang/Integer", "intValue", "()I");

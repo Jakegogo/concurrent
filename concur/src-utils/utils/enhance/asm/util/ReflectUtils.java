@@ -15,14 +15,17 @@
  */
 package utils.enhance.asm.util;
 
-import java.beans.*;
+import org.objectweb.asm.Type;
+
+import java.beans.BeanInfo;
+import java.beans.IntrospectionException;
+import java.beans.Introspector;
+import java.beans.PropertyDescriptor;
 import java.lang.reflect.*;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.security.ProtectionDomain;
 import java.util.*;
-
-import org.objectweb.asm.Type;
 
 /**
  * @version $Id: ReflectUtils.java,v 1.30 2009/01/11 19:47:49 herbyderby Exp $
@@ -215,8 +218,7 @@ public class ReflectUtils {
         boolean flag = cstruct.isAccessible();
         try {
             cstruct.setAccessible(true);
-            Object result = cstruct.newInstance(args);
-            return result;
+            return cstruct.newInstance(args);
         } catch (InstantiationException e) {
             throw new CodeGenerationException(e);
         } catch (IllegalAccessException e) {
@@ -370,7 +372,7 @@ public class ReflectUtils {
     }
         
     public static Class defineClass(String className, byte[] b, ClassLoader loader) throws Exception {
-        Object[] args = new Object[]{className, b, new Integer(0), new Integer(b.length), PROTECTION_DOMAIN };
+        Object[] args = new Object[]{className, b, Integer.valueOf(0), Integer.valueOf(b.length), PROTECTION_DOMAIN };
         Class c = (Class)DEFINE_CLASS.invoke(loader, args);
         // Force static initializers to run.
         Class.forName(className, true, loader);

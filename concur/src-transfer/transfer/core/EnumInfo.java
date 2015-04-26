@@ -56,8 +56,4 @@ public class EnumInfo extends ClassInfo {
         return enumMap.get(enumName);
     }
 
-    public Enum<?>[] getValues() {
-        return values;
-    }
-
 }

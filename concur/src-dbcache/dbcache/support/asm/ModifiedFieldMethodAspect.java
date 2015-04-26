@@ -94,10 +94,9 @@ public class ModifiedFieldMethodAspect extends AbstractAsmMethodProxyAspect {
 					PropertyDescriptor propertyDescriptor = new PropertyDescriptor(field.getName(), clazz);
 					Method setMethod = propertyDescriptor.getWriteMethod();
 					Set<MethodMetaData> methodMetaDataSet = getFieldNameSet(methodsMap, setMethod);
-					methodMetaDataSet.add(MethodMetaData.valueOf(setMethod, field.getName()));
+					methodMetaDataSet.add(MethodMetaData.valueOf(field.getName()));
 
 					FieldMetaData fieldMetaData = new FieldMetaData();
-					fieldMetaData.field = field;
 					fieldMetaData.fieldIndex = fieldIndex;
 					
 					fieldsMap.put(field.getName(), fieldMetaData);
@@ -118,7 +117,7 @@ public class ModifiedFieldMethodAspect extends AbstractAsmMethodProxyAspect {
 					ChangeFields updateFieldsAno = method.getAnnotation(ChangeFields.class);
 					Set<MethodMetaData> methodMetaDataSet = getFieldNameSet(methodsMap, method);
 					for(String fieldName : updateFieldsAno.value()) {
-						methodMetaDataSet.add(MethodMetaData.valueOf(method, fieldName));
+						methodMetaDataSet.add(MethodMetaData.valueOf(fieldName));
 					}
 				}
 			}
@@ -133,7 +132,7 @@ public class ModifiedFieldMethodAspect extends AbstractAsmMethodProxyAspect {
 				if (fieldsMap.containsKey(field)) {
 					Method method = methodEntry.getKey();
 					Set<MethodMetaData> methodMetaDataSet = getFieldNameSet(methodsMap, method);
-					methodMetaDataSet.add(MethodMetaData.valueOf(method, field));
+					methodMetaDataSet.add(MethodMetaData.valueOf(field));
 				}
 			}
 		}
@@ -215,10 +214,7 @@ public class ModifiedFieldMethodAspect extends AbstractAsmMethodProxyAspect {
 		}
 		//获取需要拦截的方法列表
 		final Map<Method, Set<MethodMetaData>> methodsMap = classIndexesMetaData.changeIndexValueMethods;
-		if(!methodsMap.containsKey(method)) {
-			return false;
-		}
-		return true;
+		return methodsMap.containsKey(method);
 	}
 
 
@@ -256,8 +252,6 @@ public class ModifiedFieldMethodAspect extends AbstractAsmMethodProxyAspect {
 	 */
 	static class FieldMetaData {
 		
-		private Field field;
-		
 		private int fieldIndex;
 		
 	}
@@ -268,11 +262,6 @@ public class ModifiedFieldMethodAspect extends AbstractAsmMethodProxyAspect {
 	 * @date 2014年9月8日下午7:13:28
 	 */
 	static class MethodMetaData implements Comparable<MethodMetaData> {
-
-		/**
-		 * 方法
-		 */
-		Method method;
 
 		/**
 		 * 属性名
@@ -286,9 +275,8 @@ public class ModifiedFieldMethodAspect extends AbstractAsmMethodProxyAspect {
 		}
 
 
-		public static MethodMetaData valueOf(Method method, String fieldName) {
+		public static MethodMetaData valueOf(String fieldName) {
 			MethodMetaData methodMetaData = new MethodMetaData();
-			methodMetaData.method = method;
 			methodMetaData.fieldName = fieldName;
 			return methodMetaData;
 		}

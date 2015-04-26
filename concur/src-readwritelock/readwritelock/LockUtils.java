@@ -1,15 +1,7 @@
 package readwritelock;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.TreeSet;
+import java.util.*;
 import java.util.concurrent.locks.ReadWriteLock;
-
-import readwritelock.ObjectLock;
-import readwritelock.ObjectLockHolder;
 
 
 /**
@@ -101,10 +93,7 @@ public class LockUtils {
 	 */
 	public static boolean isHeldWriteByCurrentThread(Object object) {
 		ObjectLock lock = holder.getLock(object);
-		if (lock == null) {
-			return false;
-		}
-		return lock.isWriteLockedByCurrentThread();
+		return lock != null && lock.isWriteLockedByCurrentThread();
 	}
 	
 	/**

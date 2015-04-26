@@ -44,9 +44,7 @@ public class AsmClassLoader extends ClassLoader {
     }
 
     public Class<?> defineClass(String name, byte[] b) throws ClassFormatError {
-        Class<?> clazz = defineClass(name, b, 0, b.length, DOMAIN);
-
-        return clazz;
+        return defineClass(name, b, 0, b.length, DOMAIN);
     }
 
     public boolean isExternalClass(Class<?> clazz) {

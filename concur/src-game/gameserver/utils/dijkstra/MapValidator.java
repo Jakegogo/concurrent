@@ -21,14 +21,6 @@ import java.util.Set;
 public class MapValidator<T> {
 	
 	/**
-	 * 地图对象
-	 */
-	Maps<T> map;
-	/**
-	 * 开始节点
-	 */
-	Maps.Node<T> startNode;
-	/**
 	 * 开放的节点
 	 */
 	Set<Maps.Node<T>> open = new HashSet<Maps.Node<T>>();
@@ -85,8 +77,6 @@ public class MapValidator<T> {
 				pathInfo.put(node.getId(), new ArrayList<T>(Arrays.asList(startNodeId)));
 			}
 		}
-		this.startNode = startNode;
-		this.map = map;
 		//开始计算
 		this.computePath(startNode);
 	}

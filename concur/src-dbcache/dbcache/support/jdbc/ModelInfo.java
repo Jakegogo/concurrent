@@ -536,7 +536,7 @@ public class ModelInfo {
 		InputStream is = null;
 		try {
 			is = blob.getBinaryStream();
-			byte[] data = new byte[(int)blob.length()];		// byte[] data = new byte[is.available()];
+			byte[] data = new byte[(int) blob.length()];		// byte[] data = new byte[is.available()];
 			is.read(data);
 			is.close();
 			return data;

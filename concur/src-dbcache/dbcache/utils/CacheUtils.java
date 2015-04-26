@@ -89,17 +89,12 @@ public class CacheUtils {
          */
         private CommonCache commonCache;
 
-        /**
-         * 缓存查询器
-         */
-        private CacheQuerier<R> cacheQuery;
 
         /**
          * 构造方法
          * @param cacheQuery 缓存初始化查询
          */
         public CacheBuilder(CacheQuerier<R> cacheQuery) {
-            this.cacheQuery = cacheQuery;
             this.commonCache = new CommonCache<R>(cacheQuery);
         }
 

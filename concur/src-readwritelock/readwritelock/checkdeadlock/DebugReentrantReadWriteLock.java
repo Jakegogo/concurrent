@@ -1,5 +1,7 @@
 package readwritelock.checkdeadlock;
 
+import readwritelock.ObjectLock;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -8,8 +10,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
-
-import readwritelock.ObjectLock;
 
 
 /**
@@ -39,7 +39,7 @@ public class DebugReentrantReadWriteLock extends ObjectLock implements
 	/** 判断Stop the world */
 	private static volatile boolean stopTheWorld = false;
 	/** 停止所有线程的对象锁 */
-	private static Object syncObject = new Object();
+	private static final Object syncObject = new Object();
 	/** 停止所有线程的超时时间 毫秒 */
 	private static int STOP_THE_WORLD_TIME_OUT = 1000;
 	/** 自增操作号ID */

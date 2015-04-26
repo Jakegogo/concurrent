@@ -279,10 +279,7 @@ public class IndexMethodProxyAspect extends AbstractAsmMethodProxyAspect {
 		}
 		//获取需要拦截的方法列表
 		final Map<Method, Set<MethodMetaData>> methodsMap = classIndexesMetaData.changeIndexValueMethods;
-		if(!methodsMap.containsKey(method)) {
-			return false;
-		}
-		return true;
+		return methodsMap.containsKey(method);
 	}
 
 
