@@ -64,39 +64,6 @@ public class SimpleOrderedThreadPoolExecutor extends ThreadPoolExecutor {
         // messages from the same client are handled orderly
         AtomicReference<SimpleLinkingRunnable> lastRef = runnable.getLastSimpleLinkingRunnable();
 
-
-//        if (old == null) { // No previous job
-//            execs.submit(job);
-//        } else {
-//            if (old.next.compareAndSet(null, job)) {
-//                // successfully append to previous task
-//            } else {
-//                // previous message is handled, order is guaranteed.
-//                execs.submit(job);
-//            }
-//        }
-
-
-//      if (lastRef.compareAndSet(null, runnable)) { // No previous job
-//			super.execute(command);
-//		} else {
-//			// CAS loop
-//			for (;;) {
-//				SimpleLinkingRunnable last = lastRef.get();
-//				SimpleLinkingRunnable next = last.next.get();
-//				if (last.next.compareAndSet(null, runnable)) {
-//					lastRef.compareAndSet(last, runnable);// fail is OK
-//					// successfully append to previous task
-//					break;
-//				} else if (last.next.get() == last) {
-//					// previous message is handled, order is guaranteed.
-//					super.execute(command);
-//					break;
-//				}
-//				lastRef = runnable.getLastSimpleLinkingRunnable();
-//			}
-//		}
-
         if (lastRef.get() == null && lastRef.compareAndSet(null, runnable)) { // No previous job
             super.execute(runnable);
         } else {

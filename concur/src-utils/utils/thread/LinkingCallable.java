@@ -11,7 +11,8 @@ public abstract class LinkingCallable<V> implements Callable<V>, LinkingExecutab
 
     private final Callable<V> impl;
 
-    AtomicReference<LinkingRunnableFutureTask> next = new AtomicReference<LinkingRunnableFutureTask>(null);
+    @SuppressWarnings("rawtypes")
+	AtomicReference<LinkingRunnableFutureTask> next = new AtomicReference<LinkingRunnableFutureTask>(null);
 
 
     public LinkingCallable() {
@@ -44,7 +45,8 @@ public abstract class LinkingCallable<V> implements Callable<V>, LinkingExecutab
         return this.impl.call();
     }
 
-    @Override
+    @SuppressWarnings("rawtypes")
+	@Override
     public LinkingRunnableFutureTask fetchNext() {
         if (!next.compareAndSet(null, LinkingRunnableFutureTask.PLACE_HOLDER)) {
             return next.get();

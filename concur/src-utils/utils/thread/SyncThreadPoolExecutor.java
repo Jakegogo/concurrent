@@ -17,13 +17,6 @@ public class SyncThreadPoolExecutor extends ThreadPoolExecutor {
 
     protected final HashSet<Worker> workers = new HashSet<Worker>();
 
-    /**
-     * We don't bother to update head or tail pointers if fewer than
-     * HOPS links from "true" location. We assume that volatile
-     * writes are significantly more expensive than volatile reads.
-     */
-    private static final int HOPS = 1;
-
     public SyncThreadPoolExecutor(int corePoolSize, int maximumPoolSize, long keepAliveTime, TimeUnit unit, BlockingQueue<Runnable> workQueue) {
         super(corePoolSize, maximumPoolSize, keepAliveTime, unit, workQueue);
     }
@@ -388,7 +381,8 @@ public class SyncThreadPoolExecutor extends ThreadPoolExecutor {
                  */
                 boolean ran = false;
                 beforeExecute(thread, task);
-                LinkingRunnableFutureTask next = (LinkingRunnableFutureTask) task;
+                @SuppressWarnings("rawtypes")
+				LinkingRunnableFutureTask next = (LinkingRunnableFutureTask) task;
                 try {
                 	
                     do {

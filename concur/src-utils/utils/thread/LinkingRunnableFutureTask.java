@@ -13,7 +13,8 @@ public class LinkingRunnableFutureTask<V> extends FutureTask<V> {
     /**
      * PLACE_HOLDER
      */
-    public static final LinkingRunnableFutureTask PLACE_HOLDER = new LinkingRunnableFutureTask(new LinkingRunnable() {
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+	public static final LinkingRunnableFutureTask PLACE_HOLDER = new LinkingRunnableFutureTask(new LinkingRunnable() {
         @Override
         public AtomicReference<LinkingExecutable> getLastLinkingRunnable() {
             return null;
@@ -53,7 +54,8 @@ public class LinkingRunnableFutureTask<V> extends FutureTask<V> {
      * 获取下一个任务
      * @return
      */
-    public LinkingRunnableFutureTask fetchNext() {
+    @SuppressWarnings("rawtypes")
+	public LinkingRunnableFutureTask fetchNext() {
         return this.linkingExecutable.fetchNext();
     }
 

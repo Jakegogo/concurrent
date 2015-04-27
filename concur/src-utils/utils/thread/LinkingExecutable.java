@@ -18,12 +18,14 @@ public interface LinkingExecutable {
      * 获取下一个任务
      * @return
      */
-    public LinkingRunnableFutureTask fetchNext();
+    @SuppressWarnings("rawtypes")
+	public LinkingRunnableFutureTask fetchNext();
 
     /**
      * LinkingExecutable.next
      * @return
      */
-    public AtomicReference<LinkingRunnableFutureTask> getNext();
+    @SuppressWarnings("rawtypes")
+	public AtomicReference<LinkingRunnableFutureTask> getNext();
 
 }

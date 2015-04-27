@@ -10,7 +10,8 @@ public abstract class LinkingRunnable implements Runnable, LinkingExecutable {
 
     private final Runnable impl;
 
-    AtomicReference<LinkingRunnableFutureTask> next = new AtomicReference<LinkingRunnableFutureTask>(null);
+    @SuppressWarnings("rawtypes")
+	AtomicReference<LinkingRunnableFutureTask> next = new AtomicReference<LinkingRunnableFutureTask>(null);
 
 
     public LinkingRunnable() {
@@ -43,7 +44,8 @@ public abstract class LinkingRunnable implements Runnable, LinkingExecutable {
         this.impl.run();
     }
 
-    @Override
+    @SuppressWarnings("rawtypes")
+	@Override
     public LinkingRunnableFutureTask fetchNext() {
         if (!next.compareAndSet(null, LinkingRunnableFutureTask.PLACE_HOLDER)) {
             return next.get();
@@ -51,7 +53,8 @@ public abstract class LinkingRunnable implements Runnable, LinkingExecutable {
         return null;
     }
 
-    @Override
+    @SuppressWarnings("rawtypes")
+	@Override
     public AtomicReference<LinkingRunnableFutureTask> getNext() {
         return next;
     }

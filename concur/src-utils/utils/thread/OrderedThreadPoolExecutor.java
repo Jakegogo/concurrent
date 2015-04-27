@@ -17,13 +17,6 @@ public class OrderedThreadPoolExecutor extends ThreadPoolExecutor {
 
 	protected final HashSet<Worker> workers = new HashSet<Worker>();
 	
-	/**
-     * We don't bother to update head or tail pointers if fewer than
-     * HOPS links from "true" location. We assume that volatile
-     * writes are significantly more expensive than volatile reads.
-     */
-    private static final int HOPS = 1;
-
     public OrderedThreadPoolExecutor(int corePoolSize, int maximumPoolSize, long keepAliveTime, TimeUnit unit, BlockingQueue<Runnable> workQueue) {
         super(corePoolSize, maximumPoolSize, keepAliveTime, unit, workQueue);
     }
@@ -51,7 +44,8 @@ public class OrderedThreadPoolExecutor extends ThreadPoolExecutor {
     }
 
 
-    @Override
+    @SuppressWarnings("rawtypes")
+	@Override
     public void execute(Runnable command) {
         assert command instanceof LinkingRunnableFutureTask;
 
@@ -59,6 +53,7 @@ public class OrderedThreadPoolExecutor extends ThreadPoolExecutor {
 		appendSubmit(task);
 	}
 
+	@SuppressWarnings("rawtypes")
 	private void appendSubmit(LinkingRunnableFutureTask task) {
 
         LinkingExecutable runnable = task.getLinkingExecutable();
@@ -66,47 +61,12 @@ public class OrderedThreadPoolExecutor extends ThreadPoolExecutor {
 		// messages from the same client are handled orderly
 		AtomicReference<LinkingExecutable> lastRef = runnable.getLastLinkingRunnable();
 
-
-//        if (old == null) { // No previous job
-//            execs.submit(job);
-//        } else {
-//            if (old.fetchNext.compareAndSet(null, job)) {
-//                // successfully append to previous task
-//            } else {
-//                // previous message is handled, order is guaranteed.
-//                execs.submit(job);
-//            }
-//        }
-
-
-//      if (lastRef.compareAndSet(null, runnable)) { // No previous job
-//			super.execute(command);
-//		} else {
-//			// CAS loop
-//			for (;;) {
-//				LinkingRunnable last = lastRef.get();
-//				LinkingRunnable fetchNext = last.fetchNext.get();
-//				if (last.fetchNext.compareAndSet(null, runnable)) {
-//					lastRef.compareAndSet(last, runnable);// fail is OK
-//					// successfully append to previous task
-//					break;
-//				} else if (last.fetchNext.get() == last) {
-//					// previous message is handled, order is guaranteed.
-//					super.execute(command);
-//					break;
-//				}
-//				lastRef = runnable.getLastLinkingRunnable();
-//			}
-//		}
-
 		if (lastRef.get() == null && lastRef.compareAndSet(null, runnable)) { // No previous job
 			super.execute(task);
 		} else {
 			// CAS loop
 			for (; ; ) {
-
                 LinkingExecutable last = lastRef.get();
-
 				AtomicReference<LinkingRunnableFutureTask> nextRef = last.getNext();
 
                 LinkingRunnableFutureTask next = nextRef.get();
@@ -434,7 +394,8 @@ public class OrderedThreadPoolExecutor extends ThreadPoolExecutor {
                  */
                 boolean ran = false;
                 beforeExecute(thread, task);
-                LinkingRunnableFutureTask next = (LinkingRunnableFutureTask) task;
+                @SuppressWarnings("rawtypes")
+				LinkingRunnableFutureTask next = (LinkingRunnableFutureTask) task;
                 try {
                 	
                     do {
