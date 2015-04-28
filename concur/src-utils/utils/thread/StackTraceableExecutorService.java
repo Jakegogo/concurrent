@@ -11,6 +11,11 @@ import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * 可跟踪异常任务提交者线程池包装类
+ * @author Jake
+ *
+ */
 public class StackTraceableExecutorService extends AbstractExecutorService {
 	
 	private static final Logger log = LoggerFactory.getLogger(StackTraceableExecutorService.class);
