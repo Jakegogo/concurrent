@@ -141,14 +141,12 @@ public class ConcurrentWeekHashMapCache implements CacheUnit {
 	}
 
 
-	@SuppressWarnings("rawtypes")
 	@Override
 	public ValueWrapper put(Object key, Object value) {
 		return this.store.put(key, toStoreValue(value));
 	}
 
 
-	@SuppressWarnings("rawtypes")
 	@Override
 	public ValueWrapper putIfAbsent(Object key, Object value) {
 		ValueWrapper oldValueWrapper = this.store.putIfAbsent(key, toStoreValue(value));
@@ -231,6 +229,7 @@ public class ConcurrentWeekHashMapCache implements CacheUnit {
 	 * @param userValue the given user value
 	 * @return the value to store
 	 */
+	@SuppressWarnings("rawtypes")
 	protected SimpleValueWrapper toStoreValue(Object userValue) {
 		if (userValue == null) {
 			return NULL_HOLDER;
