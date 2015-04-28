@@ -120,6 +120,7 @@ public class DelayBatchDbPersistService implements DbPersistService {
 	
 	// 批量入库操作
 	protected void flushBatchTask() {
+		
 		// 保存
 		for (Entry<Class<?>, LinkedList<CacheObject<?>>> entry : this.batchTasks.saveBatchQueue.entrySet()) {
 			try {
@@ -129,7 +130,7 @@ public class DelayBatchDbPersistService implements DbPersistService {
 				}
 				List<Object> entityList = new ArrayList<Object>();
 				for (CacheObject<?> cacheObj : list) {
-					if (cacheObj.getPersistStatus() != PersistStatus.DELETED) {
+					if (cacheObj.getPersistStatus() == PersistStatus.TRANSIENT) {
 						entityList.add(cacheObj.getEntity());
 					}
 				}
@@ -139,6 +140,7 @@ public class DelayBatchDbPersistService implements DbPersistService {
 				e.printStackTrace();
 			}
 		}
+		
 		// 更新
 		for (Entry<Class<?>, LinkedList<CacheObject<?>>> entry : this.batchTasks.updateBatchQueue.entrySet()) {
 			try {
@@ -148,9 +150,7 @@ public class DelayBatchDbPersistService implements DbPersistService {
 				}
 				List<Object> entityList = new ArrayList<Object>();
 				for (CacheObject<?> cacheObj : list) {
-					if (cacheObj.getPersistStatus() != PersistStatus.DELETED) {
-						entityList.add(cacheObj.getEntity());
-					}
+					entityList.add(cacheObj.getEntity());
 				}
 				this.dbAccessService.update(entry.getKey(), entityList);
 				list.clear();
@@ -158,6 +158,7 @@ public class DelayBatchDbPersistService implements DbPersistService {
 				e.printStackTrace();
 			}
 		}
+		
 		// 删除
 		for (Entry<Class<?>, LinkedList<CacheObject<?>>> entry : this.batchTasks.deleteBatchQueue.entrySet()) {
 			try {
@@ -167,7 +168,7 @@ public class DelayBatchDbPersistService implements DbPersistService {
 				}
 				List<Object> entityList = new ArrayList<Object>();
 				for (CacheObject<?> cacheObj : list) {
-					if (cacheObj.getPersistStatus() == PersistStatus.DELETED) {
+					if (cacheObj.getPersistStatus() == PersistStatus.PERSIST) {
 						entityList.add(cacheObj.getEntity());
 					}
 				}
@@ -368,18 +369,12 @@ public class DelayBatchDbPersistService implements DbPersistService {
 
 			@Override
 			public void run() {
-
 				// 判断是否有效
 				if (!this.valid()) {
 					return;
 				}
-
 				// 添加持久化任务到批量任务队列
 				batchTasks.addDeleteTask(cacheObject);
-
-				// 从缓存中移除
-				cacheUnit.put(key, null);
-
 			}
 
 			@Override
@@ -390,7 +385,7 @@ public class DelayBatchDbPersistService implements DbPersistService {
 
 			@Override
 			public boolean valid() {
-				return cacheObject.getPersistStatus() == PersistStatus.DELETED;
+				return cacheObject.getPersistStatus() == PersistStatus.PERSIST;
 			}
 
 

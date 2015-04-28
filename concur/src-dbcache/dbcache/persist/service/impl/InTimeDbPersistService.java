@@ -191,7 +191,7 @@ public class InTimeDbPersistService implements DbPersistService {
 
 			@Override
 			public boolean valid() {
-				return cacheObject.getPersistStatus() != PersistStatus.DELETED;
+				return cacheObject.getPersistStatus() == PersistStatus.TRANSIENT;
 			}
 
 		});
@@ -266,18 +266,12 @@ public class InTimeDbPersistService implements DbPersistService {
 
 			@Override
 			public void run() {
-
 				// 判断是否有效
 				if (!this.valid()) {
 					return;
 				}
-
 				// 持久化
 				dbAccessService.delete(cacheObject.getEntity());
-
-				// 从缓存中移除
-				cacheUnit.put(key, null);
-
 			}
 			
 			@Override
@@ -294,7 +288,7 @@ public class InTimeDbPersistService implements DbPersistService {
 
 			@Override
 			public boolean valid() {
-				return cacheObject.getPersistStatus() == PersistStatus.DELETED;
+				return cacheObject.getPersistStatus() == PersistStatus.PERSIST;
 			}
 
 

@@ -13,6 +13,7 @@ import dbcache.persist.service.DbPersistService;
 import utils.enhance.asm.ValueGetter;
 import utils.JsonUtils;
 import utils.collections.concurrent.ConcurrentHashMapV8;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -98,10 +99,6 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 	@Qualifier("concurrentLruHashMapCache")
 	private CacheUnit cacheUnit;
 
-	@Autowired
-	@Qualifier("inTimeDbPersistService")
-	private DbPersistService inTimeDbPersistService;
-
 	/**
 	 * 等待锁map {key:lock}
 	 */
@@ -111,12 +108,18 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 	@Override
 	public T get(PK id) {
 
-		final CacheObject<T> cacheObject = this.getCacheObject(id);
-		if (cacheObject != null && cacheObject.getPersistStatus() != PersistStatus.DELETED) {
-			return (T) cacheObject.getProxyEntity();
+		CacheUnit.ValueWrapper wrapper = this.getCacheWrapper(id);
+		if (wrapper == null) {
+			return null;
+		}
+		
+		@SuppressWarnings("unchecked")
+		CacheObject<T> cacheObject = (CacheObject<T>) wrapper.get();
+		if (cacheObject == null) {
+			return null;
 		}
 
-		return null;
+		return cacheObject.getProxyEntity();
 	}
 	
 
@@ -126,12 +129,12 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 	 * @return
 	 */
 	@SuppressWarnings("unchecked")
-	private CacheObject<T> getCacheObject(PK key) {
+	private CacheUnit.ValueWrapper getCacheWrapper(PK key) {
 
 		// 从共用缓存获取
 		CacheUnit.ValueWrapper wrapper = (CacheUnit.ValueWrapper) cacheUnit.get(key);
 		if (wrapper != null) {	// 已经缓存
-			return (CacheObject<T>) wrapper.get();
+			return wrapper;
 		}
 		
 		// 获取缓存唯一锁
@@ -145,16 +148,15 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 			
 			wrapper = (CacheUnit.ValueWrapper) cacheUnit.get(key);
 			if (wrapper != null) {
-				return (CacheObject<T>) wrapper.get();
+				return wrapper;
 			}
 
+			// 获取库里面数据
 			T entity = dbAccessService.get(clazz, key);
 			if (entity == null) {
 				// 缓存NULL value
 				wrapper = cacheUnit.putIfAbsent(key, null);
-				if (wrapper != null) {
-					return (CacheObject<T>) wrapper.get();
-				}
+				return wrapper;
 			}
 			
 			
@@ -163,14 +165,15 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 					entity, clazz, indexService, key, cacheUnit, cacheConfig);
 			wrapper = cacheUnit.putIfAbsent(key, cacheObject);
 			
-			if (wrapper == null || wrapper.get() == null) {
-				return null;
+			cacheObject = (CacheObject<T>) wrapper.get();
+			if (cacheObject == null) {
+				return wrapper;
 			}
 			
-			cacheObject = (CacheObject<T>) wrapper.get();
+			
 			// 初始化
 			cacheObject.doInit(cacheConfig);
-
+			
 			// 更新索引 需要外层加锁
 			if(cacheConfig.isEnableIndex()) {
 				for (ValueGetter<T> indexGetter : cacheConfig.getIndexList()) {
@@ -186,10 +189,10 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 				}
 			}
 			
-			return cacheObject;
+			return wrapper;
 		} finally {
-			WAITING_LOCK_MAP.remove(key);
 			lock.unlock();
+			WAITING_LOCK_MAP.remove(key);
 		}
 
 	}
@@ -256,8 +259,8 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 
 		
 		// 获取旧值
-		final Object key = entity.getId();
-		CacheUnit.ValueWrapper wrapper = (CacheUnit.ValueWrapper) cacheUnit.get(key);
+		final PK key = entity.getId();
+		CacheUnit.ValueWrapper wrapper = this.getCacheWrapper(key);
 		
 		CacheObject<T> oldCacheObject = null;
 		if(wrapper != null) {
@@ -271,18 +274,17 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 		
 		boolean exists = oldCacheObject != null;							 // 缓存中是否已经存在实体
 		if (exists) {
-			if(oldCacheObject.getPersistStatus() == PersistStatus.DELETED) { // 已被删除
-				oldCacheObject.setPersistStatus(PersistStatus.TRANSIENT);    // 删除再保存，实际上很少出现这种情况
-			}
-			wrapper = cacheUnit.replace(key, oldCacheObject, newCacheObject);
+			oldCacheObject.setPersistStatus(PersistStatus.TRANSIENT);
+			wrapper = cacheUnit.replace(key, oldCacheObject, newCacheObject);// 已经存在实体则替换
 		} else {
 			if (wrapper == null) {										 	 // 缓存还不存在
 				wrapper = cacheUnit.putIfAbsent(key, newCacheObject);
-			} else if(oldCacheObject == null) {								 // 缓存为NULL
+			} else if(oldCacheObject == null) {								 // 缓存为NULL或已经删除
 				wrapper = cacheUnit.replace(key, null, newCacheObject);
 			}
 		}
-
+		
+		
 		newCacheObject = (CacheObject<T>) wrapper.get(); 					 // 再获取一次最新的值
 		if (newCacheObject == null) {
 			return null;
@@ -315,12 +317,9 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 		if (exists) {
 			dbPersistService.handleUpdate(newCacheObject, this.dbAccessService, this.cacheConfig);
 		} else {
-			inTimeDbPersistService.handleSave(newCacheObject, this.dbAccessService, this.cacheConfig);
+			dbPersistService.handleSave(newCacheObject, this.dbAccessService, this.cacheConfig);
 		}
 		
-		if (newCacheObject.getPersistStatus() == PersistStatus.DELETED) {
-			return null;
-		}
 		return newCacheObject.getProxyEntity();
 	}
 
@@ -329,7 +328,13 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 	@Override
 	public void submitUpdate(T entity) {
 
-		final CacheObject<T> cacheObject = this.getCacheObject(entity.getId());
+		CacheUnit.ValueWrapper wrapper = this.getCacheWrapper(entity.getId());
+		if (wrapper == null) {
+			return;
+		}
+		
+		@SuppressWarnings("unchecked")
+		CacheObject<T> cacheObject = (CacheObject<T>) wrapper.get();
 		if (cacheObject == null) {
 			return;
 		}
@@ -338,7 +343,8 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 		if (cacheObject.getProxyEntity() != entity) {
 			String msg = "实体使用期间缓存对象CacheObject被修改过:无法保证原子性和实体唯一,请重试[user:"
 					+ JsonUtils.object2JsonString(entity)
-					+ ", current:" + JsonUtils.object2JsonString(cacheObject.getProxyEntity()) + "]";
+					+ ", current:" + JsonUtils.object2JsonString(cacheObject.getProxyEntity()) 
+					+ "]";
 			logger.error(msg);
 			throw new IllegalStateException(msg);// 抛出异常则为内部实现错误
 		}
@@ -359,18 +365,19 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 	@Override
 	public void submitDelete(final PK id) {
 
-		final CacheObject<T> cacheObject = this.getCacheObject(id);
+		CacheUnit.ValueWrapper wrapper = this.getCacheWrapper(id);
+		if (wrapper == null) {
+			return;
+		}
+		
+		@SuppressWarnings("unchecked")
+		CacheObject<T> cacheObject = (CacheObject<T>) wrapper.get();
 		if (cacheObject == null) {
 			return;
 		}
 
-		// 是否已经被删除
-		if (cacheObject.getPersistStatus() == PersistStatus.DELETED) {
-			return;
-		}
-
 		// 标记为已经删除
-		cacheObject.setPersistStatus(PersistStatus.DELETED);
+		cacheUnit.replace(id, cacheObject, null);
 
 		// 更新索引
 		if (cacheConfig.isEnableIndex()) {
@@ -380,9 +387,9 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 				IndexValue.valueOf(indexGetter.getName(), indexGetter.get(entity), entity.getId()));
 			}
 		}
-
+		
 		// 提交持久化任务
-		inTimeDbPersistService.handleDelete(cacheObject, this.dbAccessService, id, this.cacheUnit);
+		dbPersistService.handleDelete(cacheObject, this.dbAccessService, id, this.cacheUnit);
 	}
 
 
@@ -451,7 +458,6 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 		toStrMap.put("indexServiceCacheUseSize", this.indexService.getCacheUnit().getCachedSize());
 		return JsonUtils.object2JsonString(toStrMap);
 	}
-
 
 
 }
