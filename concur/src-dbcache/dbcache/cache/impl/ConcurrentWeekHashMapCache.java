@@ -222,9 +222,6 @@ public class ConcurrentWeekHashMapCache implements CacheUnit {
 	 * @return the value to return to the user
 	 */
 	protected Object fromStoreValue(Object storeValue) {
-		if (storeValue == NULL_HOLDER) {
-			return null;
-		}
 		return storeValue;
 	}
 
@@ -256,7 +253,7 @@ public class ConcurrentWeekHashMapCache implements CacheUnit {
 
 		@Override
 		public boolean equals(Object o) {
-			return o == null;
+			return o == null || o == this;
 		}
 
 		@Override

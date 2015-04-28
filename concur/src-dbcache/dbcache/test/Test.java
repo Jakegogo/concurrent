@@ -464,7 +464,7 @@ public class Test {
 	public void t22() throws InterruptedException {
 
 
-		for(int j = 1;j < 1000;j++) {
+		for(int j = 1;j < 100;j++) {
 			Long id = Long.valueOf(j);
 			Entity entity = new Entity();
 			entity.doAfterLoad();

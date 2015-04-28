@@ -809,10 +809,21 @@ public class ConcurrentLRUCache<K, V>
             return value.hashCode();
         }
 
-        @Override
+        @SuppressWarnings("unchecked")
+		@Override
         public boolean equals(Object obj)
         {
-            return value.equals(obj);
+        	if (obj == this) {
+        		return true;
+        	}
+        	if (obj == null) {
+        		return false;
+        	}
+        	if (!(obj instanceof CacheEntry)) {
+        		return false;
+        	}
+        	CacheEntry<K, V> entry = (CacheEntry<K, V>) obj;
+            return value.equals(entry.value);
         }
 
         @Override
@@ -849,7 +860,7 @@ public class ConcurrentLRUCache<K, V>
         @Override
         public boolean equals(Object obj)
         {
-            return obj == null;
+            return obj == null || obj == this;
         }
 
         @Override
