@@ -279,7 +279,7 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 		} else {
 			if (wrapper == null) {										 	 // 缓存还不存在
 				wrapper = cacheUnit.putIfAbsent(key, newCacheObject);
-			} else if(oldCacheObject == null) {								 // 缓存为NULL或已经删除
+			} else {														 // 缓存为NULL或已经删除
 				wrapper = cacheUnit.replace(key, null, newCacheObject);
 			}
 		}
@@ -289,7 +289,7 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 		if (newCacheObject == null) {
 			return null;
 		}
-		if (newCacheObject != oldCacheObject) {								 // 重复提交
+		if (newCacheObject == oldCacheObject) {								 // 重复提交/替换失败
 			return newCacheObject.getProxyEntity();
 		}
 		
@@ -362,6 +362,7 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 
 
 	
+	@SuppressWarnings("unchecked")
 	@Override
 	public void submitDelete(final PK id) {
 
@@ -370,14 +371,16 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 			return;
 		}
 		
-		@SuppressWarnings("unchecked")
 		CacheObject<T> cacheObject = (CacheObject<T>) wrapper.get();
 		if (cacheObject == null) {
 			return;
 		}
 
 		// 标记为已经删除
-		cacheUnit.replace(id, cacheObject, null);
+		wrapper = cacheUnit.replace(id, cacheObject, null);
+		if (cacheObject == (CacheObject<T>) wrapper.get()) {// 替换失败
+			return;
+		}
 
 		// 更新索引
 		if (cacheConfig.isEnableIndex()) {
