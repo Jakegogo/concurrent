@@ -2,6 +2,7 @@ package dbcache;
 
 import dbcache.anno.ThreadSafe;
 import dbcache.cache.CacheUnit;
+import dbcache.cache.ValueWrapper;
 import dbcache.conf.CacheConfig;
 import dbcache.conf.DbConfigFactory;
 import dbcache.conf.Inject;
@@ -108,7 +109,7 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 	@Override
 	public T get(PK id) {
 
-		CacheUnit.ValueWrapper wrapper = this.getCacheWrapper(id);
+		ValueWrapper wrapper = this.getCacheWrapper(id);
 		if (wrapper == null) {
 			return null;
 		}
@@ -129,10 +130,10 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 	 * @return
 	 */
 	@SuppressWarnings("unchecked")
-	private CacheUnit.ValueWrapper getCacheWrapper(PK key) {
+	private ValueWrapper getCacheWrapper(PK key) {
 
 		// 从共用缓存获取
-		CacheUnit.ValueWrapper wrapper = (CacheUnit.ValueWrapper) cacheUnit.get(key);
+		ValueWrapper wrapper = (ValueWrapper) cacheUnit.get(key);
 		if (wrapper != null) {	// 已经缓存
 			return wrapper;
 		}
@@ -146,7 +147,7 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 		try {
 			lock.lock();
 			
-			wrapper = (CacheUnit.ValueWrapper) cacheUnit.get(key);
+			wrapper = (ValueWrapper) cacheUnit.get(key);
 			if (wrapper != null) {
 				return wrapper;
 			}
@@ -260,7 +261,7 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 		
 		// 获取旧值
 		final PK key = entity.getId();
-		CacheUnit.ValueWrapper wrapper = this.getCacheWrapper(key);
+		ValueWrapper wrapper = this.getCacheWrapper(key);
 		
 		CacheObject<T> oldCacheObject = null;
 		if(wrapper != null) {
@@ -328,7 +329,7 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 	@Override
 	public void submitUpdate(T entity) {
 
-		CacheUnit.ValueWrapper wrapper = this.getCacheWrapper(entity.getId());
+		ValueWrapper wrapper = this.getCacheWrapper(entity.getId());
 		if (wrapper == null) {
 			return;
 		}
@@ -366,7 +367,7 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 	@Override
 	public void submitDelete(final PK id) {
 
-		CacheUnit.ValueWrapper wrapper = this.getCacheWrapper(id);
+		ValueWrapper wrapper = this.getCacheWrapper(id);
 		if (wrapper == null) {
 			return;
 		}

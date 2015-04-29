@@ -1,6 +1,7 @@
 package dbcache.cache.impl;
 
 import dbcache.cache.CacheUnit;
+import dbcache.cache.ValueWrapper;
 import dbcache.utils.CacheUtils;
 import utils.collections.concurrent.ConcurrentLRUCache;
 import utils.collections.concurrent.ConcurrentReferenceHashMap;

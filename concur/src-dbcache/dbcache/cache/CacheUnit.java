@@ -62,19 +62,6 @@ public interface CacheUnit {
 
 
 	/**
-	 * 缓存值包装接口
-	 */
-	interface ValueWrapper {
-
-		/**
-		 * 获取缓存值
-		 */
-		Object get();
-
-	}
-
-
-	/**
 	 * 获取缓存单元名称
 	 * @return
 	 */

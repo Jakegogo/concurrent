@@ -3,6 +3,7 @@ package dbcache.index;
 import dbcache.IEntity;
 import dbcache.anno.ThreadSafe;
 import dbcache.cache.CacheUnit;
+import dbcache.cache.ValueWrapper;
 import dbcache.conf.CacheConfig;
 import dbcache.conf.CacheRule;
 import dbcache.conf.Inject;
@@ -144,7 +145,7 @@ public class DbIndexServiceImpl<PK extends Comparable<PK> & Serializable>
 		
 		final Object key = CacheRule.getIndexIdKey(indexName, indexValue);
 
-		CacheUnit.ValueWrapper wrapper = (CacheUnit.ValueWrapper) cacheUnit.get(key);
+		ValueWrapper wrapper = (ValueWrapper) cacheUnit.get(key);
 		if(wrapper != null) {	// 已经缓存
 
 			IndexObject<PK> indexObject = (IndexObject<PK>) wrapper.get();

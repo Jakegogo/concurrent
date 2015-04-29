@@ -2,6 +2,7 @@ package dbcache.cache.common;
 
 import dbcache.DbCacheService;
 import dbcache.cache.CacheUnit;
+import dbcache.cache.ValueWrapper;
 import dbcache.cache.impl.ConcurrentLruHashMapCache;
 import utils.collections.concurrent.ConcurrentHashMapV8;
 
@@ -58,7 +59,7 @@ public class CommonCache<R> {
     public R get(Object... key) {
 
         String cachedKey = buildCacheKey(key);
-        CacheUnit.ValueWrapper cacheWrapper = getCacheUnit().get(cachedKey);
+        ValueWrapper cacheWrapper = getCacheUnit().get(cachedKey);
         if(cacheWrapper != null) {
             return (R) cacheWrapper.get();
         }
@@ -103,7 +104,7 @@ public class CommonCache<R> {
 
 
     public R put(Object key, Object value) {
-        CacheUnit.ValueWrapper cacheWrapper = getCacheUnit().put(buildCacheKey(key), value);
+        ValueWrapper cacheWrapper = getCacheUnit().put(buildCacheKey(key), value);
         if(cacheWrapper != null) {
             return (R) cacheWrapper.get();
         }
@@ -112,7 +113,7 @@ public class CommonCache<R> {
 
 
     public R put(Object[] key, Object value) {
-        CacheUnit.ValueWrapper cacheWrapper = getCacheUnit().put(buildCacheKey(key), value);
+        ValueWrapper cacheWrapper = getCacheUnit().put(buildCacheKey(key), value);
         if(cacheWrapper != null) {
             return (R) cacheWrapper.get();
         }
@@ -122,7 +123,7 @@ public class CommonCache<R> {
 
     public R putIfAbsent(Object key, Object value) {
         this.get(key);
-        CacheUnit.ValueWrapper cacheWrapper = getCacheUnit().putIfAbsent(buildCacheKey(key), value);
+        ValueWrapper cacheWrapper = getCacheUnit().putIfAbsent(buildCacheKey(key), value);
         if(cacheWrapper != null) {
             return (R) cacheWrapper.get();
         }
@@ -132,7 +133,7 @@ public class CommonCache<R> {
 
     public R putIfAbsent(Object[] key, Object value) {
         this.get(key);
-        CacheUnit.ValueWrapper cacheWrapper = getCacheUnit().putIfAbsent(buildCacheKey(key), value);
+        ValueWrapper cacheWrapper = getCacheUnit().putIfAbsent(buildCacheKey(key), value);
         if(cacheWrapper != null) {
             return (R) cacheWrapper.get();
         }
@@ -141,7 +142,7 @@ public class CommonCache<R> {
 
 
     public R replace(Object key, Object oldValue, Object newValue) {
-        CacheUnit.ValueWrapper cacheWrapper = getCacheUnit().replace(buildCacheKey(key), oldValue, newValue);
+        ValueWrapper cacheWrapper = getCacheUnit().replace(buildCacheKey(key), oldValue, newValue);
         if(cacheWrapper != null) {
             return (R) cacheWrapper.get();
         }
@@ -150,7 +151,7 @@ public class CommonCache<R> {
 
 
     public R replace(Object[] key, Object oldValue, Object newValue) {
-        CacheUnit.ValueWrapper cacheWrapper = getCacheUnit().replace(buildCacheKey(key), oldValue, newValue);
+        ValueWrapper cacheWrapper = getCacheUnit().replace(buildCacheKey(key), oldValue, newValue);
         if(cacheWrapper != null) {
             return (R) cacheWrapper.get();
         }
@@ -159,7 +160,7 @@ public class CommonCache<R> {
 
 
     public R evict(Object... key) {
-        CacheUnit.ValueWrapper cacheWrapper = getCacheUnit().evict(buildCacheKey(key));
+        ValueWrapper cacheWrapper = getCacheUnit().evict(buildCacheKey(key));
         if(cacheWrapper != null) {
             return (R) cacheWrapper.get();
         }

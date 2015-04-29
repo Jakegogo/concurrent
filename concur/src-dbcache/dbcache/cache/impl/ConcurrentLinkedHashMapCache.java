@@ -4,6 +4,7 @@ import com.googlecode.concurrentlinkedhashmap.ConcurrentLinkedHashMap;
 import com.googlecode.concurrentlinkedhashmap.EvictionListener;
 
 import dbcache.cache.CacheUnit;
+import dbcache.cache.ValueWrapper;
 import utils.collections.concurrent.ConcurrentReferenceHashMap;
 import utils.collections.concurrent.ConcurrentReferenceHashMap.ReferenceType;
 

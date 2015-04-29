@@ -1,6 +1,6 @@
 package dbcache.cache.impl;
 
-import dbcache.cache.CacheUnit.ValueWrapper;
+import dbcache.cache.ValueWrapper;
 
 /**
  * 缓存Value简单包装

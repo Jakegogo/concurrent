@@ -2,7 +2,7 @@ package dbcache.cache.impl;
 
 import java.io.Serializable;
 
-import dbcache.cache.CacheUnit.ValueWrapper;
+import dbcache.cache.ValueWrapper;
 
 @SuppressWarnings("serial") 
 public class NullHolder implements ValueWrapper, Serializable {
