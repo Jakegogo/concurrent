@@ -176,7 +176,7 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 			cacheObject.doInit(cacheConfig);
 			
 			// 更新索引 需要外层加锁
-			if(cacheConfig.isEnableIndex()) {
+			if (cacheConfig.isEnableIndex()) {
 				for (ValueGetter<T> indexGetter : cacheConfig.getIndexList()) {
 					this.indexService.create(
 					IndexValue.valueOf(indexGetter.getName(), indexGetter.get(entity), key));
@@ -267,37 +267,30 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 		if(wrapper != null) {
 			oldCacheObject = (CacheObject<T>) wrapper.get();
 		}
-
+		if (oldCacheObject != null) {									 // 缓存中已经存在实体
+			return oldCacheObject.getProxyEntity();
+		}
+		
 		
 		// 存储到缓存
 		CacheObject<T> newCacheObject = configFactory.createCacheObject(entity,
 				this.clazz, indexService, key, cacheUnit, cacheConfig);
 		
-		boolean exists = oldCacheObject != null;							 // 缓存中是否已经存在实体
-		if (exists) {
-			oldCacheObject.setPersistStatus(PersistStatus.TRANSIENT);
-			wrapper = cacheUnit.replace(key, oldCacheObject, newCacheObject);// 已经存在实体则替换
-		} else {
-			if (wrapper == null) {										 	 // 缓存还不存在
-				wrapper = cacheUnit.putIfAbsent(key, newCacheObject);
-			} else {														 // 缓存为NULL或已经删除
-				wrapper = cacheUnit.replace(key, null, newCacheObject);
-			}
+		if (wrapper == null) {										 	 // 缓存还不存在
+			wrapper = cacheUnit.putIfAbsent(key, newCacheObject);
+		} else if (oldCacheObject == null){								 // 缓存为NULL或已经删除
+			wrapper = cacheUnit.replace(key, null, newCacheObject);
 		}
 		
-		
-		newCacheObject = (CacheObject<T>) wrapper.get(); 					 // 再获取一次最新的值
-		if (newCacheObject == null) {
+		newCacheObject = (CacheObject<T>) wrapper.get(); 				  // 再获取一次最新的值
+		if (newCacheObject == null) {									  // 重复提交/替换失败
 			return null;
-		}
-		if (newCacheObject == oldCacheObject) {								 // 重复提交/替换失败
-			return newCacheObject.getProxyEntity();
 		}
 		
 		
 		// 入库 
 		entity = newCacheObject.getEntity();
-		newCacheObject.doAfterLoad();									 	 // 加载回调
+		newCacheObject.doAfterLoad();									   // 加载回调
 
 		// 更新索引
 		if (cacheConfig.isEnableIndex()) {
@@ -315,11 +308,7 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 		}
 
 		// 提交持久化
-		if (exists) {
-			dbPersistService.handleUpdate(newCacheObject, this.dbAccessService, this.cacheConfig);
-		} else {
-			dbPersistService.handleSave(newCacheObject, this.dbAccessService, this.cacheConfig);
-		}
+		dbPersistService.handleSave(newCacheObject, this.dbAccessService, this.cacheConfig);
 		
 		return newCacheObject.getProxyEntity();
 	}
@@ -349,7 +338,7 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 			logger.error(msg);
 			throw new IllegalArgumentException(msg);
 		}
-
+		
 		// 提交持久化任务
 		dbPersistService.handleUpdate(cacheObject, this.dbAccessService, this.cacheConfig);
 	}
@@ -382,7 +371,7 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 		if (cacheObject == (CacheObject<T>) wrapper.get()) {// 替换失败
 			return;
 		}
-
+		
 		// 更新索引
 		if (cacheConfig.isEnableIndex()) {
 			T entity = cacheObject.getEntity();
