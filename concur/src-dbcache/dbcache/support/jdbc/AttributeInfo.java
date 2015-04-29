@@ -79,8 +79,8 @@ public class AttributeInfo<T> {
 		AttributeInfo<T> columnInfo = new AttributeInfo<T>();
 		columnInfo.name = field.getName();
 		columnInfo.setColumnName(columnName);
-		columnInfo.attrGetter = AsmAccessHelper.createFieldGetter(clazz, field);
-		columnInfo.attrSetter = AsmAccessHelper.createFieldSetter(clazz, field);
+		columnInfo.attrGetter = AsmAccessHelper.createFieldGetter(field.getName(), clazz, field);
+		columnInfo.attrSetter = AsmAccessHelper.createFieldSetter(field.getName(), clazz, field);
 		columnInfo.index = index;
 		columnInfo.type = field.getDeclaringClass();
 		columnInfo.targetType = field.getGenericType();

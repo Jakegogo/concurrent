@@ -13,7 +13,7 @@ public class FieldGetterTest<T> {
 
 		// 使用asm
 		long t1 = System.currentTimeMillis();
-		ValueGetter<Entity> getNum = AsmAccessHelper.createFieldGetter(Entity.class, Entity.class.getField("num"));
+		ValueGetter<Entity> getNum = AsmAccessHelper.createFieldGetter(null, Entity.class, Entity.class.getField("num"));
 //		getNum.setTarget(entity);
 		for(int i = 0;i < 100000000;i++) {
 			getNum.get(entity);

@@ -294,7 +294,7 @@ public class DbConfigFactoryImpl implements DbConfigFactory, DbCacheMBean {
 						}
 
 						try {
-							indexes.put(indexName, AsmAccessHelper.createFieldGetter(clz, field));
+							indexes.put(indexName, AsmAccessHelper.createFieldGetter(field.getName(), clz, field));
 						} catch (Exception e) {
 							logger.error("获取实体配置出错:生成索引失败(" + clz.getName() + "." + field.getName() + ").");
 							e.printStackTrace();

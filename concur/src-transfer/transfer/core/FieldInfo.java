@@ -77,7 +77,7 @@ public class FieldInfo<T> {
     protected ValueGetter<T> getFieldGetter() {
         if (this.fieldGetter == null) {
             try {
-                this.fieldGetter = AsmAccessHelper.createFieldGetter(clazz, field);
+                this.fieldGetter = AsmAccessHelper.createFieldGetter(name, clazz, field);
             } catch (Exception e) {
                 throw new EnhanceAccessException("无法创建字节码增强属性获取器:" + name, e);
             }
@@ -88,7 +88,7 @@ public class FieldInfo<T> {
     protected ValueSetter<T> getFieldSetter() {
         if (this.fieldSetter == null) {
             try {
-                this.fieldSetter = AsmAccessHelper.createFieldSetter(clazz, field);
+                this.fieldSetter = AsmAccessHelper.createFieldSetter(name, clazz, field);
             } catch (Exception e) {
                 throw new EnhanceAccessException("无法创建字节码增强属性获取器:" + name, e);
             }

@@ -1,19 +1,17 @@
 package dbcache;
 
-import dbcache.anno.ThreadSafe;
-import dbcache.cache.CacheUnit;
-import dbcache.cache.ValueWrapper;
-import dbcache.conf.CacheConfig;
-import dbcache.conf.DbConfigFactory;
-import dbcache.conf.Inject;
-import dbcache.dbaccess.DbAccessService;
-import dbcache.index.DbIndexService;
-import dbcache.index.IndexValue;
-import dbcache.persist.PersistStatus;
-import dbcache.persist.service.DbPersistService;
-import utils.enhance.asm.ValueGetter;
-import utils.JsonUtils;
-import utils.collections.concurrent.ConcurrentHashMapV8;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,12 +21,19 @@ import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextClosedEvent;
 import org.springframework.stereotype.Component;
 
-import java.io.Serializable;
-import java.util.*;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
+import utils.JsonUtils;
+import utils.collections.concurrent.ConcurrentHashMapV8;
+import utils.enhance.asm.ValueGetter;
+import dbcache.anno.ThreadSafe;
+import dbcache.cache.CacheUnit;
+import dbcache.cache.ValueWrapper;
+import dbcache.conf.CacheConfig;
+import dbcache.conf.DbConfigFactory;
+import dbcache.conf.Inject;
+import dbcache.dbaccess.DbAccessService;
+import dbcache.index.DbIndexService;
+import dbcache.index.IndexValue;
+import dbcache.persist.service.DbPersistService;
 
 
 /**
@@ -177,9 +182,9 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 			
 			// 更新索引 需要外层加锁
 			if (cacheConfig.isEnableIndex()) {
-				for (ValueGetter<T> indexGetter : cacheConfig.getIndexList()) {
+				for (Entry<String, ValueGetter<T>> entry : cacheConfig.getIndexes().entrySet()) {
 					this.indexService.create(
-					IndexValue.valueOf(indexGetter.getName(), indexGetter.get(entity), key));
+					IndexValue.valueOf(entry.getKey(), entry.getValue().get(entity), key));
 				}
 			}
 
@@ -294,9 +299,9 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 
 		// 更新索引
 		if (cacheConfig.isEnableIndex()) {
-			for(ValueGetter<T> indexGetter : cacheConfig.getIndexList()) {
+			for (Entry<String, ValueGetter<T>> entry : cacheConfig.getIndexes().entrySet()) {
 				this.indexService.create(
-				IndexValue.valueOf(indexGetter.getName(), indexGetter.get(entity), entity.getId()));
+				IndexValue.valueOf(entry.getKey(), entry.getValue().get(entity), entity.getId()));
 			}
 		}
 
@@ -375,9 +380,9 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 		// 更新索引
 		if (cacheConfig.isEnableIndex()) {
 			T entity = cacheObject.getEntity();
-			for(ValueGetter<T> indexGetter : cacheConfig.getIndexList()) {
+			for (Entry<String, ValueGetter<T>> entry : cacheConfig.getIndexes().entrySet()) {
 				this.indexService.remove(
-				IndexValue.valueOf(indexGetter.getName(), indexGetter.get(entity), entity.getId()));
+				IndexValue.valueOf(entry.getKey(), entry.getValue().get(entity), entity.getId()));
 			}
 		}
 		

@@ -2,6 +2,7 @@ package dbcache;
 
 import dbcache.anno.ThreadSafe;
 import dbcache.conf.DbConfigFactory;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -74,7 +75,8 @@ public class DbServiceImpl implements DbService {
     }
 
     // 获取真实类
-    private <T extends IEntity<PK>, PK extends Comparable<PK> & Serializable> Class<T> getRealClass(T entity) {
+    @SuppressWarnings("unchecked")
+	private <T extends IEntity<PK>, PK extends Comparable<PK> & Serializable> Class<T> getRealClass(T entity) {
         if (entity instanceof EnhancedEntity) {
             IEntity<?> orignEntity = ((EnhancedEntity) entity).getEntity();
             if (orignEntity == null) {

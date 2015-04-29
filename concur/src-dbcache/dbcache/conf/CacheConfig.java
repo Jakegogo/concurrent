@@ -63,9 +63,7 @@ public class CacheConfig<T> {
 
 	/** 索引信息  索引名 - 属性 */
 	private Map<String, ValueGetter<T>> indexes = new HashMap<String, ValueGetter<T>>();
-	/** 索引信息  List */
-	private List<ValueGetter<T>> indexList = new ArrayList<ValueGetter<T>>();
-
+	
 	/**
 	 * 实体主键ID生成map {类别ID : {实体类： 主键id生成器} }
 	 * <br/>category - IdGenerator
@@ -264,10 +262,6 @@ public class CacheConfig<T> {
 
 	public void setIndexes(Map<String, ValueGetter<T>> indexes) {
 		this.indexes = indexes;
-
-		List<ValueGetter<T>> indexList = new ArrayList<ValueGetter<T>>(indexes.size());
-		indexList.addAll(indexes.values());
-		this.indexList = Collections.unmodifiableList(indexList);
 	}
 
 	public Class<?> getIndexCacheClass() {
@@ -276,10 +270,6 @@ public class CacheConfig<T> {
 
 	public void setIndexCacheClass(Class<?> indexCacheClass) {
 		this.indexCacheClass = indexCacheClass;
-	}
-
-	public List<ValueGetter<T>> getIndexList() {
-		return indexList;
 	}
 
 	public Map<Integer, IdGenerator<?>> getIdGenerators() {

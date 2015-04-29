@@ -321,7 +321,7 @@ public class Test {
 		long t1 = System.currentTimeMillis();
 		Entity entity = this.cacheService.get(2l);
 //		System.out.println("use time0 :" + (System.currentTimeMillis() - t1));
-		entity.setNum(202);
+//		entity.setNum(202);
 		entity.setA(new byte[100]);
 
 		List<Entity> list = this.cacheService.listByIndex(Entity.NUM_INDEX, 202);

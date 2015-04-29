@@ -61,28 +61,21 @@ public class AsmAccessHelper implements Opcodes {
 	public static final AsmClassLoader classLoader = new AsmClassLoader();
 	
 	// innder caches
-	// fieldGetter缓存
-	private static Map<Field , ValueGetter<?>> fieldGetterCache = new ConcurrentHashMap<Field , ValueGetter<?>>();
-	// fieldSetter缓存
-	private static Map<Field , ValueSetter<?>> fieldSetterCache = new ConcurrentHashMap<Field , ValueSetter<?>>();
+	
 	// putFieldsMthodMap缓存
 	private static Map<Class<?>, Map<Method, List<String>>> putFieldsMthodMapCache = new ConcurrentHashMap<Class<?>, Map<Method, List<String>>>();
 	
 	
 	/**
 	 * 创建属性获取器
+	 * @param getterName 名称
 	 * @param clazz 类
 	 * @param field 属性
 	 * @return ValueGetter<T>
 	 * @throws Exception
 	 */
 	@SuppressWarnings("unchecked")
-	public static <T> ValueGetter<T> createFieldGetter(final Class<T> clazz, final Field field) throws Exception {
-		// 查找缓存的
-		if (fieldGetterCache.containsKey(field)) {
-			return (ValueGetter<T>) fieldGetterCache.get(field);
-		}
-		
+	public static <T> ValueGetter<T> createFieldGetter(final String getterName, final Class<T> clazz, final Field field) throws Exception {
 		Class<T> enhancedClass;
 		//代理类名
 		final String enhancedClassName = AbstractFieldGetter.class.getName()
@@ -155,7 +148,7 @@ public class AsmAccessHelper implements Opcodes {
 
 					} else if(name.equals(GET_NAME_METHOD_NAME)) {//getName
 						MethodVisitor mv = writer.visitMethod(ACC_PUBLIC, name, desc, signature, exceptions);
-						mv.visitLdcInsn(field.getName());
+						mv.visitLdcInsn(getterName);
 						mv.visitInsn(ARETURN);
 						mv.visitMaxs(1, 1);
 						mv.visitEnd();
@@ -203,7 +196,6 @@ public class AsmAccessHelper implements Opcodes {
 
 		try {
 			ValueGetter<T> valueGetter = (ValueGetter<T>) enhancedClass.newInstance();
-			fieldGetterCache.put(field, valueGetter);
 			return valueGetter;
 		} catch (Exception e) {
 			logger.error("无法创建代理类对象:" + enhancedClassName);
@@ -215,19 +207,14 @@ public class AsmAccessHelper implements Opcodes {
 
 	/**
 	 * 创建属性设值器
+	 * @param setterName 名称
 	 * @param clazz 类
 	 * @param field 属性
 	 * @return ValueSetter<T>
 	 * @throws Exception
 	 */
 	@SuppressWarnings("unchecked")
-	public static <T> ValueSetter<T> createFieldSetter(final Class<T> clazz, final Field field) throws Exception {
-
-		// 查找缓存的
-		if (fieldSetterCache.containsKey(field)) {
-			return (ValueSetter<T>) fieldSetterCache.get(field);
-		}
-		
+	public static <T> ValueSetter<T> createFieldSetter(final String setterName, final Class<T> clazz, final Field field) throws Exception {
 		Class<T> enhancedClass;
 		//代理类名
 		final String enhancedClassName = AbstractFieldSetter.class.getName()
@@ -315,7 +302,7 @@ public class AsmAccessHelper implements Opcodes {
 
 					} else if(name.equals(GET_NAME_METHOD_NAME)) {//getName
 						MethodVisitor mv = writer.visitMethod(ACC_PUBLIC, name, desc, signature, exceptions);
-						mv.visitLdcInsn(field.getName());
+						mv.visitLdcInsn(setterName);
 						mv.visitInsn(ARETURN);
 						mv.visitMaxs(1, 1);
 						mv.visitEnd();
@@ -364,7 +351,6 @@ public class AsmAccessHelper implements Opcodes {
 
 		try {
 			ValueSetter<T> valueSetter = (ValueSetter<T>) enhancedClass.newInstance();
-			fieldSetterCache.put(field, valueSetter);
 			return valueSetter;
 		} catch (Exception e) {
 			logger.error("无法创建代理类对象:" + enhancedClassName);

@@ -17,7 +17,7 @@ public class FieldSetterTest {
         Entity entity = new Entity();
         entity.setNum(2);
 
-        ValueSetter<Entity> getNum = AsmAccessHelper.createFieldSetter(Entity.class, Entity.class.getDeclaredField("friends"));
+        ValueSetter<Entity> getNum = AsmAccessHelper.createFieldSetter(null, Entity.class, Entity.class.getDeclaredField("friends"));
 //        getNum.setTarget(entity);
 
         Set<Long> set = new ConcurrentHashSet<Long>();
