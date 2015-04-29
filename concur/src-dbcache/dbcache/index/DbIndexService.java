@@ -29,7 +29,7 @@ public interface DbIndexService<PK extends Comparable<PK> & Serializable> {
 	 * 创建实体索引
 	 * @param indexValue 索引值
 	 */
-	public IndexObject<PK> create(IndexValue<PK> indexValue);
+	public void create(IndexValue<PK> indexValue);
 
 
 	/**

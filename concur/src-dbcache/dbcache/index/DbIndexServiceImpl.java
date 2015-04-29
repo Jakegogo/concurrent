@@ -1,5 +1,21 @@
 package dbcache.index;
 
+import java.io.Serializable;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.stereotype.Component;
+
+import utils.collections.concurrent.ConcurrentHashMapV8;
+import utils.enhance.asm.ValueGetter;
+import dbcache.DbCacheInitError;
 import dbcache.IEntity;
 import dbcache.anno.ThreadSafe;
 import dbcache.cache.CacheUnit;
@@ -8,20 +24,6 @@ import dbcache.conf.CacheConfig;
 import dbcache.conf.CacheRule;
 import dbcache.conf.Inject;
 import dbcache.dbaccess.DbAccessService;
-import dbcache.DbCacheInitError;
-import dbcache.persist.PersistStatus;
-import utils.enhance.asm.ValueGetter;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.stereotype.Component;
-
-import java.io.Serializable;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.concurrent.ConcurrentMap;
 
 /**
  * 实体索引服务实现类
@@ -49,25 +51,34 @@ public class DbIndexServiceImpl<PK extends Comparable<PK> & Serializable>
 	@Autowired
 	@Qualifier("jdbcDbAccessServiceImpl")
 	private DbAccessService dbAccessService;
+	
+	/**
+	 * 等待锁map {key:lock}
+	 */
+	private final ConcurrentMap<Object, Lock> WAITING_LOCK_MAP = new ConcurrentHashMapV8<Object, Lock>();
 
 
 	@Override
 	public Collection<PK> get(String indexName, Object indexValue) {
+		
 		if (cacheConfig == null) {
 			throw new DbCacheInitError("CacheConfig未初始化,索引[" + indexName + "]!");
 		}
 		
 		// 判断实体是否建立索引
 		if(!cacheConfig.getIndexes().containsKey(indexName)) {
-			throw new IllegalArgumentException("实体类[" + cacheConfig.getClazz().getSimpleName() + "]不存在索引[" + indexName + "]!");
+			throw new IllegalArgumentException("实体类["
+					+ cacheConfig.getClazz().getSimpleName() 
+					+ "]不存在索引["
+					+ indexName + "]!");
 		}
-
+		
 		final Map<PK, Boolean> indexValues = this.getPersist(indexName, indexValue);
 		// 索引为空
 		if(indexValues == null) {
 			return Collections.emptyList();
 		}
-
+		
 		return new UnmodifiableKeySet<PK>(indexValues);
 	}
 
@@ -79,132 +90,92 @@ public class DbIndexServiceImpl<PK extends Comparable<PK> & Serializable>
 	 */
 	@SuppressWarnings("unchecked")
 	private Map<PK, Boolean> getPersist(String indexName, Object indexValue) {
-
-		IndexObject<PK> indexObject = this.getTransient(indexName, indexValue);
-
-		if (indexObject == null || indexObject.getUpdateStatus() == PersistStatus.DELETED) {
-			return null;
-		} else if(indexObject.getUpdateStatus() == PersistStatus.PERSIST) {
-			return indexObject.getIndexValues();
-		}
-
-
-		ConcurrentMap<PK, Boolean> indexValues = indexObject.getIndexValues();
-
-		// 持久态则返回结果
-		if (indexObject.isDoPersist()) {
-			return indexObject.getIndexValues();
-		}
-
+		
 		if (cacheConfig == null) {
 			throw new RuntimeException("CacheConfig未初始化(" + indexName + ")");
 		}
 
-		synchronized (indexObject) {
-
-			// 持久态则返回结果
-			if (indexObject.isDoPersist()) {
-				return indexObject.getIndexValues();
-			}
-
-			// 查询数据库索引
-			ValueGetter<?> indexField = cacheConfig.getIndexes().get(indexName);
-
-			Collection<PK> ids = (Collection<PK>) dbAccessService.listIdByIndex(cacheConfig.getClazz(), indexField.getName(), indexValue);
-
-			// 设置缓存状态
-			if (indexObject.compareAndSetUpdateStatus(PersistStatus.TRANSIENT, PersistStatus.PERSIST)) {
-
-				if (ids != null) {
-					// 需要外层加锁
-					for (PK id : ids) {
-						Boolean oldStatus = indexValues.putIfAbsent(id, true);
-						if (oldStatus != null && !oldStatus) {
-							indexValues.remove(id);
-						}
-					}
-				}
-			
-			}
-
-			// 设置持久化状态
-			indexObject.setDoPersist(true);
-		}
-
-		return indexValues;
-	}
-
-
-
-	/**
-	 * 获取可修改的线程安全的临时索引值
-	 * @return Map<PK, Boolean> 主键 - 是否持久化(false:已删除)
-	 */
-	@SuppressWarnings("unchecked")
-	private IndexObject<PK> getTransient(String indexName, Object indexValue) {
-		
 		final Object key = CacheRule.getIndexIdKey(indexName, indexValue);
 
 		ValueWrapper wrapper = (ValueWrapper) cacheUnit.get(key);
-		if(wrapper != null) {	// 已经缓存
+		if (wrapper != null) {												// 已经缓存
+			return getIndexMap(wrapper);
+		}
+		
 
-			IndexObject<PK> indexObject = (IndexObject<PK>) wrapper.get();
+		// 获取缓存唯一锁
+		Lock lock = new ReentrantLock();
+		Lock prevLock = WAITING_LOCK_MAP.putIfAbsent(key, lock);
+		lock = prevLock != null ? prevLock : lock;
+		
+		// 查询数据库
+		try {
+			lock.lock();
 
-			if(indexObject != null) {
-				return indexObject;
-			} else {
-				return null;
+			wrapper = (ValueWrapper) cacheUnit.get(key);
+			if (wrapper != null) {												// 已经缓存
+				return getIndexMap(wrapper);
 			}
+
+			IndexObject<PK> indexObject = IndexObject.valueOf(IndexKey.valueOf(indexName, indexValue));
+			
+			// 查询数据库索引
+			ValueGetter<?> indexField = cacheConfig.getIndexes().get(indexName);
+
+			Collection<PK> ids = (Collection<PK>) dbAccessService
+					.listIdByIndex(cacheConfig.getClazz(), indexField.getName(), indexValue);
+			if (ids != null) {
+				ConcurrentMap<PK, Boolean> indexValues = indexObject.getIndexValues();
+				// 需要外层加锁
+				for (PK id : ids) {
+					indexValues.putIfAbsent(id, true);
+				}
+			}
+			
+			wrapper = cacheUnit.putIfAbsent(key, indexObject);
+			
+		} finally {
+			lock.unlock();
+			WAITING_LOCK_MAP.remove(key);
 		}
 
-		IndexObject<PK> indexObject = IndexObject.valueOf(IndexKey.valueOf(indexName, indexValue), PersistStatus.TRANSIENT);
+		return getIndexMap(wrapper);
+	}
 
-		wrapper = cacheUnit.putIfAbsent(key, indexObject);
 
-		if (wrapper != null && wrapper.get() != null) {
-			indexObject = (IndexObject<PK>) wrapper.get();
+	/**
+	 * 获取缓存中的索引Map
+	 * @param wrapper 缓存Wrap
+	 * @return
+	 */
+	@SuppressWarnings("unchecked")
+	private Map<PK, Boolean> getIndexMap(ValueWrapper wrapper) {
+		IndexObject<PK> indexObject = (IndexObject<PK>) wrapper.get();
+		if (indexObject == null) {
+			return null;
 		}
-
-		return indexObject;
+		return indexObject.getIndexValues();
 	}
 
 
 	@Override
-	public IndexObject<PK> create(IndexValue<PK> indexValue) {
-
-		final IndexObject<PK> indexObject = this.getTransient(indexValue.getName(), indexValue.getValue());
-
-		indexObject.getIndexValues().put(indexValue.getId(), Boolean.valueOf(true));
-
-		return this.getTransient(indexValue.getName(), indexValue.getValue());
-
+	public void create(IndexValue<PK> indexValue) {
+		this.getPersist(indexValue.getName(), indexValue.getValue()).put(indexValue.getId(), Boolean.valueOf(true));
 	}
 
 
 	@Override
 	public void remove(IndexValue<PK> indexValue) {
-
 		final Object key = CacheRule.getIndexIdKey(indexValue.getName(), indexValue.getValue());
-
-		final IndexObject<PK> indexObject = this.getTransient(indexValue.getName(), indexValue.getValue());
-
-		// 持久状态直接移除
-		if(indexObject.getUpdateStatus() == PersistStatus.PERSIST) {
-			indexObject.getIndexValues().remove(key);
-		} else {//内存临时虚存储状态
-			indexObject.getIndexValues().put(indexValue.getId(), Boolean.valueOf(false));
-		}
-
+		this.getPersist(indexValue.getName(), indexValue.getValue()).remove(key);
 	}
 
 
 	@Override
 	public void update(IEntity<PK> entity, String indexName, Object oldValue, Object newValue) {
-		
-		if(oldValue != null && oldValue.equals(newValue)) {
+		if (oldValue != null && oldValue.equals(newValue)) {
 			return;
 		}
-		
 		// 从旧的索引队列中移除
 		this.remove(IndexValue.valueOf(indexName, oldValue, entity.getId()));
 		// 添加到新的索引队列
@@ -222,6 +193,12 @@ public class DbIndexServiceImpl<PK extends Comparable<PK> & Serializable>
 	}
 	
 	
+	/**
+	 * 不可更改的KeySet
+	 * @author Jake
+	 *
+	 * @param <E>
+	 */
 	static class UnmodifiableKeySet<E> implements Collection<E>,
 			Serializable {
 		private static final long serialVersionUID = 5203572468382523850L;
