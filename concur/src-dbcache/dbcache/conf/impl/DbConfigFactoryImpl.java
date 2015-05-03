@@ -208,6 +208,7 @@ public class DbConfigFactoryImpl implements DbConfigFactory, DbCacheMBean {
 
 			// 初始化DbCache服务
 			service.init();
+
 			return service;
 		} catch(NoSuchFieldException e) {
 			e.printStackTrace();

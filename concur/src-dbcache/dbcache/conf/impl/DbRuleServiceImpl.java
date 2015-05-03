@@ -135,11 +135,6 @@ public class DbRuleServiceImpl implements DbRuleService {
 	private final long ID_MAX_VALUE_OF_AUTOINCR = 9999999999L;
 	
 	/**
-	 * 自增部分的ID取模值
-	 */
-	private final long ID_BASE_VALUE_OF_AUTOINCR = ID_MAX_VALUE_OF_AUTOINCR + 1;
-
-	/**
 	 * 自增部分的ID最小值
 	 */
 	private final long ID_MIN_VALUE_OF_AUTOINCR = 0L;
@@ -154,16 +149,6 @@ public class DbRuleServiceImpl implements DbRuleService {
 	 */
 	private final int MAX_LENGTH_OF_USER_ID = 15;
 
-	/**
-	 * Long型Id缓存长度
-	 */
-	private static final int LONG_WRAP_ID_CACHE_SIZE = 100000;
-	
-	/**
-	 * Long型Id缓存
-	 */
-	private Long[] LONG_WRAP_ID_CACHE = new Long[10000];
-	
 	/**
 	 * 最小服Id
 	 */
@@ -189,47 +174,10 @@ public class DbRuleServiceImpl implements DbRuleService {
 			throw new RuntimeException(message.getMessage(), e);
 		}
 
+
 		//初始化服ID列表
 		if (properties.containsKey(KEY_SERVER_ID_SET)) {
-			String serverIdSet = properties.getProperty(KEY_SERVER_ID_SET);
-			if (serverIdSet != null && serverIdSet.trim().length() > 0) {
-				String[] serverIdArray = serverIdSet.trim().split(SPLIT);
-				if (serverIdArray != null && serverIdArray.length > 0) {
-					this.serverIdList = new ArrayList<Integer>(serverIdArray.length);
-
-					try {
-						for (String sid: serverIdArray) {
-							int serverId = Integer.parseInt(sid.trim());
-							//非法的服标识
-							if (!ServerEntityIdRule.isLegalServerId(serverId)) {
-								this.serverIdList = null;
-								logger.error("服务器ID标识超出范围：{}", serverId);
-
-								break;
-							}
-							
-							if (serverId < minServerId) {
-								minServerId = serverId;
-							}
-							
-							if (serverId > maxServerId) {
-								maxServerId = serverId;
-							}
-
-							if (!serverIdList.contains(serverId)) {
-								serverIdList.add(serverId);
-							}
-						}
-
-					} catch (Exception ex) {
-						this.serverIdList = null;
-						logger.error("DbCached 转换服务器ID标识集合错误： {}", ex.getMessage());
-					}
-				}
-			}
-			
-			LONG_WRAP_ID_CACHE = new Long[(maxServerId - minServerId + 2) * LONG_WRAP_ID_CACHE_SIZE];
-			
+			this.initServerIdSet(properties.getProperty(KEY_SERVER_ID_SET));
 		}
 
 		if (this.serverIdList == null || this.serverIdList.size() < 1) {
@@ -258,6 +206,7 @@ public class DbRuleServiceImpl implements DbRuleService {
 		}
 		this.entityCacheSize = this.entityCacheSize > 0? this.entityCacheSize : entityCacheSize;
 
+
 		//实体缓存最大容量
 		long delayWaitTimmer = DEFAULT_DELAY_WAITTIMMER;
 		try {
@@ -270,67 +219,118 @@ public class DbRuleServiceImpl implements DbRuleService {
 	}
 
 
+	/**
+	 * 初始化服标识集合
+	 * @param serverIdSet String
+	 */
+	private void initServerIdSet(String serverIdSet) {
+		if (serverIdSet == null || serverIdSet.trim().length() == 0) {
+			return;
+        }
+
+		String[] serverIdArray = serverIdSet.trim().split(SPLIT);
+		if (serverIdArray == null || serverIdArray.length == 0) {
+			return;
+		}
+
+		this.serverIdList = new ArrayList<Integer>(serverIdArray.length);
+
+		try {
+			for (String sid: serverIdArray) {
+				int serverId = Integer.parseInt(sid.trim());
+				//非法的服标识
+				if (!ServerEntityIdRule.isLegalServerId(serverId)) {
+					this.serverIdList = null;
+					logger.error("服务器ID标识超出范围：{}", serverId);
+
+					break;
+				}
+
+				if (serverId < minServerId) {
+					minServerId = serverId;
+				}
+
+				if (serverId > maxServerId) {
+					maxServerId = serverId;
+				}
+
+				if (!serverIdList.contains(serverId)) {
+					serverIdList.add(serverId);
+				}
+			}
+
+		} catch (Exception ex) {
+			this.serverIdList = null;
+			logger.error("DbCached 转换服务器ID标识集合错误： {}", ex.getMessage());
+		}
+
+	}
+
+
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	@Override
 	public void initIdGenerators(Class<? extends IEntity> clz, CacheConfig cacheConfig) {
+
+		if (!clz.isAnnotationPresent(Entity.class)) {
+			return;
+		}
+
+		if (serverIdList == null || serverIdList.size() == 0) { // 没有配置服标识
+			cacheConfig.setIdGenerators(Collections.emptyMap());
+			cacheConfig.setDefaultIdGenerator(new LongGenerator());
+			return;
+		}
+
 		
-		// 初始化主键id生成器
-		if (clz.isAnnotationPresent(Entity.class)) {
+		//获取可用主键类型
+		Class<?> idType = GenericsUtils.getSuperClassGenricType(clz, 0);
 
-			boolean validId = true;
-			//获取可用主键类型
-			Class<?> idType = GenericsUtils.getSuperClassGenricType(clz, 0);
-			
-			if (idType == null || idType != Long.class) {
-				Field[] fields = ReflectionUtility.getDeclaredFieldsWith(clz, javax.persistence.Id.class);
+		if (idType == null || idType != Long.class) {
+			Field[] fields = ReflectionUtility.getDeclaredFieldsWith(clz, javax.persistence.Id.class);
 
-				if(fields != null && fields.length == 1) {
-					ReflectionUtils.makeAccessible(fields[0]);
-					if (fields[0].getType() != Long.class) {
-						validId = false;
-					}
-				} else {
-					validId = false;
-				}
+			if(fields == null || fields.length == 0) {
+				return;
 			}
-
-			if (validId) {
-				//初始化主键Id生成器
-				Map<Integer, IdGenerator<?>> idGenerators = new IdentityHashMap<Integer, IdGenerator<?>>();
-
-				List<Integer> serverIdList = getServerIdList();
-				if (serverIdList != null && serverIdList.size() > 0) {//配置的服
-
-					for (int serverId: serverIdList) {
-
-						long minValue = ServerEntityIdRule.getMinValueOfEntityId(serverId);
-						long maxValue = ServerEntityIdRule.getMaxValueOfEntityId(serverId);
-
-						//当前最大id
-						long currMaxId = minValue;
-						Object resultId = this.dbAccessService.loadMaxId(clz, minValue, maxValue);
-						if (resultId != null) {
-							currMaxId = (Long) resultId;
-						}
-
-						LongGenerator idGenerator = new LongGenerator(currMaxId);
-						idGenerators.put(serverId, idGenerator);
-
-						if (logger.isInfoEnabled()) {
-							logger.info("服{}： {} 的当前自动增值ID：{}", new Object[] {serverId, clz.getName(), currMaxId});
-						}
-					}
-				}
-				
-				// 设置主键id生成器
-				cacheConfig.setIdGenerators(idGenerators);
-				
-				// 默认的服Id
-				Integer defaultSereverId = getDefaultServerId();
-				IdGenerator<?> defaultIdGenerator = idGenerators.get(defaultSereverId);
-				cacheConfig.setDefaultIdGenerator(defaultIdGenerator); // 默认Id主键生成器
+			ReflectionUtils.makeAccessible(fields[0]);
+			if (fields[0].getType() != Long.class) {
+				return;
 			}
 		}
+
+
+		//初始化主键Id生成器
+		Map<Integer, IdGenerator<?>> idGenerators = new IdentityHashMap<Integer, IdGenerator<?>>();
+
+		List<Integer> serverIdList = getServerIdList();
+
+		for (int serverId: serverIdList) {
+
+			long minValue = ServerEntityIdRule.getMinValueOfEntityId(serverId);
+			long maxValue = ServerEntityIdRule.getMaxValueOfEntityId(serverId);
+
+			//当前最大id
+			long currMaxId = minValue;
+			Object resultId = this.dbAccessService.loadMaxId(clz, minValue, maxValue);
+			if (resultId != null) {
+				currMaxId = (Long) resultId;
+			}
+
+			LongGenerator idGenerator = new LongGenerator(currMaxId);
+			idGenerators.put(serverId, idGenerator);
+
+			if (logger.isInfoEnabled()) {
+				logger.info("服{}： {} 的当前自动增值ID：{}", new Object[] {serverId, clz.getName(), currMaxId});
+			}
+		}
+
+		// 设置主键id生成器
+		cacheConfig.setIdGenerators(idGenerators);
+
+		// 默认的服Id
+		Integer defaultSereverId = getDefaultServerId();
+		IdGenerator<?> defaultIdGenerator = idGenerators.get(defaultSereverId);
+		cacheConfig.setDefaultIdGenerator(defaultIdGenerator); // 设置默认Id主键生成器
+
 	}
 	
 	
