@@ -1,29 +1,5 @@
 package dbcache;
 
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.context.ApplicationListener;
-import org.springframework.context.event.ContextClosedEvent;
-import org.springframework.stereotype.Component;
-
-import utils.JsonUtils;
-import utils.collections.concurrent.ConcurrentHashMapV8;
-import utils.enhance.asm.ValueGetter;
 import dbcache.anno.ThreadSafe;
 import dbcache.cache.CacheUnit;
 import dbcache.cache.ValueWrapper;
@@ -34,11 +10,29 @@ import dbcache.dbaccess.DbAccessService;
 import dbcache.index.DbIndexService;
 import dbcache.index.IndexValue;
 import dbcache.persist.service.DbPersistService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.context.ApplicationListener;
+import org.springframework.context.event.ContextClosedEvent;
+import org.springframework.stereotype.Component;
+import utils.JsonUtils;
+import utils.collections.concurrent.ConcurrentHashMapV8;
+import utils.enhance.asm.ValueGetter;
+
+import java.io.Serializable;
+import java.util.*;
+import java.util.Map.Entry;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 
 /**
  * 数据库缓存服务实现类
- * <br/>更改实体属性值需要外部加锁
+ * <br/>需要外部维护缓存一致性, 更改实体属性值需外部加锁
  * @author jake
  * @date 2014-7-31-下午6:07:37
  */

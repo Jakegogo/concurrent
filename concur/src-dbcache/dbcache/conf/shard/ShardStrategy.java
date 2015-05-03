@@ -11,7 +11,7 @@ public interface ShardStrategy<PK> {
 	
 	/**
 	 * 获取表名后缀
-	 * @param entity 实体
+	 * @param key 实体Key
 	 * @return
 	 */
 	public String getTableNameSuffix(PK key);
