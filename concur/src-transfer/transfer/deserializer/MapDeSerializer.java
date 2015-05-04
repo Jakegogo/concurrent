@@ -84,6 +84,8 @@ public class MapDeSerializer implements Deserializer {
 	public void compile(Type type, MethodVisitor mw,
 			AsmDeserializerContext context) {
     	
+    	
+    	
 	}
     
 

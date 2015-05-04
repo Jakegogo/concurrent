@@ -5,6 +5,7 @@ import transfer.compile.AsmDeserializerContext;
 import transfer.def.TransferConfig;
 import transfer.utils.IntegerMap;
 import transfer.utils.TypeUtils;
+import utils.enhance.asm.util.AsmUtils;
 
 import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
@@ -29,11 +30,8 @@ public class EntryDeserializer implements Deserializer, Opcodes {
         Type valueType = null;
 
         if (type instanceof ParameterizedType) {
-
             keyType = TypeUtils.getParameterizedType((ParameterizedType) type, 0);
-
             valueType = TypeUtils.getParameterizedType((ParameterizedType) type, 1);
-
         }
 
         // 读取元素类型
@@ -50,19 +48,104 @@ public class EntryDeserializer implements Deserializer, Opcodes {
     @Override
 	public void compile(Type type, MethodVisitor mv,
 			AsmDeserializerContext context) {
+    	
     	Type keyType = null;
+    	Type valueType = null;
 
         if (type instanceof ParameterizedType) {
             keyType = TypeUtils.getParameterizedType((ParameterizedType) type, 0);
+            valueType = TypeUtils.getParameterizedType((ParameterizedType) type, 1);
         }
         
+        //解析KEY
+        int keyLocal = 5;
         Class<?> keyRawClass = TypeUtils.getRawClass(keyType);
         if (keyType == null || keyType == Object.class
 				|| keyRawClass.isInterface()
 				|| Modifier.isAbstract(keyRawClass.getModifiers()) && !keyRawClass.isArray()) {// 使用默认解析器
         	
+        	mv.visitVarInsn(ALOAD, 1);
+            mv.visitMethodInsn(INVOKEINTERFACE, "transfer/Inputable", "getByte", "()B", true);
+            mv.visitVarInsn(ISTORE, 5);
+
+            mv.visitLdcInsn(org.objectweb.asm.Type.getType("L" + AsmUtils.toAsmCls(keyRawClass.getName()) + ";"));
+            mv.visitVarInsn(ILOAD, 5);
+            mv.visitMethodInsn(INVOKESTATIC, "transfer/def/TransferConfig", "getDeserializer", "(Ljava/lang/reflect/Type;B)Ltransfer/deserializer/Deserializer;", false);
+            mv.visitVarInsn(ASTORE, 6);
+
+            mv.visitVarInsn(ALOAD, 6);
+            mv.visitVarInsn(ALOAD, 1);
+            mv.visitLdcInsn(org.objectweb.asm.Type.getType("L" + AsmUtils.toAsmCls(keyRawClass.getName()) + ";"));
+            mv.visitVarInsn(ILOAD, 5);
+            mv.visitVarInsn(ALOAD, 4);
+            mv.visitMethodInsn(INVOKEINTERFACE, "transfer/deserializer/Deserializer", "deserialze", "(Ltransfer/Inputable;Ljava/lang/reflect/Type;BLtransfer/utils/IntegerMap;)Ljava/lang/Object;", true);
+            mv.visitVarInsn(ASTORE, 7);
+            keyLocal = 7;
+        } else {
+        	
+        	mv.visitVarInsn(ALOAD, 1);
+            mv.visitMethodInsn(INVOKEINTERFACE, "transfer/Inputable", "getByte", "()B", true);
+            mv.visitVarInsn(ISTORE, 5);
+            
+            Deserializer keyDeserializer = TransferConfig.getDeserializer(keyType);// Key解析器
+            
+            context.invokeNextDeserialize(null, mv);
+            keyDeserializer.compile(keyType, mv, context);
+        	
+            mv.visitVarInsn(ASTORE, 6);
+            keyLocal = 6;
         }
         
+        
+        // 解析VALUE
+        int valueLocal = keyLocal + 1;
+        Class<?> valueRawClass = TypeUtils.getRawClass(valueType);
+        if (valueType == null || valueType == Object.class
+				|| valueRawClass.isInterface()
+				|| Modifier.isAbstract(valueRawClass.getModifiers()) && !valueRawClass.isArray()) {// 使用默认解析器
+        	
+        	mv.visitVarInsn(ALOAD, 1);
+            mv.visitMethodInsn(INVOKEINTERFACE, "transfer/Inputable", "getByte", "()B", true);
+            mv.visitVarInsn(ISTORE, keyLocal + 1);
+
+            mv.visitLdcInsn(org.objectweb.asm.Type.getType("L" + AsmUtils.toAsmCls(keyRawClass.getName()) + ";"));
+            mv.visitVarInsn(ILOAD, keyLocal + 1);
+            mv.visitMethodInsn(INVOKESTATIC, "transfer/def/TransferConfig", "getDeserializer", "(Ljava/lang/reflect/Type;B)Ltransfer/deserializer/Deserializer;", false);
+            mv.visitVarInsn(ASTORE, keyLocal + 2);
+
+            mv.visitVarInsn(ALOAD, keyLocal + 2);
+            mv.visitVarInsn(ALOAD, 1);
+            mv.visitLdcInsn(org.objectweb.asm.Type.getType("L" + AsmUtils.toAsmCls(keyRawClass.getName()) + ";"));
+            mv.visitVarInsn(ILOAD, keyLocal + 1);
+            mv.visitVarInsn(ALOAD, 4);
+            mv.visitMethodInsn(INVOKEINTERFACE, "transfer/deserializer/Deserializer", "deserialze", "(Ltransfer/Inputable;Ljava/lang/reflect/Type;BLtransfer/utils/IntegerMap;)Ljava/lang/Object;", true);
+            mv.visitVarInsn(ASTORE, keyLocal + 3);
+            valueLocal = keyLocal + 3;
+        } else {
+        	
+        	mv.visitVarInsn(ALOAD, 1);
+            mv.visitMethodInsn(INVOKEINTERFACE, "transfer/Inputable", "getByte", "()B", true);
+            mv.visitVarInsn(ISTORE, keyLocal + 1);
+            
+            Deserializer keyDeserializer = TransferConfig.getDeserializer(keyType);// Key解析器
+            
+            context.invokeNextDeserialize(null, mv);
+            keyDeserializer.compile(keyType, mv, context);
+        	
+            mv.visitVarInsn(ASTORE, keyLocal + 2);
+            valueLocal = keyLocal + 2;
+        }
+        
+        
+        mv.visitTypeInsn(NEW, "transfer/deserializer/EntryDeserializer$UnmodificationEntry");
+        mv.visitInsn(DUP);
+        mv.visitVarInsn(ALOAD, keyLocal);
+        mv.visitVarInsn(ALOAD, valueLocal);
+        mv.visitMethodInsn(INVOKESPECIAL, "transfer/deserializer/EntryDeserializer$UnmodificationEntry", "<init>", "(Ljava/lang/Object;Ljava/lang/Object;)V", false);
+        mv.visitInsn(ARETURN);
+        
+        mv.visitMaxs(5, valueLocal);
+        mv.visitEnd();
 	}
     
 

@@ -66,7 +66,7 @@ public class DbIndexServiceImpl<PK extends Comparable<PK> & Serializable>
 		}
 		
 		// 判断实体是否建立索引
-		if(!cacheConfig.getIndexes().containsKey(indexName)) {
+		if (!cacheConfig.getIndexes().containsKey(indexName)) {
 			throw new IllegalArgumentException("实体类["
 					+ cacheConfig.getClazz().getSimpleName() 
 					+ "]不存在索引["
@@ -75,7 +75,7 @@ public class DbIndexServiceImpl<PK extends Comparable<PK> & Serializable>
 		
 		final Map<PK, Boolean> indexValues = this.getPersist(indexName, indexValue);
 		// 索引为空
-		if(indexValues == null) {
+		if (indexValues == null) {
 			return Collections.emptyList();
 		}
 		
