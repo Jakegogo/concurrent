@@ -102,27 +102,22 @@ public class MapDeSerializer implements Deserializer, Opcodes {
 		mv.visitInsn(ARETURN);
 		mv.visitLabel(l1);
     	 
-         mv.visitVarInsn(ILOAD, 3);
-         mv.visitMethodInsn(INVOKESTATIC, "transfer/def/TransferConfig", "getType", "(B)B", false);
-         mv.visitVarInsn(ISTORE, 5);
+        mv.visitVarInsn(ILOAD, 3);
+        mv.visitMethodInsn(INVOKESTATIC, "transfer/def/TransferConfig", "getType", "(B)B", false);
+        mv.visitVarInsn(ISTORE, 5);
          
-         mv.visitVarInsn(ILOAD, 5);
-         mv.visitIntInsn(BIPUSH, Types.COLLECTION);
-         Label l2 = new Label();
-         mv.visitJumpInsn(IF_ICMPEQ, l2);
-         mv.visitVarInsn(ILOAD, 5);
-         mv.visitIntInsn(BIPUSH, Types.ARRAY);
-         mv.visitJumpInsn(IF_ICMPEQ, l2);
-         Label l3 = new Label();
-         mv.visitLabel(l3);
-         mv.visitTypeInsn(NEW, "transfer/exceptions/IllegalTypeException");
-         mv.visitInsn(DUP);
-         mv.visitVarInsn(ILOAD, 5);
-         mv.visitIntInsn(BIPUSH, Types.COLLECTION);
-         mv.visitVarInsn(ALOAD, 2);
-         mv.visitMethodInsn(INVOKESPECIAL, "transfer/exceptions/IllegalTypeException", "<init>", "(BBLjava/lang/reflect/Type;)V", false);
-         mv.visitInsn(ATHROW);
-         mv.visitLabel(l2);
+        mv.visitVarInsn(ILOAD, 5);
+     	mv.visitIntInsn(BIPUSH, Types.MAP);
+     	Label l2 = new Label();
+     	mv.visitJumpInsn(IF_ICMPEQ, l2);
+     	mv.visitTypeInsn(NEW, "transfer/exceptions/IllegalTypeException");
+     	mv.visitInsn(DUP);
+     	mv.visitVarInsn(ILOAD, 5);
+     	mv.visitIntInsn(BIPUSH, Types.MAP);
+     	mv.visitVarInsn(ALOAD, 2);
+     	mv.visitMethodInsn(INVOKESPECIAL, "transfer/exceptions/IllegalTypeException", "<init>", "(BBLjava/lang/reflect/Type;)V", false);
+     	mv.visitInsn(ATHROW);
+		mv.visitLabel(l2);
 
 
          Class<?> rawClass = TypeUtils.getRawClass(type);
@@ -203,11 +198,17 @@ public class MapDeSerializer implements Deserializer, Opcodes {
              keyLocal = 11;
          } else {
          	
-         	mv.visitVarInsn(ALOAD, 1);
+         	 mv.visitVarInsn(ALOAD, 1);
              mv.visitMethodInsn(INVOKEINTERFACE, "transfer/Inputable", "getByte", "()B", true);
              mv.visitVarInsn(ISTORE, 9);
              
              Deserializer keyDeserializer = TransferConfig.getDeserializer(keyType);// Key解析器
+             
+             mv.visitVarInsn(ALOAD, 0);
+             mv.visitVarInsn(ALOAD, 1);
+             mv.visitLdcInsn(org.objectweb.asm.Type.getType("L" + AsmUtils.toAsmCls(keyRawClass.getName()) + ";"));
+             mv.visitVarInsn(ILOAD, 9);
+             mv.visitVarInsn(ALOAD, 4);
              
              MethodVisitor methodVisitor = context.invokeNextDeserialize(null, mv);
              keyDeserializer.compile(keyType, methodVisitor, context);
@@ -228,14 +229,14 @@ public class MapDeSerializer implements Deserializer, Opcodes {
              mv.visitMethodInsn(INVOKEINTERFACE, "transfer/Inputable", "getByte", "()B", true);
              mv.visitVarInsn(ISTORE, keyLocal + 1);
 
-             mv.visitLdcInsn(org.objectweb.asm.Type.getType("L" + AsmUtils.toAsmCls(keyRawClass.getName()) + ";"));
+             mv.visitLdcInsn(org.objectweb.asm.Type.getType("L" + AsmUtils.toAsmCls(valueRawClass.getName()) + ";"));
              mv.visitVarInsn(ILOAD, keyLocal + 1);
              mv.visitMethodInsn(INVOKESTATIC, "transfer/def/TransferConfig", "getDeserializer", "(Ljava/lang/reflect/Type;B)Ltransfer/deserializer/Deserializer;", false);
              mv.visitVarInsn(ASTORE, keyLocal + 2);
 
              mv.visitVarInsn(ALOAD, keyLocal + 2);
              mv.visitVarInsn(ALOAD, 1);
-             mv.visitLdcInsn(org.objectweb.asm.Type.getType("L" + AsmUtils.toAsmCls(keyRawClass.getName()) + ";"));
+             mv.visitLdcInsn(org.objectweb.asm.Type.getType("L" + AsmUtils.toAsmCls(valueRawClass.getName()) + ";"));
              mv.visitVarInsn(ILOAD, keyLocal + 1);
              mv.visitVarInsn(ALOAD, 4);
              mv.visitMethodInsn(INVOKEINTERFACE, "transfer/deserializer/Deserializer", "deserialze", "(Ltransfer/Inputable;Ljava/lang/reflect/Type;BLtransfer/utils/IntegerMap;)Ljava/lang/Object;", true);
@@ -247,10 +248,16 @@ public class MapDeSerializer implements Deserializer, Opcodes {
              mv.visitMethodInsn(INVOKEINTERFACE, "transfer/Inputable", "getByte", "()B", true);
              mv.visitVarInsn(ISTORE, keyLocal + 1);
              
-             Deserializer keyDeserializer = TransferConfig.getDeserializer(keyType);// Key解析器
+             Deserializer keyDeserializer = TransferConfig.getDeserializer(valueType);// Key解析器
+             
+             mv.visitVarInsn(ALOAD, 0);
+             mv.visitVarInsn(ALOAD, 1);
+             mv.visitLdcInsn(org.objectweb.asm.Type.getType("L" + AsmUtils.toAsmCls(valueRawClass.getName()) + ";"));
+             mv.visitVarInsn(ILOAD, keyLocal + 1);
+             mv.visitVarInsn(ALOAD, 4);
              
              MethodVisitor methodVisitor = context.invokeNextDeserialize(null, mv);
-             keyDeserializer.compile(keyType, methodVisitor, context);
+             keyDeserializer.compile(valueType, methodVisitor, context);
          	
              mv.visitVarInsn(ASTORE, keyLocal + 2);
              valueLocal = keyLocal + 2;

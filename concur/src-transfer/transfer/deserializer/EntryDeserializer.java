@@ -98,6 +98,12 @@ public class EntryDeserializer implements Deserializer, Opcodes {
             
             Deserializer keyDeserializer = TransferConfig.getDeserializer(keyType);// Key解析器
             
+            mv.visitVarInsn(ALOAD, 0);
+            mv.visitVarInsn(ALOAD, 1);
+            mv.visitLdcInsn(org.objectweb.asm.Type.getType("L" + AsmUtils.toAsmCls(keyRawClass.getName()) + ";"));
+            mv.visitVarInsn(ILOAD, 5);
+            mv.visitVarInsn(ALOAD, 4);
+            
             MethodVisitor methodVisitor = context.invokeNextDeserialize(null, mv);
             keyDeserializer.compile(keyType, methodVisitor, context);
         	
@@ -117,14 +123,14 @@ public class EntryDeserializer implements Deserializer, Opcodes {
             mv.visitMethodInsn(INVOKEINTERFACE, "transfer/Inputable", "getByte", "()B", true);
             mv.visitVarInsn(ISTORE, keyLocal + 1);
 
-            mv.visitLdcInsn(org.objectweb.asm.Type.getType("L" + AsmUtils.toAsmCls(keyRawClass.getName()) + ";"));
+            mv.visitLdcInsn(org.objectweb.asm.Type.getType("L" + AsmUtils.toAsmCls(valueRawClass.getName()) + ";"));
             mv.visitVarInsn(ILOAD, keyLocal + 1);
             mv.visitMethodInsn(INVOKESTATIC, "transfer/def/TransferConfig", "getDeserializer", "(Ljava/lang/reflect/Type;B)Ltransfer/deserializer/Deserializer;", false);
             mv.visitVarInsn(ASTORE, keyLocal + 2);
 
             mv.visitVarInsn(ALOAD, keyLocal + 2);
             mv.visitVarInsn(ALOAD, 1);
-            mv.visitLdcInsn(org.objectweb.asm.Type.getType("L" + AsmUtils.toAsmCls(keyRawClass.getName()) + ";"));
+            mv.visitLdcInsn(org.objectweb.asm.Type.getType("L" + AsmUtils.toAsmCls(valueRawClass.getName()) + ";"));
             mv.visitVarInsn(ILOAD, keyLocal + 1);
             mv.visitVarInsn(ALOAD, 4);
             mv.visitMethodInsn(INVOKEINTERFACE, "transfer/deserializer/Deserializer", "deserialze", "(Ltransfer/Inputable;Ljava/lang/reflect/Type;BLtransfer/utils/IntegerMap;)Ljava/lang/Object;", true);
@@ -136,10 +142,16 @@ public class EntryDeserializer implements Deserializer, Opcodes {
             mv.visitMethodInsn(INVOKEINTERFACE, "transfer/Inputable", "getByte", "()B", true);
             mv.visitVarInsn(ISTORE, keyLocal + 1);
             
-            Deserializer keyDeserializer = TransferConfig.getDeserializer(keyType);// Key解析器
-            
+            Deserializer keyDeserializer = TransferConfig.getDeserializer(valueType);// Key解析器
             MethodVisitor methodVisitor = context.invokeNextDeserialize(null, mv);
-            keyDeserializer.compile(keyType, methodVisitor, context);
+            
+            mv.visitVarInsn(ALOAD, 0);
+            mv.visitVarInsn(ALOAD, 1);
+            mv.visitLdcInsn(org.objectweb.asm.Type.getType("L" + AsmUtils.toAsmCls(valueRawClass.getName()) + ";"));
+            mv.visitVarInsn(ILOAD, keyLocal + 1);
+            mv.visitVarInsn(ALOAD, 4);
+            
+            keyDeserializer.compile(valueType, methodVisitor, context);
         	
             mv.visitVarInsn(ASTORE, keyLocal + 2);
             valueLocal = keyLocal + 2;

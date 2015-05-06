@@ -68,6 +68,7 @@ public class StringDeserializer implements Deserializer, Opcodes {
     	mv.visitVarInsn(ILOAD, 5);
     	mv.visitIntInsn(BIPUSH, Types.STRING);
     	
+    	
     	Label l2 = new Label();
     	mv.visitJumpInsn(IF_ICMPEQ, l2);
     	mv.visitTypeInsn(NEW, "transfer/exceptions/IllegalTypeException");
