@@ -68,20 +68,16 @@ public class ByteArray implements Inputable {
 
     @Override
     public byte getByte() {
-
         if (this.curIndex == this.endIndex) {
             throw new EOFBytesException();
         }
-
         return this.byteArr[this.curIndex++];
     }
 
 
     @Override
     public void getBytes(byte[] bytes) {
-
         int length = bytes.length;
-
         if (this.curIndex + length > this.endIndex) {
             throw new EOFBytesException();
         }

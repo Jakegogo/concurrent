@@ -51,13 +51,11 @@ public class ByteBuffer implements Outputable {
      * @return
      */
     public ByteArray getByteArray() {
-
         if (rootByteArray == curByteArray) {
             return new ByteArray(rootByteArray.byteArray, 0, offset);
         }
 
         byte[] byteArray = new byte[offset];
-
         ByteArr curBytesArr = this.rootByteArray;
         int loopOffset = 0;
         do {
@@ -74,9 +72,7 @@ public class ByteBuffer implements Outputable {
      * @return
      */
     public byte[] toBytes() {
-
         byte[] byteArray = new byte[offset];
-
         if (rootByteArray == curByteArray) {
             System.arraycopy(rootByteArray.byteArray, 0, byteArray, 0, offset);
             return byteArray;
