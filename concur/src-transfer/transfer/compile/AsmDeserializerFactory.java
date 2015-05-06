@@ -43,17 +43,14 @@ public class AsmDeserializerFactory implements Opcodes {
     public static Deserializer compileDeserializer(Type type, Deserializer outerDeserializer) {
     	
     	String asmClassName = TypeUtils.getRawClass(type).getName() + "_Deserializer_" + DESERIALIZER_ID_GENERATOR.incrementAndGet();
-
         byte[] bytes = createDeserializerClassBytes(asmClassName, type, outerDeserializer);
 
         AsmUtils.writeClazz(asmClassName, bytes);
         
         Class<?> serializerClass;
         try {
-        	
         	serializerClass = (Class<?>) classLoader.defineClass(
                     asmClassName, bytes);
-        	
             return (Deserializer) serializerClass.newInstance();
         } catch (Exception e) {
         	

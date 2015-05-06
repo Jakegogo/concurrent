@@ -27,14 +27,11 @@ public class ShortStringSerializer implements Serializer, Opcodes {
 		}
 
 		outputable.putByte(Types.STRING);
-
 		CharSequence charSequence = (CharSequence) object;
 		String string = charSequence.toString();
 
 		byte[] bytes = string.getBytes(Charset.forName("UTF-8"));
-
 		BitUtils.putInt(outputable, bytes.length);
-
 		outputable.putBytes(bytes);
 	}
 

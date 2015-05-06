@@ -32,29 +32,20 @@ public class TagObjectSerializer implements Serializer {
 		}
 
 		Class<?> clazz = object.getClass();
-
 		ClassInfo classInfo = PersistConfig.getOrCreateClassInfo(clazz);
-
 		outputable.putByte(Types.OBJECT);
 
 		// 添加类Id
 		BitUtils.putInt(outputable, classInfo.getClassId());
-
 		// 添加属性个数
 		BitUtils.putInt(outputable, classInfo.getFieldInfos().size());
-
 		for (FieldInfo fieldInfo : classInfo.getFieldInfos()) {
-
 			// 添加属性标签
-			STRING_SERIALIZER.serialze(outputable, fieldInfo.getFieldName(),
-					referenceMap);
-
+			STRING_SERIALIZER.serialze(outputable, fieldInfo.getFieldName(), referenceMap);
 			// 序列化属性值
-			Serializer fieldSerializer = PersistConfig.getSerializer(TypeUtils
-					.getRawClass(fieldInfo.getType()));
+			Serializer fieldSerializer = PersistConfig.getSerializer(TypeUtils.getRawClass(fieldInfo.getType()));
 
 			Object fieldValue = fieldInfo.getField(object);
-
 			fieldSerializer.serialze(outputable, fieldValue, referenceMap);
 
 		}

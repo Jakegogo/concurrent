@@ -25,14 +25,12 @@ public class ByteArrayWrappDeSerializer implements Deserializer, Opcodes {
     public <T> T deserialze(Inputable inputable, Type type, byte flag, IntegerMap referenceMap) {
 
         byte typeFlag = TransferConfig.getType(flag);
-
         if (typeFlag != Types.BYTE_ARRAY) {
             throw new IllegalTypeException(typeFlag, Types.BYTE_ARRAY, type);
         }
 
         // 读取字节数组的大小
         int length = BitUtils.getInt(inputable);
-
         return (T) inputable.getByteArray(length);
     }
 

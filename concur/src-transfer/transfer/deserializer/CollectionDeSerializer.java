@@ -34,13 +34,11 @@ public class CollectionDeSerializer implements Deserializer, Opcodes {
     public <T> T deserialze(Inputable inputable, Type type, byte flag, IntegerMap referenceMap) {
 
         byte typeFlag = TransferConfig.getType(flag);
-
         if (typeFlag != Types.COLLECTION && typeFlag != Types.ARRAY) {
             throw new IllegalTypeException(typeFlag, Types.COLLECTION, type);
         }
 
         Collection list = createCollection(type);
-
         // 读取集合的大小
         int size = BitUtils.getInt(inputable);
         if (size == 0) {

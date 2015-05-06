@@ -32,9 +32,7 @@ public class StringSerializer implements Serializer, Opcodes {
 		String string = charSequence.toString();
 
 		byte[] bytes = string.getBytes(Charset.forName("UTF-8"));
-
 		BitUtils.putInt(outputable, bytes.length);
-
 		outputable.putBytes(bytes);
 	}
 

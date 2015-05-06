@@ -45,15 +45,15 @@ public class MapDeSerializer implements Deserializer, Opcodes {
 
         // 读取数组的大小
         int size = BitUtils.getInt(inputable);
-
         if (size == 0) {
             return (T) map;
         }
 
         // 读取元素类型
-        byte keyFlag;byte valueFlag;
-        Object key;Object value;
-
+        byte keyFlag; 
+        byte valueFlag;
+        Object key; 
+        Object value;
         Type keyType = null;
         Type valueType = null;
 
@@ -70,11 +70,9 @@ public class MapDeSerializer implements Deserializer, Opcodes {
         for (int i = 0; i < size;i++) {
 
             keyFlag = inputable.getByte();// 获取key类型
-
             key = parseElement(inputable, keyType, keyFlag, referenceMap);
 
             valueFlag = inputable.getByte();// 获取value类型
-            
             value = parseElement(inputable, valueType, valueFlag, referenceMap);
 
             map.put(key, value);

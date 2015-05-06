@@ -147,13 +147,11 @@ public class PersistConfig {
      * @return
      */
     public static Deserializer getDeserializer(Type type) {
-
         if (type == null || type == Object.class) {
             return null;
         }
 
         if (type instanceof Class<?>) {
-
             return getDeserializer((Class<?>) type, type);
         }
 
@@ -263,13 +261,11 @@ public class PersistConfig {
             autoRegisterClass(clazz);
         }
 
-
         if (deserializer == null) {
             throw new UnsupportDeserializerTypeException(type);
         }
 
         typedDeserializers.put(type, deserializer);
-
         return deserializer;
     }
 
@@ -441,11 +437,9 @@ public class PersistConfig {
      */
     public static Class<?> getClass(int id) {
         Class<?> result = classIdMap.get(id);
-
         if (result == null) {
             throw new UnsupportClassException(id);
         }
-
         return result;
     }
 
@@ -457,11 +451,9 @@ public class PersistConfig {
      */
     public static int getClassId(Class<?> clazz) {
         Integer classId = idClassMap.get(clazz);
-
         if (classId == null) {
             throw new UnsupportClassException(clazz);
         }
-
         return classId.intValue();
     }
 

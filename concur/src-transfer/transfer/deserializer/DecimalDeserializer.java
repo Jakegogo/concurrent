@@ -28,13 +28,11 @@ public class DecimalDeserializer implements Deserializer, Opcodes {
     public <T> T deserialze(Inputable inputable, Type type, byte flag, IntegerMap referenceMap) {
 
         byte typeFlag = TransferConfig.getType(flag);
-
         if (typeFlag != Types.DECIMAL) {
             throw new IllegalTypeException(typeFlag, Types.DECIMAL, type);
         }
 
         byte extraFlag = TransferConfig.getExtra(flag);
-
         Number number = null;
         switch (extraFlag) {
             case TransferConfig.FLOAT:

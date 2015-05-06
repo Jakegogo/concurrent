@@ -40,7 +40,6 @@ public class Transfer {
      * @param object 目标对象
      */
     public static void encode(Outputable outputable, Object object) {
-
         if (object == null) {
             Serializer.NULL_SERIALIZER.serialze(outputable, null, null);
             return;
@@ -66,7 +65,6 @@ public class Transfer {
      * @param bytesLength 编码字节长度(估算)
      */
     public static ByteArray encode(Object object, int bytesLength) {
-
         if (object == null) {
             ByteBuffer buffer = new ByteBuffer(1);
             Serializer.NULL_SERIALIZER.serialze(buffer, null, null);
@@ -112,7 +110,6 @@ public class Transfer {
      * @See transfer.Transfer.encodePreCompile(Type)
      */
     public static ByteArray encode(Object object, Type type, int bytesLength) {
-
         if (object == null) {
             ByteBuffer buffer = new ByteBuffer(1);
             Serializer.NULL_SERIALIZER.serialze(buffer, null, null);
@@ -232,7 +229,6 @@ public class Transfer {
 
         // 读取消息头
         final ByteMeta byteDataMeta = CollectionDeSerializer.getInstance().readMeta(inputable);
-
         // 不可以迭代
         if (byteDataMeta == null || !byteDataMeta.isIteratorAble()) {
             throw new UnsupportedOperationException();

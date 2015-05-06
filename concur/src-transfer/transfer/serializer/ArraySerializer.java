@@ -39,8 +39,7 @@ public class ArraySerializer implements Serializer, Opcodes {
 		
 	    for (int i = 0; i < length; i ++) {
 	        Object obj = Array.get(object, i);
-			Serializer elementSerializer = TransferConfig.getSerializer(obj
-					.getClass());
+			Serializer elementSerializer = TransferConfig.getSerializer(obj.getClass());
 			elementSerializer.serialze(outputable, obj, referenceMap);
 		}
 

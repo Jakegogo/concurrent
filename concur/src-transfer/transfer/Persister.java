@@ -112,7 +112,6 @@ public class Persister {
 
 
         final Type componentType = TypeUtils.getParameterizedClass(typeReference.getType(), 0);// 取出元素类型
-
         final Deserializer defaultComponentDeserializer;
         if (componentType != null && componentType != Object.class) {
             defaultComponentDeserializer = PersistConfig.getDeserializer(componentType);// 元素解析器
@@ -227,7 +226,6 @@ public class Persister {
      * @param object 目标对象
      */
     public static void encode(Outputable outputable, Object object) {
-
         if (object == null) {
             Serializer.NULL_SERIALIZER.serialze(outputable, null, null);
             return;
@@ -253,7 +251,6 @@ public class Persister {
      * @param bytesLength 编码字节长度(估算)
      */
     public static ByteArray encode(Object object, int bytesLength) {
-
         if (object == null) {
             ByteBuffer buffer = new ByteBuffer(1);
             Serializer.NULL_SERIALIZER.serialze(buffer, null, null);

@@ -37,22 +37,15 @@ public class ObjectAsmProxySerializer implements Serializer, Opcodes {
 		}
 
 		Class<?> clazz = object.getClass().getSuperclass();
-
 		ClassInfo classInfo = TransferConfig.getOrCreateClassInfo(clazz);
 
 		outputable.putByte(Types.OBJECT);
-
 		BitUtils.putInt(outputable, classInfo.getClassId());
 
 		for (FieldInfo fieldInfo : classInfo.getFieldInfos()) {
-
-			Serializer fieldSerializer = TransferConfig.getSerializer(TypeUtils
-					.getRawClass(fieldInfo.getType()));
-
+			Serializer fieldSerializer = TransferConfig.getSerializer(TypeUtils.getRawClass(fieldInfo.getType()));
 			Object fieldValue = fieldInfo.getField(object);
-
 			fieldSerializer.serialze(outputable, fieldValue, referenceMap);
-
 		}
 
 	}

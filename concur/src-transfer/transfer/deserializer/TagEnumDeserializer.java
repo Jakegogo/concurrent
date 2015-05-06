@@ -34,24 +34,19 @@ public class TagEnumDeserializer implements Deserializer {
     public <T> T deserialze(Inputable inputable, Type type, byte flag, IntegerMap referenceMap) {
 
         byte typeFlag = PersistConfig.getType(flag);
-
         if (typeFlag != Types.ENUM) {
             throw new IllegalTypeException(typeFlag, Types.ENUM, type);
         }
 
         // 读取枚举类型
         int enumType = BitUtils.getInt(inputable);
-
         Class<?> rawClass = TypeUtils.getRawClass(type);
-
         if (type == null 
         		|| type == Object.class 
         		|| type == Enum.class 
         		|| rawClass.isInterface()
 				|| Modifier.isAbstract(rawClass.getModifiers()) && !rawClass.isArray()) {
-
             rawClass = PersistConfig.getClass(enumType);
-
         }
 
         if (rawClass == null) {
@@ -70,7 +65,6 @@ public class TagEnumDeserializer implements Deserializer {
 
         // 读取枚举名
         String enumName = STRING_DESERIALIZER.deserialze(inputable, String.class, inputable.getByte(), referenceMap);
-
         return (T) enumInfo.toEnum(enumName);// 不存在的枚举则返回null
     }
 

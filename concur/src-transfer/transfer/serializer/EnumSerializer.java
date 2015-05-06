@@ -30,16 +30,13 @@ public class EnumSerializer implements Serializer, Opcodes {
 		}
 
 		outputable.putByte(Types.ENUM);
-
+		
 		Enum<?> enumVal = (Enum<?>) object;
-
-		EnumInfo enumInfo = (EnumInfo) TransferConfig
-				.getOrCreateClassInfo(enumVal.getDeclaringClass());
+		EnumInfo enumInfo = (EnumInfo) TransferConfig.getOrCreateClassInfo(enumVal.getDeclaringClass());
 
 		BitUtils.putInt(outputable, enumInfo.getClassId());
 
 		int enumIndex = enumInfo.toInt(enumVal);
-
 		BitUtils.putInt(outputable, enumIndex);
 	}
 

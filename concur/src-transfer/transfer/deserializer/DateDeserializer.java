@@ -25,13 +25,11 @@ public class DateDeserializer implements Deserializer, Opcodes {
     public <T> T deserialze(Inputable inputable, Type type, byte flag, IntegerMap referenceMap) {
 
         byte typeFlag = TransferConfig.getType(flag);
-
         if (typeFlag != Types.DATE_TIME) {
             throw new IllegalTypeException(typeFlag, Types.DATE_TIME, type);
         }
 
         long timestamp = BitUtils.getLong(inputable);
-
         return (T) new Date(timestamp);
     }
 

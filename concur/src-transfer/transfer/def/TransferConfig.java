@@ -151,13 +151,11 @@ public class TransferConfig {
      * @return
      */
     public static Deserializer getDeserializer(Type type) {
-
         if (type == null || type == Object.class) {
             return null;
         }
 
         if (type instanceof Class<?>) {
-
             return getDeserializer((Class<?>) type, type);
         }
 
@@ -196,13 +194,11 @@ public class TransferConfig {
         }
 
         if (type instanceof Class<?>) {
-        	
         	Class<?> rawClass = (Class<?>) type;
         	if (rawClass.isInterface()
     				|| Modifier.isAbstract(rawClass.getModifiers()) && !rawClass.isArray()) {
         		return deserializers.get(TransferConfig.getType(flag));
         	}
-        	
             return getDeserializer(rawClass, type);
         }
 
@@ -263,7 +259,6 @@ public class TransferConfig {
             deserializer =  EntryDeserializer.getInstance();
         } else {
             deserializer = ObjectDeSerializer.getInstance();
-
             // 注册类型
             autoRegisterClass(clazz);
         }
@@ -274,7 +269,6 @@ public class TransferConfig {
         }
 
         typedDeserializers.put(type, deserializer);
-
         return deserializer;
     }
 
@@ -284,9 +278,7 @@ public class TransferConfig {
         // 获取唯一标识
         if (clazz.isAnnotationPresent(Transferable.class)) {
             Transferable transferable = clazz.getAnnotation(Transferable.class);
-
             registerClass(clazz, transferable.id());
-
             return;
         }
         
@@ -296,7 +288,6 @@ public class TransferConfig {
         } else {
         	throw new UnsupportDeserializerTypeException(clazz);
         }
-
     }
 
 
@@ -504,13 +495,9 @@ public class TransferConfig {
         int classId = TransferConfig.getClassId(clazz);
         // 枚举类型
         if (clazz.isEnum()) {
-
             classInfo = EnumInfo.valueOf(clazz, classId);
-            
             classInfoMap.put(clazz, classInfo);
-
         } else {
-
             final List<FieldInfo> fieldInfos = new ArrayList<FieldInfo>();
             final Map<String, FieldInfo> fieldInfoMap = new HashMap<String, FieldInfo>();
 
@@ -539,7 +526,6 @@ public class TransferConfig {
             });
 
             classInfo = ClassInfo.valueOf(clazz, classId, fieldInfos, fieldInfoMap);
-
             classInfoMap.put(clazz, classInfo);
         }
 
@@ -574,11 +560,9 @@ public class TransferConfig {
      */
     public static Class<?> getClass(int id) {
         Class<?> result = classIdMap.get(id);
-
         if (result == null) {
             throw new UnsupportClassException(id);
         }
-
         return result;
     }
 
@@ -590,11 +574,9 @@ public class TransferConfig {
      */
     public static int getClassId(Class<?> clazz) {
         Integer classId = idClassMap.get(clazz);
-
         if (classId == null) {
             throw new UnsupportClassException(clazz);
         }
-
         return classId.intValue();
     }
 

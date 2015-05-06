@@ -34,17 +34,12 @@ public class CollectionSerializer implements Serializer, Opcodes {
 		outputable.putByte(Types.COLLECTION);
 
 		Collection collection = (Collection) object;
-
 		// 设置集合大小
 		BitUtils.putInt(outputable, collection.size());
 
 		for (Object element : collection) {
-
-			Serializer elementSerializer = TransferConfig.getSerializer(element
-					.getClass());
-
+			Serializer elementSerializer = TransferConfig.getSerializer(element.getClass());
 			elementSerializer.serialze(outputable, element, referenceMap);
-
 		}
 
 	}

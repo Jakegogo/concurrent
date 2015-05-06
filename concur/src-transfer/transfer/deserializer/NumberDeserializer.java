@@ -34,7 +34,6 @@ public class NumberDeserializer implements Deserializer, Opcodes {
     public <T> T deserialze(Inputable inputable, Type type, byte flag, IntegerMap referenceMap) {
 
         byte typeFlag = TransferConfig.getType(flag);
-
         if (typeFlag != Types.NUMBER) {
             throw new IllegalTypeException(typeFlag, Types.NUMBER, type);
         }
@@ -42,7 +41,6 @@ public class NumberDeserializer implements Deserializer, Opcodes {
         byte extraFlag = TransferConfig.getExtra(flag);
         // 符号
         int sign = (extraFlag & FLAG_NEGATIVE) > 0 ? -1 : 1;
-
         byte len = (byte) (extraFlag & NUMBER_MASK);
 
         Number number = null;

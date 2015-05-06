@@ -51,18 +51,15 @@ public class AsmSerializerContext implements Opcodes {
      * @param curMethodVisitor 
      */
     public MethodVisitor invokeNextSerialize(String name, MethodVisitor curMethodVisitor) {
-
         if (name == null) {
             name = "default";
         }
         
         String newMethodName = "serialze_" + name + "_" + (methodId ++);
-
         MethodVisitor mv = classWriter.visitMethod(ACC_PUBLIC, newMethodName, "(Ltransfer/Outputable;Ljava/lang/Object;Ltransfer/utils/IdentityHashMap;)V", null, null);
         mv.visitCode();
 
         curMethodVisitor.visitMethodInsn(INVOKEVIRTUAL, AsmUtils.toAsmCls(className), newMethodName, "(Ltransfer/Outputable;Ljava/lang/Object;Ltransfer/utils/IdentityHashMap;)V", false);
-        
         return mv;
     }
 

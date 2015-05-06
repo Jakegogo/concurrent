@@ -38,28 +38,20 @@ public class ObjectSerializer implements Serializer, Opcodes {
 		}
 
 		Class<?> clazz = object.getClass();
-
 		ClassInfo classInfo = TransferConfig.getOrCreateClassInfo(clazz);
-
 		outputable.putByte(Types.OBJECT);
-
 		BitUtils.putInt(outputable, classInfo.getClassId());
 
 		for (FieldInfo fieldInfo : classInfo.getFieldInfos()) {
-
-			Serializer fieldSerializer;
-
 			Object fieldValue = fieldInfo.getField(object);
 
+			Serializer fieldSerializer;
 			if (fieldValue != null) {
 				fieldSerializer = TransferConfig.getSerializer(fieldValue.getClass());
 			} else {
-				fieldSerializer = TransferConfig.getSerializer(TypeUtils
-						.getRawClass(fieldInfo.getType()));
+				fieldSerializer = TransferConfig.getSerializer(TypeUtils.getRawClass(fieldInfo.getType()));
 			}
-
 			fieldSerializer.serialze(outputable, fieldValue, referenceMap);
-
 		}
 
 	}

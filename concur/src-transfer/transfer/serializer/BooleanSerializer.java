@@ -26,7 +26,6 @@ public class BooleanSerializer implements Serializer, Opcodes {
 		}
 
 		Boolean bool = (Boolean) object;
-
 		byte booleanVal;
 		if (bool.booleanValue()) {
 			booleanVal = (byte) 0x01;
@@ -89,7 +88,6 @@ public class BooleanSerializer implements Serializer, Opcodes {
 				"(B)V", true);
 
 		mv.visitInsn(RETURN);
-
 		mv.visitMaxs(4, 6);
 		mv.visitEnd();
 

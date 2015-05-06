@@ -31,24 +31,19 @@ public class EnumDeserializer implements Deserializer, Opcodes {
     public <T> T deserialze(Inputable inputable, Type type, byte flag, IntegerMap referenceMap) {
 
         byte typeFlag = TransferConfig.getType(flag);
-
         if (typeFlag != Types.ENUM) {
             throw new IllegalTypeException(typeFlag, Types.ENUM, type);
         }
 
         // 读取枚举类型
         int enumType = BitUtils.getInt(inputable);
-
         Class<?> rawClass = TypeUtils.getRawClass(type);
-
         if (type == null 
         		|| type == Object.class 
         		|| type == Enum.class
         		|| rawClass.isInterface()
 				|| Modifier.isAbstract(rawClass.getModifiers()) && !rawClass.isArray()) {
-
             rawClass = TransferConfig.getClass(enumType);
-
         }
 
         if (rawClass == null) {
@@ -67,7 +62,6 @@ public class EnumDeserializer implements Deserializer, Opcodes {
 
         // 读取枚举索引
         int enumIndex = BitUtils.getInt(inputable);
-
         return (T) enumInfo.toEnum(enumIndex);
     }
 

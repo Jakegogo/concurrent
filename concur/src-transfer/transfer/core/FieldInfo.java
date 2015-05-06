@@ -66,6 +66,7 @@ public class FieldInfo<T> {
         fieldInfo.field = field;
         return fieldInfo;
     }
+    
     public Class<T> getClazz() {
         return clazz;
     }

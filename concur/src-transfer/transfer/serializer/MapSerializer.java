@@ -34,25 +34,16 @@ public class MapSerializer implements Serializer, Opcodes {
 		outputable.putByte(Types.MAP);
 
 		Map<?, ?> map = (Map<?, ?>) object;
-
 		// 设置Map的大小
 		BitUtils.putInt(outputable, map.size());
 
 		Object key, value;
 		for (Map.Entry entry : map.entrySet()) {
-
 			key = entry.getKey();
-
-			Serializer keySerializer = TransferConfig.getSerializer(key
-					.getClass());
-
+			Serializer keySerializer = TransferConfig.getSerializer(key.getClass());
 			keySerializer.serialze(outputable, key, referenceMap);
-
 			value = entry.getValue();
-
-			Serializer valueSerializer = TransferConfig.getSerializer(value
-					.getClass());
-
+			Serializer valueSerializer = TransferConfig.getSerializer(value.getClass());
 			valueSerializer.serialze(outputable, value, referenceMap);
 		}
 

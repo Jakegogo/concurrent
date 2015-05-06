@@ -28,9 +28,7 @@ public class DateSerializer implements Serializer, Opcodes {
 		}
 
 		outputable.putByte(Types.DATE_TIME);
-
 		Date date = (Date) object;
-
 		BitUtils.putLong(outputable, date.getTime());
 	}
 

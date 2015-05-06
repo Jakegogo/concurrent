@@ -48,10 +48,8 @@ public class AsmSerializerFactory implements Opcodes {
         
         Class<?> serializerClass;
         try {
-        	
         	serializerClass = (Class<?>) classLoader.defineClass(
                     asmClassName, bytes);
-        	
             return (Serializer) serializerClass.newInstance();
         } catch (Exception e) {
         	

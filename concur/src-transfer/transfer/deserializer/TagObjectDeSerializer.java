@@ -34,17 +34,15 @@ public class TagObjectDeSerializer implements Deserializer {
     public <T> T deserialze(Inputable inputable, Type type, byte flag, IntegerMap referenceMap) {
 
         byte typeFlag = PersistConfig.getType(flag);
-
         if (typeFlag != Types.OBJECT) {
             throw new IllegalTypeException(typeFlag, Types.OBJECT, type);
         }
 
         // 读取对象类型
         int classId = BitUtils.getInt(inputable);
-
         Class<?> rawClass = TypeUtils.getRawClass(type);
-
-        if (type == null || type == Object.class
+        if (type == null 
+        		|| type == Object.class
         		|| rawClass.isInterface()
 				|| Modifier.isAbstract(rawClass.getModifiers()) && !rawClass.isArray()) {
 
@@ -86,15 +84,12 @@ public class TagObjectDeSerializer implements Deserializer {
         for (int i = 0;i < fieldNum;i++) {
 
             fieldName = STRING_DESERIALIZER.deserialze(inputable, String.class, inputable.getByte(), referenceMap);
-
             fieldInfo = classInfo.getFieldInfo(fieldName);
 
             byte fieldFlag = inputable.getByte();
-
             fieldType = fieldInfo != null ? fieldInfo.getType() : Object.class;
 
             fieldDeserializer = PersistConfig.getDeserializer(fieldType, fieldFlag);
-
             fieldValue = fieldDeserializer.deserialze(inputable, fieldType, fieldFlag, referenceMap);
 
             if (fieldInfo == null) {// 略过不存在的属性

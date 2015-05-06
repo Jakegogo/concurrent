@@ -44,14 +44,11 @@ public class ObjectDeSerializer implements Deserializer, Opcodes {
 
         // 读取对象类型
         int classId = BitUtils.getInt(inputable);
-
         Class<?> rawClass = TypeUtils.getRawClass(type);
-
         if (type == null 
         		|| type == Object.class
         		|| rawClass.isInterface()
 				|| Modifier.isAbstract(rawClass.getModifiers()) && !rawClass.isArray()) {
-
             rawClass = TransferConfig.getClass(classId);
         }
 
@@ -81,17 +78,12 @@ public class ObjectDeSerializer implements Deserializer, Opcodes {
         Deserializer fieldDeserializer;
 
         for (FieldInfo fieldInfo : classInfo.getFieldInfos()) {
-
             byte fieldFlag = inputable.getByte();
-
             fieldType = fieldInfo.getType();
-
             fieldDeserializer = TransferConfig.getDeserializer(fieldType, fieldFlag);
 
             fieldValue = fieldDeserializer.deserialze(inputable, fieldType, fieldFlag, referenceMap);
-
             fieldInfo.setField(object, fieldValue);
-
         }
 
         return (T) object;

@@ -29,11 +29,8 @@ public class ByteArraySerializer implements Serializer, Opcodes {
 		outputable.putByte(Types.BYTE_ARRAY);
 
 		byte[] bytes = (byte[]) object;
-
 		BitUtils.putInt(outputable, bytes.length);
-
 		outputable.putBytes(bytes);
-
 	}
 
 	@Override

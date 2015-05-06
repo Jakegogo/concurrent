@@ -31,19 +31,12 @@ public class DecimalSerializer implements Serializer, Opcodes {
 		}
 
 		Number number = (Number) object;
-
 		if (object instanceof Float) {
-
 			outputable.putByte((byte) (Types.DECIMAL | TransferConfig.FLOAT));
-			BitUtils.putInt(outputable,
-					Float.floatToRawIntBits(number.floatValue()));
-
+			BitUtils.putInt(outputable, Float.floatToRawIntBits(number.floatValue()));
 		} else if (object instanceof Double || object instanceof BigDecimal) {
-
 			outputable.putByte((byte) (Types.DECIMAL | TransferConfig.DOUBLE));
-			BitUtils.putLong(outputable,
-					Double.doubleToRawLongBits(number.doubleValue()));
-
+			BitUtils.putLong(outputable, Double.doubleToRawLongBits(number.doubleValue()));
 		}
 
 	}

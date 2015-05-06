@@ -44,20 +44,18 @@ public class NumberSerializer implements Serializer, Opcodes {
 		}
 
 		Number number = (Number) object;
-
-		if (object instanceof Integer || object instanceof Short
-				|| object instanceof Byte || object instanceof AtomicInteger) {
-
+		if (object instanceof Integer 
+				|| object instanceof Short
+				|| object instanceof Byte 
+				|| object instanceof AtomicInteger) {
 			this.putIntVal(outputable, number);
-
-		} else if (object instanceof Long || object instanceof AtomicLong
+		} else if (object instanceof Long 
+				|| object instanceof AtomicLong
 				|| object instanceof BigInteger) {
-
 			this.putLongVal(outputable, number);
-
-		} else if (object instanceof Float || object instanceof Double
+		} else if (object instanceof Float 
+				|| object instanceof Double
 				|| object instanceof BigDecimal) {
-
 			DecimalSerializer.getInstance().serialze(outputable, object,
 					referenceMap);
 		}
@@ -68,14 +66,12 @@ public class NumberSerializer implements Serializer, Opcodes {
 	private void putIntVal(Outputable outputable, Number number) {
 
 		int value = number.intValue();
-
 		if (value >= 0) {
 			outputable.putByte((byte) (Types.NUMBER | FLAG_NOT_NEGATIVE | TransferConfig.VARINT));
 		} else {
 			value = -value;
 			outputable.putByte((byte) (Types.NUMBER | FLAG_NEGATIVE | TransferConfig.VARINT));
 		}
-
 		BitUtils.putInt(outputable, value);
 
 	}
@@ -84,14 +80,12 @@ public class NumberSerializer implements Serializer, Opcodes {
 	private void putLongVal(Outputable outputable, Number number) {
 
 		long value = number.longValue();
-
 		if (value >= 0) {
 			outputable.putByte((byte) (Types.NUMBER | FLAG_NOT_NEGATIVE | TransferConfig.VARLONG));
 		} else {
 			value = -value;
 			outputable.putByte((byte) (Types.NUMBER | FLAG_NEGATIVE | TransferConfig.VARLONG));
 		}
-
 		BitUtils.putLong(outputable, value);
 
 	}

@@ -30,16 +30,11 @@ public class TagEnumSerializer implements Serializer {
 		}
 
 		outputable.putByte(Types.ENUM);
-
 		Enum<?> enumVal = (Enum<?>) object;
 
-		EnumInfo enumInfo = (EnumInfo) PersistConfig
-				.getOrCreateClassInfo(enumVal.getDeclaringClass());
-
+		EnumInfo enumInfo = (EnumInfo) PersistConfig.getOrCreateClassInfo(enumVal.getDeclaringClass());
 		BitUtils.putInt(outputable, enumInfo.getClassId());
-
 		String enumName = enumInfo.toString(enumVal);
-
 		// 添加标签
 		STRING_SERIALIZER.serialze(outputable, enumName, referenceMap);
 

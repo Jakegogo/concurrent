@@ -33,7 +33,6 @@ public class ArrayDeSerializer implements Deserializer, Opcodes {
     public <T> T deserialze(Inputable inputable, Type type, byte flag, IntegerMap referenceMap) {
 
         byte typeFlag = TransferConfig.getType(flag);
-
         if (typeFlag != Types.ARRAY && typeFlag != Types.COLLECTION) {
             throw new IllegalTypeException(typeFlag, Types.ARRAY, type);
         }
