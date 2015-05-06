@@ -47,10 +47,24 @@ public class StringDeserializer implements Deserializer, Opcodes {
     @Override
 	public void compile(Type type, MethodVisitor mv,
 			AsmDeserializerContext context) {
+    	
     	mv.visitCode();
+    	
+//      if (flag == Types.NULL) {
+//   		return null;
+//  	}
+	    mv.visitVarInsn(ILOAD, 3);
+	    mv.visitInsn(ICONST_1);
+	    Label l1 = new Label();
+	    mv.visitJumpInsn(IF_ICMPNE, l1);
+	    mv.visitInsn(ACONST_NULL);
+	    mv.visitInsn(ARETURN);
+	    mv.visitLabel(l1);
+    	
     	mv.visitVarInsn(ILOAD, 3);
     	mv.visitMethodInsn(INVOKESTATIC, "transfer/def/TransferConfig", "getType", "(B)B", false);
     	mv.visitVarInsn(ISTORE, 5);
+    	
     	mv.visitVarInsn(ILOAD, 5);
     	mv.visitIntInsn(BIPUSH, Types.STRING);
     	

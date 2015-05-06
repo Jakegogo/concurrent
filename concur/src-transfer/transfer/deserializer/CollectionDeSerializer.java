@@ -155,10 +155,22 @@ public class CollectionDeSerializer implements Deserializer, Opcodes {
 			AsmDeserializerContext context) {
 
         mv.visitCode();
+        
+//      if (flag == Types.NULL) {
+//   		return null;
+//  	}
+	    mv.visitVarInsn(ILOAD, 3);
+	    mv.visitInsn(ICONST_1);
+	    Label l1 = new Label();
+	    mv.visitJumpInsn(IF_ICMPNE, l1);
+	    mv.visitInsn(ACONST_NULL);
+	    mv.visitInsn(ARETURN);
+	    mv.visitLabel(l1);
+        
         mv.visitVarInsn(ILOAD, 3);
         mv.visitMethodInsn(INVOKESTATIC, "transfer/def/TransferConfig", "getType", "(B)B", false);
         mv.visitVarInsn(ISTORE, 5);
-
+        
         mv.visitVarInsn(ILOAD, 5);
         mv.visitIntInsn(BIPUSH, Types.COLLECTION);
         Label l2 = new Label();
@@ -189,6 +201,7 @@ public class CollectionDeSerializer implements Deserializer, Opcodes {
 
         } else {
             compileCreateCollection(type, mv);
+            mv.visitVarInsn(ASTORE, 6);
         }
 
 
@@ -289,8 +302,8 @@ public class CollectionDeSerializer implements Deserializer, Opcodes {
             mv.visitMethodInsn(INVOKEINTERFACE, "transfer/Inputable", "getByte", "()B", true);
             mv.visitVarInsn(ALOAD, 4);
 
-            context.invokeNextDeserialize(null, mv);
-            defaultComponentDeserializer.compile(itemType, mv, context);
+            MethodVisitor methodVisitor = context.invokeNextDeserialize(null, mv);
+            defaultComponentDeserializer.compile(itemType, methodVisitor, context);
 
             mv.visitVarInsn(ASTORE, 10);
 
@@ -348,7 +361,6 @@ public class CollectionDeSerializer implements Deserializer, Opcodes {
         mv.visitTypeInsn(NEW, AsmUtils.toAsmCls(rawClass.getName()));
         mv.visitInsn(DUP);
         mv.visitMethodInsn(INVOKESPECIAL, AsmUtils.toAsmCls(rawClass.getName()), "<init>", "()V", false);
-        mv.visitVarInsn(ASTORE, 6);
 
     }
 

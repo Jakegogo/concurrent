@@ -1,6 +1,7 @@
 package utils.enhance.asm.util;
 
 import org.objectweb.asm.*;
+
 import utils.StringUtils;
 
 import java.io.File;
@@ -436,11 +437,66 @@ public class AsmUtils implements Opcodes {
 			case Type.DOUBLE:
 				return DASTORE;
 		}
-		
 		return AALOAD;
 	}
 	
+	
+	/**
+	 * 创建数组指令
+	 * @param componentClass 数组元素类型
+	 * @return
+	 */
+	public static int newArrayCode(Class<?> type) {
+		if (Integer.TYPE.equals(type)) {
+            return T_INT;
+        } else if (Boolean.TYPE.equals(type)) {
+            return T_BOOLEAN;
+        } else if (Character.TYPE.equals(type)) {
+            return T_CHAR;
+        } else if (Byte.TYPE.equals(type)) {
+            return T_BYTE;
+        } else if (Short.TYPE.equals(type)) {
+            return T_SHORT;
+        } else if (Float.TYPE.equals(type)) {
+            return T_FLOAT;
+        } else if (Long.TYPE.equals(type)) {
+            return T_LONG;
+        } else if (Double.TYPE.equals(type)) {
+            return T_DOUBLE;
+        }
 
+        throw new IllegalStateException("Type: " + type.getCanonicalName() + " is not a primitive type");
+	}
+	
+	
+	/**
+	 * 获取基本类型的TYPE
+	 * @param mv 
+	 * @param fieldRawClass 类型
+	 */
+	public static void loadPrimitiveType(MethodVisitor mv, Class<?> fieldRawClass) {
+		
+		if (fieldRawClass == int.class || fieldRawClass == Integer.class) {
+			mv.visitFieldInsn(GETSTATIC, "java/lang/Integer", "TYPE", "Ljava/lang/Class;");
+		} else if (fieldRawClass == short.class || fieldRawClass == Short.class) {
+			mv.visitFieldInsn(GETSTATIC, "java/lang/Short", "TYPE", "Ljava/lang/Class;");
+		} else if (fieldRawClass == long.class || fieldRawClass == Long.class) {
+			mv.visitFieldInsn(GETSTATIC, "java/lang/Long", "TYPE", "Ljava/lang/Class;");
+		} else if (fieldRawClass == float.class || fieldRawClass == Float.class) {
+			mv.visitFieldInsn(GETSTATIC, "java/lang/Float", "TYPE", "Ljava/lang/Class;");
+		} else if (fieldRawClass == double.class || fieldRawClass == Double.class) {
+			mv.visitFieldInsn(GETSTATIC, "java/lang/Double", "TYPE", "Ljava/lang/Class;");
+		} else if (fieldRawClass == byte.class || fieldRawClass == Byte.class) {
+			mv.visitFieldInsn(GETSTATIC, "java/lang/Double", "TYPE", "Ljava/lang/Class;");
+		} else if (fieldRawClass == boolean.class || fieldRawClass == Boolean.class) {
+			mv.visitFieldInsn(GETSTATIC, "java/lang/Boolean", "TYPE", "Ljava/lang/Class;");
+		} else if (fieldRawClass == char.class || fieldRawClass == Character.class) {
+			mv.visitFieldInsn(GETSTATIC, "java/lang/Character", "TYPE", "Ljava/lang/Class;");
+		}
+		
+	}
+	
+	
 	/**
 	 *
 	 * <p>

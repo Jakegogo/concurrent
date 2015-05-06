@@ -121,7 +121,7 @@ public class Transfer {
 
         ByteBuffer buffer = new ByteBuffer(bytesLength);
 
-        Serializer serializer = TransferConfig.getTypedSerializer(type);
+        Serializer serializer = TransferConfig.getCompiledSerializer(type);
         if (serializer == null) {
             serializer = TransferConfig.preCompileSerializer(type); // 进行预编译
         }
@@ -131,7 +131,20 @@ public class Transfer {
         return buffer.getByteArray();
     }
 
-
+    
+    /**
+     * 解码
+     * @param inputable 输入接口
+     * @param <T>
+     * @return
+     */
+    public static <T> T decode(Inputable inputable) {
+        byte flag = inputable.getByte();
+        Deserializer deserializer = TransferConfig.getDeserializer((Type) Object.class, flag);
+        return deserializer.deserialze(inputable, Object.class, flag, new IntegerMap(16));
+    }
+    
+    
     /**
      * 解码
      * @param inputable 输入接口
@@ -140,8 +153,12 @@ public class Transfer {
      * @return
      */
     public static <T> T decode(Inputable inputable, Class<T> clazz) {
+        Deserializer deserializer = TransferConfig.getCompiledDeSerializer(clazz);
+        if (deserializer == null) {
+        	deserializer = TransferConfig.preCompileDeserializer(clazz); // 进行预编译
+        }
+        
         byte flag = inputable.getByte();
-        Deserializer deserializer = TransferConfig.getDeserializer((Type) clazz, flag);
         return deserializer.deserialze(inputable, clazz, flag, new IntegerMap(16));
     }
 
@@ -154,9 +171,13 @@ public class Transfer {
      * @return
      */
     public static <T> T decode(byte[] bytes, Class<T> clazz) {
+    	Deserializer deserializer = TransferConfig.getCompiledDeSerializer(clazz);
+        if (deserializer == null) {
+        	deserializer = TransferConfig.preCompileDeserializer(clazz); // 进行预编译
+        }
+    	
         Inputable inputable = new ByteArray(bytes);
         byte flag = inputable.getByte();
-        Deserializer deserializer = TransferConfig.getDeserializer((Type) clazz, flag);
         return deserializer.deserialze(inputable, clazz, flag, new IntegerMap(16));
     }
 
@@ -169,8 +190,12 @@ public class Transfer {
      * @return
      */
     public static <T> T decode(Inputable inputable, TypeReference<T> typeReference) {
+    	Deserializer deserializer = TransferConfig.getCompiledDeSerializer(typeReference.getType());
+        if (deserializer == null) {
+        	deserializer = TransferConfig.preCompileDeserializer(typeReference.getType()); // 进行预编译
+        }
+    	
         byte flag = inputable.getByte();
-        Deserializer deserializer = TransferConfig.getDeserializer(typeReference.getType(), flag);
         return deserializer.deserialze(inputable, typeReference.getType(), flag, new IntegerMap(16));
     }
 
@@ -184,9 +209,13 @@ public class Transfer {
      * @return
      */
     public static <T> T decode(byte[] bytes, TypeReference<T> typeReference) {
+    	Deserializer deserializer = TransferConfig.getCompiledDeSerializer(typeReference.getType());
+        if (deserializer == null) {
+        	deserializer = TransferConfig.preCompileDeserializer(typeReference.getType()); // 进行预编译
+        }
+    	
         Inputable inputable = new ByteArray(bytes);
         byte flag = inputable.getByte();
-        Deserializer deserializer = TransferConfig.getDeserializer(typeReference.getType(), flag);
         return deserializer.deserialze(inputable, typeReference.getType(), flag, new IntegerMap(16));
     }
 
@@ -211,7 +240,6 @@ public class Transfer {
 
 
         final Type componentType = TypeUtils.getParameterizedClass(typeReference.getType(), 0);// 取出元素类型
-
 
         final Deserializer defaultComponentDeserializer;
         if (componentType != null && componentType != Object.class) {

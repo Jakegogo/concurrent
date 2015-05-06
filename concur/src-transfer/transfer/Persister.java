@@ -113,7 +113,6 @@ public class Persister {
 
         final Type componentType = TypeUtils.getParameterizedClass(typeReference.getType(), 0);// 取出元素类型
 
-
         final Deserializer defaultComponentDeserializer;
         if (componentType != null && componentType != Object.class) {
             defaultComponentDeserializer = PersistConfig.getDeserializer(componentType);// 元素解析器

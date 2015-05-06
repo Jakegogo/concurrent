@@ -38,7 +38,6 @@ public class ObjectDeSerializer implements Deserializer, Opcodes {
     public <T> T deserialze(Inputable inputable, Type type, byte flag, IntegerMap referenceMap) {
 
         byte typeFlag = TransferConfig.getType(flag);
-
         if (typeFlag != Types.OBJECT) {
             throw new IllegalTypeException(typeFlag, Types.OBJECT, type);
         }
@@ -103,12 +102,24 @@ public class ObjectDeSerializer implements Deserializer, Opcodes {
     @Override
 	public void compile(Type type, MethodVisitor mv,
 			AsmDeserializerContext context) {
+    	
         mv.visitCode();
+        
+//      if (flag == Types.NULL) {
+//   		return null;
+//  	}
+	    mv.visitVarInsn(ILOAD, 3);
+	    mv.visitInsn(ICONST_1);
+	    Label l1 = new Label();
+	    mv.visitJumpInsn(IF_ICMPNE, l1);
+	    mv.visitInsn(ACONST_NULL);
+	    mv.visitInsn(ARETURN);
+	    mv.visitLabel(l1);
 
         mv.visitVarInsn(ILOAD, 3);
         mv.visitMethodInsn(INVOKESTATIC, "transfer/def/TransferConfig", "getType", "(B)B", false);
         mv.visitVarInsn(ISTORE, 5);
-
+        
         mv.visitVarInsn(ILOAD, 5);
         mv.visitIntInsn(BIPUSH, Types.OBJECT);
         
@@ -130,12 +141,9 @@ public class ObjectDeSerializer implements Deserializer, Opcodes {
 
 
         Class<?> rawClass;
-
         if (type == null || type == Object.class) {
-
             throw new CompileError("不支持编译类型:" + type);
         } else {
-
             rawClass = TypeUtils.getRawClass(type);
         }
 
@@ -144,7 +152,6 @@ public class ObjectDeSerializer implements Deserializer, Opcodes {
         }
 
         ClassInfo classInfo = TransferConfig.getOrCreateClassInfo(rawClass);
-
         if (classInfo == null) {
             throw new UnsupportDeserializerTypeException(rawClass);
         }
@@ -178,18 +185,18 @@ public class ObjectDeSerializer implements Deserializer, Opcodes {
 
 
         int localIndex = 7;
-        
         Type fieldType;
         Deserializer fieldDeserializer;
         for (FieldInfo fieldInfo : classInfo.getFieldInfos()) {
-
             fieldType = fieldInfo.getType();
             
             Class<?> fieldRawClass = TypeUtils.getRawClass(fieldType);
             if (fieldType == null || fieldType == Object.class
 					|| fieldRawClass.isInterface()
-					|| Modifier.isAbstract(fieldRawClass.getModifiers()) && !fieldRawClass.isArray()) {// 使用默认解析器
-
+					|| Modifier.isAbstract(fieldRawClass.getModifiers()) 
+					&& !fieldRawClass.isArray() 
+					&& !fieldRawClass.isPrimitive()) {// 使用默认解析器
+            	
             	mv.visitVarInsn(ALOAD, 1);
             	mv.visitMethodInsn(INVOKEINTERFACE, "transfer/Inputable", "getByte", "()B", true);
             	int store1 = ++localIndex;
@@ -206,31 +213,33 @@ public class ObjectDeSerializer implements Deserializer, Opcodes {
             	mv.visitVarInsn(ALOAD, 4);
             	mv.visitMethodInsn(INVOKEINTERFACE, "transfer/deserializer/Deserializer", "deserialze", "(Ltransfer/Inputable;Ljava/lang/reflect/Type;BLtransfer/utils/IntegerMap;)Ljava/lang/Object;", true);
             	mv.visitVarInsn(ASTORE, ++localIndex);
-
-            } else {// 使用预编译解析方法
-
+            	
+            } else {
+            	
+            	// 使用预编译解析方法
                 mv.visitVarInsn(ALOAD, 1);
                 mv.visitMethodInsn(INVOKEINTERFACE, "transfer/Inputable", "getByte", "()B", true);
                 int store1 = ++localIndex;
                 mv.visitVarInsn(ISTORE, store1);
-
-
-                fieldDeserializer = TransferConfig.getDeserializer(fieldType, Types.UNKOWN);
-
+                
+                
                 mv.visitVarInsn(ALOAD, 0);
                 mv.visitVarInsn(ALOAD, 1);
-                mv.visitLdcInsn(org.objectweb.asm.Type.getType("L" + AsmUtils.toAsmCls(TypeUtils.getRawClass(fieldType).getName()) + ";"));
+                if (fieldRawClass.isPrimitive()) {
+                	AsmUtils.loadPrimitiveType(mv, fieldRawClass);
+                } else {
+                	mv.visitLdcInsn(org.objectweb.asm.Type.getType(fieldRawClass));
+                }
                 mv.visitVarInsn(ILOAD, store1);
                 mv.visitVarInsn(ALOAD, 4);
-                mv.visitMethodInsn(INVOKEINTERFACE, "transfer/deserializer/Deserializer", "deserialze", "(Ltransfer/Inputable;Ljava/lang/reflect/Type;BLtransfer/utils/IntegerMap;)Ljava/lang/Object;", true);
                 
-
+                fieldDeserializer = TransferConfig.getDeserializer(fieldType, Types.UNKOWN);
                 // 执行属性预编译
                 MethodVisitor mv1 = context.invokeNextDeserialize(fieldInfo.getFieldName(), mv);
                 fieldDeserializer.compile(fieldType, mv1, context);
                 
                 mv.visitVarInsn(ASTORE, ++localIndex);
-
+                
             }
             
             // 设置属性
@@ -252,10 +261,10 @@ public class ObjectDeSerializer implements Deserializer, Opcodes {
 			mv.visitVarInsn(ALOAD, 7);
 			mv.visitVarInsn(ALOAD, localIndex);
 
-			if(mpt[0].isPrimitive()) {
+			if (mpt[0].isPrimitive()) {
 				// unBoxing
 				AsmUtils.withUnBoxingType(mv, mat[0]);
-			} else {
+			} else if(mpt[0] != Object.class) {
 				mv.visitTypeInsn(CHECKCAST, AsmUtils.toAsmCls(mpt[0].getName()));
 			}
 
@@ -271,6 +280,7 @@ public class ObjectDeSerializer implements Deserializer, Opcodes {
 
         mv.visitMaxs(5, 16);
         mv.visitEnd();
+        
 	}
     
 

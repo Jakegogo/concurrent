@@ -110,10 +110,22 @@ public class ArrayDeSerializer implements Deserializer, Opcodes {
 			AsmDeserializerContext context) {
 
         mv.visitCode();
+        
+//      if (flag == Types.NULL) {
+//   		return null;
+//  	}
+	    mv.visitVarInsn(ILOAD, 3);
+	    mv.visitInsn(ICONST_1);
+	    Label l1 = new Label();
+	    mv.visitJumpInsn(IF_ICMPNE, l1);
+	    mv.visitInsn(ACONST_NULL);
+	    mv.visitInsn(ARETURN);
+	    mv.visitLabel(l1);
+        
         mv.visitVarInsn(ILOAD, 3);
         mv.visitMethodInsn(INVOKESTATIC, "transfer/def/TransferConfig", "getType", "(B)B", false);
         mv.visitVarInsn(ISTORE, 5);
-
+        
         mv.visitVarInsn(ILOAD, 5);
         mv.visitIntInsn(BIPUSH, Types.COLLECTION);
         Label l2 = new Label();
@@ -121,8 +133,7 @@ public class ArrayDeSerializer implements Deserializer, Opcodes {
         mv.visitVarInsn(ILOAD, 5);
         mv.visitIntInsn(BIPUSH, Types.ARRAY);
         mv.visitJumpInsn(IF_ICMPEQ, l2);
-        Label l3 = new Label();
-        mv.visitLabel(l3);
+        
         mv.visitTypeInsn(NEW, "transfer/exceptions/IllegalTypeException");
         mv.visitInsn(DUP);
         mv.visitVarInsn(ILOAD, 5);
@@ -132,18 +143,9 @@ public class ArrayDeSerializer implements Deserializer, Opcodes {
         mv.visitInsn(ATHROW);
         mv.visitLabel(l2);
 
-
         mv.visitVarInsn(ALOAD, 1);
         mv.visitMethodInsn(INVOKESTATIC, "transfer/utils/BitUtils", "getInt", "(Ltransfer/Inputable;)I", false);
         mv.visitVarInsn(ISTORE, 6);
-
-        mv.visitVarInsn(ILOAD, 6);
-        Label l6 = new Label();
-        mv.visitJumpInsn(IFNE, l6);
-        mv.visitInsn(ICONST_0);
-        mv.visitTypeInsn(ANEWARRAY, "java/lang/Object");
-        mv.visitInsn(ARETURN);
-        mv.visitLabel(l6);
 
 
         Type itemType = Object.class;
@@ -153,22 +155,41 @@ public class ArrayDeSerializer implements Deserializer, Opcodes {
             itemType = ((Class<?>)type).getComponentType();
         }
 
-
         if (itemType == null) {
             itemType = Object.class;
         }
-
-        // 创建数组
-        mv.visitVarInsn(ILOAD, 6);
-        mv.visitTypeInsn(ANEWARRAY, AsmUtils.toAsmCls(TypeUtils.getRawClass(itemType).getName()));
-        mv.visitVarInsn(ASTORE, 7);
         
         
         Class<?> componentClass = TypeUtils.getRawClass(itemType);
+        
+        mv.visitVarInsn(ILOAD, 6);
+        Label l6 = new Label();
+        mv.visitJumpInsn(IFNE, l6);
+        mv.visitInsn(ICONST_0);
+        if (componentClass.isPrimitive()) { // 创建0长度数组
+        	mv.visitIntInsn(NEWARRAY, AsmUtils.newArrayCode(componentClass));
+        } else {
+        	mv.visitTypeInsn(ANEWARRAY, AsmUtils.toAsmCls(componentClass.getName()));
+        }
+        mv.visitInsn(ARETURN);
+        mv.visitLabel(l6);
+        
+
+        // 创建数组
+        mv.visitVarInsn(ILOAD, 6);
+        if (componentClass.isPrimitive()) {
+        	mv.visitIntInsn(NEWARRAY, AsmUtils.newArrayCode(componentClass));
+        } else {
+        	mv.visitTypeInsn(ANEWARRAY, AsmUtils.toAsmCls(componentClass.getName()));
+        }
+        mv.visitVarInsn(ASTORE, 7);
+        
+        
+        
         Deserializer defaultComponentDeserializer = null;
         if (itemType != null && itemType != Object.class
         		&& !componentClass.isInterface()
-				&& (componentClass.isArray() || !Modifier.isAbstract(componentClass.getModifiers()))) {
+				&& (componentClass.isPrimitive() || componentClass.isArray() || !Modifier.isAbstract(componentClass.getModifiers()))) {
             defaultComponentDeserializer = TransferConfig.getDeserializer(itemType);// 元素解析器
         }
 
@@ -191,23 +212,33 @@ public class ArrayDeSerializer implements Deserializer, Opcodes {
             mv.visitMethodInsn(INVOKEINTERFACE, "transfer/Inputable", "getByte", "()B", true);
             mv.visitVarInsn(ISTORE, 9);
 
-            mv.visitLdcInsn(org.objectweb.asm.Type.getType("L" + AsmUtils.toAsmCls(TypeUtils.getRawClass(itemType).getName()) + ";"));
+            mv.visitLdcInsn(org.objectweb.asm.Type.getType("L" + AsmUtils.toAsmCls(componentClass.getName()) + ";"));
             mv.visitVarInsn(ILOAD, 9);
             mv.visitMethodInsn(INVOKESTATIC, "transfer/def/TransferConfig", "getDeserializer", "(Ljava/lang/reflect/Type;B)Ltransfer/deserializer/Deserializer;", false);
             mv.visitVarInsn(ASTORE, 10);
 
             mv.visitVarInsn(ALOAD, 10);
             mv.visitVarInsn(ALOAD, 1);
-            mv.visitLdcInsn(org.objectweb.asm.Type.getType("L" + AsmUtils.toAsmCls(TypeUtils.getRawClass(itemType).getName()) + ";"));
+            if (componentClass.isPrimitive()) {
+            	AsmUtils.loadPrimitiveType(mv, componentClass);
+            } else {
+            	mv.visitLdcInsn(org.objectweb.asm.Type.getType("L" + AsmUtils.toAsmCls(componentClass.getName()) + ";"));
+            }
             mv.visitVarInsn(ILOAD, 9);
             mv.visitVarInsn(ALOAD, 4);
             mv.visitMethodInsn(INVOKEINTERFACE, "transfer/deserializer/Deserializer", "deserialze", "(Ltransfer/Inputable;Ljava/lang/reflect/Type;BLtransfer/utils/IntegerMap;)Ljava/lang/Object;", true);
-            mv.visitVarInsn(ASTORE, 11);
+            if (componentClass.isPrimitive()) {
+            	// unBoxing
+				AsmUtils.withUnBoxingType(mv, org.objectweb.asm.Type.getType(componentClass));
+            } else if(componentClass != Object.class){
+            	mv.visitTypeInsn(CHECKCAST, AsmUtils.toAsmCls(componentClass.getName()));
+            }
+            mv.visitVarInsn(AsmUtils.storeCode(org.objectweb.asm.Type.getType(componentClass)), 11);
 
             //array[i] = obj;
             mv.visitVarInsn(ALOAD, 7);
             mv.visitVarInsn(ILOAD, 8);
-            mv.visitVarInsn(ALOAD, 11);
+            mv.visitVarInsn(AsmUtils.loadCode(org.objectweb.asm.Type.getType(componentClass)), 11);
             mv.visitInsn(AsmUtils.storeArrayCode(org.objectweb.asm.Type.getType(componentClass)));
 
             mv.visitIincInsn(8, 1);
@@ -216,7 +247,6 @@ public class ArrayDeSerializer implements Deserializer, Opcodes {
             mv.visitLabel(l19);
 
         } else {
-
 
             mv.visitFrame(Opcodes.F_SAME, 0, null, 0, null);
             mv.visitInsn(ICONST_0);
@@ -235,29 +265,40 @@ public class ArrayDeSerializer implements Deserializer, Opcodes {
 
             mv.visitVarInsn(ALOAD, 0);
             mv.visitVarInsn(ALOAD, 1);
-            mv.visitLdcInsn(org.objectweb.asm.Type.getType("L" + AsmUtils.toAsmCls(TypeUtils.getRawClass(itemType).getName()) + ";"));
+            if (componentClass.isPrimitive()) {
+            	AsmUtils.loadPrimitiveType(mv, componentClass);
+            } else {
+            	mv.visitLdcInsn(org.objectweb.asm.Type.getType("L" + AsmUtils.toAsmCls(componentClass.getName()) + ";"));
+            }
             mv.visitVarInsn(ALOAD, 1);
             mv.visitMethodInsn(INVOKEINTERFACE, "transfer/Inputable", "getByte", "()B", true);
             mv.visitVarInsn(ALOAD, 4);
 
-            context.invokeNextDeserialize(null, mv);
-            defaultComponentDeserializer.compile(itemType, mv, context);
+            MethodVisitor methodVisitor = context.invokeNextDeserialize(null, mv);
+            defaultComponentDeserializer.compile(itemType, methodVisitor, context);
 
-            mv.visitVarInsn(ASTORE, 10);
+            if (componentClass.isPrimitive()) {
+            	// unBoxing
+				AsmUtils.withUnBoxingType(mv, org.objectweb.asm.Type.getType(componentClass));
+            } else if(componentClass != Object.class){
+            	mv.visitTypeInsn(CHECKCAST, AsmUtils.toAsmCls(componentClass.getName()));
+            }
+            mv.visitVarInsn(AsmUtils.storeCode(org.objectweb.asm.Type.getType(componentClass)), 10);
 
             //array[i] = obj;
             mv.visitVarInsn(ALOAD, 7);
             mv.visitVarInsn(ILOAD, 8);
-            mv.visitVarInsn(ALOAD, 10);
+            mv.visitVarInsn(AsmUtils.loadCode(org.objectweb.asm.Type.getType(componentClass)), 10);
             mv.visitInsn(AsmUtils.storeArrayCode(org.objectweb.asm.Type.getType(componentClass)));
-
+            
             mv.visitIincInsn(8, 1);
             mv.visitJumpInsn(GOTO, l26);
             mv.visitLabel(l25);
+            
         }
 
         mv.visitFrame(Opcodes.F_CHOP,2, null, 0, null);
-        mv.visitVarInsn(ALOAD, 6);
+        mv.visitVarInsn(ALOAD, 7);
         mv.visitInsn(ARETURN);
 
         mv.visitMaxs(5, 14);

@@ -49,6 +49,8 @@ public class TransferConfig {
     static final ByteMap<Deserializer> deserializers = new ByteMap<Deserializer>();
 
     static final IdentityHashMap<Type, Deserializer> typedDeserializers = new IdentityHashMap<Type, Deserializer>();
+    
+    static final IdentityHashMap<Type, Deserializer> compiledDeserializers = new IdentityHashMap<Type, Deserializer>();
 
     static final IdentityHashMap<Type, Serializer> serializers = new IdentityHashMap<Type, Serializer>();
 
@@ -436,7 +438,7 @@ public class TransferConfig {
 	        idClassMap.put(clazz, classId);
 		
 	        if (clazz.isEnum() || (clazz.getSuperclass() != null && clazz.getSuperclass().isEnum())) { // 枚举类型
-	            typedDeserializers.put(clazz, EnumDeserializer.getInstance());
+	        	compiledDeserializers.put(clazz, EnumDeserializer.getInstance());
 	            return EnumDeserializer.getInstance();
 	        }
 	        
@@ -444,12 +446,12 @@ public class TransferConfig {
 	        Deserializer deserializer = null;
         	try {
         		deserializer = AsmDeserializerFactory.compileDeserializer(clazz, ObjectDeSerializer.getInstance());// 自定义传输类
-        		typedDeserializers.put(clazz, deserializer);
+        		compiledDeserializers.put(clazz, deserializer);
         		
         	} catch (CompileError e) {
         		logger.warn("无法预编译: " + e.getMessage() + ", 将使用默认解码器");
         		deserializer = ObjectDeSerializer.getInstance();
-        		typedDeserializers.put(clazz, deserializer);
+        		compiledDeserializers.put(clazz, deserializer);
         	}
         	return deserializer;
 	        
@@ -458,7 +460,7 @@ public class TransferConfig {
         Deserializer outerDeserializer = getDeserializer(clazz);
     	try {
     		outerDeserializer = AsmDeserializerFactory.compileDeserializer(type, outerDeserializer);
-    		typedDeserializers.put(type, outerDeserializer);
+    		compiledDeserializers.put(type, outerDeserializer);
     	} catch (CompileError e) {
     		logger.warn("无法预编译: " + e.getMessage() + ", 将使用默认解码器");
     	}
@@ -471,10 +473,20 @@ public class TransferConfig {
      * @param type 类型
      * @return
      */
-    public static Serializer getTypedSerializer(Type type) {
+    public static Serializer getCompiledSerializer(Type type) {
     	return serializers.get(type);
     }
-
+    
+    
+    /**
+     * 获取解码器
+     * @param type 类型
+     * @return
+     */
+    public static Deserializer getCompiledDeSerializer(Type type) {
+    	return compiledDeserializers.get(type);
+    }
+    
 
     /**
      * 获取类信息

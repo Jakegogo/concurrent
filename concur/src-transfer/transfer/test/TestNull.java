@@ -19,7 +19,13 @@ public class TestNull {
         byte[] bytes = byteArray.toBytes();
 
         System.out.println(bytes.length);
-
+        
+        int[] a1 = new int[0];
+        
+        Integer[] a2 =  new Integer[0];
+        
+        System.out.println(int.class);
+        
     }
 
 }

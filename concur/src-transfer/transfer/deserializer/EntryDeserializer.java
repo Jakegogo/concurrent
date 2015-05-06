@@ -12,6 +12,7 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.Map;
 
+import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 
@@ -57,6 +58,22 @@ public class EntryDeserializer implements Deserializer, Opcodes {
             valueType = TypeUtils.getParameterizedType((ParameterizedType) type, 1);
         }
         
+        
+//      if (flag == Types.NULL) {
+//   		return null;
+//  	}
+	    mv.visitVarInsn(ILOAD, 3);
+	    mv.visitInsn(ICONST_1);
+	    Label l1 = new Label();
+	    mv.visitJumpInsn(IF_ICMPNE, l1);
+	    mv.visitInsn(ACONST_NULL);
+	    mv.visitInsn(ARETURN);
+	    mv.visitLabel(l1);
+        
+        mv.visitVarInsn(ALOAD, 1);
+        mv.visitMethodInsn(INVOKEINTERFACE, "transfer/Inputable", "getByte", "()B", true);
+        mv.visitVarInsn(ISTORE, 5);
+        
         //解析KEY
         int keyLocal = 5;
         Class<?> keyRawClass = TypeUtils.getRawClass(keyType);
@@ -64,10 +81,6 @@ public class EntryDeserializer implements Deserializer, Opcodes {
 				|| keyRawClass.isInterface()
 				|| Modifier.isAbstract(keyRawClass.getModifiers()) && !keyRawClass.isArray()) {// 使用默认解析器
         	
-        	mv.visitVarInsn(ALOAD, 1);
-            mv.visitMethodInsn(INVOKEINTERFACE, "transfer/Inputable", "getByte", "()B", true);
-            mv.visitVarInsn(ISTORE, 5);
-
             mv.visitLdcInsn(org.objectweb.asm.Type.getType("L" + AsmUtils.toAsmCls(keyRawClass.getName()) + ";"));
             mv.visitVarInsn(ILOAD, 5);
             mv.visitMethodInsn(INVOKESTATIC, "transfer/def/TransferConfig", "getDeserializer", "(Ljava/lang/reflect/Type;B)Ltransfer/deserializer/Deserializer;", false);
@@ -82,15 +95,11 @@ public class EntryDeserializer implements Deserializer, Opcodes {
             mv.visitVarInsn(ASTORE, 7);
             keyLocal = 7;
         } else {
-        	
-        	mv.visitVarInsn(ALOAD, 1);
-            mv.visitMethodInsn(INVOKEINTERFACE, "transfer/Inputable", "getByte", "()B", true);
-            mv.visitVarInsn(ISTORE, 5);
             
             Deserializer keyDeserializer = TransferConfig.getDeserializer(keyType);// Key解析器
             
-            context.invokeNextDeserialize(null, mv);
-            keyDeserializer.compile(keyType, mv, context);
+            MethodVisitor methodVisitor = context.invokeNextDeserialize(null, mv);
+            keyDeserializer.compile(keyType, methodVisitor, context);
         	
             mv.visitVarInsn(ASTORE, 6);
             keyLocal = 6;
@@ -129,8 +138,8 @@ public class EntryDeserializer implements Deserializer, Opcodes {
             
             Deserializer keyDeserializer = TransferConfig.getDeserializer(keyType);// Key解析器
             
-            context.invokeNextDeserialize(null, mv);
-            keyDeserializer.compile(keyType, mv, context);
+            MethodVisitor methodVisitor = context.invokeNextDeserialize(null, mv);
+            keyDeserializer.compile(keyType, methodVisitor, context);
         	
             mv.visitVarInsn(ASTORE, keyLocal + 2);
             valueLocal = keyLocal + 2;

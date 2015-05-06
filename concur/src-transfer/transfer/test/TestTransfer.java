@@ -30,6 +30,7 @@ public class TestTransfer {
         entity.setId(System.currentTimeMillis());
         entity.setUid(-101);
         entity.setFval(2.34f);
+        entity.setNum(5);
         entity.setStatus(AcountStatus.OPEN);
         entity.setDate(new Date());
         entity.setStr("jake");
