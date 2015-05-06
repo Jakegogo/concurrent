@@ -118,7 +118,6 @@ public class BitUtils {
      */
     public static void putLong(final Outputable outputable, long longVal) {
 
-
         while (true) {
             if ((longVal & ~0x7F) == 0) {
                 outputable.putByte((byte) longVal);
