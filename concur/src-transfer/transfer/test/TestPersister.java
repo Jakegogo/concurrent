@@ -2,6 +2,7 @@ package transfer.test;
 
 import transfer.ByteArray;
 import transfer.Persister;
+import transfer.def.PersistConfig;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -18,7 +19,7 @@ public class TestPersister {
 
     public static void main(String[] args) throws IOException {
 
-//        Config.registerClass(Entity.class, 1);
+        PersistConfig.registerClass(Entity.class, 1);
 
         Entity entity = new Entity();
         entity.setId(System.currentTimeMillis());

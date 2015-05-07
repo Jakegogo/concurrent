@@ -8,10 +8,13 @@ import org.springframework.util.ReflectionUtils;
 import transfer.ByteArray;
 import transfer.anno.Ignore;
 import transfer.anno.Transferable;
+import transfer.compile.AsmDeserializerFactory;
+import transfer.compile.AsmSerializerFactory;
 import transfer.core.ClassInfo;
 import transfer.core.EnumInfo;
 import transfer.core.FieldInfo;
 import transfer.deserializer.*;
+import transfer.exceptions.CompileError;
 import transfer.exceptions.UnsupportClassException;
 import transfer.exceptions.UnsupportDeserializerTypeException;
 import transfer.exceptions.UnsupportSerializerTypeException;
@@ -19,6 +22,7 @@ import transfer.serializer.*;
 import transfer.utils.ByteMap;
 import transfer.utils.IdentityHashMap;
 import transfer.utils.IntegerMap;
+import transfer.utils.TypeUtils;
 
 import java.lang.reflect.*;
 import java.math.BigDecimal;
@@ -34,15 +38,21 @@ import java.util.concurrent.atomic.AtomicLong;
  */
 public class PersistConfig {
 
-    private static final Logger logger = LoggerFactory.getLogger(TransferConfig.class);
-
+	private static final Logger logger = LoggerFactory.getLogger(PersistConfig.class);
+    /** 是否使用自增ID */
+    private static boolean useAutoIncrementId = false;
+    /** 传输类自增ID */
+    private static final AtomicInteger CLASS_ID_GENERTOR = new AtomicInteger(1);
+    
     public static final NullDeserializer NULL_DESERIALIZER = NullDeserializer.getInstance();
 
     static final ByteMap<Deserializer> deserializers = new ByteMap<Deserializer>();
 
     static final IdentityHashMap<Type, Deserializer> typedDeserializers = new IdentityHashMap<Type, Deserializer>();
+    
+    static final IdentityHashMap<Type, Deserializer> compiledDeserializers = new IdentityHashMap<Type, Deserializer>();
 
-    static final IdentityHashMap<Class, Serializer> serializers = new IdentityHashMap<Class, Serializer>();
+    static final IdentityHashMap<Type, Serializer> serializers = new IdentityHashMap<Type, Serializer>();
 
     static final IdentityHashMap<Class, ClassInfo> classInfoMap = new IdentityHashMap<Class, ClassInfo>();
 
@@ -59,14 +69,8 @@ public class PersistConfig {
 
 
     // Number类型标记
-    public static final byte INT1 = 0x00;// int 1字节
-    public static final byte INT2 = 0x01;// int 2字节
-    public static final byte INT3 = 0x02;// int 3字节
-    public static final byte INT4 = 0x03;// int 4字节
-    public static final byte INT5 = 0x04;// long 5字节
-    public static final byte INT6 = 0x05;// long 6字节
-    public static final byte INT7 = 0x06;// long 7字节
-    public static final byte INT8 = 0x07;// long 8字节
+    public static final byte VARINT = 0x00;// int 1-9字节
+    public static final byte VARLONG = 0x01;// int 1-9字节
 
     // Decimal类型标记
     public static final byte FLOAT = 0x00;// float 4字节
@@ -90,11 +94,11 @@ public class PersistConfig {
 
         boolean repeatRegisterSerializers,repeatRegisterDeSerializers;
         if (clazz.isEnum() || (clazz.getSuperclass() != null && clazz.getSuperclass().isEnum())) { // 枚举类型
-            repeatRegisterSerializers = serializers.put(clazz, TagEnumSerializer.getInstance());
-            repeatRegisterDeSerializers = typedDeserializers.put(clazz, TagEnumDeserializer.getInstance());
+            repeatRegisterSerializers = serializers.put(clazz, EnumSerializer.getInstance());
+            repeatRegisterDeSerializers = typedDeserializers.put(clazz, EnumDeserializer.getInstance());
         } else {
-            repeatRegisterSerializers = serializers.put(clazz, TagObjectSerializer.getInstance());
-            repeatRegisterDeSerializers = typedDeserializers.put(clazz, TagObjectDeSerializer.getInstance());
+            repeatRegisterSerializers = serializers.put(clazz, ObjectSerializer.getInstance());
+            repeatRegisterDeSerializers = typedDeserializers.put(clazz, ObjectDeSerializer.getInstance());
         }
 
         if (repeatRegisterSerializers || repeatRegisterDeSerializers) {
@@ -190,13 +194,11 @@ public class PersistConfig {
         }
 
         if (type instanceof Class<?>) {
-        	
         	Class<?> rawClass = (Class<?>) type;
         	if (rawClass.isInterface()
     				|| Modifier.isAbstract(rawClass.getModifiers()) && !rawClass.isArray()) {
         		return deserializers.get(TransferConfig.getType(flag));
         	}
-        	
             return getDeserializer(rawClass, type);
         }
 
@@ -211,8 +213,9 @@ public class PersistConfig {
 
         throw new UnsupportDeserializerTypeException(type);
     }
+    
 
-
+    // 获取解析器
     private static Deserializer getDeserializer(Class<?> clazz, Type type) {
 
         Deserializer deserializer = typedDeserializers.get(type);
@@ -242,7 +245,7 @@ public class PersistConfig {
         if (clazz.isArray()) {
             deserializer =  ArrayDeSerializer.getInstance();
         } else if(clazz.isEnum()) {
-            deserializer =  TagEnumDeserializer.getInstance();
+            deserializer =  EnumDeserializer.getInstance();
         } else if (clazz == Set.class || clazz == HashSet.class || clazz == Collection.class || clazz == List.class
                     || clazz == ArrayList.class) {
             deserializer =  CollectionDeSerializer.getInstance();
@@ -255,11 +258,11 @@ public class PersistConfig {
         } else if (Map.Entry.class.isAssignableFrom(clazz)) {
             deserializer =  EntryDeserializer.getInstance();
         } else {
-            deserializer = TagObjectDeSerializer.getInstance();
-
+            deserializer = ObjectDeSerializer.getInstance();
             // 注册类型
             autoRegisterClass(clazz);
         }
+
 
         if (deserializer == null) {
             throw new UnsupportDeserializerTypeException(type);
@@ -275,13 +278,16 @@ public class PersistConfig {
         // 获取唯一标识
         if (clazz.isAnnotationPresent(Transferable.class)) {
             Transferable transferable = clazz.getAnnotation(Transferable.class);
-            // 注册为对象解析方式
             registerClass(clazz, transferable.id());
-
             return;
         }
-
-        throw new UnsupportDeserializerTypeException(clazz);
+        
+        // 使用自增Id
+        if (useAutoIncrementId) {
+        	registerClass(clazz, CLASS_ID_GENERTOR.incrementAndGet());
+        } else {
+        	throw new UnsupportDeserializerTypeException(clazz);
+        }
     }
 
 
@@ -336,7 +342,7 @@ public class PersistConfig {
             }
 
             if (Proxy.isProxyClass(clazz)) {
-                serializers.put(clazz, TagObjectSerializer.getInstance());// TODO
+                serializers.put(clazz, ObjectSerializer.getInstance());// TODO
             } else {
                 // 注册类型
                 autoRegisterClass(clazz);
@@ -351,7 +357,127 @@ public class PersistConfig {
 
         return serializer;
     }
-
+    
+    
+    /**
+     * 预编译编码器
+     * @param type
+     * @return 
+     */
+    public static Serializer preCompileSerializer(Type type) {
+    	
+    	Class<?> clazz = TypeUtils.getRawClass(type);
+    	
+    	// 获取唯一标识
+        if (clazz.isAnnotationPresent(Transferable.class)) {
+        	
+            Transferable transferable = clazz.getAnnotation(Transferable.class);
+            
+			int classId = transferable.id();
+			
+	        classIdMap.put(classId, clazz);
+	        idClassMap.put(clazz, classId);
+		
+	        if (clazz.isEnum() || (clazz.getSuperclass() != null && clazz.getSuperclass().isEnum())) { // 枚举类型
+	            serializers.put(clazz, EnumSerializer.getInstance());
+	            return EnumSerializer.getInstance();
+	        }
+	        
+	        
+        	Serializer serializer = null;
+        	try {
+        		serializer = AsmSerializerFactory.compileSerializer(clazz, ObjectSerializer.getInstance());// 自定义传输类
+        		serializers.put(clazz, serializer);
+        		
+        	} catch (CompileError e) {
+        		logger.warn("无法预编译: " + e.getMessage() + ", 将使用默认编码器");
+        		serializer = ObjectSerializer.getInstance();
+        		serializers.put(clazz, serializer);
+        	}
+        	return serializer;
+	        
+        }
+        	
+    	Serializer outerSerializer = getSerializer(clazz);
+    	try {
+    		outerSerializer = AsmSerializerFactory.compileSerializer(type, outerSerializer);
+        	serializers.put(type, outerSerializer);
+    	} catch (CompileError e) {
+    		logger.warn("无法预编译: " + e.getMessage() + ", 将使用默认编码器");
+    	}
+    	return outerSerializer;
+	}
+    
+    
+    /**
+     * 预编译解码器
+     * @param type
+     * @return 
+     */
+    public static Deserializer preCompileDeserializer(Type type) {
+    	
+    	Class<?> clazz = TypeUtils.getRawClass(type);
+    	
+    	// 获取唯一标识
+        if (clazz.isAnnotationPresent(Transferable.class)) {
+        	
+            Transferable transferable = clazz.getAnnotation(Transferable.class);
+            
+			int classId = transferable.id();
+			
+	        classIdMap.put(classId, clazz);
+	        idClassMap.put(clazz, classId);
+		
+	        if (clazz.isEnum() || (clazz.getSuperclass() != null && clazz.getSuperclass().isEnum())) { // 枚举类型
+	        	compiledDeserializers.put(clazz, EnumDeserializer.getInstance());
+	            return EnumDeserializer.getInstance();
+	        }
+	        
+	        
+	        Deserializer deserializer = null;
+        	try {
+        		deserializer = AsmDeserializerFactory.compileDeserializer(clazz, ObjectDeSerializer.getInstance());// 自定义传输类
+        		compiledDeserializers.put(clazz, deserializer);
+        		
+        	} catch (CompileError e) {
+        		logger.warn("无法预编译: " + e.getMessage() + ", 将使用默认解码器");
+        		deserializer = ObjectDeSerializer.getInstance();
+        		compiledDeserializers.put(clazz, deserializer);
+        	}
+        	return deserializer;
+	        
+        }
+        	
+        Deserializer outerDeserializer = getDeserializer(clazz);
+    	try {
+    		outerDeserializer = AsmDeserializerFactory.compileDeserializer(type, outerDeserializer);
+    		compiledDeserializers.put(type, outerDeserializer);
+    	} catch (CompileError e) {
+    		logger.warn("无法预编译: " + e.getMessage() + ", 将使用默认解码器");
+    	}
+    	return outerDeserializer;
+	}
+    
+    
+    /**
+     * 获取编码器
+     * @param type 类型
+     * @return
+     */
+    public static Serializer getCompiledSerializer(Type type) {
+    	return serializers.get(type);
+    }
+    
+    
+    /**
+     * 获取解码器
+     * @param type 类型
+     * @return
+     */
+    public static Deserializer getCompiledDeSerializer(Type type) {
+    	return compiledDeserializers.get(type);
+    }
+    
 
     /**
      * 获取类信息
@@ -365,15 +491,13 @@ public class PersistConfig {
             return classInfo;
         }
 
-        int classId = PersistConfig.getClassId(clazz);
+        
+        int classId = TransferConfig.getClassId(clazz);
         // 枚举类型
         if (clazz.isEnum()) {
-
             classInfo = EnumInfo.valueOf(clazz, classId);
             classInfoMap.put(clazz, classInfo);
-
         } else {
-
             final List<FieldInfo> fieldInfos = new ArrayList<FieldInfo>();
             final Map<String, FieldInfo> fieldInfoMap = new HashMap<String, FieldInfo>();
 
@@ -402,7 +526,6 @@ public class PersistConfig {
             });
 
             classInfo = ClassInfo.valueOf(clazz, classId, fieldInfos, fieldInfoMap);
-
             classInfoMap.put(clazz, classInfo);
         }
 
@@ -456,6 +579,15 @@ public class PersistConfig {
         }
         return classId.intValue();
     }
+
+    /**
+     * 设置是否使用自增Id
+     * <br/>默认为false
+     * @param useAutoIncrementId 是否使用自增Id
+     */
+    public static void setUseAutoIncrementId(boolean useAutoIncrementId) {
+    	PersistConfig.useAutoIncrementId = useAutoIncrementId;
+	}
 
 
     static {

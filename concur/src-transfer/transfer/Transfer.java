@@ -30,24 +30,6 @@ public class Transfer {
     // 可迭代解码,调用Iterator.next()方法时进行集合元素的解码
     // Inputable、Outputable适配网络框架的readBuffer、writeBuffer
     // TypeReference指定泛型类型将预编译,可提升解析速度
-    //
-
-
-
-    /**
-     * 编码
-     * @param outputable 输出接口
-     * @param object 目标对象
-     */
-    public static void encode(Outputable outputable, Object object) {
-        if (object == null) {
-            Serializer.NULL_SERIALIZER.serialze(outputable, null, null);
-            return;
-        }
-
-        Serializer serializer = TransferConfig.getSerializer(object.getClass());
-        serializer.serialze(outputable, object, new IdentityHashMap(16));
-    }
 
 
     /**
@@ -72,22 +54,8 @@ public class Transfer {
         }
 
         ByteBuffer buffer = new ByteBuffer(bytesLength);
-
         encode(buffer, object);
-
         return buffer.getByteArray();
-    }
-
-
-    /**
-     * 编码器预编译
-     * <br/>调用此方法可预编译或者Transfer#encode(Object, Type)指定预编译类型
-     * @param type
-     * @return
-     * @see transfer.Transfer.encode(Object, Type)
-     */
-    public static Serializer encodePreCompile(Type type) {
-        return TransferConfig.preCompileSerializer(type);
     }
 
 
@@ -117,17 +85,74 @@ public class Transfer {
         }
 
         ByteBuffer buffer = new ByteBuffer(bytesLength);
+        encode(buffer, object, type);
+        return buffer.getByteArray();
+    }
+
+    
+    /**
+     * 编码
+     * @param outputable 输出接口
+     * @param object 目标对象
+     */
+    public static void encode(Outputable outputable, Object object) {
+        if (object == null) {
+            Serializer.NULL_SERIALIZER.serialze(outputable, null, null);
+            return;
+        }
+        
+        Serializer serializer = TransferConfig.getSerializer(object.getClass());
+        serializer.serialze(outputable, object, new IdentityHashMap(16));
+    }
+    
+    
+    /**
+     * 编码
+     * @param outputable 输出接口
+     * @param object 目标对象
+     * @param type 指定预编译目标对象的类型
+     */
+    public static <T> void encode(Outputable outputable, T object, Type type) {
+        if (object == null) {
+            Serializer.NULL_SERIALIZER.serialze(outputable, null, null);
+            return;
+        }
 
         Serializer serializer = TransferConfig.getCompiledSerializer(type);
         if (serializer == null) {
             serializer = TransferConfig.preCompileSerializer(type); // 进行预编译
         }
-
-        serializer.serialze(buffer, object, new IdentityHashMap(16));
-
-        return buffer.getByteArray();
+        serializer.serialze(outputable, object, new IdentityHashMap(16));
     }
+    
+    
+    /**
+     * 编码
+     * @param outputable 输出接口
+     * @param object 目标对象
+     * @param typeReference 类型定义
+     */
+    public static <T> void encode(Outputable outputable, T object, TypeReference<T> typeReference) {
+        if (object == null) {
+            Serializer.NULL_SERIALIZER.serialze(outputable, null, null);
+            return;
+        }
 
+        Type type = typeReference.getType();
+        encode(outputable, object, type);
+    }
+    
+    
+    /**
+     * 编码器预编译
+     * <br/>调用此方法可预编译或者Transfer#encode(Object, Type)指定预编译类型
+     * @param type
+     * @return
+     * @see transfer.Transfer.encode(Object, Type)
+     */
+    public static Serializer encodePreCompile(Type type) {
+        return TransferConfig.preCompileSerializer(type);
+    }
     
     /**
      * 解码
@@ -168,14 +193,7 @@ public class Transfer {
      * @return
      */
     public static <T> T decode(byte[] bytes, Class<T> clazz) {
-    	Deserializer deserializer = TransferConfig.getCompiledDeSerializer(clazz);
-        if (deserializer == null) {
-        	deserializer = TransferConfig.preCompileDeserializer(clazz); // 进行预编译
-        }
-    	
-        Inputable inputable = new ByteArray(bytes);
-        byte flag = inputable.getByte();
-        return deserializer.deserialze(inputable, clazz, flag, new IntegerMap(16));
+        return decode(new ByteArray(bytes), clazz);
     }
 
 
@@ -206,14 +224,7 @@ public class Transfer {
      * @return
      */
     public static <T> T decode(byte[] bytes, TypeReference<T> typeReference) {
-    	Deserializer deserializer = TransferConfig.getCompiledDeSerializer(typeReference.getType());
-        if (deserializer == null) {
-        	deserializer = TransferConfig.preCompileDeserializer(typeReference.getType()); // 进行预编译
-        }
-    	
-        Inputable inputable = new ByteArray(bytes);
-        byte flag = inputable.getByte();
-        return deserializer.deserialze(inputable, typeReference.getType(), flag, new IntegerMap(16));
+        return decode(new ByteArray(bytes), typeReference);
     }
 
 
@@ -234,10 +245,10 @@ public class Transfer {
             throw new UnsupportedOperationException();
         }
 
-
-        final Type componentType = TypeUtils.getParameterizedClass(typeReference.getType(), 0);// 取出元素类型
-
+        
         final Deserializer defaultComponentDeserializer;
+        final Type componentType = TypeUtils.getParameterizedClass(typeReference.getType(), 0);// 取出元素类型
+        
         if (componentType != null && componentType != Object.class) {
             defaultComponentDeserializer = TransferConfig.getDeserializer(componentType);// 元素解析器
         } else {
@@ -247,9 +258,7 @@ public class Transfer {
 
         final IntegerMap referenceMap = new IntegerMap(16);
         return new Iterator<E>() {
-
             private int curIndex = 0;
-
             private int size = byteDataMeta.getComponentSize();
 
             @Override
@@ -309,9 +318,7 @@ public class Transfer {
 
         final IntegerMap referenceMap = new IntegerMap(16);
         return new Iterator<Map.Entry<K, V>>() {
-
             private int curIndex = 0;
-
             private int size = byteDataMeta.getComponentSize();
 
             @Override
