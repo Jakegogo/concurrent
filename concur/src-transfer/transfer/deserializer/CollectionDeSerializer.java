@@ -69,7 +69,7 @@ public class CollectionDeSerializer implements Deserializer, Opcodes {
         Object component;
         if (defaultComponentDeserializer == null) {
             for (int i = 0; i < size;i++) {
-                stack.setIndex(i);
+                context.nextIndex(stack, i);
                 byte elementFlag = inputable.getByte();
                 Deserializer componentDeserializer = TransferConfig.getDeserializer(itemType, elementFlag);// 元素解析器
                 component =  componentDeserializer.deserialze(inputable, itemType, elementFlag, context);
@@ -77,7 +77,7 @@ public class CollectionDeSerializer implements Deserializer, Opcodes {
             }
         } else {
             for (int i = 0; i < size;i++) {
-                stack.setIndex(i);
+                context.nextIndex(stack, i);
                 component = defaultComponentDeserializer.deserialze(inputable, itemType, inputable.getByte(), context);
                 list.add(component);
             }

@@ -63,4 +63,10 @@ public class DeserialContext {
         return next;
     }
 
+    public ParseStackTrace nextIndex(ParseStackTrace parent, int index) {
+        parent.setIndex(index);
+        this.stackTrace = parent;
+        return parent;
+    }
+
 }

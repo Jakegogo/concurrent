@@ -69,7 +69,7 @@ public class MapDeSerializer implements Deserializer, Opcodes {
 
         // 循环解析元素
         for (int i = 0; i < size;i++) {
-            stack.setIndex(i);
+            context.nextIndex(stack, i);
 
             context.next(stack, "key", keyType);
             keyFlag = inputable.getByte();// 获取key类型
