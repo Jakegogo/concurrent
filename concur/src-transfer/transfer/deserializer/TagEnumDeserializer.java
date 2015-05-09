@@ -1,9 +1,9 @@
 package transfer.deserializer;
 
 import org.objectweb.asm.MethodVisitor;
-
 import transfer.Inputable;
 import transfer.compile.AsmDeserializerContext;
+import transfer.core.DeserialContext;
 import transfer.core.EnumInfo;
 import transfer.def.PersistConfig;
 import transfer.def.Types;
@@ -11,7 +11,6 @@ import transfer.exceptions.IllegalClassTypeException;
 import transfer.exceptions.IllegalTypeException;
 import transfer.exceptions.UnsupportDeserializerTypeException;
 import transfer.utils.BitUtils;
-import transfer.utils.IntegerMap;
 import transfer.utils.TypeUtils;
 
 import java.lang.reflect.Modifier;
@@ -31,11 +30,11 @@ public class TagEnumDeserializer implements Deserializer {
 
 
     @Override
-    public <T> T deserialze(Inputable inputable, Type type, byte flag, IntegerMap referenceMap) {
+    public <T> T deserialze(Inputable inputable, Type type, byte flag, DeserialContext context) {
 
         byte typeFlag = PersistConfig.getType(flag);
         if (typeFlag != Types.ENUM) {
-            throw new IllegalTypeException(typeFlag, Types.ENUM, type);
+            throw new IllegalTypeException(context, typeFlag, Types.ENUM, type);
         }
 
         // 读取枚举类型
@@ -60,11 +59,11 @@ public class TagEnumDeserializer implements Deserializer {
         }
 
         if (enumType != enumInfo.getClassId()) {
-            throw new IllegalClassTypeException(enumType, type);
+            throw new IllegalClassTypeException(context, enumType, type);
         }
 
         // 读取枚举名
-        String enumName = STRING_DESERIALIZER.deserialze(inputable, String.class, inputable.getByte(), referenceMap);
+        String enumName = STRING_DESERIALIZER.deserialze(inputable, String.class, inputable.getByte(), context);
         return (T) enumInfo.toEnum(enumName);// 不存在的枚举则返回null
     }
 

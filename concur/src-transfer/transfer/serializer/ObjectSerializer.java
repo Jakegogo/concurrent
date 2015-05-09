@@ -1,5 +1,6 @@
 package transfer.serializer;
 
+import transfer.core.SerialContext;
 import utils.enhance.asm.util.AsmUtils;
 
 import org.objectweb.asm.Label;
@@ -14,7 +15,6 @@ import transfer.def.TransferConfig;
 import transfer.def.Types;
 import transfer.exceptions.CompileError;
 import transfer.utils.BitUtils;
-import transfer.utils.IdentityHashMap;
 import transfer.utils.TypeUtils;
 
 import java.beans.IntrospectionException;
@@ -30,10 +30,10 @@ public class ObjectSerializer implements Serializer, Opcodes {
 
 	@Override
 	public void serialze(Outputable outputable, Object object,
-			IdentityHashMap referenceMap) {
+			SerialContext context) {
 
 		if (object == null) {
-			NULL_SERIALIZER.serialze(outputable, null, referenceMap);
+			NULL_SERIALIZER.serialze(outputable, null, context);
 			return;
 		}
 
@@ -51,7 +51,7 @@ public class ObjectSerializer implements Serializer, Opcodes {
 			} else {
 				fieldSerializer = TransferConfig.getSerializer(TypeUtils.getRawClass(fieldInfo.getType()));
 			}
-			fieldSerializer.serialze(outputable, fieldValue, referenceMap);
+			fieldSerializer.serialze(outputable, fieldValue, context);
 		}
 
 	}
@@ -164,7 +164,7 @@ public class ObjectSerializer implements Serializer, Opcodes {
 						INVOKEINTERFACE,
 						"transfer/serializer/Serializer",
 						"serialze",
-						"(Ltransfer/Outputable;Ljava/lang/Object;Ltransfer/utils/IdentityHashMap;)V",
+						"(Ltransfer/Outputable;Ljava/lang/Object;Ltransfer/core/SerialContext;)V",
 						true);
 				mv.visitLabel(l17);
 

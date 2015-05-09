@@ -1,18 +1,17 @@
 package transfer.deserializer;
 
+import org.objectweb.asm.Label;
+import org.objectweb.asm.MethodVisitor;
+import org.objectweb.asm.Opcodes;
 import transfer.Inputable;
 import transfer.compile.AsmDeserializerContext;
+import transfer.core.DeserialContext;
 import transfer.def.TransferConfig;
 import transfer.def.Types;
 import transfer.exceptions.IllegalTypeException;
 import transfer.utils.BitUtils;
-import transfer.utils.IntegerMap;
 
 import java.lang.reflect.Type;
-
-import org.objectweb.asm.Label;
-import org.objectweb.asm.MethodVisitor;
-import org.objectweb.asm.Opcodes;
 
 /**
  * 字节数组解析器
@@ -22,11 +21,11 @@ public class ByteArrayDeSerializer implements Deserializer, Opcodes {
 
 
     @Override
-    public <T> T deserialze(Inputable inputable, Type type, byte flag, IntegerMap referenceMap) {
+    public <T> T deserialze(Inputable inputable, Type type, byte flag, DeserialContext context) {
 
         byte typeFlag = TransferConfig.getType(flag);
         if (typeFlag != Types.BYTE_ARRAY) {
-            throw new IllegalTypeException(typeFlag, Types.BYTE_ARRAY, type);
+            throw new IllegalTypeException(context, typeFlag, Types.BYTE_ARRAY, type);
         }
 
         // 读取字节数组的大小
@@ -66,10 +65,11 @@ public class ByteArrayDeSerializer implements Deserializer, Opcodes {
     	mv.visitJumpInsn(IF_ICMPEQ, l2);
     	mv.visitTypeInsn(NEW, "transfer/exceptions/IllegalTypeException");
     	mv.visitInsn(DUP);
+		mv.visitVarInsn(ALOAD, 4);
     	mv.visitVarInsn(ILOAD, 5);
     	mv.visitIntInsn(BIPUSH, Types.BYTE_ARRAY);
     	mv.visitVarInsn(ALOAD, 2);
-    	mv.visitMethodInsn(INVOKESPECIAL, "transfer/exceptions/IllegalTypeException", "<init>", "(BBLjava/lang/reflect/Type;)V", false);
+    	mv.visitMethodInsn(INVOKESPECIAL, "transfer/exceptions/IllegalTypeException", "<init>", "(Ltransfer/core/DeserialContext;BBLjava/lang/reflect/Type;)V", false);
     	mv.visitInsn(ATHROW);
     	mv.visitLabel(l2);
     	

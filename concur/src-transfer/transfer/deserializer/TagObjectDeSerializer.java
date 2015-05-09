@@ -1,10 +1,10 @@
 package transfer.deserializer;
 
 import org.objectweb.asm.MethodVisitor;
-
 import transfer.Inputable;
 import transfer.compile.AsmDeserializerContext;
 import transfer.core.ClassInfo;
+import transfer.core.DeserialContext;
 import transfer.core.FieldInfo;
 import transfer.def.PersistConfig;
 import transfer.def.Types;
@@ -12,7 +12,6 @@ import transfer.exceptions.IllegalClassTypeException;
 import transfer.exceptions.IllegalTypeException;
 import transfer.exceptions.UnsupportDeserializerTypeException;
 import transfer.utils.BitUtils;
-import transfer.utils.IntegerMap;
 import transfer.utils.TypeUtils;
 
 import java.lang.reflect.Modifier;
@@ -31,11 +30,11 @@ public class TagObjectDeSerializer implements Deserializer {
 
 
     @Override
-    public <T> T deserialze(Inputable inputable, Type type, byte flag, IntegerMap referenceMap) {
+    public <T> T deserialze(Inputable inputable, Type type, byte flag, DeserialContext context) {
 
         byte typeFlag = PersistConfig.getType(flag);
         if (typeFlag != Types.OBJECT) {
-            throw new IllegalTypeException(typeFlag, Types.OBJECT, type);
+            throw new IllegalTypeException(context, typeFlag, Types.OBJECT, type);
         }
 
         // 读取对象类型
@@ -60,7 +59,7 @@ public class TagObjectDeSerializer implements Deserializer {
         }
 
         if (classId != classInfo.getClassId()) {
-            throw new IllegalClassTypeException(classId, type);
+            throw new IllegalClassTypeException(context, classId, type);
         }
 
         Object object;
@@ -83,14 +82,14 @@ public class TagObjectDeSerializer implements Deserializer {
 
         for (int i = 0;i < fieldNum;i++) {
 
-            fieldName = STRING_DESERIALIZER.deserialze(inputable, String.class, inputable.getByte(), referenceMap);
+            fieldName = STRING_DESERIALIZER.deserialze(inputable, String.class, inputable.getByte(), context);
             fieldInfo = classInfo.getFieldInfo(fieldName);
 
             byte fieldFlag = inputable.getByte();
             fieldType = fieldInfo != null ? fieldInfo.getType() : Object.class;
 
             fieldDeserializer = PersistConfig.getDeserializer(fieldType, fieldFlag);
-            fieldValue = fieldDeserializer.deserialze(inputable, fieldType, fieldFlag, referenceMap);
+            fieldValue = fieldDeserializer.deserialze(inputable, fieldType, fieldFlag, context);
 
             if (fieldInfo == null) {// 略过不存在的属性
                 continue;

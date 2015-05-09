@@ -5,10 +5,10 @@ import transfer.Outputable;
 import transfer.compile.AsmSerializerContext;
 import transfer.core.ClassInfo;
 import transfer.core.FieldInfo;
+import transfer.core.SerialContext;
 import transfer.def.PersistConfig;
 import transfer.def.Types;
 import transfer.utils.BitUtils;
-import transfer.utils.IdentityHashMap;
 import transfer.utils.TypeUtils;
 
 import java.lang.reflect.Type;
@@ -24,10 +24,10 @@ public class TagObjectSerializer implements Serializer {
 
 	@Override
 	public void serialze(Outputable outputable, Object object,
-			IdentityHashMap referenceMap) {
+			SerialContext context) {
 
 		if (object == null) {
-			NULL_SERIALIZER.serialze(outputable, null, referenceMap);
+			NULL_SERIALIZER.serialze(outputable, null, context);
 			return;
 		}
 
@@ -41,12 +41,12 @@ public class TagObjectSerializer implements Serializer {
 		BitUtils.putInt(outputable, classInfo.getFieldInfos().size());
 		for (FieldInfo fieldInfo : classInfo.getFieldInfos()) {
 			// 添加属性标签
-			STRING_SERIALIZER.serialze(outputable, fieldInfo.getFieldName(), referenceMap);
+			STRING_SERIALIZER.serialze(outputable, fieldInfo.getFieldName(), context);
 			// 序列化属性值
 			Serializer fieldSerializer = PersistConfig.getSerializer(TypeUtils.getRawClass(fieldInfo.getType()));
 
 			Object fieldValue = fieldInfo.getField(object);
-			fieldSerializer.serialze(outputable, fieldValue, referenceMap);
+			fieldSerializer.serialze(outputable, fieldValue, context);
 
 		}
 

@@ -3,7 +3,7 @@ package transfer.serializer;
 import org.objectweb.asm.MethodVisitor;
 import transfer.Outputable;
 import transfer.compile.AsmSerializerContext;
-import transfer.utils.IdentityHashMap;
+import transfer.core.SerialContext;
 
 import java.lang.reflect.Type;
 
@@ -14,16 +14,14 @@ public interface Serializer {
 
 	/**
 	 * 编码方法
-	 * 
-	 * @param outputable
+	 *  @param outputable
 	 *            输出接口
 	 * @param object
 	 *            目标对象
-	 * @param referenceMap
-	 *            引用表
+	 * @param context
 	 */
 	void serialze(Outputable outputable, Object object,
-			IdentityHashMap referenceMap);
+			SerialContext context);
 
 	/**
 	 * 预编译编码方法

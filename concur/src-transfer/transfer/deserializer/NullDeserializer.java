@@ -1,13 +1,12 @@
 package transfer.deserializer;
 
-import transfer.Inputable;
-import transfer.compile.AsmDeserializerContext;
-import transfer.utils.IntegerMap;
-
-import java.lang.reflect.Type;
-
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
+import transfer.Inputable;
+import transfer.compile.AsmDeserializerContext;
+import transfer.core.DeserialContext;
+
+import java.lang.reflect.Type;
 
 /**
  * NULL解析器
@@ -17,7 +16,7 @@ public class NullDeserializer implements Deserializer, Opcodes {
 
 	
     @Override
-    public <T> T deserialze(Inputable inputable, Type type, byte flag, IntegerMap referenceMap) {
+    public <T> T deserialze(Inputable inputable, Type type, byte flag, DeserialContext context) {
         return null;
     }
 

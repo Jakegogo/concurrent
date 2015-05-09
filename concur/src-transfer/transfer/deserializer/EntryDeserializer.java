@@ -1,9 +1,12 @@
 package transfer.deserializer;
 
+import org.objectweb.asm.Label;
+import org.objectweb.asm.MethodVisitor;
+import org.objectweb.asm.Opcodes;
 import transfer.Inputable;
 import transfer.compile.AsmDeserializerContext;
+import transfer.core.DeserialContext;
 import transfer.def.TransferConfig;
-import transfer.utils.IntegerMap;
 import transfer.utils.TypeUtils;
 import utils.enhance.asm.util.AsmUtils;
 
@@ -11,10 +14,6 @@ import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.Map;
-
-import org.objectweb.asm.Label;
-import org.objectweb.asm.MethodVisitor;
-import org.objectweb.asm.Opcodes;
 
 /**
  * Map.Entry解析器
@@ -25,7 +24,7 @@ public class EntryDeserializer implements Deserializer, Opcodes {
 
 
     @Override
-    public <T> T deserialze(Inputable inputable, Type type, byte flag, IntegerMap referenceMap) {
+    public <T> T deserialze(Inputable inputable, Type type, byte flag, DeserialContext context) {
 
         Type keyType = null;
         Type valueType = null;
@@ -37,10 +36,10 @@ public class EntryDeserializer implements Deserializer, Opcodes {
 
         // 读取元素类型
         byte keyFlag = inputable.getByte();
-        final Object key = parseElement(inputable, keyType, keyFlag, referenceMap);
+        final Object key = parseElement(inputable, keyType, keyFlag, context);
 
         byte valueFlag = inputable.getByte();
-        final Object value = parseElement(inputable, valueType, valueFlag, referenceMap);
+        final Object value = parseElement(inputable, valueType, valueFlag, context);
 
         return (T) new UnmodificationEntry(key, value);
     }
@@ -91,7 +90,7 @@ public class EntryDeserializer implements Deserializer, Opcodes {
             mv.visitLdcInsn(org.objectweb.asm.Type.getType("L" + AsmUtils.toAsmCls(keyRawClass.getName()) + ";"));
             mv.visitVarInsn(ILOAD, 5);
             mv.visitVarInsn(ALOAD, 4);
-            mv.visitMethodInsn(INVOKEINTERFACE, "transfer/deserializer/Deserializer", "deserialze", "(Ltransfer/Inputable;Ljava/lang/reflect/Type;BLtransfer/utils/IntegerMap;)Ljava/lang/Object;", true);
+            mv.visitMethodInsn(INVOKEINTERFACE, "transfer/deserializer/Deserializer", "deserialze", "(Ltransfer/Inputable;Ljava/lang/reflect/Type;BLtransfer/core/DeserialContext;)Ljava/lang/Object;", true);
             mv.visitVarInsn(ASTORE, 7);
             keyLocal = 7;
         } else {
@@ -133,7 +132,7 @@ public class EntryDeserializer implements Deserializer, Opcodes {
             mv.visitLdcInsn(org.objectweb.asm.Type.getType("L" + AsmUtils.toAsmCls(valueRawClass.getName()) + ";"));
             mv.visitVarInsn(ILOAD, keyLocal + 1);
             mv.visitVarInsn(ALOAD, 4);
-            mv.visitMethodInsn(INVOKEINTERFACE, "transfer/deserializer/Deserializer", "deserialze", "(Ltransfer/Inputable;Ljava/lang/reflect/Type;BLtransfer/utils/IntegerMap;)Ljava/lang/Object;", true);
+            mv.visitMethodInsn(INVOKEINTERFACE, "transfer/deserializer/Deserializer", "deserialze", "(Ltransfer/Inputable;Ljava/lang/reflect/Type;BLtransfer/core/DeserialContext;)Ljava/lang/Object;", true);
             mv.visitVarInsn(ASTORE, keyLocal + 3);
             valueLocal = keyLocal + 3;
         } else {
@@ -170,9 +169,9 @@ public class EntryDeserializer implements Deserializer, Opcodes {
 	}
     
 
-    private Object parseElement(Inputable inputable, Type type, byte byteFlag, IntegerMap referenceMap) {
+    private Object parseElement(Inputable inputable, Type type, byte byteFlag, DeserialContext context) {
         Deserializer elementDeserializer = TransferConfig.getDeserializer(type, byteFlag);
-        return elementDeserializer.deserialze(inputable, type, byteFlag, referenceMap);
+        return elementDeserializer.deserialze(inputable, type, byteFlag, context);
     }
 
 

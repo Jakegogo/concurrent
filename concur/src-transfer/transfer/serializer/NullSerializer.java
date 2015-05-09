@@ -5,8 +5,8 @@ import org.objectweb.asm.Opcodes;
 
 import transfer.Outputable;
 import transfer.compile.AsmSerializerContext;
+import transfer.core.SerialContext;
 import transfer.def.Types;
-import transfer.utils.IdentityHashMap;
 
 import java.lang.reflect.Type;
 
@@ -17,7 +17,7 @@ public class NullSerializer implements Serializer, Opcodes {
 
 	@Override
 	public void serialze(Outputable outputable, Object object,
-			IdentityHashMap referenceMap) {
+			SerialContext context) {
 
 		outputable.putByte(Types.NULL);
 

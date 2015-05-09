@@ -1,20 +1,18 @@
 package transfer.deserializer;
 
-import utils.enhance.asm.util.AsmUtils;
-
 import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
-
 import transfer.Inputable;
 import transfer.compile.AsmDeserializerContext;
 import transfer.core.ByteMeta;
+import transfer.core.DeserialContext;
 import transfer.def.TransferConfig;
 import transfer.def.Types;
 import transfer.exceptions.IllegalTypeException;
 import transfer.utils.BitUtils;
-import transfer.utils.IntegerMap;
 import transfer.utils.TypeUtils;
+import utils.enhance.asm.util.AsmUtils;
 
 import java.lang.reflect.Array;
 import java.lang.reflect.Modifier;
@@ -30,11 +28,11 @@ public class ArrayDeSerializer implements Deserializer, Opcodes {
 
 
     @Override
-    public <T> T deserialze(Inputable inputable, Type type, byte flag, IntegerMap referenceMap) {
+    public <T> T deserialze(Inputable inputable, Type type, byte flag, DeserialContext context) {
 
         byte typeFlag = TransferConfig.getType(flag);
         if (typeFlag != Types.ARRAY && typeFlag != Types.COLLECTION) {
-            throw new IllegalTypeException(typeFlag, Types.ARRAY, type);
+            throw new IllegalTypeException(context, typeFlag, Types.ARRAY, type);
         }
 
         // 读取数组的大小
@@ -70,12 +68,12 @@ public class ArrayDeSerializer implements Deserializer, Opcodes {
             for (int i = 0; i < size;i++) {
                 byte elementFlag = inputable.getByte();
                 Deserializer componentDeserializer = TransferConfig.getDeserializer(itemType, elementFlag);// 元素解析器
-                component =  componentDeserializer.deserialze(inputable, itemType, elementFlag, referenceMap);
+                component =  componentDeserializer.deserialze(inputable, itemType, elementFlag, context);
                 Array.set(array, i, component);
             }
         } else {
             for (int i = 0; i < size;i++) {
-                component = defaultComponentDeserializer.deserialze(inputable, itemType, inputable.getByte(), referenceMap);
+                component = defaultComponentDeserializer.deserialze(inputable, itemType, inputable.getByte(), context);
                 Array.set(array, i, component);
             }
         }
@@ -90,7 +88,7 @@ public class ArrayDeSerializer implements Deserializer, Opcodes {
         byte type = TransferConfig.getType(flag);
 
         if (type != Types.ARRAY && type != Types.COLLECTION) {
-            throw new IllegalTypeException(type, Types.ARRAY, null);
+            throw new IllegalTypeException(new DeserialContext(), type, Types.ARRAY, null);
         }
         // 读取集合的大小
         int size = BitUtils.getInt(inputable);
@@ -135,10 +133,11 @@ public class ArrayDeSerializer implements Deserializer, Opcodes {
         
         mv.visitTypeInsn(NEW, "transfer/exceptions/IllegalTypeException");
         mv.visitInsn(DUP);
+        mv.visitVarInsn(ALOAD, 4);
         mv.visitVarInsn(ILOAD, 5);
         mv.visitIntInsn(BIPUSH, Types.COLLECTION);
         mv.visitVarInsn(ALOAD, 2);
-        mv.visitMethodInsn(INVOKESPECIAL, "transfer/exceptions/IllegalTypeException", "<init>", "(BBLjava/lang/reflect/Type;)V", false);
+        mv.visitMethodInsn(INVOKESPECIAL, "transfer/exceptions/IllegalTypeException", "<init>", "(Ltransfer/core/DeserialContext;BBLjava/lang/reflect/Type;)V", false);
         mv.visitInsn(ATHROW);
         mv.visitLabel(l2);
 
@@ -225,7 +224,7 @@ public class ArrayDeSerializer implements Deserializer, Opcodes {
             }
             mv.visitVarInsn(ILOAD, 9);
             mv.visitVarInsn(ALOAD, 4);
-            mv.visitMethodInsn(INVOKEINTERFACE, "transfer/deserializer/Deserializer", "deserialze", "(Ltransfer/Inputable;Ljava/lang/reflect/Type;BLtransfer/utils/IntegerMap;)Ljava/lang/Object;", true);
+            mv.visitMethodInsn(INVOKEINTERFACE, "transfer/deserializer/Deserializer", "deserialze", "(Ltransfer/Inputable;Ljava/lang/reflect/Type;BLtransfer/core/DeserialContext;)Ljava/lang/Object;", true);
             if (componentClass.isPrimitive()) {
             	// unBoxing
 				AsmUtils.withUnBoxingType(mv, org.objectweb.asm.Type.getType(componentClass));

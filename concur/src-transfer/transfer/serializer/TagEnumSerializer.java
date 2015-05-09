@@ -4,10 +4,10 @@ import org.objectweb.asm.MethodVisitor;
 import transfer.Outputable;
 import transfer.compile.AsmSerializerContext;
 import transfer.core.EnumInfo;
+import transfer.core.SerialContext;
 import transfer.def.PersistConfig;
 import transfer.def.Types;
 import transfer.utils.BitUtils;
-import transfer.utils.IdentityHashMap;
 
 import java.lang.reflect.Type;
 
@@ -22,10 +22,10 @@ public class TagEnumSerializer implements Serializer {
 
 	@Override
 	public void serialze(Outputable outputable, Object object,
-			IdentityHashMap referenceMap) {
+			SerialContext context) {
 
 		if (object == null) {
-			NULL_SERIALIZER.serialze(outputable, null, referenceMap);
+			NULL_SERIALIZER.serialze(outputable, null, context);
 			return;
 		}
 
@@ -36,7 +36,7 @@ public class TagEnumSerializer implements Serializer {
 		BitUtils.putInt(outputable, enumInfo.getClassId());
 		String enumName = enumInfo.toString(enumVal);
 		// 添加标签
-		STRING_SERIALIZER.serialze(outputable, enumName, referenceMap);
+		STRING_SERIALIZER.serialze(outputable, enumName, context);
 
 	}
 

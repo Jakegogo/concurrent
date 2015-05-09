@@ -96,7 +96,7 @@ public class AsmSerializerFactory implements Opcodes {
             mv.visitEnd();
         }
         {
-            mv = cw.visitMethod(ACC_PUBLIC, "serialze", "(Ltransfer/Outputable;Ljava/lang/Object;Ltransfer/utils/IdentityHashMap;)V", null, null);
+            mv = cw.visitMethod(ACC_PUBLIC, "serialze", "(Ltransfer/Outputable;Ljava/lang/Object;Ltransfer/core/SerialContext;)V", null, null);
 
             outerSerializer.compile(type, mv, new AsmSerializerContext(className, cwr));
 

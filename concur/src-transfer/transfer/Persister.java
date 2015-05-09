@@ -1,6 +1,8 @@
 package transfer;
 
 import transfer.core.ByteMeta;
+import transfer.core.DeserialContext;
+import transfer.core.SerialContext;
 import transfer.def.PersistConfig;
 import transfer.def.Types;
 import transfer.deserializer.CollectionDeSerializer;
@@ -9,7 +11,6 @@ import transfer.deserializer.EntryDeserializer;
 import transfer.deserializer.MapDeSerializer;
 import transfer.serializer.Serializer;
 import transfer.utils.IdentityHashMap;
-import transfer.utils.IntegerMap;
 import transfer.utils.TypeUtils;
 
 import java.lang.reflect.Type;
@@ -103,7 +104,7 @@ public class Persister {
         }
         
         Serializer serializer = PersistConfig.getSerializer(object.getClass());
-        serializer.serialze(outputable, object, new IdentityHashMap(16));
+        serializer.serialze(outputable, object, new SerialContext());
     }
     
     
@@ -123,7 +124,7 @@ public class Persister {
         if (serializer == null) {
             serializer = PersistConfig.preCompileSerializer(type); // 进行预编译
         }
-        serializer.serialze(outputable, object, new IdentityHashMap(16));
+        serializer.serialze(outputable, object, new SerialContext());
     }
     
     
@@ -164,7 +165,7 @@ public class Persister {
     public static <T> T decode(Inputable inputable) {
         byte flag = inputable.getByte();
         Deserializer deserializer = PersistConfig.getDeserializer((Type) Object.class, flag);
-        return deserializer.deserialze(inputable, Object.class, flag, new IntegerMap(16));
+        return deserializer.deserialze(inputable, Object.class, flag, new DeserialContext());
     }
     
     
@@ -182,7 +183,7 @@ public class Persister {
         }
         
         byte flag = inputable.getByte();
-        return deserializer.deserialze(inputable, clazz, flag, new IntegerMap(16));
+        return deserializer.deserialze(inputable, clazz, flag, new DeserialContext());
     }
 
 
@@ -212,7 +213,7 @@ public class Persister {
         }
     	
         byte flag = inputable.getByte();
-        return deserializer.deserialze(inputable, typeReference.getType(), flag, new IntegerMap(16));
+        return deserializer.deserialze(inputable, typeReference.getType(), flag, new DeserialContext());
     }
 
 
@@ -257,7 +258,7 @@ public class Persister {
         }
 
 
-        final IntegerMap referenceMap = new IntegerMap(16);
+        final DeserialContext context = new DeserialContext();
         return new Iterator<E>() {
             private int curIndex = 0;
             private int size = byteDataMeta.getComponentSize();
@@ -273,9 +274,9 @@ public class Persister {
                 if (defaultComponentDeserializer == null) {
                     final byte elementFlag = inputable.getByte();
                     final Deserializer componentDeserializer = PersistConfig.getDeserializer(componentType, elementFlag);// 元素解析器
-                    return componentDeserializer.deserialze(inputable, componentType, elementFlag, referenceMap);
+                    return componentDeserializer.deserialze(inputable, componentType, elementFlag, context);
                 } else {
-                    return defaultComponentDeserializer.deserialze(inputable, componentType, inputable.getByte(), referenceMap);
+                    return defaultComponentDeserializer.deserialze(inputable, componentType, inputable.getByte(), context);
                 }
             }
 
@@ -317,7 +318,7 @@ public class Persister {
         final Type componentType = typeReference.getType();// 取出元素类型
         final Deserializer entryDeserializer = EntryDeserializer.getInstance();// 元素解析器
 
-        final IntegerMap referenceMap = new IntegerMap(16);
+        final DeserialContext context = new DeserialContext();
         return new Iterator<Map.Entry<K, V>>() {
             private int curIndex = 0;
             private int size = byteDataMeta.getComponentSize();
@@ -330,7 +331,7 @@ public class Persister {
             @Override
             public Map.Entry<K, V> next() {
                 curIndex ++;
-                return entryDeserializer.deserialze(inputable, componentType, Types.UNKOWN, referenceMap);
+                return entryDeserializer.deserialze(inputable, componentType, Types.UNKOWN, context);
             }
 
             @Override

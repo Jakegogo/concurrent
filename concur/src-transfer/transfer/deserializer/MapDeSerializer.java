@@ -1,14 +1,17 @@
 package transfer.deserializer;
 
+import org.objectweb.asm.Label;
+import org.objectweb.asm.MethodVisitor;
+import org.objectweb.asm.Opcodes;
 import transfer.Inputable;
 import transfer.compile.AsmDeserializerContext;
 import transfer.core.ByteMeta;
+import transfer.core.DeserialContext;
 import transfer.def.TransferConfig;
 import transfer.def.Types;
 import transfer.exceptions.IllegalTypeException;
 import transfer.exceptions.UnsupportDeserializerTypeException;
 import transfer.utils.BitUtils;
-import transfer.utils.IntegerMap;
 import transfer.utils.TypeUtils;
 import utils.enhance.asm.util.AsmUtils;
 
@@ -19,11 +22,6 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
-import org.apache.mina.util.ConcurrentHashSet;
-import org.objectweb.asm.Label;
-import org.objectweb.asm.MethodVisitor;
-import org.objectweb.asm.Opcodes;
-
 /**
  * Map解析器
  * <br/>尽量指定泛型类型,可提升解析性能
@@ -33,12 +31,12 @@ public class MapDeSerializer implements Deserializer, Opcodes {
 
 
     @Override
-    public <T> T deserialze(Inputable inputable, Type type, byte flag, IntegerMap referenceMap) {
+    public <T> T deserialze(Inputable inputable, Type type, byte flag, DeserialContext context) {
 
         byte typeFlag = TransferConfig.getType(flag);
 
         if (typeFlag != Types.MAP) {
-            throw new IllegalTypeException(typeFlag, Types.MAP, type);
+            throw new IllegalTypeException(context, typeFlag, Types.MAP, type);
         }
 
         Map<Object, Object> map = createMap(type);
@@ -70,10 +68,10 @@ public class MapDeSerializer implements Deserializer, Opcodes {
         for (int i = 0; i < size;i++) {
 
             keyFlag = inputable.getByte();// 获取key类型
-            key = parseElement(inputable, keyType, keyFlag, referenceMap);
+            key = parseElement(inputable, keyType, keyFlag, context);
 
             valueFlag = inputable.getByte();// 获取value类型
-            value = parseElement(inputable, valueType, valueFlag, referenceMap);
+            value = parseElement(inputable, valueType, valueFlag, context);
 
             map.put(key, value);
         }
@@ -110,10 +108,11 @@ public class MapDeSerializer implements Deserializer, Opcodes {
      	mv.visitJumpInsn(IF_ICMPEQ, l2);
      	mv.visitTypeInsn(NEW, "transfer/exceptions/IllegalTypeException");
      	mv.visitInsn(DUP);
-     	mv.visitVarInsn(ILOAD, 5);
-     	mv.visitIntInsn(BIPUSH, Types.MAP);
-     	mv.visitVarInsn(ALOAD, 2);
-     	mv.visitMethodInsn(INVOKESPECIAL, "transfer/exceptions/IllegalTypeException", "<init>", "(BBLjava/lang/reflect/Type;)V", false);
+        mv.visitVarInsn(ALOAD, 4);
+        mv.visitVarInsn(ILOAD, 5);
+        mv.visitIntInsn(BIPUSH, Types.MAP);
+        mv.visitVarInsn(ALOAD, 2);
+        mv.visitMethodInsn(INVOKESPECIAL, "transfer/exceptions/IllegalTypeException", "<init>", "(Ltransfer/core/DeserialContext;BBLjava/lang/reflect/Type;)V", false);
      	mv.visitInsn(ATHROW);
 		mv.visitLabel(l2);
 
@@ -191,7 +190,7 @@ public class MapDeSerializer implements Deserializer, Opcodes {
              mv.visitLdcInsn(org.objectweb.asm.Type.getType("L" + AsmUtils.toAsmCls(keyRawClass.getName()) + ";"));
              mv.visitVarInsn(ILOAD, 9);
              mv.visitVarInsn(ALOAD, 4);
-             mv.visitMethodInsn(INVOKEINTERFACE, "transfer/deserializer/Deserializer", "deserialze", "(Ltransfer/Inputable;Ljava/lang/reflect/Type;BLtransfer/utils/IntegerMap;)Ljava/lang/Object;", true);
+             mv.visitMethodInsn(INVOKEINTERFACE, "transfer/deserializer/Deserializer", "deserialze", "(Ltransfer/Inputable;Ljava/lang/reflect/Type;BLtransfer/core/DeserialContext;)Ljava/lang/Object;", true);
              mv.visitVarInsn(ASTORE, 11);
              keyLocal = 11;
          } else {
@@ -237,7 +236,7 @@ public class MapDeSerializer implements Deserializer, Opcodes {
              mv.visitLdcInsn(org.objectweb.asm.Type.getType("L" + AsmUtils.toAsmCls(valueRawClass.getName()) + ";"));
              mv.visitVarInsn(ILOAD, keyLocal + 1);
              mv.visitVarInsn(ALOAD, 4);
-             mv.visitMethodInsn(INVOKEINTERFACE, "transfer/deserializer/Deserializer", "deserialze", "(Ltransfer/Inputable;Ljava/lang/reflect/Type;BLtransfer/utils/IntegerMap;)Ljava/lang/Object;", true);
+             mv.visitMethodInsn(INVOKEINTERFACE, "transfer/deserializer/Deserializer", "deserialze", "(Ltransfer/Inputable;Ljava/lang/reflect/Type;BLtransfer/core/DeserialContext;)Ljava/lang/Object;", true);
              mv.visitVarInsn(ASTORE, keyLocal + 3);
              valueLocal = keyLocal + 3;
          } else {
@@ -311,9 +310,9 @@ public class MapDeSerializer implements Deserializer, Opcodes {
 	}
 
 
-	private Object parseElement(Inputable inputable, Type type, byte byteFlag, IntegerMap referenceMap) {
+	private Object parseElement(Inputable inputable, Type type, byte byteFlag, DeserialContext context) {
         Deserializer elementDeserializer = TransferConfig.getDeserializer(type, byteFlag);
-        return elementDeserializer.deserialze(inputable, type, byteFlag, referenceMap);
+        return elementDeserializer.deserialze(inputable, type, byteFlag, context);
     }
 
 
@@ -376,7 +375,7 @@ public class MapDeSerializer implements Deserializer, Opcodes {
         byte type = TransferConfig.getType(flag);
 
         if (type != Types.MAP) {
-            throw new IllegalTypeException(type, Types.MAP, null);
+            throw new IllegalTypeException(new DeserialContext(), type, Types.MAP, null);
         }
         // 读取集合的大小
         int size = BitUtils.getInt(inputable);

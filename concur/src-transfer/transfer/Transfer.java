@@ -1,6 +1,8 @@
 package transfer;
 
 import transfer.core.ByteMeta;
+import transfer.core.DeserialContext;
+import transfer.core.SerialContext;
 import transfer.def.TransferConfig;
 import transfer.def.Types;
 import transfer.deserializer.CollectionDeSerializer;
@@ -8,8 +10,6 @@ import transfer.deserializer.Deserializer;
 import transfer.deserializer.EntryDeserializer;
 import transfer.deserializer.MapDeSerializer;
 import transfer.serializer.Serializer;
-import transfer.utils.IdentityHashMap;
-import transfer.utils.IntegerMap;
 import transfer.utils.TypeUtils;
 
 import java.lang.reflect.Type;
@@ -102,7 +102,7 @@ public class Transfer {
         }
         
         Serializer serializer = TransferConfig.getSerializer(object.getClass());
-        serializer.serialze(outputable, object, new IdentityHashMap(16));
+        serializer.serialze(outputable, object, new SerialContext());
     }
     
     
@@ -122,7 +122,7 @@ public class Transfer {
         if (serializer == null) {
             serializer = TransferConfig.preCompileSerializer(type); // 进行预编译
         }
-        serializer.serialze(outputable, object, new IdentityHashMap(16));
+        serializer.serialze(outputable, object, new SerialContext());
     }
     
     
@@ -148,7 +148,7 @@ public class Transfer {
      * <br/>调用此方法可预编译或者Transfer#encode(Object, Type)指定预编译类型
      * @param type
      * @return
-     * @see transfer.Transfer.encode(Object, Type)
+     * @see Transfer#encode(java.lang.Object, java.lang.reflect.Type)
      */
     public static Serializer encodePreCompile(Type type) {
         return TransferConfig.preCompileSerializer(type);
@@ -163,7 +163,7 @@ public class Transfer {
     public static <T> T decode(Inputable inputable) {
         byte flag = inputable.getByte();
         Deserializer deserializer = TransferConfig.getDeserializer((Type) Object.class, flag);
-        return deserializer.deserialze(inputable, Object.class, flag, new IntegerMap(16));
+        return deserializer.deserialze(inputable, Object.class, flag, new DeserialContext());
     }
     
     
@@ -181,7 +181,7 @@ public class Transfer {
         }
         
         byte flag = inputable.getByte();
-        return deserializer.deserialze(inputable, clazz, flag, new IntegerMap(16));
+        return deserializer.deserialze(inputable, clazz, flag, new DeserialContext());
     }
 
 
@@ -211,7 +211,7 @@ public class Transfer {
         }
     	
         byte flag = inputable.getByte();
-        return deserializer.deserialze(inputable, typeReference.getType(), flag, new IntegerMap(16));
+        return deserializer.deserialze(inputable, typeReference.getType(), flag, new DeserialContext());
     }
 
 
@@ -256,7 +256,7 @@ public class Transfer {
         }
 
 
-        final IntegerMap referenceMap = new IntegerMap(16);
+        final DeserialContext context = new DeserialContext();
         return new Iterator<E>() {
             private int curIndex = 0;
             private int size = byteDataMeta.getComponentSize();
@@ -272,9 +272,9 @@ public class Transfer {
                 if (defaultComponentDeserializer == null) {
                     final byte elementFlag = inputable.getByte();
                     final Deserializer componentDeserializer = TransferConfig.getDeserializer(componentType, elementFlag);// 元素解析器
-                    return componentDeserializer.deserialze(inputable, componentType, elementFlag, referenceMap);
+                    return componentDeserializer.deserialze(inputable, componentType, elementFlag, context);
                 } else {
-                    return defaultComponentDeserializer.deserialze(inputable, componentType, inputable.getByte(), referenceMap);
+                    return defaultComponentDeserializer.deserialze(inputable, componentType, inputable.getByte(), context);
                 }
             }
 
@@ -316,7 +316,7 @@ public class Transfer {
         final Type componentType = typeReference.getType();// 取出元素类型
         final Deserializer entryDeserializer = EntryDeserializer.getInstance();// 元素解析器
 
-        final IntegerMap referenceMap = new IntegerMap(16);
+        final DeserialContext context = new DeserialContext();
         return new Iterator<Map.Entry<K, V>>() {
             private int curIndex = 0;
             private int size = byteDataMeta.getComponentSize();
@@ -329,7 +329,7 @@ public class Transfer {
             @Override
             public Map.Entry<K, V> next() {
                 curIndex ++;
-                return entryDeserializer.deserialze(inputable, componentType, Types.UNKOWN, referenceMap);
+                return entryDeserializer.deserialze(inputable, componentType, Types.UNKOWN, context);
             }
 
             @Override

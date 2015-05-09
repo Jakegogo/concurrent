@@ -6,10 +6,10 @@ import org.objectweb.asm.Opcodes;
 
 import transfer.Outputable;
 import transfer.compile.AsmSerializerContext;
+import transfer.core.SerialContext;
 import transfer.def.TransferConfig;
 import transfer.def.Types;
 import transfer.utils.BitUtils;
-import transfer.utils.IdentityHashMap;
 import transfer.utils.TypeUtils;
 
 import java.lang.reflect.Modifier;
@@ -24,10 +24,10 @@ public class MapSerializer implements Serializer, Opcodes {
 
 	@Override
 	public void serialze(Outputable outputable, Object object,
-			IdentityHashMap referenceMap) {
+			SerialContext context) {
 
 		if (object == null) {
-			NULL_SERIALIZER.serialze(outputable, null, referenceMap);
+			NULL_SERIALIZER.serialze(outputable, null, context);
 			return;
 		}
 
@@ -41,10 +41,10 @@ public class MapSerializer implements Serializer, Opcodes {
 		for (Map.Entry entry : map.entrySet()) {
 			key = entry.getKey();
 			Serializer keySerializer = TransferConfig.getSerializer(key.getClass());
-			keySerializer.serialze(outputable, key, referenceMap);
+			keySerializer.serialze(outputable, key, context);
 			value = entry.getValue();
 			Serializer valueSerializer = TransferConfig.getSerializer(value.getClass());
-			valueSerializer.serialze(outputable, value, referenceMap);
+			valueSerializer.serialze(outputable, value, context);
 		}
 
 	}
@@ -136,7 +136,7 @@ public class MapSerializer implements Serializer, Opcodes {
 					INVOKEINTERFACE,
 					"transfer/serializer/Serializer",
 					"serialze",
-					"(Ltransfer/Outputable;Ljava/lang/Object;Ltransfer/utils/IdentityHashMap;)V",
+					"(Ltransfer/Outputable;Ljava/lang/Object;Ltransfer/core/SerialContext;)V",
 					true);
 
 		} else {
@@ -185,7 +185,7 @@ public class MapSerializer implements Serializer, Opcodes {
 					INVOKEINTERFACE,
 					"transfer/serializer/Serializer",
 					"serialze",
-					"(Ltransfer/Outputable;Ljava/lang/Object;Ltransfer/utils/IdentityHashMap;)V",
+					"(Ltransfer/Outputable;Ljava/lang/Object;Ltransfer/core/SerialContext;)V",
 					true);
 
 		} else {

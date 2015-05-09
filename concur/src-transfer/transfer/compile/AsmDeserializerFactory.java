@@ -1,20 +1,15 @@
 package transfer.compile;
 
-import java.lang.reflect.Type;
-import java.util.concurrent.atomic.AtomicInteger;
-
-import org.objectweb.asm.ClassVisitor;
-import org.objectweb.asm.ClassWriter;
-import org.objectweb.asm.Label;
-import org.objectweb.asm.MethodVisitor;
-import org.objectweb.asm.Opcodes;
+import org.objectweb.asm.*;
 import org.objectweb.asm.util.CheckClassAdapter;
-
 import transfer.deserializer.Deserializer;
 import transfer.exceptions.CompileError;
 import transfer.utils.TypeUtils;
 import utils.enhance.asm.AsmClassLoader;
 import utils.enhance.asm.util.AsmUtils;
+
+import java.lang.reflect.Type;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * java bean解码器预编译生成工厂
@@ -100,7 +95,7 @@ public class AsmDeserializerFactory implements Opcodes {
 		}
 
 		{
-			mv = cw.visitMethod(ACC_PUBLIC, "deserialze", "(Ltransfer/Inputable;Ljava/lang/reflect/Type;BLtransfer/utils/IntegerMap;)Ljava/lang/Object;", "<T:Ljava/lang/Object;>(Ltransfer/Inputable;Ljava/lang/reflect/Type;BLtransfer/utils/IntegerMap;)TT;", null);
+			mv = cw.visitMethod(ACC_PUBLIC, "deserialze", "(Ltransfer/Inputable;Ljava/lang/reflect/Type;BLtransfer/core/DeserialContext;)Ljava/lang/Object;", "<T:Ljava/lang/Object;>(Ltransfer/Inputable;Ljava/lang/reflect/Type;BLtransfer/core/DeserialContext;)TT;", null);
 			outerDeserializer.compile(type, mv, new AsmDeserializerContext(className, cwr));
 		}
 

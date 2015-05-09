@@ -3,14 +3,13 @@ package transfer.deserializer;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
-
 import transfer.Inputable;
 import transfer.compile.AsmDeserializerContext;
+import transfer.core.DeserialContext;
 import transfer.def.TransferConfig;
 import transfer.def.Types;
 import transfer.exceptions.IllegalTypeException;
 import transfer.utils.BitUtils;
-import transfer.utils.IntegerMap;
 import transfer.utils.TypeUtils;
 
 import java.lang.reflect.Type;
@@ -31,11 +30,11 @@ public class NumberDeserializer implements Deserializer, Opcodes {
 
 
     @Override
-    public <T> T deserialze(Inputable inputable, Type type, byte flag, IntegerMap referenceMap) {
+    public <T> T deserialze(Inputable inputable, Type type, byte flag, DeserialContext context) {
 
         byte typeFlag = TransferConfig.getType(flag);
         if (typeFlag != Types.NUMBER) {
-            throw new IllegalTypeException(typeFlag, Types.NUMBER, type);
+            throw new IllegalTypeException(context, typeFlag, Types.NUMBER, type);
         }
 
         byte extraFlag = TransferConfig.getExtra(flag);
@@ -115,10 +114,11 @@ public class NumberDeserializer implements Deserializer, Opcodes {
     	mv.visitJumpInsn(IF_ICMPEQ, l2);
     	mv.visitTypeInsn(NEW, "transfer/exceptions/IllegalTypeException");
     	mv.visitInsn(DUP);
+		mv.visitVarInsn(ALOAD, 4);
     	mv.visitVarInsn(ILOAD, 5);
     	mv.visitIntInsn(BIPUSH, Types.NUMBER);
     	mv.visitVarInsn(ALOAD, 2);
-    	mv.visitMethodInsn(INVOKESPECIAL, "transfer/exceptions/IllegalTypeException", "<init>", "(BBLjava/lang/reflect/Type;)V", false);
+    	mv.visitMethodInsn(INVOKESPECIAL, "transfer/exceptions/IllegalTypeException", "<init>", "(Ltransfer/core/DeserialContext;BBLjava/lang/reflect/Type;)V", false);
     	mv.visitInsn(ATHROW);
     	mv.visitLabel(l2);
     	

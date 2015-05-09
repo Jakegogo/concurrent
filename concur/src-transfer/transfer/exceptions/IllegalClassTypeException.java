@@ -1,5 +1,7 @@
 package transfer.exceptions;
 
+import transfer.core.DeserialContext;
+
 import java.lang.reflect.Type;
 
 /**
@@ -8,7 +10,7 @@ import java.lang.reflect.Type;
  */
 public class IllegalClassTypeException extends RuntimeException {
 
-    public IllegalClassTypeException(int classId, Type type) {
+    public IllegalClassTypeException(DeserialContext context, int classId, Type type) {
         super("指定类型错误,classId:" + classId + ",type:" + type);
     }
 

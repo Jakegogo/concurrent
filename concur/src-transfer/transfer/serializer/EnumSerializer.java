@@ -7,10 +7,10 @@ import org.objectweb.asm.Opcodes;
 import transfer.Outputable;
 import transfer.compile.AsmSerializerContext;
 import transfer.core.EnumInfo;
+import transfer.core.SerialContext;
 import transfer.def.TransferConfig;
 import transfer.def.Types;
 import transfer.utils.BitUtils;
-import transfer.utils.IdentityHashMap;
 import transfer.utils.TypeUtils;
 
 import java.lang.reflect.Type;
@@ -22,10 +22,10 @@ public class EnumSerializer implements Serializer, Opcodes {
 
 	@Override
 	public void serialze(Outputable outputable, Object object,
-			IdentityHashMap referenceMap) {
+			SerialContext context) {
 
 		if (object == null) {
-			NULL_SERIALIZER.serialze(outputable, null, referenceMap);
+			NULL_SERIALIZER.serialze(outputable, null, context);
 			return;
 		}
 

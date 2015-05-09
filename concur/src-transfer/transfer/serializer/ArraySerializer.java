@@ -4,13 +4,13 @@ import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 
+import transfer.core.SerialContext;
 import utils.enhance.asm.util.AsmUtils;
 import transfer.Outputable;
 import transfer.compile.AsmSerializerContext;
 import transfer.def.TransferConfig;
 import transfer.def.Types;
 import transfer.utils.BitUtils;
-import transfer.utils.IdentityHashMap;
 import transfer.utils.TypeUtils;
 
 import java.lang.reflect.Array;
@@ -24,10 +24,10 @@ public class ArraySerializer implements Serializer, Opcodes {
 
 	@Override
 	public void serialze(Outputable outputable, Object object,
-			IdentityHashMap referenceMap) {
+			SerialContext context) {
 
 		if (object == null) {
-			NULL_SERIALIZER.serialze(outputable, null, referenceMap);
+			NULL_SERIALIZER.serialze(outputable, null, context);
 			return;
 		}
 
@@ -40,7 +40,7 @@ public class ArraySerializer implements Serializer, Opcodes {
 	    for (int i = 0; i < length; i ++) {
 	        Object obj = Array.get(object, i);
 			Serializer elementSerializer = TransferConfig.getSerializer(obj.getClass());
-			elementSerializer.serialze(outputable, obj, referenceMap);
+			elementSerializer.serialze(outputable, obj, context);
 		}
 
 	}
@@ -124,7 +124,7 @@ public class ArraySerializer implements Serializer, Opcodes {
 					INVOKEINTERFACE,
 					"transfer/serializer/Serializer",
 					"serialze",
-					"(Ltransfer/Outputable;Ljava/lang/Object;Ltransfer/utils/IdentityHashMap;)V",
+					"(Ltransfer/Outputable;Ljava/lang/Object;Ltransfer/core/SerialContext;)V",
 					true);
 
 			mv.visitIincInsn(6, 1);

@@ -3,9 +3,9 @@ package transfer.deserializer;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
-
 import transfer.Inputable;
 import transfer.compile.AsmDeserializerContext;
+import transfer.core.DeserialContext;
 import transfer.core.EnumInfo;
 import transfer.def.TransferConfig;
 import transfer.def.Types;
@@ -13,7 +13,6 @@ import transfer.exceptions.IllegalClassTypeException;
 import transfer.exceptions.IllegalTypeException;
 import transfer.exceptions.UnsupportDeserializerTypeException;
 import transfer.utils.BitUtils;
-import transfer.utils.IntegerMap;
 import transfer.utils.TypeUtils;
 import utils.enhance.asm.util.AsmUtils;
 
@@ -28,11 +27,11 @@ public class EnumDeserializer implements Deserializer, Opcodes {
 
 
     @Override
-    public <T> T deserialze(Inputable inputable, Type type, byte flag, IntegerMap referenceMap) {
+    public <T> T deserialze(Inputable inputable, Type type, byte flag, DeserialContext context) {
 
         byte typeFlag = TransferConfig.getType(flag);
         if (typeFlag != Types.ENUM) {
-            throw new IllegalTypeException(typeFlag, Types.ENUM, type);
+            throw new IllegalTypeException(context, typeFlag, Types.ENUM, type);
         }
 
         // 读取枚举类型
@@ -57,7 +56,7 @@ public class EnumDeserializer implements Deserializer, Opcodes {
         }
 
         if (enumType != enumInfo.getClassId()) {
-            throw new IllegalClassTypeException(enumType, type);
+            throw new IllegalClassTypeException(context, enumType, type);
         }
 
         // 读取枚举索引
@@ -94,10 +93,11 @@ public class EnumDeserializer implements Deserializer, Opcodes {
     	mv.visitJumpInsn(IF_ICMPEQ, l2);
     	mv.visitTypeInsn(NEW, "transfer/exceptions/IllegalTypeException");
     	mv.visitInsn(DUP);
+		mv.visitVarInsn(ALOAD, 4);
     	mv.visitVarInsn(ILOAD, 5);
     	mv.visitIntInsn(BIPUSH, Types.ENUM);
     	mv.visitVarInsn(ALOAD, 2);
-    	mv.visitMethodInsn(INVOKESPECIAL, "transfer/exceptions/IllegalTypeException", "<init>", "(BBLjava/lang/reflect/Type;)V", false);
+    	mv.visitMethodInsn(INVOKESPECIAL, "transfer/exceptions/IllegalTypeException", "<init>", "(Ltransfer/core/DeserialContext;BBLjava/lang/reflect/Type;)V", false);
     	mv.visitInsn(ATHROW);
     	mv.visitLabel(l2);
         
@@ -150,9 +150,10 @@ public class EnumDeserializer implements Deserializer, Opcodes {
         	mv.visitJumpInsn(IF_ICMPEQ, l17);
         	mv.visitTypeInsn(NEW, "transfer/exceptions/IllegalClassTypeException");
         	mv.visitInsn(DUP);
+			mv.visitVarInsn(ALOAD, 4);
         	mv.visitVarInsn(ILOAD, 6);
         	mv.visitVarInsn(ALOAD, 2);
-        	mv.visitMethodInsn(INVOKESPECIAL, "transfer/exceptions/IllegalClassTypeException", "<init>", "(ILjava/lang/reflect/Type;)V", false);
+        	mv.visitMethodInsn(INVOKESPECIAL, "transfer/exceptions/IllegalClassTypeException", "<init>", "(Ltransfer/core/DeserialContext;ILjava/lang/reflect/Type;)V", false);
         	mv.visitInsn(ATHROW);
         	mv.visitLabel(l17);
         	
@@ -194,9 +195,10 @@ public class EnumDeserializer implements Deserializer, Opcodes {
         	mv.visitJumpInsn(IF_ICMPEQ, l17);
         	mv.visitTypeInsn(NEW, "transfer/exceptions/IllegalClassTypeException");
         	mv.visitInsn(DUP);
+			mv.visitVarInsn(ALOAD, 4);
         	mv.visitVarInsn(ILOAD, 6);
         	mv.visitVarInsn(ALOAD, 2);
-        	mv.visitMethodInsn(INVOKESPECIAL, "transfer/exceptions/IllegalClassTypeException", "<init>", "(ILjava/lang/reflect/Type;)V", false);
+        	mv.visitMethodInsn(INVOKESPECIAL, "transfer/exceptions/IllegalClassTypeException", "<init>", "(Ltransfer/core/DeserialContext;ILjava/lang/reflect/Type;)V", false);
         	mv.visitInsn(ATHROW);
         	mv.visitLabel(l17);
         	

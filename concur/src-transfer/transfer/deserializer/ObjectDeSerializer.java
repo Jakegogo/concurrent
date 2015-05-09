@@ -1,14 +1,12 @@
 package transfer.deserializer;
 
-import utils.enhance.asm.util.AsmUtils;
-
 import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
-
 import transfer.Inputable;
 import transfer.compile.AsmDeserializerContext;
 import transfer.core.ClassInfo;
+import transfer.core.DeserialContext;
 import transfer.core.FieldInfo;
 import transfer.def.TransferConfig;
 import transfer.def.Types;
@@ -17,8 +15,8 @@ import transfer.exceptions.IllegalClassTypeException;
 import transfer.exceptions.IllegalTypeException;
 import transfer.exceptions.UnsupportDeserializerTypeException;
 import transfer.utils.BitUtils;
-import transfer.utils.IntegerMap;
 import transfer.utils.TypeUtils;
+import utils.enhance.asm.util.AsmUtils;
 
 import java.beans.IntrospectionException;
 import java.beans.PropertyDescriptor;
@@ -35,11 +33,11 @@ public class ObjectDeSerializer implements Deserializer, Opcodes {
 
 
     @Override
-    public <T> T deserialze(Inputable inputable, Type type, byte flag, IntegerMap referenceMap) {
+    public <T> T deserialze(Inputable inputable, Type type, byte flag, DeserialContext context) {
 
         byte typeFlag = TransferConfig.getType(flag);
         if (typeFlag != Types.OBJECT) {
-            throw new IllegalTypeException(typeFlag, Types.OBJECT, type);
+            throw new IllegalTypeException(context, typeFlag, Types.OBJECT, type);
         }
 
         // 读取对象类型
@@ -63,7 +61,7 @@ public class ObjectDeSerializer implements Deserializer, Opcodes {
         }
 
         if (classId != classInfo.getClassId()) {
-            throw new IllegalClassTypeException(classId, type);
+            throw new IllegalClassTypeException(context, classId, type);
         }
 
         Object object;
@@ -82,7 +80,7 @@ public class ObjectDeSerializer implements Deserializer, Opcodes {
             fieldType = fieldInfo.getType();
             fieldDeserializer = TransferConfig.getDeserializer(fieldType, fieldFlag);
 
-            fieldValue = fieldDeserializer.deserialze(inputable, fieldType, fieldFlag, referenceMap);
+            fieldValue = fieldDeserializer.deserialze(inputable, fieldType, fieldFlag, context);
             fieldInfo.setField(object, fieldValue);
         }
 
@@ -119,10 +117,11 @@ public class ObjectDeSerializer implements Deserializer, Opcodes {
         mv.visitJumpInsn(IF_ICMPEQ, l5);
         mv.visitTypeInsn(NEW, "transfer/exceptions/IllegalTypeException");
         mv.visitInsn(DUP);
+        mv.visitVarInsn(ALOAD, 4);
         mv.visitVarInsn(ILOAD, 5);
         mv.visitIntInsn(BIPUSH, Types.OBJECT);
         mv.visitVarInsn(ALOAD, 2);
-        mv.visitMethodInsn(INVOKESPECIAL, "transfer/exceptions/IllegalTypeException", "<init>", "(BBLjava/lang/reflect/Type;)V", false);
+        mv.visitMethodInsn(INVOKESPECIAL, "transfer/exceptions/IllegalTypeException", "<init>", "(Ltransfer/core/DeserialContext;BBLjava/lang/reflect/Type;)V", false);
         mv.visitInsn(ATHROW);
         mv.visitLabel(l5);
 
@@ -161,9 +160,10 @@ public class ObjectDeSerializer implements Deserializer, Opcodes {
         mv.visitJumpInsn(IF_ICMPEQ, l14);
         mv.visitTypeInsn(NEW, "transfer/exceptions/IllegalClassTypeException");
         mv.visitInsn(DUP);
+        mv.visitVarInsn(ALOAD, 4);
         mv.visitVarInsn(ILOAD, 6);
         mv.visitVarInsn(ALOAD, 2);
-        mv.visitMethodInsn(INVOKESPECIAL, "transfer/exceptions/IllegalClassTypeException", "<init>", "(ILjava/lang/reflect/Type;)V", false);
+        mv.visitMethodInsn(INVOKESPECIAL, "transfer/exceptions/IllegalClassTypeException", "<init>", "(Ltransfer/core/DeserialContext;ILjava/lang/reflect/Type;)V", false);
         mv.visitInsn(ATHROW);
         mv.visitLabel(l14);
         
@@ -203,7 +203,7 @@ public class ObjectDeSerializer implements Deserializer, Opcodes {
             	mv.visitLdcInsn(org.objectweb.asm.Type.getType("L" + AsmUtils.toAsmCls(Object.class.getName()) + ";"));
             	mv.visitVarInsn(ILOAD, store1);
             	mv.visitVarInsn(ALOAD, 4);
-            	mv.visitMethodInsn(INVOKEINTERFACE, "transfer/deserializer/Deserializer", "deserialze", "(Ltransfer/Inputable;Ljava/lang/reflect/Type;BLtransfer/utils/IntegerMap;)Ljava/lang/Object;", true);
+            	mv.visitMethodInsn(INVOKEINTERFACE, "transfer/deserializer/Deserializer", "deserialze", "(Ltransfer/Inputable;Ljava/lang/reflect/Type;BLtransfer/core/DeserialContext;)Ljava/lang/Object;", true);
             	mv.visitVarInsn(ASTORE, ++localIndex);
             	
             } else {

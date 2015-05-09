@@ -6,10 +6,10 @@ import org.objectweb.asm.Opcodes;
 
 import transfer.Outputable;
 import transfer.compile.AsmSerializerContext;
+import transfer.core.SerialContext;
 import transfer.def.TransferConfig;
 import transfer.def.Types;
 import transfer.utils.BitUtils;
-import transfer.utils.IdentityHashMap;
 import transfer.utils.TypeUtils;
 
 import java.lang.reflect.Modifier;
@@ -24,10 +24,10 @@ public class CollectionSerializer implements Serializer, Opcodes {
 
 	@Override
 	public void serialze(Outputable outputable, Object object,
-			IdentityHashMap referenceMap) {
+			SerialContext context) {
 
 		if (object == null) {
-			NULL_SERIALIZER.serialze(outputable, null, referenceMap);
+			NULL_SERIALIZER.serialze(outputable, null, context);
 			return;
 		}
 
@@ -39,7 +39,7 @@ public class CollectionSerializer implements Serializer, Opcodes {
 
 		for (Object element : collection) {
 			Serializer elementSerializer = TransferConfig.getSerializer(element.getClass());
-			elementSerializer.serialze(outputable, element, referenceMap);
+			elementSerializer.serialze(outputable, element, context);
 		}
 
 	}
@@ -122,7 +122,7 @@ public class CollectionSerializer implements Serializer, Opcodes {
 					INVOKEINTERFACE,
 					"transfer/serializer/Serializer",
 					"serialze",
-					"(Ltransfer/Outputable;Ljava/lang/Object;Ltransfer/utils/IdentityHashMap;)V",
+					"(Ltransfer/Outputable;Ljava/lang/Object;Ltransfer/core/SerialContext;)V",
 					true);
 			mv.visitLabel(l7);
 			mv.visitFrame(Opcodes.F_SAME, 0, null, 0, null);

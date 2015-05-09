@@ -6,9 +6,9 @@ import org.objectweb.asm.Opcodes;
 
 import transfer.Outputable;
 import transfer.compile.AsmSerializerContext;
+import transfer.core.SerialContext;
 import transfer.def.Types;
 import transfer.utils.BitUtils;
-import transfer.utils.IdentityHashMap;
 
 import java.lang.reflect.Type;
 import java.util.Date;
@@ -20,10 +20,10 @@ public class DateSerializer implements Serializer, Opcodes {
 
 	@Override
 	public void serialze(Outputable outputable, Object object,
-			IdentityHashMap referenceMap) {
+			SerialContext context) {
 
 		if (object == null) {
-			NULL_SERIALIZER.serialze(outputable, null, referenceMap);
+			NULL_SERIALIZER.serialze(outputable, null, context);
 			return;
 		}
 
