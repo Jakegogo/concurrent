@@ -8,6 +8,7 @@ import transfer.compile.AsmDeserializerContext;
 import transfer.core.ClassInfo;
 import transfer.core.DeserialContext;
 import transfer.core.FieldInfo;
+import transfer.core.ParseStackTrace;
 import transfer.def.TransferConfig;
 import transfer.def.Types;
 import transfer.exceptions.CompileError;
@@ -34,6 +35,8 @@ public class ObjectDeSerializer implements Deserializer, Opcodes {
 
     @Override
     public <T> T deserialze(Inputable inputable, Type type, byte flag, DeserialContext context) {
+
+        ParseStackTrace stack = context.nextStackTrace(type);
 
         byte typeFlag = TransferConfig.getType(flag);
         if (typeFlag != Types.OBJECT) {
@@ -76,6 +79,9 @@ public class ObjectDeSerializer implements Deserializer, Opcodes {
         Deserializer fieldDeserializer;
 
         for (FieldInfo fieldInfo : classInfo.getFieldInfos()) {
+
+            context.next(stack, "field [" + fieldInfo.getName() + "]");
+
             byte fieldFlag = inputable.getByte();
             fieldType = fieldInfo.getType();
             fieldDeserializer = TransferConfig.getDeserializer(fieldType, fieldFlag);

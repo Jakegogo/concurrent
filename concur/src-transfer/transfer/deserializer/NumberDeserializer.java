@@ -32,6 +32,8 @@ public class NumberDeserializer implements Deserializer, Opcodes {
     @Override
     public <T> T deserialze(Inputable inputable, Type type, byte flag, DeserialContext context) {
 
+		context.nextStackTrace(type);
+
         byte typeFlag = TransferConfig.getType(flag);
         if (typeFlag != Types.NUMBER) {
             throw new IllegalTypeException(context, typeFlag, Types.NUMBER, type);

@@ -11,7 +11,7 @@ import java.lang.reflect.Type;
 public class IllegalTypeException extends RuntimeException {
 
     public IllegalTypeException(DeserialContext context, byte type, byte requiredType, Type type1) {
-        super("类型错误:" + type + ",需要的类型:" + requiredType + "(" + type1 + ")");
+        super("类型错误:" + type + ",需要的类型:" + requiredType + "(" + type1 + ")" + context.getStackTrace());
     }
 
 }

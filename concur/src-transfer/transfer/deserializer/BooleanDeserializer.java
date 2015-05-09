@@ -22,6 +22,8 @@ public class BooleanDeserializer implements Deserializer, Opcodes {
     @Override
     public <T> T deserialze(Inputable inputable, Type type, byte flag, DeserialContext context) {
 
+		context.nextStackTrace(type);
+
         byte typeFlag = TransferConfig.getType(flag);
 
         if (typeFlag != Types.BOOLEAN) {

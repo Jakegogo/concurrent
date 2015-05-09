@@ -6,6 +6,7 @@ import transfer.compile.AsmDeserializerContext;
 import transfer.core.ClassInfo;
 import transfer.core.DeserialContext;
 import transfer.core.FieldInfo;
+import transfer.core.ParseStackTrace;
 import transfer.def.PersistConfig;
 import transfer.def.Types;
 import transfer.exceptions.IllegalClassTypeException;
@@ -31,6 +32,8 @@ public class TagObjectDeSerializer implements Deserializer {
 
     @Override
     public <T> T deserialze(Inputable inputable, Type type, byte flag, DeserialContext context) {
+
+        ParseStackTrace stack = context.nextStackTrace(type);
 
         byte typeFlag = PersistConfig.getType(flag);
         if (typeFlag != Types.OBJECT) {
@@ -81,9 +84,13 @@ public class TagObjectDeSerializer implements Deserializer {
         int fieldNum = BitUtils.getInt(inputable);
 
         for (int i = 0;i < fieldNum;i++) {
+            stack.setIndex(fieldNum);
+            context.next(stack, "field name", String.class);
 
             fieldName = STRING_DESERIALIZER.deserialze(inputable, String.class, inputable.getByte(), context);
             fieldInfo = classInfo.getFieldInfo(fieldName);
+
+            context.next(stack, "field [" + fieldInfo.getName() + "]");
 
             byte fieldFlag = inputable.getByte();
             fieldType = fieldInfo != null ? fieldInfo.getType() : Object.class;

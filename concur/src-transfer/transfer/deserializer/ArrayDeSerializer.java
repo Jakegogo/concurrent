@@ -7,6 +7,7 @@ import transfer.Inputable;
 import transfer.compile.AsmDeserializerContext;
 import transfer.core.ByteMeta;
 import transfer.core.DeserialContext;
+import transfer.core.ParseStackTrace;
 import transfer.def.TransferConfig;
 import transfer.def.Types;
 import transfer.exceptions.IllegalTypeException;
@@ -29,6 +30,8 @@ public class ArrayDeSerializer implements Deserializer, Opcodes {
 
     @Override
     public <T> T deserialze(Inputable inputable, Type type, byte flag, DeserialContext context) {
+
+        ParseStackTrace stack = context.nextStackTrace(type);
 
         byte typeFlag = TransferConfig.getType(flag);
         if (typeFlag != Types.ARRAY && typeFlag != Types.COLLECTION) {
@@ -66,6 +69,7 @@ public class ArrayDeSerializer implements Deserializer, Opcodes {
         Object component;
         if (defaultComponentDeserializer == null) {
             for (int i = 0; i < size;i++) {
+                stack.setIndex(i);
                 byte elementFlag = inputable.getByte();
                 Deserializer componentDeserializer = TransferConfig.getDeserializer(itemType, elementFlag);// 元素解析器
                 component =  componentDeserializer.deserialze(inputable, itemType, elementFlag, context);
@@ -73,6 +77,7 @@ public class ArrayDeSerializer implements Deserializer, Opcodes {
             }
         } else {
             for (int i = 0; i < size;i++) {
+                stack.setIndex(i);
                 component = defaultComponentDeserializer.deserialze(inputable, itemType, inputable.getByte(), context);
                 Array.set(array, i, component);
             }

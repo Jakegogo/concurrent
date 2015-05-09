@@ -23,6 +23,8 @@ public class ByteArrayWrappDeSerializer implements Deserializer, Opcodes {
     @Override
     public <T> T deserialze(Inputable inputable, Type type, byte flag, DeserialContext context) {
 
+		context.nextStackTrace(type);
+
         byte typeFlag = TransferConfig.getType(flag);
         if (typeFlag != Types.BYTE_ARRAY) {
             throw new IllegalTypeException(context, typeFlag, Types.BYTE_ARRAY, type);

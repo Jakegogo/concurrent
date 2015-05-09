@@ -7,6 +7,7 @@ import transfer.Inputable;
 import transfer.compile.AsmDeserializerContext;
 import transfer.core.ByteMeta;
 import transfer.core.DeserialContext;
+import transfer.core.ParseStackTrace;
 import transfer.def.TransferConfig;
 import transfer.def.Types;
 import transfer.exceptions.IllegalTypeException;
@@ -32,6 +33,8 @@ public class MapDeSerializer implements Deserializer, Opcodes {
 
     @Override
     public <T> T deserialze(Inputable inputable, Type type, byte flag, DeserialContext context) {
+
+        ParseStackTrace stack = context.nextStackTrace(type);
 
         byte typeFlag = TransferConfig.getType(flag);
 
@@ -66,10 +69,13 @@ public class MapDeSerializer implements Deserializer, Opcodes {
 
         // 循环解析元素
         for (int i = 0; i < size;i++) {
+            stack.setIndex(i);
 
+            context.next(stack, "key", keyType);
             keyFlag = inputable.getByte();// 获取key类型
             key = parseElement(inputable, keyType, keyFlag, context);
 
+            context.next(stack, "value", valueType);
             valueFlag = inputable.getByte();// 获取value类型
             value = parseElement(inputable, valueType, valueFlag, context);
 

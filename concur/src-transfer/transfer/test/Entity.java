@@ -48,8 +48,6 @@ public class Entity implements EntityInitializer, IEntity<Long>, Serializable {
 	@Protobuf(fieldType = FieldType.FLOAT, order = 6, required = true)
 	private float fval = 1.23f;
 
-	private AcountStatus status;
-
 	private Date date;
 
 	@Protobuf(fieldType = FieldType.STRING, order = 7, required = true)
@@ -63,6 +61,8 @@ public class Entity implements EntityInitializer, IEntity<Long>, Serializable {
 	private Object obj;
 
 	private AcountStatus[] statusHis;
+
+	private AcountStatus status;
 
 	private Object[] objArr;
 

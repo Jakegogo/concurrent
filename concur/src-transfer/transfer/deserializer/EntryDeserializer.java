@@ -6,6 +6,7 @@ import org.objectweb.asm.Opcodes;
 import transfer.Inputable;
 import transfer.compile.AsmDeserializerContext;
 import transfer.core.DeserialContext;
+import transfer.core.ParseStackTrace;
 import transfer.def.TransferConfig;
 import transfer.utils.TypeUtils;
 import utils.enhance.asm.util.AsmUtils;
@@ -26,6 +27,8 @@ public class EntryDeserializer implements Deserializer, Opcodes {
     @Override
     public <T> T deserialze(Inputable inputable, Type type, byte flag, DeserialContext context) {
 
+        ParseStackTrace stack = context.nextStackTrace(type);
+
         Type keyType = null;
         Type valueType = null;
 
@@ -34,10 +37,12 @@ public class EntryDeserializer implements Deserializer, Opcodes {
             valueType = TypeUtils.getParameterizedType((ParameterizedType) type, 1);
         }
 
+        context.next(stack, "key", keyType);
         // 读取元素类型
         byte keyFlag = inputable.getByte();
         final Object key = parseElement(inputable, keyType, keyFlag, context);
 
+        context.next(stack, "value", keyType);
         byte valueFlag = inputable.getByte();
         final Object value = parseElement(inputable, valueType, valueFlag, context);
 

@@ -11,7 +11,7 @@ import java.lang.reflect.Type;
 public class IllegalClassTypeException extends RuntimeException {
 
     public IllegalClassTypeException(DeserialContext context, int classId, Type type) {
-        super("指定类型错误,classId:" + classId + ",type:" + type);
+        super("指定类型错误,classId:" + classId + ",type:" + type + context.getStackTrace());
     }
 
 }
