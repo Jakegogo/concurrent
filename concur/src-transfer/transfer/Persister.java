@@ -1,5 +1,7 @@
 package transfer;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import transfer.core.ByteMeta;
 import transfer.core.DeserialContext;
 import transfer.core.SerialContext;
@@ -10,7 +12,6 @@ import transfer.deserializer.Deserializer;
 import transfer.deserializer.EntryDeserializer;
 import transfer.deserializer.MapDeSerializer;
 import transfer.serializer.Serializer;
-import transfer.utils.IdentityHashMap;
 import transfer.utils.TypeUtils;
 
 import java.lang.reflect.Type;
@@ -34,7 +35,12 @@ public class Persister {
     //
 
 
-	 /**
+    /**
+     * logger
+     */
+    private static final Logger logger = LoggerFactory.getLogger(Transfer.class);
+
+    /**
      * 编码
      * @param object 目标对象
      */
@@ -91,7 +97,7 @@ public class Persister {
         return buffer.getByteArray();
     }
 
-    
+
     /**
      * 编码
      * @param outputable 输出接口
@@ -102,12 +108,12 @@ public class Persister {
             Serializer.NULL_SERIALIZER.serialze(outputable, null, null);
             return;
         }
-        
+
         Serializer serializer = PersistConfig.getSerializer(object.getClass());
         serializer.serialze(outputable, object, new SerialContext());
     }
-    
-    
+
+
     /**
      * 编码
      * @param outputable 输出接口
@@ -120,14 +126,18 @@ public class Persister {
             return;
         }
 
-        Serializer serializer = PersistConfig.getCompiledSerializer(type);
-        if (serializer == null) {
-            serializer = PersistConfig.preCompileSerializer(type); // 进行预编译
+
+        Serializer serializer;
+        if (logger.isDebugEnabled()) {
+            serializer = PersistConfig.getSerializer(type);
+        } else {
+            serializer = getCompiledSerializer(type);
         }
+
         serializer.serialze(outputable, object, new SerialContext());
     }
-    
-    
+
+
     /**
      * 编码
      * @param outputable 输出接口
@@ -143,19 +153,34 @@ public class Persister {
         Type type = typeReference.getType();
         encode(outputable, object, type);
     }
-    
-    
+
+
+    /**
+     * 获取预编译的编码器
+     * @param type 类型
+     * @return
+     */
+    private static Serializer getCompiledSerializer(Type type) {
+        Serializer serializer = PersistConfig.getCompiledSerializer(type);
+        if (serializer == null) {
+            serializer = PersistConfig.preCompileSerializer(type); // 进行预编译
+        }
+        return serializer;
+    }
+
+
     /**
      * 编码器预编译
      * <br/>调用此方法可预编译或者Transfer#encode(Object, Type)指定预编译类型
      * @param type
      * @return
-     * @see transfer.Transfer.encode(Object, Type)
+     * @see Transfer#encode(java.lang.Object, java.lang.reflect.Type)
      */
     public static Serializer encodePreCompile(Type type) {
         return PersistConfig.preCompileSerializer(type);
     }
-    
+
+
     /**
      * 解码
      * @param inputable 输入接口
@@ -167,8 +192,8 @@ public class Persister {
         Deserializer deserializer = PersistConfig.getDeserializer((Type) Object.class, flag);
         return deserializer.deserialze(inputable, Object.class, flag, new DeserialContext());
     }
-    
-    
+
+
     /**
      * 解码
      * @param inputable 输入接口
@@ -177,11 +202,14 @@ public class Persister {
      * @return
      */
     public static <T> T decode(Inputable inputable, Class<T> clazz) {
-        Deserializer deserializer = PersistConfig.getCompiledDeSerializer(clazz);
-        if (deserializer == null) {
-        	deserializer = PersistConfig.preCompileDeserializer(clazz); // 进行预编译
+        Deserializer deserializer;
+        if (logger.isDebugEnabled()) {
+            deserializer = PersistConfig.getDeserializer(clazz);
+        } else {
+            deserializer = getCompiledDeserializer(clazz);
         }
-        
+
+
         byte flag = inputable.getByte();
         return deserializer.deserialze(inputable, clazz, flag, new DeserialContext());
     }
@@ -207,11 +235,13 @@ public class Persister {
      * @return
      */
     public static <T> T decode(Inputable inputable, TypeReference<T> typeReference) {
-    	Deserializer deserializer = PersistConfig.getCompiledDeSerializer(typeReference.getType());
-        if (deserializer == null) {
-        	deserializer = PersistConfig.preCompileDeserializer(typeReference.getType()); // 进行预编译
+        Deserializer deserializer;
+        if (logger.isDebugEnabled()) {
+            deserializer = PersistConfig.getDeserializer(typeReference.getType());
+        } else {
+            deserializer = getCompiledDeserializer(typeReference.getType());
         }
-    	
+
         byte flag = inputable.getByte();
         return deserializer.deserialze(inputable, typeReference.getType(), flag, new DeserialContext());
     }
@@ -230,6 +260,20 @@ public class Persister {
     }
 
 
+    /**
+     * 获取预编译大热解码器
+     * @param type 类型
+     * @param <T>
+     * @return
+     */
+    private static <T> Deserializer getCompiledDeserializer(Type type) {
+        Deserializer deserializer = PersistConfig.getCompiledDeSerializer(type);
+        if (deserializer == null) {
+            deserializer = PersistConfig.preCompileDeserializer(type); // 进行预编译
+        }
+        return deserializer;
+    }
+
 
     /**
      * 迭代解码
@@ -247,10 +291,10 @@ public class Persister {
             throw new UnsupportedOperationException();
         }
 
-        
+
         final Deserializer defaultComponentDeserializer;
         final Type componentType = TypeUtils.getParameterizedClass(typeReference.getType(), 0);// 取出元素类型
-        
+
         if (componentType != null && componentType != Object.class) {
             defaultComponentDeserializer = PersistConfig.getDeserializer(componentType);// 元素解析器
         } else {

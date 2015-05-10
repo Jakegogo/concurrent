@@ -104,9 +104,10 @@ public class ObjectSerializer implements Serializer, Opcodes {
 			fieldType = fieldInfo.getType();
 			
 			Class<?> fieldRawClass = TypeUtils.getRawClass(fieldType);
-			if (fieldType == null || fieldType == Object.class
+			if (fieldType == null
+					|| fieldType == Object.class
 					|| fieldRawClass.isInterface()
-					|| Modifier.isAbstract(fieldRawClass.getModifiers()) && !fieldRawClass.isArray()) {
+					|| Modifier.isAbstract(fieldRawClass.getModifiers()) && !fieldRawClass.isArray() && !fieldRawClass.isPrimitive()) {
 
 				//  getFieldValue
 				PropertyDescriptor propertyDescriptor = null;
@@ -154,7 +155,7 @@ public class ObjectSerializer implements Serializer, Opcodes {
 						"()Ljava/lang/Class;", false);
 				mv.visitMethodInsn(INVOKESTATIC, "transfer/def/TransferConfig",
 						"getSerializer",
-						"(Ljava/lang/Class;)Ltransfer/serializer/Serializer;",
+						"(Ljava/lang/reflect/Type;)Ltransfer/serializer/Serializer;",
 						false);
 
 				mv.visitVarInsn(ALOAD, 1);

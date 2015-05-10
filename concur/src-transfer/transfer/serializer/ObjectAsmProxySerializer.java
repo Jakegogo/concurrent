@@ -145,7 +145,7 @@ public class ObjectAsmProxySerializer implements Serializer, Opcodes {
 				
 				mv.visitMethodInsn(INVOKESTATIC, "transfer/def/TransferConfig",
 						"getSerializer",
-						"(Ljava/lang/Class;)Ltransfer/serializer/Serializer;",
+						"(Ljava/lang/reflect/Type;)Ltransfer/serializer/Serializer;",
 						false);
 
 				mv.visitVarInsn(ALOAD, 1);

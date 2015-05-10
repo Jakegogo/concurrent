@@ -85,7 +85,8 @@ public class ArraySerializer implements Serializer, Opcodes {
 				"(Ltransfer/Outputable;I)V", false);
 
 		Class<?> componentClass = arrayClass.getComponentType();
-		if (componentClass == null || componentClass == Object.class
+		if (componentClass == null
+				|| componentClass == Object.class
 				|| componentClass.isInterface()
 				|| Modifier.isAbstract(componentClass.getModifiers()) && !componentClass.isArray() && !componentClass.isPrimitive()) {
 
@@ -112,7 +113,7 @@ public class ArraySerializer implements Serializer, Opcodes {
 					"()Ljava/lang/Class;", false);
 			mv.visitMethodInsn(INVOKESTATIC, "transfer/def/TransferConfig",
 					"getSerializer",
-					"(Ljava/lang/Class;)Ltransfer/serializer/Serializer;",
+					"(Ljava/lang/reflect/Type;)Ltransfer/serializer/Serializer;",
 					false);
 			mv.visitVarInsn(ASTORE, 9);
 

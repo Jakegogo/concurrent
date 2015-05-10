@@ -1,5 +1,7 @@
 package transfer;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import transfer.core.ByteMeta;
 import transfer.core.DeserialContext;
 import transfer.core.SerialContext;
@@ -31,6 +33,10 @@ public class Transfer {
     // Inputable、Outputable适配网络框架的readBuffer、writeBuffer
     // TypeReference指定泛型类型将预编译,可提升解析速度
 
+    /**
+     * logger
+     */
+    private static final Logger logger = LoggerFactory.getLogger(Transfer.class);
 
     /**
      * 编码
@@ -118,14 +124,18 @@ public class Transfer {
             return;
         }
 
-        Serializer serializer = TransferConfig.getCompiledSerializer(type);
-        if (serializer == null) {
-            serializer = TransferConfig.preCompileSerializer(type); // 进行预编译
+
+        Serializer serializer;
+        if (logger.isDebugEnabled()) {
+            serializer = TransferConfig.getSerializer(type);
+        } else {
+            serializer = getCompiledSerializer(type);
         }
+
         serializer.serialze(outputable, object, new SerialContext());
     }
-    
-    
+
+
     /**
      * 编码
      * @param outputable 输出接口
@@ -141,8 +151,22 @@ public class Transfer {
         Type type = typeReference.getType();
         encode(outputable, object, type);
     }
-    
-    
+
+
+    /**
+     * 获取预编译的编码器
+     * @param type 类型
+     * @return
+     */
+    private static Serializer getCompiledSerializer(Type type) {
+        Serializer serializer = TransferConfig.getCompiledSerializer(type);
+        if (serializer == null) {
+            serializer = TransferConfig.preCompileSerializer(type); // 进行预编译
+        }
+        return serializer;
+    }
+
+
     /**
      * 编码器预编译
      * <br/>调用此方法可预编译或者Transfer#encode(Object, Type)指定预编译类型
@@ -153,7 +177,8 @@ public class Transfer {
     public static Serializer encodePreCompile(Type type) {
         return TransferConfig.preCompileSerializer(type);
     }
-    
+
+
     /**
      * 解码
      * @param inputable 输入接口
@@ -175,10 +200,13 @@ public class Transfer {
      * @return
      */
     public static <T> T decode(Inputable inputable, Class<T> clazz) {
-        Deserializer deserializer = TransferConfig.getCompiledDeSerializer(clazz);
-        if (deserializer == null) {
-        	deserializer = TransferConfig.preCompileDeserializer(clazz); // 进行预编译
+        Deserializer deserializer;
+        if (logger.isDebugEnabled()) {
+            deserializer = TransferConfig.getDeserializer(clazz);
+        } else {
+            deserializer = getCompiledDeserializer(clazz);
         }
+
         
         byte flag = inputable.getByte();
         return deserializer.deserialze(inputable, clazz, flag, new DeserialContext());
@@ -205,9 +233,11 @@ public class Transfer {
      * @return
      */
     public static <T> T decode(Inputable inputable, TypeReference<T> typeReference) {
-    	Deserializer deserializer = TransferConfig.getCompiledDeSerializer(typeReference.getType());
-        if (deserializer == null) {
-        	deserializer = TransferConfig.preCompileDeserializer(typeReference.getType()); // 进行预编译
+        Deserializer deserializer;
+        if (logger.isDebugEnabled()) {
+            deserializer = TransferConfig.getDeserializer(typeReference.getType());
+        } else {
+            deserializer = getCompiledDeserializer(typeReference.getType());
         }
     	
         byte flag = inputable.getByte();
@@ -227,6 +257,20 @@ public class Transfer {
         return decode(new ByteArray(bytes), typeReference);
     }
 
+
+    /**
+     * 获取预编译大热解码器
+     * @param type 类型
+     * @param <T>
+     * @return
+     */
+    private static <T> Deserializer getCompiledDeserializer(Type type) {
+        Deserializer deserializer = TransferConfig.getCompiledDeSerializer(type);
+        if (deserializer == null) {
+            deserializer = TransferConfig.preCompileDeserializer(type); // 进行预编译
+        }
+        return deserializer;
+    }
 
 
     /**

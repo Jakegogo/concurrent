@@ -293,16 +293,17 @@ public class TransferConfig {
 
     /**
      * 获取编码器
-     * @param clazz 类型
+     * @param type 类型
      * @return
      */
-    public static Serializer getSerializer(Class clazz) {
+    public static Serializer getSerializer(Type type) {
 
-        Serializer serializer = serializers.get(clazz);
+        Serializer serializer = serializers.get(type);
         if (serializer != null) {
             return serializer;
         }
 
+        Class clazz = TypeUtils.getRawClass(type);
 
         if (Map.class.isAssignableFrom(clazz)) {
             serializers.put(clazz, MapSerializer.getInstance());

@@ -124,7 +124,7 @@ public class MapSerializer implements Serializer, Opcodes {
 					"()Ljava/lang/Class;", false);
 			mv.visitMethodInsn(INVOKESTATIC, "transfer/def/TransferConfig",
 					"getSerializer",
-					"(Ljava/lang/Class;)Ltransfer/serializer/Serializer;",
+					"(Ljava/lang/reflect/Type;)Ltransfer/serializer/Serializer;",
 					false);
 			mv.visitVarInsn(ASTORE, 9);
 
@@ -173,7 +173,7 @@ public class MapSerializer implements Serializer, Opcodes {
 					"()Ljava/lang/Class;", false);
 			mv.visitMethodInsn(INVOKESTATIC, "transfer/def/TransferConfig",
 					"getSerializer",
-					"(Ljava/lang/Class;)Ltransfer/serializer/Serializer;",
+					"(Ljava/lang/reflect/Type;)Ltransfer/serializer/Serializer;",
 					false);
 			mv.visitVarInsn(ASTORE, 10 + localNumAppend);
 
