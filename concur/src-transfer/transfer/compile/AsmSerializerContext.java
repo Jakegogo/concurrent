@@ -27,11 +27,6 @@ public class AsmSerializerContext implements Opcodes {
      */
     private int methodId = 1;
 
-    /**
-     * 是否增加数字公共方法
-     */
-    private boolean addNumberSerializeCommonMethod = false;
-
 
     /**
      * 构造方法
@@ -63,23 +58,12 @@ public class AsmSerializerContext implements Opcodes {
         return mv;
     }
 
-    		
 	public ClassWriter getClassWriter() {
 		return classWriter;
 	}
 
-
     public String getClassName() {
         return className;
-    }
-
-
-    public boolean isAddNumberSerializeCommonMethod() {
-        return addNumberSerializeCommonMethod;
-    }
-
-    public void setAddNumberSerializeCommonMethod(boolean addNumberSerializeCommonMethod) {
-        this.addNumberSerializeCommonMethod = addNumberSerializeCommonMethod;
     }
 
 

@@ -6,6 +6,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.util.ReflectionUtils;
 
 import transfer.ByteArray;
+import transfer.Outputable;
 import transfer.anno.Ignore;
 import transfer.anno.Transferable;
 import transfer.compile.AsmDeserializerFactory;
@@ -19,10 +20,8 @@ import transfer.exceptions.UnsupportClassException;
 import transfer.exceptions.UnsupportDeserializerTypeException;
 import transfer.exceptions.UnsupportSerializerTypeException;
 import transfer.serializer.*;
-import transfer.utils.ByteMap;
+import transfer.utils.*;
 import transfer.utils.IdentityHashMap;
-import transfer.utils.IntegerMap;
-import transfer.utils.TypeUtils;
 
 import java.lang.reflect.*;
 import java.math.BigDecimal;
@@ -75,6 +74,11 @@ public class PersistConfig {
     // Decimal类型标记
     public static final byte FLOAT = 0x00;// float 4字节
     public static final byte DOUBLE = 0x01;// double 8字节
+
+    // 0000 1000
+    public static final byte FLAG_NEGATIVE = (byte) 0x08;
+    // 0000 0000
+    public static final byte FLAG_NOT_NEGATIVE = (byte) 0x00;
 
 
     /**
@@ -589,6 +593,44 @@ public class PersistConfig {
     public static void setUseAutoIncrementId(boolean useAutoIncrementId) {
     	PersistConfig.useAutoIncrementId = useAutoIncrementId;
 	}
+
+
+    /**
+     * 输出int值
+     * @param outputable
+     * @param number
+     */
+    public static void putIntVal(Outputable outputable, Number number) {
+
+        int value = number.intValue();
+        if (value >= 0) {
+            outputable.putByte((byte) (Types.NUMBER | FLAG_NOT_NEGATIVE | TransferConfig.VARINT));
+        } else {
+            value = -value;
+            outputable.putByte((byte) (Types.NUMBER | FLAG_NEGATIVE | TransferConfig.VARINT));
+        }
+        BitUtils.putInt(outputable, value);
+
+    }
+
+
+    /**
+     * 输出long值
+     * @param outputable
+     * @param number
+     */
+    public static void putLongVal(Outputable outputable, Number number) {
+
+        long value = number.longValue();
+        if (value >= 0) {
+            outputable.putByte((byte) (Types.NUMBER | FLAG_NOT_NEGATIVE | TransferConfig.VARLONG));
+        } else {
+            value = -value;
+            outputable.putByte((byte) (Types.NUMBER | FLAG_NEGATIVE | TransferConfig.VARLONG));
+        }
+        BitUtils.putLong(outputable, value);
+
+    }
 
 
     static {

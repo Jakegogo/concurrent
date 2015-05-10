@@ -180,7 +180,12 @@ public class EntryDeserializer implements Deserializer, Opcodes {
     }
 
 
-    static class UnmodificationEntry<K, V> implements Map.Entry<K, V> {
+    /**
+     * 不可以更改的Entry
+     * @param <K>
+     * @param <V>
+     */
+    public static class UnmodificationEntry<K, V> implements Map.Entry<K, V> {
 
         private K key;
 
