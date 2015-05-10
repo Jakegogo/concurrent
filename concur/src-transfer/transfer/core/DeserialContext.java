@@ -18,6 +18,15 @@ public class DeserialContext {
         return referenceMap;
     }
 
+    /**
+     * 输出解析堆栈
+     * (当出现异常时,可以定位解析异常的位置)
+     */
+    public void printStackTrace() {
+        System.out.println(getStackTrace());
+    }
+
+
     public ParseStackTrace getStackTrace() {
         return stackTrace;
     }
