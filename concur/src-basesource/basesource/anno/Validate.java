@@ -1,5 +1,10 @@
 package basesource.anno;
 
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+
 import basesource.validators.Validator;
 
 /**
@@ -7,6 +12,8 @@ import basesource.validators.Validator;
  * @author Jake
  *
  */
+@Target({ElementType.FIELD, ElementType.PARAMETER})
+@Retention(RetentionPolicy.RUNTIME)
 public @interface Validate {
 	
 	/**
@@ -20,5 +27,8 @@ public @interface Validate {
 	 * @return
 	 */
 	public String params();
+	
+	
+	public String msg() default "";
 	
 }
