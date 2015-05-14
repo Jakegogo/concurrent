@@ -1,4 +1,4 @@
-package basesource.anno;
+package basesource.anno.check;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -6,15 +6,13 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * 最小值限制
+ * 正数(不包括0)
  * @author Jake
  *
  */
 @Target({ElementType.FIELD, ElementType.PARAMETER})
 @Retention(RetentionPolicy.RUNTIME)
-public @interface Min {
-	
-	public long value();
+public @interface Positive {
 	
 	public String msg() default "";
 	

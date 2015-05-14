@@ -1,33 +1,20 @@
-package basesource.anno;
+package basesource.anno.check;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import basesource.validators.Validator;
-
 /**
- * 自定义验证注解
+ * 最大值限制
  * @author Jake
  *
  */
 @Target({ElementType.FIELD, ElementType.PARAMETER})
 @Retention(RetentionPolicy.RUNTIME)
-public @interface Validate {
+public @interface Max {
 	
-	/**
-	 * 自定义验证器
-	 * @return
-	 */
-	public Class<? extends Validator> cls();
-	
-	/**
-	 * 参数
-	 * @return
-	 */
-	public String params();
-	
+	public long value();
 	
 	public String msg() default "";
 	

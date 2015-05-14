@@ -1,6 +1,6 @@
 package basesource.test;
 
-import basesource.anno.Validate;
+import basesource.anno.check.Validate;
 
 public class TestBaseSource {
 	

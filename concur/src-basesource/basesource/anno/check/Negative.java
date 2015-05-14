@@ -1,4 +1,4 @@
-package basesource.anno;
+package basesource.anno.check;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -6,13 +6,13 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * 非空
+ * 负数
  * @author Jake
  *
  */
 @Target({ElementType.FIELD, ElementType.PARAMETER})
 @Retention(RetentionPolicy.RUNTIME)
-public @interface NotNull {
+public @interface Negative {
 	
 	public String msg() default "";
 	
