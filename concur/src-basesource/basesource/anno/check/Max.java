@@ -14,8 +14,14 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface Max {
 	
-	public long value();
+	public long max();
 	
 	public String msg() default "";
+	
+	/**
+	 * 值(json格式的值使用:value.xxx.xx)
+	 * @return
+	 */
+	public String value() default "value";
 	
 }

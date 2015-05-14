@@ -14,8 +14,14 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface Min {
 	
-	public long value();
+	public long min();
 	
 	public String msg() default "";
+	
+	/**
+	 * 值(json格式的值使用:value.xxx.xx)
+	 * @return
+	 */
+	public String value() default "value";
 	
 }

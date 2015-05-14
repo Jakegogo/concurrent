@@ -26,6 +26,13 @@ public @interface Range {
 	 */
 	public long max();
 	
+	
 	public String msg() default "";
+	
+	/**
+	 * 值(json格式的值使用:value.xxx.xx)
+	 * @return
+	 */
+	public String value() default "value";
 	
 }
