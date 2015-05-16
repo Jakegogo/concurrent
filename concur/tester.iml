@@ -22,6 +22,7 @@
       <sourceFolder url="file://$MODULE_DIR$/src-test" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src-utils" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src-transfer" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src-basesource" isTestSource="false" />
       <excludeFolder url="file://$MODULE_DIR$/target" />
     </content>
     <orderEntry type="inheritedJdk" />

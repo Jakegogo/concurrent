@@ -281,12 +281,16 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 		} else if (oldCacheObject == null){								 // 缓存为NULL或已经删除
 			wrapper = cacheUnit.replace(key, null, newCacheObject);
 		}
-		
-		newCacheObject = (CacheObject<T>) wrapper.get(); 				  // 再获取一次最新的值
-		if (newCacheObject == null) {									  // 重复提交/替换失败
+
+
+		CacheObject<T> curCacheObject = (CacheObject<T>) wrapper.get();   // 再获取一次最新的值
+		if (curCacheObject == null) {									  // 重复提交/替换失败
 			return null;
 		}
-		
+		if (curCacheObject != newCacheObject) {							  // 并发时被抢先提交
+			return curCacheObject.getProxyEntity();
+		}
+
 		
 		// 入库 
 		entity = newCacheObject.getEntity();
