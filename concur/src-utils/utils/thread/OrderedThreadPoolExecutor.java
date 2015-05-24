@@ -67,9 +67,10 @@ public class OrderedThreadPoolExecutor extends ThreadPoolExecutor {
 			// CAS loop
 			for (; ; ) {
                 LinkingExecutable last = lastRef.get();
-				AtomicReference<LinkingRunnableFutureTask> nextRef = last.getNext();
 
+				AtomicReference<LinkingRunnableFutureTask> nextRef = last.getNext();
                 LinkingRunnableFutureTask next = nextRef.get();
+
 				if (next != null) {
 					if (next == LinkingRunnableFutureTask.PLACE_HOLDER && lastRef.compareAndSet(last, runnable)) {
 						// previous message is handled, order is

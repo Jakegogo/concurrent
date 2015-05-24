@@ -64,13 +64,14 @@ public class SyncThreadPoolExecutor extends ThreadPoolExecutor {
         if (last == null) { // No previous job
             super.submit(task);
         } else {
-            if (lastRef.compareAndSet(null, runnable)) {
+            if (last.getNext().compareAndSet(null, task)) {
                 // successfully append to previous task
             } else {
                 // previous message is handled, order is guaranteed.
                 super.submit(task);
             }
         }
+
     }
 
 

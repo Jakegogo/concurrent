@@ -49,9 +49,10 @@ public class SafeRunable implements Runnable {
 			for (; ; ) {
 
 				SafeRunable last = lastRef.get();
-				AtomicReference<SafeRunable> nextRef = last.next;
 
+				AtomicReference<SafeRunable> nextRef = last.next;
 				SafeRunable next = nextRef.get();
+
 				if (next != null) {
 					if (next == last && lastRef.compareAndSet(last, this)) {
 						// previous message is handled, order is
@@ -67,8 +68,8 @@ public class SafeRunable implements Runnable {
 			}
 		}
 	}
-	
-	
+
+
 	/**
 	 * 执行下一个任务
 	 */
@@ -91,5 +92,5 @@ public class SafeRunable implements Runnable {
 		return "SafeRunable [next=" + next + ", safeType="
 				+ safeType + ", safeActor=" + safeActor + "]";
 	}
-	
+
 }
