@@ -16,7 +16,7 @@
       <sourceFolder url="file://$MODULE_DIR$/resource" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src-dbcache" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src-game" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/src-lock" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src-chainlock" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src-mis" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src-readwritelock" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src-test" isTestSource="false" />

@@ -32,7 +32,8 @@ import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * 数据库缓存服务实现类
- * <br/>需要外部维护缓存一致性, 更改实体属性值需外部加锁
+ * <br/>保证了实体对象的唯一性
+ * <br/>实体需要维护自身内部属性一致性, 如更改实体属性值时候加锁
  * @author jake
  * @date 2014-7-31-下午6:07:37
  */
