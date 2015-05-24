@@ -19,7 +19,7 @@ public class TestTypeSafe {
 		
 		final CountDownLatch ct = new CountDownLatch(1);
 		
-		for (int j = 0; j < 4;j++) {
+		for (int j = 0; j < 1000;j++) {
 			
 			final int l = j;
 			new Thread() {
@@ -37,7 +37,7 @@ public class TestTypeSafe {
 					
 						for (int k = 0;k < TEST_LOOP;k++) {
 							
-							new SafeActor(a, b) {
+							new SafeActor(a) {
 								
 								@Override
 								public void run() {
@@ -64,7 +64,7 @@ public class TestTypeSafe {
 						
 						for (int k = 0;k < TEST_LOOP;k++) {
 							
-							new SafeActor(a, c) {
+							new SafeActor(a) {
 								
 								@Override
 								public void run() {
@@ -105,7 +105,7 @@ public class TestTypeSafe {
 		
 	}
 
-	static class A extends SafeType {
+	static class A implements SafeType {
 		
 		int i = 0;
 
@@ -116,7 +116,7 @@ public class TestTypeSafe {
 		
 	}
 	
-	static class B extends SafeType {
+	static class B implements SafeType {
 		
 		int j = 0;
 
@@ -127,7 +127,7 @@ public class TestTypeSafe {
 		
 	}
 	
-	static class C extends SafeType {
+	static class C implements SafeType {
 		
 		int k = 0;
 

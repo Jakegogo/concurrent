@@ -8,23 +8,12 @@ import java.util.concurrent.atomic.AtomicReference;
  * @author Jake
  *
  */
-public abstract class SafeType {
+public interface SafeType {
 	
 	/**
 	 * 上一次执行的Actor
 	 */
 	AtomicReference<SafeRunable> head = new AtomicReference<SafeRunable>();
 	
-	/**
-	 * 当前处理的线程
-	 */
-	volatile Thread currentThread;
-	
-	/**
-	 * 当前等待执行的SafeActor
-	 */
-	AtomicReference<SafeActor> waitActor = new AtomicReference<SafeActor>();
-	
-	
-	
+
 }
