@@ -5,6 +5,9 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+import basesource.contants.ValueType;
+import basesource.validators.ValueGetter;
+
 /**
  * 负数
  * @author Jake
@@ -14,12 +17,22 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface Negative {
 	
+	/**
+	 * 错误提示信息
+	 * @return
+	 */
 	public String msg() default "";
 	
 	/**
-	 * 值(json格式的值使用:value.xxx.xx)
+	 * 值(json格式的值使用:{value}.xxx.xx)
 	 * @return
 	 */
-	public String value() default "value";
+	public String[] value() default ValueType.VALUE;
+	
+	/**
+	 * 获取值的类
+	 * @return
+	 */
+	public Class<? extends ValueGetter> valueGetter();
 	
 }
