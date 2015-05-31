@@ -2,7 +2,6 @@ package basesource.gui;
 
 import basesource.gui.contansts.DefaultUIConstant;
 import basesource.gui.extended.AnimatingSplitPane;
-import basesource.gui.extended.RoundedPanel;
 import basesource.gui.utils.DpiUtils;
 import org.jdesktop.application.SingleFrameApplication;
 import org.jdesktop.application.View;
@@ -58,7 +57,7 @@ public class MainPanel extends SingleFrameApplication {
     /**
      * 根面板
      */
-    private RoundedPanel rootPanel;
+    private JPanel rootPanel;
 
     /** 主面板 */
     private AnimatingSplitPane mainSplitPane;
@@ -159,7 +158,7 @@ public class MainPanel extends SingleFrameApplication {
 
 
 
-        RoundedPanel rootPanel = new RoundedPanel(new BorderLayout());
+        JPanel rootPanel = new JPanel(new BorderLayout());
         rootPanel.add(mainSplitPane, "Center");
 
 
