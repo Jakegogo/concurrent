@@ -1,13 +1,13 @@
 package basesource.anno.check;
 
+import basesource.contants.ValueType;
+import basesource.validators.Validator;
+import basesource.validators.ValueGetter;
+
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
-
-import basesource.contants.ValueType;
-import basesource.validators.Validator;
-import basesource.validators.ValueGetter;
 
 /**
  * 自定义验证注解
@@ -46,6 +46,6 @@ public @interface Validate {
 	 * 获取值的类
 	 * @return
 	 */
-	public Class<? extends ValueGetter> valueGetter();
+	public Class<? extends ValueGetter> valueGetter() default ValueGetter.class;
 	
 }
