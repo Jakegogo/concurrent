@@ -1,6 +1,7 @@
 package basesource.gui;
 
-import basesource.gui.contansts.DefaultUI;
+import basesource.gui.contansts.DefaultUIConstant;
+import basesource.gui.extended.RoundedTitleBorder;
 import basesource.gui.utils.DpiUtils;
 
 import javax.swing.*;
@@ -36,7 +37,10 @@ public class FileTablePanel extends JScrollPane {
 
     // 初始化界面
     private void init() {
-        setViewportView(this.createFileTable());
+        setBorder(new RoundedTitleBorder(DefaultUIConstant.FILE_TABLE_TITLE,
+                UIManager.getColor("titleGradientColor1"),
+                UIManager.getColor("titleGradientColor2")));
+        this.setViewportView(this.createFileTable());
     }
 
 
@@ -85,8 +89,8 @@ public class FileTablePanel extends JScrollPane {
 
                 Icon icon = fileSystemView.getSystemIcon(files[0]);
                 // size adjustment to better account for icons
-                fileTable.setRowHeight( icon.getIconHeight() + DpiUtils.getDpiExtendedSize(DefaultUI.FILE_TABLE_ROW_PADDING));
-                setColumnWidth(0, icon.getIconWidth() + DpiUtils.getDoubleDpiExtendedSize(DefaultUI.FILE_TABLE_ROW_PADDING));
+                fileTable.setRowHeight( icon.getIconHeight() + DpiUtils.getDpiExtendedSize(DefaultUIConstant.FILE_TABLE_ROW_PADDING));
+                setColumnWidth(0, icon.getIconWidth() + DpiUtils.getDoubleDpiExtendedSize(DefaultUIConstant.FILE_TABLE_ROW_PADDING));
             }
         });
     }

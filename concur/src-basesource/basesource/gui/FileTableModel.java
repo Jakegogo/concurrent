@@ -1,6 +1,6 @@
 package basesource.gui;
 
-import basesource.gui.contansts.DefaultUI;
+import basesource.gui.contansts.DefaultUIConstant;
 
 import javax.swing.*;
 import javax.swing.filechooser.FileSystemView;
@@ -43,7 +43,7 @@ class FileTableModel extends AbstractTableModel {
     }
 
     public int getColumnCount() {
-        return DefaultUI.FILE_TABLE_HREADER.length;
+        return DefaultUIConstant.FILE_TABLE_HREADER.length;
     }
 
     public Class<?> getColumnClass(int column) {
@@ -59,7 +59,7 @@ class FileTableModel extends AbstractTableModel {
     }
 
     public String getColumnName(int column) {
-        return DefaultUI.FILE_TABLE_HREADER[column];
+        return DefaultUIConstant.FILE_TABLE_HREADER[column];
     }
 
     public int getRowCount() {

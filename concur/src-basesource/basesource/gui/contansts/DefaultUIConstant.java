@@ -10,7 +10,7 @@ import java.awt.*;
  * 常量
  * Created by Jake on 2015/5/31.
  */
-public interface DefaultUI {
+public interface DefaultUIConstant {
 
     /**
      * 默认宽度
@@ -56,5 +56,10 @@ public interface DefaultUI {
      * 文件表格行填充
      */
     int FILE_TABLE_ROW_PADDING = 5;
+
+    /**
+     * 文件表格标题
+     */
+    String FILE_TABLE_TITLE = "文件预览";
 
 }

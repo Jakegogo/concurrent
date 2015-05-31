@@ -2,7 +2,6 @@ package basesource.gui.extended;
 
 import org.jdesktop.swingx.JXPanel;
 
-import javax.swing.*;
 import java.awt.*;
 import java.awt.geom.RoundRectangle2D;
 
@@ -52,16 +51,6 @@ public class RoundedPanel extends JXPanel {
         super.paintComponent(g);
     }
 
-    public static void main(String[] args) {
-        JFrame frame = new JFrame();
-        RoundedPanel p = new RoundedPanel(new BorderLayout(), 16);
-        JPanel p2 = new JPanel();
-        p2.setBackground(Color.blue);
-        p.add(p2);
-        frame.add(p);
-        frame.setSize(200, 200);
-        frame.setVisible(true);
-    }
 }
 
 /* Location:           E:\java\beautyeye-3.5\demo\excute_jar\SwingSets3(BeautyEyeLNFDemo) (1).jar

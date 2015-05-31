@@ -1,10 +1,8 @@
 package basesource.gui;
 
-import basesource.gui.contansts.DefaultUI;
+import basesource.gui.contansts.DefaultUIConstant;
 import basesource.gui.extended.AnimatingSplitPane;
 import basesource.gui.extended.RoundedPanel;
-import basesource.gui.extended.RoundedTitleBorder;
-import basesource.gui.extended.Utilities;
 import basesource.gui.utils.DpiUtils;
 import org.jdesktop.application.SingleFrameApplication;
 import org.jdesktop.application.View;
@@ -106,12 +104,11 @@ public class MainPanel extends SingleFrameApplication {
 
         //调整默认字体
         for (int i = 0; i < DEFAULT_FONT.length; i++) {
-            UIManager.put(DEFAULT_FONT[i], DefaultUI.DEFAULT_FONT);
+            UIManager.put(DEFAULT_FONT[i], DefaultUIConstant.DEFAULT_FONT);
         }
 
         // 导航条渐变颜色
-        Color controlColor = UIManager.getColor("control");
-        Color titleColor = Utilities.deriveColorHSB(controlColor, 0.0F, 0.0F, -0.02F);
+        Color titleColor = UIManager.getColor("activeCaption");
         float[] hsb = Color.RGBtoHSB(titleColor.getRed(), titleColor.getGreen(), titleColor.getBlue(), null);
         UIManager.put("titleGradientColor1",
                 Color.getHSBColor(hsb[0] - 0.013F, 0.15F, 0.85F));
@@ -129,18 +126,18 @@ public class MainPanel extends SingleFrameApplication {
     private JComponent createRootPanel() {
 
         AnimatingSplitPane mainSplitPane = new AnimatingSplitPane(JSplitPane.HORIZONTAL_SPLIT);
-        mainSplitPane.setBorder(DefaultUI.EMPTY_BORDER);
+        mainSplitPane.setBorder(DefaultUIConstant.EMPTY_BORDER);
         mainSplitPane.setSize(new Dimension(
-                DpiUtils.getDpiExtendedSize(DefaultUI.DEFAULT_WIDTH),
-                DpiUtils.getDpiExtendedSize(DefaultUI.DEFAULT_HEIGHT)
+                DpiUtils.getDpiExtendedSize(DefaultUIConstant.DEFAULT_WIDTH),
+                DpiUtils.getDpiExtendedSize(DefaultUIConstant.DEFAULT_HEIGHT)
                 ));
 
 
 
         FileTreePanel fileBrowserPanel = new FileTreePanel();
         fileBrowserPanel.setPreferredSize(new Dimension(
-                DpiUtils.getDpiExtendedSize(DefaultUI.DEFAULT_FILE_TREE_PANEL_WITH),
-                DpiUtils.getDpiExtendedSize(DefaultUI.DEFAULT_HEIGHT)
+                DpiUtils.getDpiExtendedSize(DefaultUIConstant.DEFAULT_FILE_TREE_PANEL_WITH),
+                DpiUtils.getDpiExtendedSize(DefaultUIConstant.DEFAULT_HEIGHT)
                 ));
         mainSplitPane.setTopComponent(fileBrowserPanel);
 
@@ -148,24 +145,21 @@ public class MainPanel extends SingleFrameApplication {
 
 
         AnimatingSplitPane rightPanel = new AnimatingSplitPane(JSplitPane.VERTICAL_SPLIT);
-        rightPanel.setBorder(DefaultUI.EMPTY_BORDER);
+        rightPanel.setBorder(DefaultUIConstant.EMPTY_BORDER);
         mainSplitPane.setBottomComponent(rightPanel);
 
 
 
         FileTablePanel fileListPanel = new FileTablePanel();
         fileListPanel.setPreferredSize(new Dimension(
-                DpiUtils.getDpiExtendedSize(DefaultUI.DEFAULT_WIDTH - DefaultUI.DEFAULT_FILE_TREE_PANEL_WITH),
-                DpiUtils.getDpiExtendedSize(DefaultUI.DEFAULT_FILE_LIST_PANEL_HEIGHT)
+                DpiUtils.getDpiExtendedSize(DefaultUIConstant.DEFAULT_WIDTH - DefaultUIConstant.DEFAULT_FILE_TREE_PANEL_WITH),
+                DpiUtils.getDpiExtendedSize(DefaultUIConstant.DEFAULT_FILE_LIST_PANEL_HEIGHT)
         ));
         rightPanel.setTopComponent(fileListPanel);
 
 
 
         RoundedPanel rootPanel = new RoundedPanel(new BorderLayout());
-        rootPanel.setBorder(new RoundedTitleBorder("测试",
-                UIManager.getColor("titleGradientColor1"),
-                UIManager.getColor("titleGradientColor2")));
         rootPanel.add(mainSplitPane, "Center");
 
 
