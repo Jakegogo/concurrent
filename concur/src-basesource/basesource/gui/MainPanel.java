@@ -2,6 +2,9 @@ package basesource.gui;
 
 import basesource.gui.contansts.DefaultUI;
 import basesource.gui.extended.AnimatingSplitPane;
+import basesource.gui.extended.RoundedPanel;
+import basesource.gui.extended.RoundedTitleBorder;
+import basesource.gui.extended.Utilities;
 import basesource.gui.utils.DpiUtils;
 import org.jdesktop.application.SingleFrameApplication;
 import org.jdesktop.application.View;
@@ -54,6 +57,11 @@ public class MainPanel extends SingleFrameApplication {
             , "ComboBox.font"
     };
 
+    /**
+     * 根面板
+     */
+    private RoundedPanel rootPanel;
+
     /** 主面板 */
     private AnimatingSplitPane mainSplitPane;
 
@@ -61,8 +69,13 @@ public class MainPanel extends SingleFrameApplication {
     private AnimatingSplitPane rightPanel;
 
     /** 文件浏览面板(左侧) */
-    private FileBrowserPanel fileBrowserPanel;
+    private FileTreePanel fileBrowserPanel;
 
+    /** 文件列表面板(右侧) */
+    private FileTablePanel fileListPanel;
+
+    /** 文件列表更新通知接口 */
+    private ListableFileConnector listableFileConnector;
 
     public MainPanel(){}
 
@@ -77,7 +90,7 @@ public class MainPanel extends SingleFrameApplication {
 
         View view = getMainView();
 
-        view.setComponent(createMainPanel());
+        view.setComponent(createRootPanel());
 
         show(view);
     }
@@ -93,42 +106,81 @@ public class MainPanel extends SingleFrameApplication {
 
         //调整默认字体
         for (int i = 0; i < DEFAULT_FONT.length; i++) {
-            UIManager.put(DEFAULT_FONT[i], new Font("微软雅黑", Font.PLAIN, DpiUtils.getDpiExtendedSize(14)));
+            UIManager.put(DEFAULT_FONT[i], DefaultUI.DEFAULT_FONT);
         }
 
+        // 导航条渐变颜色
+        Color controlColor = UIManager.getColor("control");
+        Color titleColor = Utilities.deriveColorHSB(controlColor, 0.0F, 0.0F, -0.02F);
+        float[] hsb = Color.RGBtoHSB(titleColor.getRed(), titleColor.getGreen(), titleColor.getBlue(), null);
+        UIManager.put("titleGradientColor1",
+                Color.getHSBColor(hsb[0] - 0.013F, 0.15F, 0.85F));
+        UIManager.put("titleGradientColor2",
+                Color.getHSBColor(hsb[0] - 0.005F, 0.24F, 0.8F));
+
     }
+
 
 
     /**
      * 创建主面板
      * @return
      */
-    private JComponent createMainPanel() {
+    private JComponent createRootPanel() {
 
-        this.mainSplitPane = new AnimatingSplitPane(JSplitPane.HORIZONTAL_SPLIT);
-        this.mainSplitPane.setBorder(DefaultUI.EMPTY_BORDER);
-        this.mainSplitPane.setSize(new Dimension(
+        AnimatingSplitPane mainSplitPane = new AnimatingSplitPane(JSplitPane.HORIZONTAL_SPLIT);
+        mainSplitPane.setBorder(DefaultUI.EMPTY_BORDER);
+        mainSplitPane.setSize(new Dimension(
                 DpiUtils.getDpiExtendedSize(DefaultUI.DEFAULT_WIDTH),
                 DpiUtils.getDpiExtendedSize(DefaultUI.DEFAULT_HEIGHT)
                 ));
 
 
 
-        this.fileBrowserPanel = new FileBrowserPanel();
-        this.fileBrowserPanel.setPreferredSize(new Dimension(
-                DpiUtils.getDpiExtendedSize(DefaultUI.DEFAULT_FILE_PANEL_WITH),
+        FileTreePanel fileBrowserPanel = new FileTreePanel();
+        fileBrowserPanel.setPreferredSize(new Dimension(
+                DpiUtils.getDpiExtendedSize(DefaultUI.DEFAULT_FILE_TREE_PANEL_WITH),
                 DpiUtils.getDpiExtendedSize(DefaultUI.DEFAULT_HEIGHT)
                 ));
-        this.mainSplitPane.setTopComponent(this.fileBrowserPanel);
+        mainSplitPane.setTopComponent(fileBrowserPanel);
 
 
 
-        this.rightPanel = new AnimatingSplitPane(JSplitPane.VERTICAL_SPLIT);
-        this.rightPanel.setBorder(DefaultUI.EMPTY_BORDER);
-        this.mainSplitPane.setBottomComponent(this.rightPanel);
+
+        AnimatingSplitPane rightPanel = new AnimatingSplitPane(JSplitPane.VERTICAL_SPLIT);
+        rightPanel.setBorder(DefaultUI.EMPTY_BORDER);
+        mainSplitPane.setBottomComponent(rightPanel);
 
 
-        return this.mainSplitPane;
+
+        FileTablePanel fileListPanel = new FileTablePanel();
+        fileListPanel.setPreferredSize(new Dimension(
+                DpiUtils.getDpiExtendedSize(DefaultUI.DEFAULT_WIDTH - DefaultUI.DEFAULT_FILE_TREE_PANEL_WITH),
+                DpiUtils.getDpiExtendedSize(DefaultUI.DEFAULT_FILE_LIST_PANEL_HEIGHT)
+        ));
+        rightPanel.setTopComponent(fileListPanel);
+
+
+
+        RoundedPanel rootPanel = new RoundedPanel(new BorderLayout());
+        rootPanel.setBorder(new RoundedTitleBorder("测试",
+                UIManager.getColor("titleGradientColor1"),
+                UIManager.getColor("titleGradientColor2")));
+        rootPanel.add(mainSplitPane, "Center");
+
+
+        ListableFileConnector listableFileConnector = new ListableFileConnector(fileBrowserPanel, fileListPanel);
+        fileBrowserPanel.setListableFileConnector(listableFileConnector);
+
+
+        this.fileBrowserPanel = fileBrowserPanel;
+        this.rightPanel = rightPanel;
+        this.fileListPanel = fileListPanel;
+        this.mainSplitPane = mainSplitPane;
+        this.rootPanel = rootPanel;
+        this.listableFileConnector = listableFileConnector;
+
+        return this.rootPanel;
     }
 
 

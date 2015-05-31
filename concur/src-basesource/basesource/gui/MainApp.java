@@ -4,13 +4,13 @@ package basesource.gui;
  * 文件浏览器
  * Created by Jake on 2015/5/31.
  */
-public class FileBrowser {
+public class MainApp {
 
     /** 主面板 */
     private MainPanel mainPanel;
 
     public static void main(String[] args) {
-        new FileBrowser().init(args);
+        new MainApp().init(args);
     }
 
     // 初始化界面

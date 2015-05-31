@@ -18,4 +18,14 @@ public class DpiUtils {
         return (int) Math.floor(size * dpi);
     }
 
+
+    /**
+     * 获取含DPI配置两倍的大小
+     * @param size
+     * @return
+     */
+    public static int getDoubleDpiExtendedSize(int size) {
+        return (int) Math.floor(size * dpi * 2);
+    }
+
 }
