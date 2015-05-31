@@ -53,9 +53,9 @@ public interface DefaultUIConstant {
     };
 
     /**
-     * 文件表格行填充
+     * 文件表格行默认填充
      */
-    int FILE_TABLE_ROW_PADDING = 5;
+    int FILE_TABLE_ROW_DEFAULT_PADDING = 2;
 
     /**
      * 文件表格标题

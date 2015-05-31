@@ -1,10 +1,10 @@
 package basesource.gui;
 
 import basesource.gui.contansts.DefaultUIConstant;
+import basesource.gui.extended.CustomFileSystemView;
 
-import javax.swing.*;
-import javax.swing.filechooser.FileSystemView;
 import javax.swing.table.AbstractTableModel;
+import java.awt.*;
 import java.io.File;
 import java.util.Date;
 
@@ -15,7 +15,7 @@ import java.util.Date;
 class FileTableModel extends AbstractTableModel {
 
     private File[] files;
-    private FileSystemView fileSystemView = FileSystemView.getFileSystemView();
+    private CustomFileSystemView fileSystemView = CustomFileSystemView.getFileSystemView();
 
     FileTableModel() {
         this(new File[0]);
@@ -43,9 +43,10 @@ class FileTableModel extends AbstractTableModel {
     }
 
     private Object getFileIcon(File file) {
-        Icon icon = fileSystemView.getSystemIcon(file);
+        Image icon = fileSystemView.getSystemIconImage(file);
         return icon;
     }
+
 
     public int getColumnCount() {
         return DefaultUIConstant.FILE_TABLE_HREADER.length;
@@ -54,7 +55,7 @@ class FileTableModel extends AbstractTableModel {
     public Class<?> getColumnClass(int column) {
         switch (column) {
             case 0:
-                return ImageIcon.class;
+                return Image.class;
             case 2:
                 return Long.class;
             case 3:
