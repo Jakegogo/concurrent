@@ -3,8 +3,11 @@ package basesource.gui;
 import basesource.gui.contansts.DefaultUIConstant;
 import basesource.gui.extended.RoundedTitleBorder;
 import basesource.gui.utils.DpiUtils;
+import org.jdesktop.swingx.JXTable;
 
 import javax.swing.*;
+import javax.swing.border.CompoundBorder;
+import javax.swing.border.EmptyBorder;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.filechooser.FileSystemView;
@@ -88,9 +91,12 @@ public class FileTablePanel extends JScrollPane {
                 fileTable.getSelectionModel().addListSelectionListener(listSelectionListener);
 
                 Icon icon = fileSystemView.getSystemIcon(files[0]);
-                // size adjustment to better account for icons
-                fileTable.setRowHeight( icon.getIconHeight() + DpiUtils.getDpiExtendedSize(DefaultUIConstant.FILE_TABLE_ROW_PADDING));
+                if (icon.getIconHeight() > fileTable.getRowHeight()) {
+                    // size adjustment to better account for icons
+                    fileTable.setRowHeight(icon.getIconHeight() + DpiUtils.getDoubleDpiExtendedSize(DefaultUIConstant.FILE_TABLE_ROW_PADDING));
+                }
                 setColumnWidth(0, icon.getIconWidth() + DpiUtils.getDoubleDpiExtendedSize(DefaultUIConstant.FILE_TABLE_ROW_PADDING));
+                clearPadding(0);
             }
         });
     }
@@ -108,6 +114,30 @@ public class FileTablePanel extends JScrollPane {
         tableColumn.setPreferredWidth(width);
         tableColumn.setMaxWidth(width);
         tableColumn.setMinWidth(width);
+    }
+
+
+    private void clearPadding(int column) {
+        TableColumn tableColumn = fileTable.getColumnModel().getColumn(column);
+        tableColumn.setCellRenderer(new BoardTableCellRenderer());
+    }
+
+
+    static class BoardTableCellRenderer extends JXTable.IconRenderer {
+
+        private static final long serialVersionUID = 1L;
+
+        public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int col) {
+            super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, col);
+            setBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15));
+            setHorizontalAlignment(0);
+            setVerticalAlignment(0);
+            setBorder(
+                    new CompoundBorder(
+                            new EmptyBorder(new Insets(-5,4,-3,4)),
+                            getBorder()));
+            return this;
+        }
     }
 
 }

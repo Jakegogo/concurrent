@@ -29,7 +29,7 @@ class FileTableModel extends AbstractTableModel {
         File file = files[row];
         switch (column) {
             case 0:
-                return fileSystemView.getSystemIcon(file);
+                return this.getFileIcon(file);
             case 1:
                 return fileSystemView.getSystemDisplayName(file);
             case 2:
@@ -40,6 +40,11 @@ class FileTableModel extends AbstractTableModel {
                 System.err.println("Logic Error");
         }
         return "";
+    }
+
+    private Object getFileIcon(File file) {
+        Icon icon = fileSystemView.getSystemIcon(file);
+        return icon;
     }
 
     public int getColumnCount() {
