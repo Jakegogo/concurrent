@@ -62,6 +62,9 @@ public class MainPanel extends SingleFrameApplication {
      */
     private JPanel rootPanel;
 
+    /** 工具条 */
+    private JToolBar toolBar;
+
     /** 主面板 */
     private AnimatingSplitPane mainSplitPane;
 
@@ -137,7 +140,6 @@ public class MainPanel extends SingleFrameApplication {
                 ));
 
 
-
         FileTreePanel fileBrowserPanel = new FileTreePanel();
         fileBrowserPanel.setPreferredSize(new Dimension(
                 DpiUtils.getDpiExtendedSize(DefaultUIConstant.DEFAULT_FILE_TREE_PANEL_WITH),
@@ -165,6 +167,12 @@ public class MainPanel extends SingleFrameApplication {
 
         JPanel rootPanel = new JPanel(new BorderLayout());
         rootPanel.add(mainSplitPane, "Center");
+
+
+        ToolBar toolBar = new ToolBar(JToolBar.HORIZONTAL);
+        JPanel toolBarPanel = new JPanel(new BorderLayout());
+        toolBarPanel.add(toolBar, "Center");
+        rootPanel.add(toolBarPanel, "North");
 
 
         ListableFileConnector listableFileConnector = new ListableFileConnector(fileBrowserPanel, fileListPanel);
