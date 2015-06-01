@@ -1,8 +1,13 @@
 package basesource.gui;
 
 import java.awt.Component;
+import java.awt.Desktop;
 import java.awt.Dimension;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.io.File;
+import java.io.IOException;
 
 import javax.swing.Icon;
 import javax.swing.JLabel;
@@ -34,8 +39,12 @@ public class FileTablePanel extends JScrollPane {
 
     /** Table model for File[]. */
     private FileTableModel fileTableModel;
-
+    
+    /** 选择行事件 */
     private ListSelectionListener listSelectionListener;
+    
+    /** 升级打开文件事件 */
+    private MouseListener rowClickMouseListener;
 
     /** FileSystemView */
     private FileSystemView fileSystemView = FileSystemView.getFileSystemView();
@@ -79,8 +88,33 @@ public class FileTablePanel extends JScrollPane {
                 ((FileTableModel)fileTable.getModel()).getFile(row);
             }
         };
-    }
+        
+        rowClickMouseListener = new MouseAdapter() {
+        	public void mouseClicked(MouseEvent e) {
 
+				if (e.getClickCount() == 2) {
+					doOpenFile(fileTable);
+				}
+			}
+        };
+        fileTable.addMouseListener(rowClickMouseListener);
+        
+    }
+        
+        
+    private void doOpenFile(final JTable fileTable) {
+		int row = fileTable.getSelectionModel().getLeadSelectionIndex();
+		File file = ((FileTableModel) fileTable.getModel()).getFile(row);
+		if (file == null) {
+			return;
+		}
+		try {
+			Desktop.getDesktop().open(file);
+		} catch (IOException e1) {
+			e1.printStackTrace();
+		}
+	}
+        
 
     /** Update the table on the EDT */
     public void updateTableData(final File[] files) {
