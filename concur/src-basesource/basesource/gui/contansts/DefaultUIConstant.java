@@ -62,4 +62,23 @@ public interface DefaultUIConstant {
      */
     String FILE_TABLE_TITLE = "文件预览";
 
+    /**
+     * 选择存储路径按钮
+     */
+    String SAVE_PATH_BUTTON = "存储路径";
+
+    /**
+     * 开始转换按钮
+     */
+    String START_CONVERT_BUTTON = "开始";
+
+    /**
+     * 暂停转换按钮
+     */
+    String STOP_CONVERT_BUTTON = "暂停";
+
+    /**
+     * 打开目标文件夹按钮
+     */
+    String OPEN_CONVERT_BUTTON = "查看";
 }

@@ -1,31 +1,21 @@
 package basesource.gui;
 
-import java.awt.Component;
-import java.awt.Desktop;
-import java.awt.Dimension;
+import basesource.gui.contansts.DefaultUIConstant;
+import basesource.gui.extended.RoundedTitleBorder;
+import basesource.gui.utils.DpiUtils;
+import org.jdesktop.swingx.JXTable;
+
+import javax.swing.*;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
+import javax.swing.filechooser.FileSystemView;
+import javax.swing.table.TableColumn;
+import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.io.File;
 import java.io.IOException;
-
-import javax.swing.Icon;
-import javax.swing.JLabel;
-import javax.swing.JScrollPane;
-import javax.swing.JTable;
-import javax.swing.ListSelectionModel;
-import javax.swing.SwingUtilities;
-import javax.swing.UIManager;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
-import javax.swing.filechooser.FileSystemView;
-import javax.swing.table.TableColumn;
-
-import org.jdesktop.swingx.JXTable;
-
-import basesource.gui.contansts.DefaultUIConstant;
-import basesource.gui.extended.RoundedTitleBorder;
-import basesource.gui.utils.DpiUtils;
 
 /**
  * 文件列表面板
@@ -118,7 +108,7 @@ public class FileTablePanel extends JScrollPane {
 
     /** Update the table on the EDT */
     public void updateTableData(final File[] files) {
-        if (files == null || files.length == 0) {
+        if (files == null) {
             return;
         }
 
@@ -130,6 +120,11 @@ public class FileTablePanel extends JScrollPane {
                 }
                 fileTable.getSelectionModel().removeListSelectionListener(listSelectionListener);
                 fileTableModel.setFiles(files);
+
+                if (files.length == 0) {
+                    return;
+                }
+
                 fileTable.getSelectionModel().addListSelectionListener(listSelectionListener);
 
                 Icon icon = fileSystemView.getSystemIcon(files[0]);
