@@ -3,10 +3,13 @@ package basesource.gui;
 import basesource.gui.contansts.DefaultUIConstant;
 import basesource.gui.extended.AnimatingSplitPane;
 import basesource.gui.utils.DpiUtils;
+
+import org.jb2011.lnf.beautyeye.BeautyEyeLNFHelper;
 import org.jdesktop.application.SingleFrameApplication;
 import org.jdesktop.application.View;
 
 import javax.swing.*;
+
 import java.awt.*;
 
 /**
@@ -33,7 +36,7 @@ public class MainPanel extends SingleFrameApplication {
             , "TextArea.font"
             , "Menu.font"
             , "TableHeader.font"
-            ,"TextField.font"
+            , "TextField.font"
             , "OptionPane.font"
             , "MenuBar.font"
             , "Button.font"
@@ -113,7 +116,9 @@ public class MainPanel extends SingleFrameApplication {
                 Color.getHSBColor(hsb[0] - 0.013F, 0.15F, 0.85F));
         UIManager.put("titleGradientColor2",
                 Color.getHSBColor(hsb[0] - 0.005F, 0.24F, 0.8F));
-
+        
+        //设置此开关量为false即表示关闭之，BeautyEye LNF中默认是true 
+        BeautyEyeLNFHelper.translucencyAtFrameInactive = false;
     }
 
 

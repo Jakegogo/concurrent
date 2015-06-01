@@ -9,8 +9,9 @@ import javax.swing.*;
  * 含进场渐变动画的面板
  */
 public class AnimatingSplitPane extends JSplitPane {
+	private static final long serialVersionUID = 7237574876567801139L;
 
-    private boolean firstExpanded = false;
+	private boolean firstExpanded = false;
 
     private int lastDividerLocation = -1;
 

@@ -11,8 +11,9 @@ import java.io.File;
  * 文件树渲染器
  */
 public class FileTreeCellRenderer extends DefaultTreeCellRenderer {
+	private static final long serialVersionUID = 4179377782261072344L;
 
-    private FileSystemView fileSystemView;
+	private FileSystemView fileSystemView;
 
     private JLabel label;
 

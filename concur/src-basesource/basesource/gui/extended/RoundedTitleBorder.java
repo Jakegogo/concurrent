@@ -72,8 +72,3 @@ public class RoundedTitleBorder extends RoundedBorder {
         g2.dispose();
     }
 }
-
-/* Location:           E:\java\beautyeye-3.5\demo\excute_jar\SwingSets3(BeautyEyeLNFDemo) (1).jar
- * Qualified Name:     com.sun.swingset3.utilities.RoundedTitleBorder
- * JD-Core Version:    0.6.2
- */

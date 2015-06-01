@@ -6,7 +6,9 @@ import java.awt.*;
 import java.awt.geom.RoundRectangle2D;
 
 public class RoundedPanel extends JXPanel {
-    private final int cornerRadius;
+	private static final long serialVersionUID = 308319891171620353L;
+	
+	private final int cornerRadius;
     private boolean contentAreaFilled;
     private transient RoundRectangle2D.Float roundBounds;
 
@@ -53,7 +55,3 @@ public class RoundedPanel extends JXPanel {
 
 }
 
-/* Location:           E:\java\beautyeye-3.5\demo\excute_jar\SwingSets3(BeautyEyeLNFDemo) (1).jar
- * Qualified Name:     com.sun.swingset3.utilities.RoundedPanel
- * JD-Core Version:    0.6.2
- */

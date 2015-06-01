@@ -6,7 +6,7 @@ package basesource.gui.utils;
 public class DpiUtils {
 
     /** DPI */
-    private static final float dpi = 1.2f;
+    private static final float dpi = 1.0f;
 
 
     /**

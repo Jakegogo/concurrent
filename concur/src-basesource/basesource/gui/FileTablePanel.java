@@ -1,26 +1,35 @@
 package basesource.gui;
 
-import basesource.gui.contansts.DefaultUIConstant;
-import basesource.gui.extended.IconImageViewer;
-import basesource.gui.extended.RoundedTitleBorder;
-import basesource.gui.utils.DpiUtils;
-import org.jdesktop.swingx.JXTable;
+import java.awt.Component;
+import java.awt.Dimension;
+import java.io.File;
 
-import javax.swing.*;
+import javax.swing.Icon;
+import javax.swing.JLabel;
+import javax.swing.JScrollPane;
+import javax.swing.JTable;
+import javax.swing.ListSelectionModel;
+import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.filechooser.FileSystemView;
 import javax.swing.table.TableColumn;
-import java.awt.*;
-import java.io.File;
+
+import org.jdesktop.swingx.JXTable;
+
+import basesource.gui.contansts.DefaultUIConstant;
+import basesource.gui.extended.RoundedTitleBorder;
+import basesource.gui.utils.DpiUtils;
 
 /**
  * 文件列表面板
  * Created by Jake on 2015/5/31.
  */
 public class FileTablePanel extends JScrollPane {
+	private static final long serialVersionUID = -5058150638044083539L;
 
-    /** 文件列表表格 */
+	/** 文件列表表格 */
     private JTable fileTable;
 
     /** Table model for File[]. */
@@ -93,11 +102,9 @@ public class FileTablePanel extends JScrollPane {
                 if (icon.getIconHeight() > fileTable.getRowHeight()) {
                     // size adjustment to better account for icons
                     fileTable.setRowHeight(icon.getIconHeight() + DpiUtils.getDoubleDpiExtendedSize(DefaultUIConstant.FILE_TABLE_ROW_DEFAULT_PADDING));
-                } else {
-                    fileTable.setRowHeight(fileTable.getRowHeight() + DpiUtils.getDpiExtendedSize(DefaultUIConstant.FILE_TABLE_ROW_DEFAULT_PADDING));
                 }
                 setColumnWidth(0, icon.getIconWidth() + DpiUtils.getDoubleDpiExtendedSize(DefaultUIConstant.FILE_TABLE_ROW_DEFAULT_PADDING));
-                clearPadding(0);
+                convertToImageCell(0);
             }
         });
     }
@@ -118,7 +125,7 @@ public class FileTablePanel extends JScrollPane {
     }
 
 
-    private void clearPadding(int column) {
+    private void convertToImageCell(int column) {
         TableColumn tableColumn = fileTable.getColumnModel().getColumn(column);
         tableColumn.setCellRenderer(new ImageIconTableCellRenderer());
     }
@@ -127,11 +134,16 @@ public class FileTablePanel extends JScrollPane {
     static class ImageIconTableCellRenderer extends JXTable.IconRenderer {
 
         private static final long serialVersionUID = 1L;
+        
+        private JLabel label = new JLabel();
+        
+        ImageIconTableCellRenderer() {
+        	label.setOpaque(true);
+        }
 
         public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int col) {
-            super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, col);
-            IconImageViewer imageViewer = new IconImageViewer(((Image) value));
-            return imageViewer;
+        	label.setIcon((Icon) value);
+            return label;
         }
     }
 

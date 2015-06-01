@@ -17,8 +17,9 @@ import java.util.List;
  * Created by Jake on 2015/5/31.
  */
 public class FileTreePanel extends JScrollPane {
+	private static final long serialVersionUID = -5499094661570412734L;
 
-    FileSystemView fileSystemView = FileSystemView.getFileSystemView();
+	FileSystemView fileSystemView = FileSystemView.getFileSystemView();
 
     /** 文件树 */
     private JTree fileTree;
@@ -72,9 +73,6 @@ public class FileTreePanel extends JScrollPane {
         fileTree.addTreeSelectionListener(treeSelectionListener);
 
         this.fileTree = fileTree;
-
-
-
         return fileTree;
     }
 

@@ -1,21 +1,24 @@
 package basesource.gui;
 
-import basesource.gui.contansts.DefaultUIConstant;
-import basesource.gui.extended.CustomFileSystemView;
-
-import javax.swing.table.AbstractTableModel;
-import java.awt.*;
 import java.io.File;
 import java.util.Date;
+
+import javax.swing.Icon;
+import javax.swing.filechooser.FileSystemView;
+import javax.swing.table.AbstractTableModel;
+
+import basesource.gui.contansts.DefaultUIConstant;
 
 /**
  * 文件列表表格模型
  * A TableModel to hold File[].
  */
 class FileTableModel extends AbstractTableModel {
-
-    private File[] files;
-    private CustomFileSystemView fileSystemView = CustomFileSystemView.getFileSystemView();
+	private static final long serialVersionUID = 9114477369652282804L;
+	
+	private File[] files;
+	/** FileSystemView */
+    private FileSystemView fileSystemView = FileSystemView.getFileSystemView();
 
     FileTableModel() {
         this(new File[0]);
@@ -43,7 +46,7 @@ class FileTableModel extends AbstractTableModel {
     }
 
     private Object getFileIcon(File file) {
-        Image icon = fileSystemView.getSystemIconImage(file);
+    	Icon icon = fileSystemView.getSystemIcon(file);
         return icon;
     }
 
@@ -55,7 +58,7 @@ class FileTableModel extends AbstractTableModel {
     public Class<?> getColumnClass(int column) {
         switch (column) {
             case 0:
-                return Image.class;
+                return Icon.class;
             case 2:
                 return Long.class;
             case 3:

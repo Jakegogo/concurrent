@@ -2,7 +2,6 @@
 package basesource.gui.extended;
 
 
-import javax.jnlp.ServiceManager;
 import java.awt.*;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
@@ -10,10 +9,7 @@ import java.net.URL;
 
 
 public class Utilities {
-    public static boolean runningFromWebStart() {
-        return ServiceManager.getServiceNames() != null;
-    }
-
+	
     public static String getURLFileName(URL url) {
         String path = url.getPath();
         return path.substring(path.lastIndexOf("/") + 1);
@@ -97,8 +93,3 @@ public class Utilities {
                 String.format("%.3f%n", new Object[]{Float.valueOf(hsb[2])}));
     }
 }
-
-/* Location:           E:\java\beautyeye-3.5\demo\excute_jar\SwingSets3(BeautyEyeLNFDemo) (1).jar
- * Qualified Name:     com.sun.swingset3.utilities.Utilities
- * JD-Core Version:    0.6.2
- */
