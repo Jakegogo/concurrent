@@ -65,7 +65,7 @@ public interface DefaultUIConstant {
     /**
      * 选择存储路径按钮
      */
-    String SAVE_PATH_BUTTON = "存储路径";
+    String SAVE_PATH_BUTTON = "输出";
 
     /**
      * 开始转换按钮
@@ -81,4 +81,10 @@ public interface DefaultUIConstant {
      * 打开目标文件夹按钮
      */
     String OPEN_CONVERT_BUTTON = "查看";
+
+    /**
+     * 选择输出路径提示
+     */
+    String ACCECPT_FILE_LIMIT_TIP = "文件夹..";
+
 }
