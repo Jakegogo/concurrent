@@ -1,4 +1,4 @@
-package basesource.gui.extended;
+package basesource.convertor.ui.extended;
 
 import org.jdesktop.swingx.JXPanel;
 

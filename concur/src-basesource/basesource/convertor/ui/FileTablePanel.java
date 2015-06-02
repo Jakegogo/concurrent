@@ -1,21 +1,20 @@
-package basesource.gui;
+package basesource.convertor.ui;
 
-import basesource.gui.contansts.DefaultUIConstant;
-import basesource.gui.extended.RoundedTitleBorder;
-import basesource.gui.utils.DpiUtils;
+import basesource.convertor.contansts.DefaultUIConstant;
+import basesource.convertor.model.ListableFileManager;
+import basesource.convertor.ui.extended.RoundedTitleBorder;
+import basesource.convertor.utils.DpiUtils;
 import org.jdesktop.swingx.JXTable;
 
 import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
-import javax.swing.filechooser.FileSystemView;
 import javax.swing.table.TableColumn;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.io.File;
-import java.io.IOException;
 
 /**
  * 文件列表面板
@@ -33,15 +32,16 @@ public class FileTablePanel extends JScrollPane {
     /** 选择行事件 */
     private ListSelectionListener listSelectionListener;
     
-    /** 升级打开文件事件 */
+    /** 双击打开文件事件 */
     private MouseListener rowClickMouseListener;
 
-    /** FileSystemView */
-    private FileSystemView fileSystemView = FileSystemView.getFileSystemView();
+    /** 文件管理器 */
+    private ListableFileManager listableFileManager;
 
 
 
-    public FileTablePanel() {
+    public FileTablePanel(ListableFileManager listableFileManager) {
+        this.listableFileManager = listableFileManager;
         this.init();
     }
 
@@ -81,7 +81,6 @@ public class FileTablePanel extends JScrollPane {
         
         rowClickMouseListener = new MouseAdapter() {
         	public void mouseClicked(MouseEvent e) {
-
 				if (e.getClickCount() == 2) {
 					doOpenFile(fileTable);
 				}
@@ -95,16 +94,9 @@ public class FileTablePanel extends JScrollPane {
     private void doOpenFile(final JTable fileTable) {
 		int row = fileTable.getSelectionModel().getLeadSelectionIndex();
 		File file = ((FileTableModel) fileTable.getModel()).getFile(row);
-		if (file == null) {
-			return;
-		}
-		try {
-			Desktop.getDesktop().open(file);
-		} catch (IOException e1) {
-			e1.printStackTrace();
-		}
+        listableFileManager.openFileView(file);
 	}
-        
+
 
     /** Update the table on the EDT */
     public void updateTableData(final File[] files) {
@@ -127,12 +119,12 @@ public class FileTablePanel extends JScrollPane {
 
                 fileTable.getSelectionModel().addListSelectionListener(listSelectionListener);
 
-                Icon icon = fileSystemView.getSystemIcon(files[0]);
+                Icon icon = listableFileManager.getSystemIcon(files[0]);
                 if (icon.getIconHeight() > fileTable.getRowHeight()) {
                     // size adjustment to better account for icons
-                    fileTable.setRowHeight(icon.getIconHeight() + DpiUtils.getDoubleDpiExtendedSize(DefaultUIConstant.FILE_TABLE_ROW_DEFAULT_PADDING));
+                    fileTable.setRowHeight(DpiUtils.addLineVerticalPadding(icon.getIconHeight()));
                 }
-                setColumnWidth(0, icon.getIconWidth() + DpiUtils.getDoubleDpiExtendedSize(DefaultUIConstant.FILE_TABLE_ROW_DEFAULT_PADDING));
+                setColumnWidth(0, DpiUtils.addLineHorizontalPadding(icon.getIconWidth()));
                 convertToImageCell(0);
             }
         });
@@ -146,7 +138,7 @@ public class FileTablePanel extends JScrollPane {
             JLabel label = new JLabel( (String)tableColumn.getHeaderValue() );
             Dimension preferred = label.getPreferredSize();
             // altered 10->14 as per camickr comment.
-            width = (int)preferred.getWidth()+14;
+            width = (int) preferred.getWidth() + 14;
         }
         tableColumn.setPreferredWidth(width);
         tableColumn.setMaxWidth(width);
@@ -171,7 +163,7 @@ public class FileTablePanel extends JScrollPane {
         }
 
         public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int col) {
-        	label.setIcon((Icon) value);
+            label.setIcon((Icon) value);
             return label;
         }
     }

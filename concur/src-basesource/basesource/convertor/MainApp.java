@@ -1,4 +1,6 @@
-package basesource.gui;
+package basesource.convertor;
+
+import basesource.convertor.ui.MainPanel;
 
 /**
  * 文件浏览器

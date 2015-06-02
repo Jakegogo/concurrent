@@ -1,5 +1,5 @@
 
-package basesource.gui.extended;
+package basesource.convertor.ui.extended;
 
 import javax.swing.border.Border;
 import java.awt.*;

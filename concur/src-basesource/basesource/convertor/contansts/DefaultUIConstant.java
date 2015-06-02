@@ -1,6 +1,6 @@
-package basesource.gui.contansts;
+package basesource.convertor.contansts;
 
-import basesource.gui.utils.DpiUtils;
+import basesource.convertor.utils.DpiUtils;
 
 import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;

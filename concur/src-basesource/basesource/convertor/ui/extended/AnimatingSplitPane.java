@@ -1,4 +1,4 @@
-package basesource.gui.extended;
+package basesource.convertor.ui.extended;
 
 import org.jdesktop.animation.timing.Animator;
 import org.jdesktop.animation.timing.interpolation.PropertySetter;

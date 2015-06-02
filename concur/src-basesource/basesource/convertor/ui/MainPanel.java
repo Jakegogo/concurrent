@@ -1,8 +1,10 @@
-package basesource.gui;
+package basesource.convertor.ui;
 
-import basesource.gui.contansts.DefaultUIConstant;
-import basesource.gui.extended.AnimatingSplitPane;
-import basesource.gui.utils.DpiUtils;
+import basesource.convertor.contansts.DefaultUIConstant;
+import basesource.convertor.model.ListableFileManager;
+import basesource.convertor.model.ListableFileObservable;
+import basesource.convertor.ui.extended.AnimatingSplitPane;
+import basesource.convertor.utils.DpiUtils;
 
 import org.jb2011.lnf.beautyeye.BeautyEyeLNFHelper;
 import org.jdesktop.application.SingleFrameApplication;
@@ -78,9 +80,13 @@ public class MainPanel extends SingleFrameApplication {
     private FileTablePanel fileListPanel;
 
     /** 文件列表更新通知接口 */
-    private ListableFileConnector listableFileConnector;
+    private ListableFileObservable listableFileConnector;
 
-    public MainPanel(){}
+    /** 文件管理器 */
+    private ListableFileManager listableFileManager = new ListableFileManager();
+
+    public MainPanel() {
+    }
 
     public MainPanel(String[] args) {
         launch(MainPanel.class, args);
@@ -140,7 +146,7 @@ public class MainPanel extends SingleFrameApplication {
                 ));
 
 
-        FileTreePanel fileBrowserPanel = new FileTreePanel();
+        FileTreePanel fileBrowserPanel = new FileTreePanel(this.listableFileManager);
         fileBrowserPanel.setPreferredSize(new Dimension(
                 DpiUtils.getDpiExtendedSize(DefaultUIConstant.DEFAULT_FILE_TREE_PANEL_WITH),
                 DpiUtils.getDpiExtendedSize(DefaultUIConstant.DEFAULT_HEIGHT)
@@ -156,7 +162,7 @@ public class MainPanel extends SingleFrameApplication {
 
 
 
-        FileTablePanel fileListPanel = new FileTablePanel();
+        FileTablePanel fileListPanel = new FileTablePanel(this.listableFileManager);
         fileListPanel.setPreferredSize(new Dimension(
                 DpiUtils.getDpiExtendedSize(DefaultUIConstant.DEFAULT_WIDTH - DefaultUIConstant.DEFAULT_FILE_TREE_PANEL_WITH),
                 DpiUtils.getDpiExtendedSize(DefaultUIConstant.DEFAULT_FILE_LIST_PANEL_HEIGHT)
@@ -175,7 +181,7 @@ public class MainPanel extends SingleFrameApplication {
         rootPanel.add(toolBarPanel, "North");
 
 
-        ListableFileConnector listableFileConnector = new ListableFileConnector(fileBrowserPanel, fileListPanel);
+        ListableFileObservable listableFileConnector = new ListableFileObservable(fileBrowserPanel, fileListPanel);
         fileBrowserPanel.setListableFileConnector(listableFileConnector);
 
 

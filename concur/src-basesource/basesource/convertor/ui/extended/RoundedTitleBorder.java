@@ -1,5 +1,5 @@
 
-package basesource.gui.extended;
+package basesource.convertor.ui.extended;
 
 import java.awt.AlphaComposite;
 import java.awt.Color;

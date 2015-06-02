@@ -1,7 +1,8 @@
-package basesource.gui.extended;
+package basesource.convertor.ui.extended;
+
+import basesource.convertor.model.ListableFileManager;
 
 import javax.swing.*;
-import javax.swing.filechooser.FileSystemView;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeCellRenderer;
 import java.awt.*;
@@ -13,14 +14,15 @@ import java.io.File;
 public class FileTreeCellRenderer extends DefaultTreeCellRenderer {
 	private static final long serialVersionUID = 4179377782261072344L;
 
-	private FileSystemView fileSystemView;
+    /** 文件管理器 */
+    private ListableFileManager listableFileManager;
 
     private JLabel label;
 
-    public FileTreeCellRenderer(FileSystemView fileSystemView) {
+    public FileTreeCellRenderer(ListableFileManager listableFileManager) {
         label = new JLabel();
         label.setOpaque(true);
-        this.fileSystemView = fileSystemView;
+        this.listableFileManager = listableFileManager;
     }
 
     @Override
@@ -35,8 +37,12 @@ public class FileTreeCellRenderer extends DefaultTreeCellRenderer {
 
         DefaultMutableTreeNode node = (DefaultMutableTreeNode) value;
         File file = (File) node.getUserObject();
-        label.setIcon(fileSystemView.getSystemIcon(file));
-        label.setText(fileSystemView.getSystemDisplayName(file));
+        if (file == null) {
+            return label;
+        }
+
+        label.setIcon(listableFileManager.getSystemIcon(file));
+        label.setText(listableFileManager.getSystemDisplayName(file));
         label.setToolTipText(file.getPath());
 
         if (selected) {

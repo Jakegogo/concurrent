@@ -1,11 +1,15 @@
 
-package basesource.gui.extended;
+package basesource.convertor.ui.extended;
 
 
+import javax.swing.*;
+import javax.swing.tree.TreeNode;
+import javax.swing.tree.TreePath;
 import java.awt.*;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.net.URL;
+import java.util.Enumeration;
 
 
 public class Utilities {
@@ -92,4 +96,18 @@ public class Utilities {
                 String.format("%.3f%n", new Object[]{Float.valueOf(hsb[1])}) + "," +
                 String.format("%.3f%n", new Object[]{Float.valueOf(hsb[2])}));
     }
+
+
+    public static void expandTree(JTree tree, TreePath parent) {
+        TreeNode node = (TreeNode) parent.getLastPathComponent();
+        if (node.getChildCount() >= 0) {
+            for (Enumeration<?> e = node.children(); e.hasMoreElements();) {
+                TreeNode n = (TreeNode) e.nextElement();
+                TreePath path = parent.pathByAddingChild(n);
+                expandTree(tree, path);
+            }
+        }
+        tree.expandPath(parent);
+    }
+
 }
