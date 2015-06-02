@@ -82,4 +82,11 @@ class FileTableModel extends AbstractTableModel {
         this.files = files;
         fireTableDataChanged();
     }
+
+    public boolean isSameFiles(File[] files) {
+        if (files == null) {
+            return false;
+        }
+        return files.equals(this.files);
+    }
 }

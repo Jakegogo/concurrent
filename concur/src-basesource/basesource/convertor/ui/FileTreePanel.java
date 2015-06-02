@@ -90,23 +90,22 @@ public class FileTreePanel extends JScrollPane {
         SwingWorker<Void, File> worker = new SwingWorker<Void, File>() {
             @Override
             public Void doInBackground() {
-                if (!node.hasInit()) {
+                File file = (File) node.getUserObject();
+                if (file == null) {
+                    return null;
+                }
 
-                    File file = (File) node.getUserObject();
-                    if (file == null) {
-                        return null;
-                    }
+                if (!node.hasInit()) {
 
                     for (File childDirectorys : listableFileManager.listChildDirectorys(file)) {
                         this.publish(childDirectorys);
                     }
 
-                    // 联动 更新 表格
-                    List<File> childFiles = listableFileManager.listChildFiles(file);
-                    listableFileConnector.updateTableData(childFiles);
-
                     node.setInit(true);
                 }
+
+                // 联动 更新 表格
+                listableFileConnector.updateSelectDirectory(file);
 
                 return null;
             }

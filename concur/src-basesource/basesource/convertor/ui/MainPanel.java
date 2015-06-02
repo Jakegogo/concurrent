@@ -1,17 +1,17 @@
 package basesource.convertor.ui;
 
 import basesource.convertor.contansts.DefaultUIConstant;
+import basesource.convertor.files.monitor.FileAlterationMonitor;
+import basesource.convertor.files.monitor.FileAlterationObserver;
 import basesource.convertor.model.ListableFileManager;
 import basesource.convertor.model.ListableFileObservable;
 import basesource.convertor.ui.extended.AnimatingSplitPane;
 import basesource.convertor.utils.DpiUtils;
-
 import org.jb2011.lnf.beautyeye.BeautyEyeLNFHelper;
 import org.jdesktop.application.SingleFrameApplication;
 import org.jdesktop.application.View;
 
 import javax.swing.*;
-
 import java.awt.*;
 
 /**
@@ -85,6 +85,9 @@ public class MainPanel extends SingleFrameApplication {
     /** 文件管理器 */
     private ListableFileManager listableFileManager = new ListableFileManager();
 
+    /** 文件更新监视器 */
+    private FileAlterationMonitor fileAlterationMonitor = new FileAlterationMonitor(DefaultUIConstant.FILE_MONITOR_INTERVAL);
+
     public MainPanel() {
     }
 
@@ -128,6 +131,16 @@ public class MainPanel extends SingleFrameApplication {
         
         //设置此开关量为false即表示关闭之，BeautyEye LNF中默认是true 
         BeautyEyeLNFHelper.translucencyAtFrameInactive = false;
+
+        // 开启文件监听器
+        for (FileAlterationObserver observer : fileAlterationMonitor.getObservers()) {
+            fileAlterationMonitor.removeObserver(observer);
+        }
+        try {
+            fileAlterationMonitor.start();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
 
@@ -181,7 +194,7 @@ public class MainPanel extends SingleFrameApplication {
         rootPanel.add(toolBarPanel, "North");
 
 
-        ListableFileObservable listableFileConnector = new ListableFileObservable(fileBrowserPanel, fileListPanel);
+        ListableFileObservable listableFileConnector = new ListableFileObservable(fileBrowserPanel, fileListPanel, listableFileManager, fileAlterationMonitor);
         fileBrowserPanel.setListableFileConnector(listableFileConnector);
 
 

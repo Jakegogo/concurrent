@@ -8,7 +8,9 @@ import java.awt.*;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * 文件管理器
@@ -17,6 +19,15 @@ import java.util.List;
 public class ListableFileManager {
 
     FileSystemView fileSystemView = FileSystemView.getFileSystemView();
+
+    /**
+     * 可用的文件格式
+     */
+    private Set<String> validFileExtension = new HashSet<String>();
+    {
+        validFileExtension.add("xls");
+        validFileExtension.add("xlsx");
+    }
 
 
     /**
@@ -74,6 +85,34 @@ public class ListableFileManager {
             }
         }
         return fileList;
+    }
+
+
+    /**
+     * 获取文件夹的子文件
+     * @param file
+     * @return
+     */
+    public List<File> filterChildFiles(File file) {
+        List<File> fileList = new ArrayList<File>();
+        if (file.isDirectory()) {
+            File[] files = fileSystemView.getFiles(file, true); //!!
+            for (File child : files) {
+                if (child.isDirectory()) {
+                    continue;
+                }
+                if (!validFileExtension(child)) {
+                    continue;
+                }
+                fileList.add(child);
+            }
+        }
+        return fileList;
+    }
+
+
+    private boolean validFileExtension(File child) {
+        return validFileExtension.contains(getFileExtension(child));
     }
 
 
@@ -138,5 +177,19 @@ public class ListableFileManager {
         }
     }
 
+
+    /**
+     * 获取文件扩展名
+     * @param file
+     * @return
+     */
+    public static String getFileExtension(File file) {
+        String fileName = file.getName();
+        if (fileName.lastIndexOf(".") != -1 && fileName.lastIndexOf(".") != 0) {
+            return fileName.substring(fileName.lastIndexOf(".") + 1);
+        } else {
+            return "";
+        }
+    }
 
 }

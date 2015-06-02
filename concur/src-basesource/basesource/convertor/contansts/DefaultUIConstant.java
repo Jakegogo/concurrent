@@ -93,4 +93,9 @@ public interface DefaultUIConstant {
      */
     String ACCECPT_FILE_LIMIT_TIP = "文件夹..";
 
+    /**
+     * 文件监视时间间隔
+     */
+    long FILE_MONITOR_INTERVAL = 3 * 1000;
+
 }
