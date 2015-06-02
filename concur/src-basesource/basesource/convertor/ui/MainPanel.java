@@ -175,7 +175,7 @@ public class MainPanel extends SingleFrameApplication {
         rootPanel.add(mainSplitPane, "Center");
 
 
-        ToolBar toolBar = new ToolBar(JToolBar.HORIZONTAL);
+        ToolBar toolBar = new ToolBar(JToolBar.HORIZONTAL, this.listableFileManager);
         JPanel toolBarPanel = new JPanel(new BorderLayout());
         toolBarPanel.add(toolBar, "Center");
         rootPanel.add(toolBarPanel, "North");

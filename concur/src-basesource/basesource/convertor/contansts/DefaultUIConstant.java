@@ -77,6 +77,12 @@ public interface DefaultUIConstant {
      */
     String STOP_CONVERT_BUTTON = "暂停";
 
+
+    /**
+     * 取消转换按钮
+     */
+    String CANCLE_CONVERT_BUTTON = "取消";
+
     /**
      * 打开目标文件夹按钮
      */
