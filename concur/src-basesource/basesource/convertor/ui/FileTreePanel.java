@@ -1,16 +1,19 @@
 package basesource.convertor.ui;
 
+import java.util.List;
+
+import javax.swing.JScrollPane;
+import javax.swing.JTree;
+import javax.swing.SwingWorker;
+import javax.swing.event.TreeSelectionEvent;
+import javax.swing.event.TreeSelectionListener;
+import javax.swing.tree.DefaultTreeModel;
+
+import basesource.convertor.model.FolderInfo;
 import basesource.convertor.model.ListableFileManager;
 import basesource.convertor.model.ListableFileObservable;
 import basesource.convertor.ui.extended.FileNode;
 import basesource.convertor.ui.extended.FileTreeCellRenderer;
-
-import javax.swing.*;
-import javax.swing.event.TreeSelectionEvent;
-import javax.swing.event.TreeSelectionListener;
-import javax.swing.tree.DefaultTreeModel;
-import java.io.File;
-import java.util.List;
 
 /**
  * 左侧文件树浏览面板
@@ -60,7 +63,7 @@ public class FileTreePanel extends JScrollPane {
         DefaultTreeModel treeModel = new DefaultTreeModel(root);
         JTree fileTree = new JTree(treeModel);
         fileTree.setRootVisible(false);
-        fileTree.setCellRenderer(new FileTreeCellRenderer(listableFileManager));
+        fileTree.setCellRenderer(new FileTreeCellRenderer());
         fileTree.expandRow(0);
 
         TreeSelectionListener treeSelectionListener = new TreeSelectionListener() {
@@ -87,34 +90,31 @@ public class FileTreePanel extends JScrollPane {
     private void showChildren(final FileNode node) {
         this.fileTree.setEnabled(false);
 
-        SwingWorker<Void, File> worker = new SwingWorker<Void, File>() {
+        SwingWorker<Void, FolderInfo> worker = new SwingWorker<Void, FolderInfo>() {
             @Override
             public Void doInBackground() {
-                File file = (File) node.getUserObject();
-                if (file == null) {
+            	FolderInfo folderInfo = (FolderInfo) node.getUserObject();
+                if (folderInfo == null) {
                     return null;
                 }
 
                 if (!node.hasInit()) {
-
-                    for (File childDirectorys : listableFileManager.listChildDirectorys(file)) {
+                    for (FolderInfo childDirectorys : listableFileManager.listChildFolderInfo(folderInfo)) {
                         this.publish(childDirectorys);
                     }
-
                     node.setInit(true);
                 }
 
                 // 联动 更新 表格
-                listableFileConnector.updateSelectDirectory(file);
+                listableFileConnector.updateSelectDirectory(folderInfo);
 
                 return null;
             }
 
             @Override
-            protected void process(List<File> chunks) {
-                for (File child : chunks) {
-                    boolean hasChileDirectorys = listableFileManager.hasChildDirectorys(child);
-                    FileNode childNode = new FileNode(child, hasChileDirectorys);
+            protected void process(List<FolderInfo> chunks) {
+                for (FolderInfo child : chunks) {
+                    FileNode childNode = new FileNode(child);
                     node.add(childNode);
                 }
             }

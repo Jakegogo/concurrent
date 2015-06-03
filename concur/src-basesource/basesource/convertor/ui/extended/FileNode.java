@@ -6,41 +6,47 @@
 package basesource.convertor.ui.extended;
 
 import javax.swing.tree.DefaultMutableTreeNode;
-import java.io.File;
+
+import basesource.convertor.model.FolderInfo;
 
 public class FileNode extends DefaultMutableTreeNode {
-    private final File file;
-    private final boolean hasChildDirectorys;
+	private static final long serialVersionUID = -937774607532009623L;
+	
+	private final FolderInfo folderInfo;
     private boolean init = false;
 
     public FileNode() {
-        this.file = null;
-        this.hasChildDirectorys = true;
+        this.folderInfo = null;
     }
 
-    public FileNode(File file, boolean hasChildDirectorys) {
-        super(file);
-        this.file = file;
-        this.hasChildDirectorys = hasChildDirectorys;
+    public FileNode(FolderInfo folderInfo) {
+        super(folderInfo);
+        this.folderInfo = folderInfo;
     }
 
     public boolean getAllowsChildren() {
-        return this.hasChildDirectorys;
+    	if (this.folderInfo == null) {
+            return true;
+        }
+        return this.folderInfo.isHasChildDirectorys();
     }
 
-    public File getFile() {
-        return this.file;
+    public FolderInfo getFile() {
+        return this.folderInfo;
     }
 
     public boolean isLeaf() {
-        return !this.hasChildDirectorys;
+    	if (this.folderInfo == null) {
+            return false;
+        }
+        return !this.folderInfo.isHasChildDirectorys();
     }
 
     public String toString() {
-        if (this.file == null) {
+        if (this.folderInfo == null) {
             return null;
         }
-        return this.file.getName();
+        return this.folderInfo.getName();
     }
 
     public void setInit(boolean init) {

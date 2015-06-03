@@ -25,7 +25,7 @@ public class ListableFileObservable {
     private ListableFileManager listableFileManager;
 
     /** 当前选中的目录 */
-    private File curDirectory;
+    private FolderInfo curDirectory;
 
     /** 文件更新监视器 */
     private FileAlterationMonitor fileAlterationMonitor;
@@ -60,19 +60,24 @@ public class ListableFileObservable {
 
     /**
      * 更新选择文件夹
-     * @param file 文件夹
+     * @param folderInfo 文件夹
      */
-    public void updateSelectDirectory(File file) {
-        if (file == null) {
+    public void updateSelectDirectory(FolderInfo folderInfo) {
+        if (folderInfo == null) {
             return;
         }
-
+        
+        File file = folderInfo.getFileCache();
+        if (!file.exists()) {
+        	return;
+        }
+        
         List<File> childFiles = listableFileManager.filterChildFiles(file);
         this.updateTableData(childFiles);
 
         // 更新文件监听器
         this.registerFileMonitor(file);
-        this.curDirectory = file;
+        this.curDirectory = folderInfo;
     }
 
 
@@ -85,7 +90,11 @@ public class ListableFileObservable {
         this.fileListPanel.updateTableData(files);
     }
 
-
+    
+    /**
+     * 注册文件变化监听器
+     * @param path
+     */
     private void registerFileMonitor(File path) {
         if (!path.isDirectory()) {
             return;

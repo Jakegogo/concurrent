@@ -15,8 +15,9 @@ import java.io.File;
  * Created by Jake on 2015/6/2.
  */
 public class ToolBar extends JToolBar {
+	private static final long serialVersionUID = -8094727898194177964L;
 
-    private JToggleButton startButton;
+	private JToggleButton startButton;
 
     private JToggleButton stopButton;
 

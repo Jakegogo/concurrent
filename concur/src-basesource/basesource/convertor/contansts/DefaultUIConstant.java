@@ -97,5 +97,10 @@ public interface DefaultUIConstant {
      * 文件监视时间间隔
      */
     long FILE_MONITOR_INTERVAL = 3 * 1000;
+    
+    /**
+     * 文件名编码
+     */
+    String FILE_NAME_ENCODE = "GBK";
 
 }

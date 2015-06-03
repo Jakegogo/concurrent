@@ -1,12 +1,13 @@
 package basesource.convertor.ui.extended;
 
-import basesource.convertor.model.ListableFileManager;
+import java.awt.Component;
 
-import javax.swing.*;
+import javax.swing.JLabel;
+import javax.swing.JTree;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeCellRenderer;
-import java.awt.*;
-import java.io.File;
+
+import basesource.convertor.model.FolderInfo;
 
 /**
  * 文件树渲染器
@@ -14,15 +15,11 @@ import java.io.File;
 public class FileTreeCellRenderer extends DefaultTreeCellRenderer {
 	private static final long serialVersionUID = 4179377782261072344L;
 
-    /** 文件管理器 */
-    private ListableFileManager listableFileManager;
-
     private JLabel label;
 
-    public FileTreeCellRenderer(ListableFileManager listableFileManager) {
+    public FileTreeCellRenderer() {
         label = new JLabel();
         label.setOpaque(true);
-        this.listableFileManager = listableFileManager;
     }
 
     @Override
@@ -36,14 +33,14 @@ public class FileTreeCellRenderer extends DefaultTreeCellRenderer {
             boolean hasFocus) {
 
         DefaultMutableTreeNode node = (DefaultMutableTreeNode) value;
-        File file = (File) node.getUserObject();
-        if (file == null) {
+        FolderInfo folderInfo = (FolderInfo) node.getUserObject();
+        if (folderInfo == null) {
             return label;
         }
 
-        label.setIcon(listableFileManager.getSystemIcon(file));
-        label.setText(listableFileManager.getSystemDisplayName(file));
-        label.setToolTipText(file.getPath());
+        label.setIcon(folderInfo.getIcon());
+        label.setText(folderInfo.getName());
+        label.setToolTipText(folderInfo.getPath());
 
         if (selected) {
             label.setBackground(backgroundSelectionColor);

@@ -12,6 +12,8 @@ import java.awt.Insets;
 import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
 
+import basesource.convertor.tools.Utilities;
+
 public class RoundedTitleBorder extends RoundedBorder {
     private final String title;
     private final Color[] titleGradientColors;
