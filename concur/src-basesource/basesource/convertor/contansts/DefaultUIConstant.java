@@ -38,9 +38,14 @@ public interface DefaultUIConstant {
     Border EMPTY_BORDER = new EmptyBorder(0, 0, 0, 0);
 
     /**
+     * 默认字体大小
+     */
+    int DEFAULT_FONT_SIZE = 12;
+    
+    /**
      * 默认字体
      */
-    Font DEFAULT_FONT = new Font("微软雅黑", Font.PLAIN, DpiUtils.getDpiExtendedSize(14));
+    Font DEFAULT_FONT = new Font("微软雅黑", Font.PLAIN, DpiUtils.getDpiExtendedSize(DEFAULT_FONT_SIZE));
 
     /**
      * 文件表格头文字描述
