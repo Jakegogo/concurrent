@@ -7,14 +7,12 @@ import basesource.convertor.model.ListableFileManager;
 import basesource.convertor.model.ListableFileObservable;
 import basesource.convertor.ui.extended.AnimatingSplitPane;
 import basesource.convertor.utils.DpiUtils;
-
 import org.jb2011.lnf.beautyeye.BeautyEyeLNFHelper;
 import org.jdesktop.application.SingleFrameApplication;
 import org.jdesktop.application.View;
 
 import javax.swing.*;
 import javax.swing.plaf.FontUIResource;
-
 import java.awt.*;
 import java.util.HashMap;
 import java.util.Map;
@@ -24,6 +22,12 @@ import java.util.Map;
  * Created by Jake on 2015/5/31.
  */
 public class MainPanel extends SingleFrameApplication {
+
+    private static final String FALLBACK_FONT_FAMILY_NAME = Font.SANS_SERIF;
+    private static final Map<String, String> FONT_FAMILY_NAMES = new HashMap<String, String>();
+    private static final String[] BEST_FONT_FAMILIES = {
+            "微软雅黑", "arial", "sans-serif"
+    };
 
     /**
      * UIManager中UI字体相关的key
@@ -63,13 +67,6 @@ public class MainPanel extends SingleFrameApplication {
             , "TitledBorder.font"
             , "ComboBox.font"
     };
-
-    
-    private static final String FALLBACK_FONT_FAMILY_NAME = Font.SANS_SERIF;
-    private static final Map<String, String> FONT_FAMILY_NAMES = new HashMap<String, String>();
-    private static final String[] BEST_FONT_FAMILIES = {
-            "微软雅黑", "arial", "sans-serif"
-    };
     
     static {
         GraphicsEnvironment env = GraphicsEnvironment.getLocalGraphicsEnvironment();
@@ -91,15 +88,17 @@ public class MainPanel extends SingleFrameApplication {
     }
  
     public static String getLookAndFeel() {
-        try {
-            for (UIManager.LookAndFeelInfo info : UIManager.getInstalledLookAndFeels()) {
-                if ("Nimbus".equals(info.getName())) {
-                    return info.getClassName();
-                }
-            }
-        } catch (Exception ignore) {
-        }
-        return UIManager.getCrossPlatformLookAndFeelClassName();
+        return "basesource.convertor.ui.plaf.BeautyEyeLookAndFeelWin";
+////        return "basesource.convertor.ui.plaf.nimbus.NimbusLookAndFeel";
+//        try {
+//            for (UIManager.LookAndFeelInfo info : UIManager.getInstalledLookAndFeels()) {
+//                if ("Nimbus".equals(info.getName())) {
+//                    return info.getClassName();
+//                }
+//            }
+//        } catch (Exception ignore) {
+//        }
+//        return UIManager.getCrossPlatformLookAndFeelClassName();
     }
  
     public static String getFontFamily(String[] fontFamilies) {
@@ -124,24 +123,27 @@ public class MainPanel extends SingleFrameApplication {
  
     public static void setUI() {
         enableAntiAliasing();
-        // set LookAndFeel
+//        // set LookAndFeel
         try {
             UIManager.setLookAndFeel(getLookAndFeel());
         } catch (Exception ignore) {
+            ignore.printStackTrace();
         }
         // set DefaultFont
         String bestFontFamily = getFontFamily(getBestFontFamilies());
         for (Map.Entry<Object, Object> entry : UIManager.getDefaults().entrySet()) {
             if (entry.getValue() instanceof FontUIResource) {
                 FontUIResource fontUIRes = (FontUIResource) entry.getValue();
-                entry.setValue(new FontUIResource(
-                        bestFontFamily,
-                        fontUIRes.getStyle(),
-                        getBestFontSize() > fontUIRes.getSize() ?
-                                getBestFontSize() : fontUIRes.getSize()
-                ));
+                entry.setValue(DefaultUIConstant.DEFAULT_FONT
+                 );
             }
         }
+//
+        //调整默认字体
+        for (int i = 0; i < DEFAULT_FONT.length; i++) {
+            UIManager.put(DEFAULT_FONT[i], DefaultUIConstant.DEFAULT_FONT);
+        }
+
     }
     
     
@@ -198,12 +200,12 @@ public class MainPanel extends SingleFrameApplication {
      * 初始化配置
      */
     private void initConfig() {
-    	
-        try {
-            org.jb2011.lnf.beautyeye.BeautyEyeLNFHelper.launchBeautyEyeLNF();
-        } catch (Exception e) {
-        }
-        
+
+//        try {
+//            basesource.convertor.ui.plaf.BeautyEyeLNFHelper.launchBeautyEyeLNF();
+//        } catch (Exception e) {
+//        }
+
         // 设置UI
         setUI();
 
