@@ -3,13 +3,13 @@
 	<classpathentry kind="src" path="src-readwritelock"/>
 	<classpathentry excluding="dbcache/test/Entity$EnhancedByCc1.java" kind="src" path="src-dbcache"/>
 	<classpathentry kind="src" path="resource"/>
-	<classpathentry kind="src" path="src-lock"/>
 	<classpathentry kind="src" path="src-mis"/>
 	<classpathentry kind="src" path="src-game"/>
 	<classpathentry kind="src" path="src-socket"/>
 	<classpathentry kind="src" path="src-utils"/>
 	<classpathentry kind="src" path="src-transfer"/>
 	<classpathentry kind="src" path="src-basesource"/>
+	<classpathentry kind="src" path="src-beautyeye"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/4"/>
 	<classpathentry kind="con" path="org.eclipse.m2e.MAVEN2_CLASSPATH_CONTAINER">
 		<attributes>
@@ -21,6 +21,11 @@
 			<attribute name="maven.pomderived" value="true"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry kind="lib" path="lib/beautyeye_lnf.jar"/>
+	<classpathentry kind="lib" path="lib/AnimatedTransitions.jar"/>
+	<classpathentry kind="lib" path="lib/AppFramework.jar"/>
+	<classpathentry kind="lib" path="lib/swing-worker.jar"/>
+	<classpathentry kind="lib" path="lib/swingx.jar"/>
+	<classpathentry kind="lib" path="lib/TimingFramework.jar"/>
+	<classpathentry kind="lib" path="lib/ninepatch4j.jar"/>
 	<classpathentry kind="output" path="target/classes"/>
 </classpath>

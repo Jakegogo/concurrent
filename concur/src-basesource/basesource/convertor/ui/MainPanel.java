@@ -1,5 +1,19 @@
 package basesource.convertor.ui;
 
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Dimension;
+
+import javax.swing.JComponent;
+import javax.swing.JPanel;
+import javax.swing.JSplitPane;
+import javax.swing.JToolBar;
+import javax.swing.UIManager;
+
+import org.jb2011.lnf.beautyeye.BeautyEyeLNFHelper;
+import org.jdesktop.application.SingleFrameApplication;
+import org.jdesktop.application.View;
+
 import basesource.convertor.contansts.DefaultUIConstant;
 import basesource.convertor.files.monitor.FileAlterationMonitor;
 import basesource.convertor.files.monitor.FileAlterationObserver;
@@ -7,28 +21,13 @@ import basesource.convertor.model.ListableFileManager;
 import basesource.convertor.model.ListableFileObservable;
 import basesource.convertor.ui.extended.AnimatingSplitPane;
 import basesource.convertor.utils.DpiUtils;
-import org.jb2011.lnf.beautyeye.BeautyEyeLNFHelper;
-import org.jdesktop.application.SingleFrameApplication;
-import org.jdesktop.application.View;
-
-import javax.swing.*;
-import javax.swing.plaf.FontUIResource;
-import java.awt.*;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * 主面板
  * Created by Jake on 2015/5/31.
  */
 public class MainPanel extends SingleFrameApplication {
-
-    private static final String FALLBACK_FONT_FAMILY_NAME = Font.SANS_SERIF;
-    private static final Map<String, String> FONT_FAMILY_NAMES = new HashMap<String, String>();
-    private static final String[] BEST_FONT_FAMILIES = {
-            "微软雅黑", "arial", "sans-serif"
-    };
-
+	
     /**
      * UIManager中UI字体相关的key
      */
@@ -68,86 +67,6 @@ public class MainPanel extends SingleFrameApplication {
             , "ComboBox.font"
     };
     
-    static {
-        GraphicsEnvironment env = GraphicsEnvironment.getLocalGraphicsEnvironment();
-        String[] fontFamilyNames = env.getAvailableFontFamilyNames();
-        for (String fontFamilyName : fontFamilyNames) {
-            FONT_FAMILY_NAMES.put(fontFamilyName.toLowerCase(), fontFamilyName);
-        }
-        if (!FONT_FAMILY_NAMES.containsKey("serif")) {
-            FONT_FAMILY_NAMES.put("serif", Font.SERIF);
-        }
-        if (!FONT_FAMILY_NAMES.containsKey("sans-serif")) {
-            FONT_FAMILY_NAMES.put("sans-serif", Font.SANS_SERIF);
-        }
-    }
- 
-    public static void enableAntiAliasing() {
-        System.setProperty("awt.useSystemAAFontSettings", "on");
-        System.setProperty("swing.aatext", "true");
-    }
- 
-    public static String getLookAndFeel() {
-        return "basesource.convertor.ui.plaf.BeautyEyeLookAndFeelWin";
-////        return "basesource.convertor.ui.plaf.nimbus.NimbusLookAndFeel";
-//        try {
-//            for (UIManager.LookAndFeelInfo info : UIManager.getInstalledLookAndFeels()) {
-//                if ("Nimbus".equals(info.getName())) {
-//                    return info.getClassName();
-//                }
-//            }
-//        } catch (Exception ignore) {
-//        }
-//        return UIManager.getCrossPlatformLookAndFeelClassName();
-    }
- 
-    public static String getFontFamily(String[] fontFamilies) {
-        for (String fontFamily : fontFamilies) {
-            fontFamily = fontFamily.toLowerCase();
-            if (FONT_FAMILY_NAMES.containsKey(fontFamily)) {
-                return FONT_FAMILY_NAMES.get(fontFamily);
-            }
-        }
-        return FALLBACK_FONT_FAMILY_NAME;
-    }
- 
-    public static String[] getBestFontFamilies() {
-        return BEST_FONT_FAMILIES;
-    }
- 
-    public static int getBestFontSize() {
-        return DefaultUIConstant.DEFAULT_FONT_SIZE;
-    }
- 
-    /*########################################*/
- 
-    public static void setUI() {
-        enableAntiAliasing();
-//        // set LookAndFeel
-        try {
-            UIManager.setLookAndFeel(getLookAndFeel());
-        } catch (Exception ignore) {
-            ignore.printStackTrace();
-        }
-        // set DefaultFont
-        String bestFontFamily = getFontFamily(getBestFontFamilies());
-        for (Map.Entry<Object, Object> entry : UIManager.getDefaults().entrySet()) {
-            if (entry.getValue() instanceof FontUIResource) {
-                FontUIResource fontUIRes = (FontUIResource) entry.getValue();
-                entry.setValue(DefaultUIConstant.DEFAULT_FONT
-                 );
-            }
-        }
-//
-        //调整默认字体
-        for (int i = 0; i < DEFAULT_FONT.length; i++) {
-            UIManager.put(DEFAULT_FONT[i], DefaultUIConstant.DEFAULT_FONT);
-        }
-
-    }
-    
-    
-    
     /**
      * 根面板
      */
@@ -183,7 +102,10 @@ public class MainPanel extends SingleFrameApplication {
     public MainPanel(String[] args) {
         launch(MainPanel.class, args);
     }
-
+    
+    public static void main(String[] args) {
+    	new MainPanel(args);
+	}
 
     @Override
     protected void startup() {
@@ -200,15 +122,17 @@ public class MainPanel extends SingleFrameApplication {
      * 初始化配置
      */
     private void initConfig() {
-
-//        try {
-//            basesource.convertor.ui.plaf.BeautyEyeLNFHelper.launchBeautyEyeLNF();
-//        } catch (Exception e) {
-//        }
-
-        // 设置UI
-        setUI();
-
+    	
+        try {
+        	org.jb2011.lnf.beautyeye.BeautyEyeLNFHelper.launchBeautyEyeLNF();
+        } catch (Exception e) {
+        }
+        
+        //调整默认字体
+        for (int i = 0; i < DEFAULT_FONT.length; i++) {
+            UIManager.put(DEFAULT_FONT[i], DefaultUIConstant.DEFAULT_FONT);
+        }
+        
         // 导航条渐变颜色
         Color titleColor = UIManager.getColor("activeCaption");
         float[] hsb = Color.RGBtoHSB(titleColor.getRed(), titleColor.getGreen(), titleColor.getBlue(), null);

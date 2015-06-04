@@ -1,11 +1,18 @@
 package basesource.convertor.ui.extended;
 
 import java.awt.Component;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.RenderingHints;
+import java.awt.Toolkit;
+import java.util.Map;
 
 import javax.swing.JLabel;
 import javax.swing.JTree;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeCellRenderer;
+
+import org.jb2011.lnf.beautyeye.SmoothUtilities;
 
 import basesource.convertor.model.FolderInfo;
 
@@ -16,7 +23,7 @@ public class FileTreeCellRenderer extends DefaultTreeCellRenderer {
 	private static final long serialVersionUID = 4179377782261072344L;
 
     private JLabel label;
-
+    
     public FileTreeCellRenderer() {
         label = new JLabel();
         label.setOpaque(true);
@@ -52,5 +59,6 @@ public class FileTreeCellRenderer extends DefaultTreeCellRenderer {
 
         return label;
     }
+
 
 }

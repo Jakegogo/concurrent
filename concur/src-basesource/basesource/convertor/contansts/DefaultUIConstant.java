@@ -40,12 +40,12 @@ public interface DefaultUIConstant {
     /**
      * 默认字体大小
      */
-    int DEFAULT_FONT_SIZE = 14;
+    int DEFAULT_FONT_SIZE = 12;
     
     /**
      * 默认字体
      */
-    Font DEFAULT_FONT = new Font("微软雅黑", Font.TRUETYPE_FONT, DpiUtils.getDpiExtendedSize(DEFAULT_FONT_SIZE));
+    Font DEFAULT_FONT = new Font("微软雅黑", Font.PLAIN, DpiUtils.getDpiExtendedSize(DEFAULT_FONT_SIZE));
 
     /**
      * 文件表格头文字描述

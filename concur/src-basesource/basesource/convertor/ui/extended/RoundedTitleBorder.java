@@ -45,6 +45,10 @@ public class RoundedTitleBorder extends RoundedBorder {
                 this.titleGradientColors[0], 0.0F, titleHeight,
                 this.titleGradientColors[1], false);
         Graphics2D g2 = (Graphics2D) titleImage.getGraphics();
+        
+        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
+                RenderingHints.VALUE_ANTIALIAS_ON);
+        
         g2.setPaint(gradient);
         g2.fillRoundRect(x, y, width, height, 10, 10);
         g2.setColor(Utilities.deriveColorHSB(
