@@ -14,54 +14,29 @@ import basesource.convertor.contansts.DefaultUIConstant;
  */
 public class SmoothUtilities {
 
-	protected static boolean antialias = true;
-	protected static boolean fractionalMetrics = false;
-
 	static Toolkit tk = Toolkit.getDefaultToolkit();
 	static final Map desktopHints = (Map) tk
 			.getDesktopProperty("awt.font.desktophints");
-
+	
 	public static void configureGraphics(Graphics g) {
-		if (antialias) {
-			((Graphics2D) g).setRenderingHint(
-					RenderingHints.KEY_TEXT_ANTIALIASING,
-					RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
-			((Graphics2D) g).setRenderingHint(RenderingHints.KEY_ANTIALIASING,
-					RenderingHints.VALUE_ANTIALIAS_ON);
-		} else {
-			((Graphics2D) g).setRenderingHint(
-					RenderingHints.KEY_TEXT_ANTIALIASING,
-					RenderingHints.VALUE_TEXT_ANTIALIAS_OFF);
-			((Graphics2D) g).setRenderingHint(RenderingHints.KEY_ANTIALIASING,
-					RenderingHints.VALUE_ANTIALIAS_OFF);
-		}
+		// for antialiasing text
+		((Graphics2D) g).setRenderingHint(
+				RenderingHints.KEY_TEXT_ANTIALIASING,
+				RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+		// for antialising geometric shapes
+		((Graphics2D) g).setRenderingHint(RenderingHints.KEY_ANTIALIASING,
+				RenderingHints.VALUE_ANTIALIAS_ON);
 
-		if (fractionalMetrics) {
-			((Graphics2D) g).setRenderingHint(
-					RenderingHints.KEY_FRACTIONALMETRICS,
-					RenderingHints.VALUE_FRACTIONALMETRICS_ON);
-		} else {
-			((Graphics2D) g).setRenderingHint(
-					RenderingHints.KEY_FRACTIONALMETRICS,
-					RenderingHints.VALUE_FRACTIONALMETRICS_OFF);
-		}
+		((Graphics2D) g).setRenderingHint(
+				RenderingHints.KEY_FRACTIONALMETRICS,
+				RenderingHints.VALUE_FRACTIONALMETRICS_ON);
+		
+		// to go for quality over speed
+		((Graphics2D) g).setRenderingHint( RenderingHints.KEY_RENDERING,
+	                            RenderingHints.VALUE_RENDER_QUALITY );
+		
 		((Graphics2D) g).setRenderingHints(desktopHints);
 		((Graphics2D) g).setFont(DefaultUIConstant.DEFAULT_FONT);
 	}
 
-	public static boolean isAntialias() {
-		return antialias;
-	}
-
-	public static void setAntialias(boolean antialias) {
-		SmoothUtilities.antialias = antialias;
-	}
-
-	public static boolean isFractionalMetrics() {
-		return fractionalMetrics;
-	}
-
-	public static void setFractionalMetrics(boolean fractionalMetrics) {
-		SmoothUtilities.fractionalMetrics = fractionalMetrics;
-	}
 }

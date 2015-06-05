@@ -12,6 +12,10 @@ public class MainApp {
     private MainPanel mainPanel;
 
     public static void main(String[] args) {
+    	// enable anti-aliasing
+    	System.setProperty("awt.useSystemAAFontSettings","on");
+    	System.setProperty("swing.aatext", "true");
+    	
         new MainApp().init(args);
     }
 

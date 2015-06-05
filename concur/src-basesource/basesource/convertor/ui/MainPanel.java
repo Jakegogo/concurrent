@@ -122,7 +122,6 @@ public class MainPanel extends SingleFrameApplication {
      * 初始化配置
      */
     private void initConfig() {
-    	
         try {
         	org.jb2011.lnf.beautyeye.BeautyEyeLNFHelper.launchBeautyEyeLNF();
         } catch (Exception e) {
