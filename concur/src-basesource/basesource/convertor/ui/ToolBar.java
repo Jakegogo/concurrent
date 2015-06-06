@@ -2,10 +2,12 @@ package basesource.convertor.ui;
 
 import basesource.convertor.contansts.DefaultUIConstant;
 import basesource.convertor.model.ListableFileManager;
+import basesource.convertor.model.ListableFileObservable;
 import basesource.convertor.model.UserConfig;
 
 import javax.swing.*;
 import javax.swing.filechooser.FileFilter;
+
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
@@ -22,19 +24,25 @@ public class ToolBar extends JToolBar {
     private JToggleButton stopButton;
 
     private ListableFileManager listableFileManager;
+    
+    /** 文件列表更新通知接口 */
+    private ListableFileObservable listableFileConnector;
 
     private boolean showStop = true;
 
     private ButtonGroup startStopButtonGroup;
+    
+    private JToggleButton expandButton;
 
     public ToolBar(ListableFileManager listableFileManager) {
         this.listableFileManager = listableFileManager;
         this.init();
     }
 
-    public ToolBar(int horizontal, ListableFileManager listableFileManager) {
+    public ToolBar(int horizontal, ListableFileObservable listableFileConnector) {
         super(horizontal);
-        this.listableFileManager = listableFileManager;
+        this.listableFileConnector = listableFileConnector;
+        this.listableFileManager = listableFileConnector.getListableFileManager();
         this.init();
     }
 
@@ -125,7 +133,33 @@ public class ToolBar extends JToolBar {
         });
         openButton.setEnabled(UserConfig.getInstance().getOutputPath() != null);
         this.add(openButton);
-
+        
+        
+        final JToggleButton expandButton = new JToggleButton();
+        expandButton.setFocusPainted(false);
+        expandButton.setBorderPainted(false);
+        expandButton.setIcon(new ImageIcon(getClass().getResource("resources/images/expand.png")));
+        expandButton.setRolloverEnabled(true);
+        expandButton.setRolloverIcon(new ImageIcon(getClass().getResource("resources/images/expand.png")));
+        expandButton.setPressedIcon(new ImageIcon(getClass().getResource("resources/images/expand.png")));
+        expandButton.setToolTipText("button with rollover image");
+        expandButton.setSelected(true);
+        expandButton.addActionListener(new ActionListener() {
+        	private boolean showExpand = true;
+            @Override
+            public void actionPerformed(ActionEvent e) {
+            	if (showExpand) {
+            		showCollapse();
+            		listableFileConnector.updateSize(800, 600);
+            	} else {
+            		showExpand();
+            		listableFileConnector.updateSize(0, 0);
+            	}
+            	showExpand = !showExpand;
+            }
+        });
+        this.add(expandButton);
+        
 
         saveButton.addActionListener(new ActionListener() {
             @Override
@@ -143,6 +177,7 @@ public class ToolBar extends JToolBar {
 
         this.startButton = startButton;
         this.stopButton = stopButton;
+        this.expandButton = expandButton;
         this.startStopButtonGroup = startStopButtonGroup;
     }
 
@@ -183,7 +218,23 @@ public class ToolBar extends JToolBar {
         stopButton.setText(DefaultUIConstant.CANCLE_CONVERT_BUTTON);
         showStop = false;
     }
+    
+    
+    private void showExpand() {
+    	expandButton.setIcon(new ImageIcon(getClass().getResource("resources/images/expand.png")));
+    	expandButton.setRolloverIcon(new ImageIcon(getClass().getResource("resources/images/expand.png")));
+    	expandButton.setPressedIcon(new ImageIcon(getClass().getResource("resources/images/expand.png")));
+    	expandButton.setSelected(true);
+    }
 
+
+    private void showCollapse() {
+    	expandButton.setIcon(new ImageIcon(getClass().getResource("resources/images/collapse.png")));
+    	expandButton.setRolloverIcon(new ImageIcon(getClass().getResource("resources/images/collapse.png")));
+    	expandButton.setPressedIcon(new ImageIcon(getClass().getResource("resources/images/collapse.png")));
+    	expandButton.setSelected(true);
+    }
+    
 
     /**
      * 重置开始按钮

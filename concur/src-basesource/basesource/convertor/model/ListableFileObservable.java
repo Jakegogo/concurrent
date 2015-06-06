@@ -9,11 +9,16 @@ import basesource.convertor.ui.FileTreePanel;
 import java.io.File;
 import java.util.List;
 
+import javax.swing.JPanel;
+
 /**
  * 列表更新通知接口
  * Created by Jake on 2015/5/31.
  */
 public class ListableFileObservable {
+	
+	/** 根面板 */
+    private JPanel rootPanel;
 
     /** 文件浏览面板(左侧) */
     private FileTreePanel fileBrowserPanel;
@@ -31,15 +36,21 @@ public class ListableFileObservable {
     private FileAlterationMonitor fileAlterationMonitor;
 
 
-    public ListableFileObservable(FileTreePanel fileBrowserPanel, FileTablePanel fileListPanel, ListableFileManager listableFileManager, FileAlterationMonitor fileAlterationMonitor) {
+    public ListableFileObservable(JPanel rootPanel, FileTreePanel fileBrowserPanel, FileTablePanel fileListPanel, ListableFileManager listableFileManager, FileAlterationMonitor fileAlterationMonitor) {
         this.fileBrowserPanel = fileBrowserPanel;
         this.fileListPanel = fileListPanel;
         this.listableFileManager = listableFileManager;
         this.fileAlterationMonitor = fileAlterationMonitor;
+        this.rootPanel = rootPanel;
     }
 
 
-    /**
+    public ListableFileManager getListableFileManager() {
+		return listableFileManager;
+	}
+
+
+	/**
      * 更新表格数据
      * @param files
      */
@@ -118,6 +129,12 @@ public class ListableFileObservable {
             e.printStackTrace();
         }
     }
-
+    
+    
+    public void updateSize(int w, int h) {
+    	this.rootPanel.setSize(w, h);
+    	this.fileListPanel.setSize(w, h);
+    }
+    
 
 }

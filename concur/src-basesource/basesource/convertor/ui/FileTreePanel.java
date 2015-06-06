@@ -7,11 +7,13 @@ import basesource.convertor.model.ListableFileObservable;
 import basesource.convertor.ui.docking.demos.elegant.ElegantPanel;
 import basesource.convertor.ui.extended.FileNode;
 import basesource.convertor.ui.extended.FileTreeCellRenderer;
+import basesource.convertor.utils.ComponentUtils;
 
 import javax.swing.*;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.DefaultTreeModel;
+
 import java.awt.*;
 import java.util.List;
 
@@ -33,7 +35,7 @@ public class FileTreePanel extends ElegantPanel {
 
     /** 文件列表更新通知接口 */
     private ListableFileObservable listableFileConnector;
-
+    
     /**
      * 设置文件列表更新通知实例
      * @param listableFileConnector ListableFileConnector
@@ -50,20 +52,27 @@ public class FileTreePanel extends ElegantPanel {
 
     // 初始化界面
     private void init() {
-        JScrollPane innerTreePanel = new JScrollPane();
+        JScrollPane innerTreePanel = new JScrollPane() {
+			private static final long serialVersionUID = 3299865367429784887L;
+			// 增加边距
+        	@Override
+        	public void doLayout() {
+        		super.doLayout();
+        		ComponentUtils.addMargin(this, this.getViewport(), 3, 2);
+        	}
+
+        };
         super.add(innerTreePanel);
         innerTreePanel.setViewportView(this.createFileTree());
         this.innerTreePanel = innerTreePanel;
-
     }
-
+    
     public void doLayout() {
         super.doLayout();
         Insets insets = getInsets();
         int w = getWidth()-insets.left-insets.right;
         int h = getHeight()-insets.top-insets.bottom;
         this.innerTreePanel.setBounds(insets.left, insets.top + 25, w, h);
-
     }
 
     /**

@@ -2,12 +2,13 @@ package basesource.convertor.ui.docking.demos.elegant;
 
 import basesource.convertor.ui.docking.defaults.DefaultDockingPort;
 import basesource.convertor.ui.docking.defaults.StandardBorderManager;
+import basesource.convertor.ui.extended.RoundedBorder;
 
 
 public class ElegantDockingPort extends DefaultDockingPort {
 	public ElegantDockingPort() {
 		setComponentProvider(new ChildComponentDelegate());
-		setBorderManager(new StandardBorderManager(new ShadowBorder()));
+		setBorderManager(new StandardBorderManager(new RoundedBorder(10)));
 	}
 	
 	public void add(ElegantPanel view) {

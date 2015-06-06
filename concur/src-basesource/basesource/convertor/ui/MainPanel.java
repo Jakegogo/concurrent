@@ -1,5 +1,19 @@
 package basesource.convertor.ui;
 
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Dimension;
+
+import javax.swing.JComponent;
+import javax.swing.JPanel;
+import javax.swing.JSplitPane;
+import javax.swing.JToolBar;
+import javax.swing.UIManager;
+
+import org.jb2011.lnf.beautyeye.BeautyEyeLNFHelper;
+import org.jdesktop.application.SingleFrameApplication;
+import org.jdesktop.application.View;
+
 import basesource.convertor.contansts.DefaultUIConstant;
 import basesource.convertor.files.monitor.FileAlterationMonitor;
 import basesource.convertor.files.monitor.FileAlterationObserver;
@@ -7,13 +21,8 @@ import basesource.convertor.model.ListableFileManager;
 import basesource.convertor.model.ListableFileObservable;
 import basesource.convertor.ui.docking.DockingPort;
 import basesource.convertor.ui.docking.demos.elegant.ElegantDockingPort;
+import basesource.convertor.ui.extended.AnimatingSplitPane;
 import basesource.convertor.utils.DpiUtils;
-import org.jb2011.lnf.beautyeye.BeautyEyeLNFHelper;
-import org.jdesktop.application.SingleFrameApplication;
-import org.jdesktop.application.View;
-
-import javax.swing.*;
-import java.awt.*;
 
 /**
  * 主面板
@@ -186,23 +195,23 @@ public class MainPanel extends SingleFrameApplication {
         rootPanel.add(mainDockingPanel, "Center");
 
 
-        ToolBar toolBar = new ToolBar(JToolBar.HORIZONTAL, this.listableFileManager);
-        JPanel toolBarPanel = new JPanel(new BorderLayout());
-        toolBarPanel.add(toolBar, "Center");
-        rootPanel.add(toolBarPanel, "North");
-
-
-        ListableFileObservable listableFileConnector = new ListableFileObservable(fileBrowserPanel, fileListPanel, listableFileManager, fileAlterationMonitor);
+        ListableFileObservable listableFileConnector = new ListableFileObservable(rootPanel, fileBrowserPanel, fileListPanel, listableFileManager, fileAlterationMonitor);
         fileBrowserPanel.setListableFileConnector(listableFileConnector);
 
 
+        ToolBar toolBar = new ToolBar(JToolBar.HORIZONTAL, listableFileConnector);
+        JPanel toolBarPanel = new JPanel(new BorderLayout());
+        toolBarPanel.add(toolBar, "Center");
+        rootPanel.add(toolBarPanel, "North");
+        
+        
         this.fileBrowserPanel = fileBrowserPanel;
         this.fileListPanel = fileListPanel;
         this.mainDockingPanel = mainDockingPanel;
         this.rootPanel = rootPanel;
         this.listableFileConnector = listableFileConnector;
-
-        return this.rootPanel;
+        
+        return rootPanel;
     }
 
 
