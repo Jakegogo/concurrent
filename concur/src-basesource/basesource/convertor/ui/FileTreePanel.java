@@ -1,29 +1,32 @@
 package basesource.convertor.ui;
 
-import java.util.List;
-
-import javax.swing.JScrollPane;
-import javax.swing.JTree;
-import javax.swing.SwingWorker;
-import javax.swing.event.TreeSelectionEvent;
-import javax.swing.event.TreeSelectionListener;
-import javax.swing.tree.DefaultTreeModel;
-
+import basesource.convertor.contansts.DefaultUIConstant;
 import basesource.convertor.model.FolderInfo;
 import basesource.convertor.model.ListableFileManager;
 import basesource.convertor.model.ListableFileObservable;
+import basesource.convertor.ui.docking.demos.elegant.ElegantPanel;
 import basesource.convertor.ui.extended.FileNode;
 import basesource.convertor.ui.extended.FileTreeCellRenderer;
+
+import javax.swing.*;
+import javax.swing.event.TreeSelectionEvent;
+import javax.swing.event.TreeSelectionListener;
+import javax.swing.tree.DefaultTreeModel;
+import java.awt.*;
+import java.util.List;
 
 /**
  * 左侧文件树浏览面板
  * Created by Jake on 2015/5/31.
  */
-public class FileTreePanel extends JScrollPane {
+public class FileTreePanel extends ElegantPanel {
 	private static final long serialVersionUID = -5499094661570412734L;
 
     /** 文件树 */
     private JTree fileTree;
+
+    /** fileTree包装容器 */
+    private JScrollPane innerTreePanel;
 
     /** 文件管理器 */
     private ListableFileManager listableFileManager;
@@ -40,15 +43,28 @@ public class FileTreePanel extends JScrollPane {
     }
 
     public FileTreePanel(ListableFileManager listableFileManager) {
+        super(DefaultUIConstant.FILE_TREE_PANEL_TITTLE);
         this.listableFileManager = listableFileManager;
         this.init();
     }
 
     // 初始化界面
     private void init() {
-        setViewportView(this.createFileTree());
+        JScrollPane innerTreePanel = new JScrollPane();
+        super.add(innerTreePanel);
+        innerTreePanel.setViewportView(this.createFileTree());
+        this.innerTreePanel = innerTreePanel;
+
     }
 
+    public void doLayout() {
+        super.doLayout();
+        Insets insets = getInsets();
+        int w = getWidth()-insets.left-insets.right;
+        int h = getHeight()-insets.top-insets.bottom;
+        this.innerTreePanel.setBounds(insets.left, insets.top + 25, w, h);
+
+    }
 
     /**
      * 初始化文件树

@@ -108,4 +108,9 @@ public interface DefaultUIConstant {
      */
     String FILE_NAME_ENCODE = "GBK";
 
+    /**
+     * 文件树目录面板标题
+     */
+    String FILE_TREE_PANEL_TITTLE = "输入文件夹";
+
 }

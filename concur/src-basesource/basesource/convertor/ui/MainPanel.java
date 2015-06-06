@@ -1,26 +1,19 @@
 package basesource.convertor.ui;
 
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Dimension;
-
-import javax.swing.JComponent;
-import javax.swing.JPanel;
-import javax.swing.JSplitPane;
-import javax.swing.JToolBar;
-import javax.swing.UIManager;
-
-import org.jb2011.lnf.beautyeye.BeautyEyeLNFHelper;
-import org.jdesktop.application.SingleFrameApplication;
-import org.jdesktop.application.View;
-
 import basesource.convertor.contansts.DefaultUIConstant;
 import basesource.convertor.files.monitor.FileAlterationMonitor;
 import basesource.convertor.files.monitor.FileAlterationObserver;
 import basesource.convertor.model.ListableFileManager;
 import basesource.convertor.model.ListableFileObservable;
-import basesource.convertor.ui.extended.AnimatingSplitPane;
+import basesource.convertor.ui.docking.DockingPort;
+import basesource.convertor.ui.docking.demos.elegant.ElegantDockingPort;
 import basesource.convertor.utils.DpiUtils;
+import org.jb2011.lnf.beautyeye.BeautyEyeLNFHelper;
+import org.jdesktop.application.SingleFrameApplication;
+import org.jdesktop.application.View;
+
+import javax.swing.*;
+import java.awt.*;
 
 /**
  * 主面板
@@ -76,10 +69,7 @@ public class MainPanel extends SingleFrameApplication {
     private JToolBar toolBar;
 
     /** 主面板 */
-    private AnimatingSplitPane mainSplitPane;
-
-    /** 右侧面板 */
-    private AnimatingSplitPane rightPanel;
+    private ElegantDockingPort mainDockingPanel;
 
     /** 文件浏览面板(左侧) */
     private FileTreePanel fileBrowserPanel;
@@ -162,12 +152,12 @@ public class MainPanel extends SingleFrameApplication {
      */
     private JComponent createRootPanel() {
 
-        AnimatingSplitPane mainSplitPane = new AnimatingSplitPane(JSplitPane.HORIZONTAL_SPLIT);
-        mainSplitPane.setBorder(DefaultUIConstant.EMPTY_BORDER);
-        mainSplitPane.setSize(new Dimension(
+        ElegantDockingPort mainDockingPanel = new ElegantDockingPort();
+        mainDockingPanel.setSize(new Dimension(
                 DpiUtils.getDpiExtendedSize(DefaultUIConstant.DEFAULT_WIDTH),
                 DpiUtils.getDpiExtendedSize(DefaultUIConstant.DEFAULT_HEIGHT)
-                ));
+        ));
+        mainDockingPanel.setBorder(DefaultUIConstant.EMPTY_BORDER);
 
 
         FileTreePanel fileBrowserPanel = new FileTreePanel(this.listableFileManager);
@@ -175,14 +165,7 @@ public class MainPanel extends SingleFrameApplication {
                 DpiUtils.getDpiExtendedSize(DefaultUIConstant.DEFAULT_FILE_TREE_PANEL_WITH),
                 DpiUtils.getDpiExtendedSize(DefaultUIConstant.DEFAULT_HEIGHT)
                 ));
-        mainSplitPane.setTopComponent(fileBrowserPanel);
-
-
-
-
-        AnimatingSplitPane rightPanel = new AnimatingSplitPane(JSplitPane.VERTICAL_SPLIT);
-        rightPanel.setBorder(DefaultUIConstant.EMPTY_BORDER);
-        mainSplitPane.setBottomComponent(rightPanel);
+        mainDockingPanel.add(fileBrowserPanel, DockingPort.WEST_REGION);
 
 
 
@@ -191,12 +174,16 @@ public class MainPanel extends SingleFrameApplication {
                 DpiUtils.getDpiExtendedSize(DefaultUIConstant.DEFAULT_WIDTH - DefaultUIConstant.DEFAULT_FILE_TREE_PANEL_WITH),
                 DpiUtils.getDpiExtendedSize(DefaultUIConstant.DEFAULT_FILE_LIST_PANEL_HEIGHT)
         ));
-        rightPanel.setTopComponent(fileListPanel);
+        mainDockingPanel.add(fileListPanel, DockingPort.EAST_REGION);
 
 
 
         JPanel rootPanel = new JPanel(new BorderLayout());
-        rootPanel.add(mainSplitPane, "Center");
+        rootPanel.setSize(new Dimension(
+                DpiUtils.getDpiExtendedSize(DefaultUIConstant.DEFAULT_WIDTH),
+                DpiUtils.getDpiExtendedSize(DefaultUIConstant.DEFAULT_HEIGHT)
+        ));
+        rootPanel.add(mainDockingPanel, "Center");
 
 
         ToolBar toolBar = new ToolBar(JToolBar.HORIZONTAL, this.listableFileManager);
@@ -210,9 +197,8 @@ public class MainPanel extends SingleFrameApplication {
 
 
         this.fileBrowserPanel = fileBrowserPanel;
-        this.rightPanel = rightPanel;
         this.fileListPanel = fileListPanel;
-        this.mainSplitPane = mainSplitPane;
+        this.mainDockingPanel = mainDockingPanel;
         this.rootPanel = rootPanel;
         this.listableFileConnector = listableFileConnector;
 

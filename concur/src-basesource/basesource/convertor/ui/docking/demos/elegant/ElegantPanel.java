@@ -1,17 +1,9 @@
 package basesource.convertor.ui.docking.demos.elegant;
 
-import java.awt.Color;
-import java.awt.Font;
-import java.awt.GradientPaint;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.Insets;
-import java.awt.LayoutManager;
-
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-
 import basesource.convertor.ui.docking.Dockable;
+
+import javax.swing.*;
+import java.awt.*;
 
 
 public class ElegantPanel extends JPanel {
@@ -21,7 +13,8 @@ public class ElegantPanel extends JPanel {
 	private JLabel titleLabel;
 	
 	public ElegantPanel(String title) {
-		super.add(getTitleLabel());
+		this.setLayout(new BorderLayout());
+		super.add(getTitleLabel(), BorderLayout.NORTH);
 		setTitle(title);
 		dockable = getDockable();
 	}
@@ -61,20 +54,20 @@ public class ElegantPanel extends JPanel {
 		int y = in.top + 13;
 		int farRight = getWidth()-in.right;
 		int w = farRight - in.left;
-		
+
 		GradientPaint firstHalf = new GradientPaint(in.left, y, GRAD_START, mid, y, GRAD_MID);
 		GradientPaint secondHalf = new GradientPaint(mid, y, GRAD_MID, farRight, y, getBackground());
-		
+
 		Graphics2D g2 = (Graphics2D)g;
 		g2.setPaint(firstHalf);
 		g2.fillRect(in.left, in.top, w/2, 25);
 		g2.setPaint(secondHalf);
 		g2.fillRect(mid-1, in.top, w/2, 25);
-		
+
 		g.setColor(getBackground().brighter());
 		g.drawLine(in.left, in.top, farRight,  in.top);
 		g.drawLine(in.left, in.top, in.left, in.top+25);
-		
+
 		g.setColor(getBackground().darker());
 		g.drawLine(in.left, in.top+25, farRight, in.top+25);
 	}

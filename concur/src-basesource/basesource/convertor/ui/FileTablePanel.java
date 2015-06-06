@@ -2,7 +2,7 @@ package basesource.convertor.ui;
 
 import basesource.convertor.contansts.DefaultUIConstant;
 import basesource.convertor.model.ListableFileManager;
-import basesource.convertor.ui.extended.RoundedTitleBorder;
+import basesource.convertor.ui.docking.demos.elegant.ElegantPanel;
 import basesource.convertor.utils.DpiUtils;
 import org.jdesktop.swingx.JXTable;
 
@@ -20,11 +20,14 @@ import java.io.File;
  * 文件列表面板
  * Created by Jake on 2015/5/31.
  */
-public class FileTablePanel extends JScrollPane {
+public class FileTablePanel extends ElegantPanel {
 	private static final long serialVersionUID = -5058150638044083539L;
 
 	/** 文件列表表格 */
     private JTable fileTable;
+
+    /** fileTable包装容器 */
+    private JScrollPane innerTablePanel;
 
     /** Table model for File[]. */
     private FileTableModel fileTableModel;
@@ -41,19 +44,29 @@ public class FileTablePanel extends JScrollPane {
 
 
     public FileTablePanel(ListableFileManager listableFileManager) {
+        super(DefaultUIConstant.FILE_TABLE_TITLE);
         this.listableFileManager = listableFileManager;
         this.init();
     }
 
     // 初始化界面
     private void init() {
-        setBorder(new RoundedTitleBorder(DefaultUIConstant.FILE_TABLE_TITLE,
-                UIManager.getColor("titleGradientColor1"),
-                UIManager.getColor("titleGradientColor2")));
-        this.setViewportView(this.createFileTable());
+//        setBorder(new RoundedTitleBorder(DefaultUIConstant.FILE_TABLE_TITLE,
+//                UIManager.getColor("titleGradientColor1"),
+//                UIManager.getColor("titleGradientColor2")));
+        JScrollPane innerTablePanel = new JScrollPane();
+        super.add(innerTablePanel);
+        innerTablePanel.setViewportView(this.createFileTable());
+        this.innerTablePanel = innerTablePanel;
     }
 
-
+    public void doLayout() {
+        super.doLayout();
+        Insets insets = getInsets();
+        int w = getWidth()-insets.left-insets.right;
+        int h = getHeight()-insets.top-insets.bottom;
+        this.innerTablePanel.setBounds(insets.left, insets.top + 25, w, h);
+    }
     /**
      * 创建文件列表
      * @return

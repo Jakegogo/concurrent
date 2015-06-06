@@ -11,6 +11,11 @@ public class ElegantDockingPort extends DefaultDockingPort {
 	}
 	
 	public void add(ElegantPanel view) {
-		dock(view.getDockable(), CENTER_REGION); 
+		dock(view.getDockable(), CENTER_REGION);
 	}
+
+	public void add(ElegantPanel view, String position) {
+		dock(view.getDockable(), position);
+	}
+
 }

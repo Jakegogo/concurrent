@@ -14,6 +14,7 @@
       <sourceFolder url="file://$MODULE_DIR$/src-chainlock" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src-basesource" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src-game" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src-beautyeye" isTestSource="false" />
       <excludeFolder url="file://$MODULE_DIR$/target" />
     </content>
     <orderEntry type="inheritedJdk" />
