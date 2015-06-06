@@ -1,19 +1,5 @@
 package basesource.convertor.ui;
 
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Dimension;
-
-import javax.swing.JComponent;
-import javax.swing.JPanel;
-import javax.swing.JSplitPane;
-import javax.swing.JToolBar;
-import javax.swing.UIManager;
-
-import org.jb2011.lnf.beautyeye.BeautyEyeLNFHelper;
-import org.jdesktop.application.SingleFrameApplication;
-import org.jdesktop.application.View;
-
 import basesource.convertor.contansts.DefaultUIConstant;
 import basesource.convertor.files.monitor.FileAlterationMonitor;
 import basesource.convertor.files.monitor.FileAlterationObserver;
@@ -21,8 +7,14 @@ import basesource.convertor.model.ListableFileManager;
 import basesource.convertor.model.ListableFileObservable;
 import basesource.convertor.ui.docking.DockingPort;
 import basesource.convertor.ui.docking.demos.elegant.ElegantDockingPort;
-import basesource.convertor.ui.extended.AnimatingSplitPane;
+import basesource.convertor.ui.extended.RowProgressTableUI;
 import basesource.convertor.utils.DpiUtils;
+import org.jb2011.lnf.beautyeye.BeautyEyeLNFHelper;
+import org.jdesktop.application.SingleFrameApplication;
+import org.jdesktop.application.View;
+
+import javax.swing.*;
+import java.awt.*;
 
 /**
  * 主面板
@@ -125,7 +117,9 @@ public class MainPanel extends SingleFrameApplication {
         	org.jb2011.lnf.beautyeye.BeautyEyeLNFHelper.launchBeautyEyeLNF();
         } catch (Exception e) {
         }
-        
+
+        UIManager.put("TableUI", RowProgressTableUI.class.getName());
+
         //调整默认字体
         for (int i = 0; i < DEFAULT_FONT.length; i++) {
             UIManager.put(DEFAULT_FONT[i], DefaultUIConstant.DEFAULT_FONT);

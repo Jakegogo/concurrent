@@ -7,7 +7,6 @@ import basesource.convertor.model.UserConfig;
 
 import javax.swing.*;
 import javax.swing.filechooser.FileFilter;
-
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
@@ -164,8 +163,12 @@ public class ToolBar extends JToolBar {
         saveButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                fileChooser.showOpenDialog(saveButton);
+                int retval = fileChooser.showOpenDialog(saveButton);
                 saveButton.setSelected(false);
+
+                if (retval != JFileChooser.APPROVE_OPTION) {
+                    return;
+                }
 
                 File selectedFile = fileChooser.getSelectedFile();
                 if (selectedFile != null) {

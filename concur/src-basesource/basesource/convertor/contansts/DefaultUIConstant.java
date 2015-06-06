@@ -33,6 +33,11 @@ public interface DefaultUIConstant {
     int DEFAULT_FILE_LIST_PANEL_HEIGHT = 400;
 
     /**
+     * 面板标题栏高度
+     */
+    int PANEL_TITTLE_BORDER_HEIGHT = 25;
+
+    /**
      * 空边框实例
      */
     Border EMPTY_BORDER = new EmptyBorder(0, 0, 0, 0);

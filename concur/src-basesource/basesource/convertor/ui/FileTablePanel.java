@@ -4,11 +4,11 @@ import basesource.convertor.contansts.DefaultUIConstant;
 import basesource.convertor.model.ListableFileManager;
 import basesource.convertor.ui.docking.demos.elegant.ElegantPanel;
 import basesource.convertor.utils.DpiUtils;
-import org.jdesktop.swingx.JXTable;
 
 import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableColumn;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
@@ -30,7 +30,7 @@ public class FileTablePanel extends ElegantPanel {
     private JScrollPane innerTablePanel;
 
     /** Table model for File[]. */
-    private FileTableModel fileTableModel;
+    private ProgressTableModel fileTableModel;
     
     /** 选择行事件 */
     private ListSelectionListener listSelectionListener;
@@ -41,6 +41,8 @@ public class FileTablePanel extends ElegantPanel {
     /** 文件管理器 */
     private ListableFileManager listableFileManager;
 
+    /** 图标表格渲染器 */
+    private ImageIconTableCellRenderer iconTableCellRenderer;
 
 
     public FileTablePanel(ListableFileManager listableFileManager) {
@@ -64,7 +66,7 @@ public class FileTablePanel extends ElegantPanel {
         super.doLayout();
         Insets insets = getInsets();
         int w = getWidth()-insets.left-insets.right;
-        int h = getHeight()-insets.top-insets.bottom;
+        int h = getHeight()-insets.top-insets.bottom - 27;
         this.innerTablePanel.setBounds(insets.left, insets.top + 25, w, h);
     }
     /**
@@ -72,9 +74,12 @@ public class FileTablePanel extends ElegantPanel {
      * @return
      */
     private Component createFileTable() {
-        JTable fileTable = new JTable();
+        JTable fileTable = new JTable() {
+
+        };
         fileTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         fileTable.setAutoCreateRowSorter(true);
+        fileTable.setDefaultRenderer(String.class, new DefaultTableCellRenderer());
 
         this.bindListener(fileTable);
 
@@ -88,7 +93,7 @@ public class FileTablePanel extends ElegantPanel {
             @Override
             public void valueChanged(ListSelectionEvent lse) {
                 int row = fileTable.getSelectionModel().getLeadSelectionIndex();
-                ((FileTableModel)fileTable.getModel()).getFile(row);
+                ((ProgressTableModel)fileTable.getModel()).getFile(row);
             }
         };
         
@@ -106,7 +111,7 @@ public class FileTablePanel extends ElegantPanel {
         
     private void doOpenFile(final JTable fileTable) {
 		int row = fileTable.getSelectionModel().getLeadSelectionIndex();
-		File file = ((FileTableModel) fileTable.getModel()).getFile(row);
+		File file = ((ProgressTableModel) fileTable.getModel()).getFile(row);
         listableFileManager.openFileView(file);
 	}
 
@@ -120,7 +125,7 @@ public class FileTablePanel extends ElegantPanel {
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
                 if (fileTableModel==null) {
-                    fileTableModel = new FileTableModel();
+                    fileTableModel = new ProgressTableModel();
                     fileTable.setModel(fileTableModel);
                 }
                 fileTable.getSelectionModel().removeListSelectionListener(listSelectionListener);
@@ -161,24 +166,25 @@ public class FileTablePanel extends ElegantPanel {
 
     private void convertToImageCell(int column) {
         TableColumn tableColumn = fileTable.getColumnModel().getColumn(column);
-        tableColumn.setCellRenderer(new ImageIconTableCellRenderer());
+        tableColumn.setCellRenderer(iconTableCellRenderer != null ? iconTableCellRenderer : (iconTableCellRenderer = new ImageIconTableCellRenderer()));
     }
 
 
-    static class ImageIconTableCellRenderer extends JXTable.IconRenderer {
+    static class ImageIconTableCellRenderer extends DefaultTableCellRenderer {
 
         private static final long serialVersionUID = 1L;
         
         private JLabel label = new JLabel();
         
         ImageIconTableCellRenderer() {
-        	label.setOpaque(true);
+        	label.setOpaque(false);
         }
 
         public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int col) {
             label.setIcon((Icon) value);
             return label;
         }
+
     }
 
 }

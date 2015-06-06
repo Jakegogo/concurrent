@@ -71,7 +71,7 @@ public class FileTreePanel extends ElegantPanel {
         super.doLayout();
         Insets insets = getInsets();
         int w = getWidth()-insets.left-insets.right;
-        int h = getHeight()-insets.top-insets.bottom;
+        int h = getHeight()-insets.top-insets.bottom - 25;
         this.innerTreePanel.setBounds(insets.left, insets.top + 25, w, h);
     }
 
