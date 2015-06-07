@@ -18,17 +18,12 @@ CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFT
 OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 package basesource.convertor.ui.docking;
 
-import java.awt.BorderLayout; 
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Container;
-import java.awt.Cursor;
-import java.awt.Dimension;
-import java.awt.Graphics;
-import java.awt.Image;
-import java.awt.Insets;
-import java.awt.LayoutManager;
-import java.awt.Point;
+import basesource.convertor.ui.ResourceManager;
+import basesource.convertor.ui.util.RootSwingContainer;
+
+import javax.swing.*;
+import javax.swing.border.Border;
+import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
@@ -36,15 +31,6 @@ import java.awt.event.MouseMotionListener;
 import java.util.EventListener;
 import java.util.HashMap;
 import java.util.WeakHashMap;
-
-import javax.swing.JComponent;
-import javax.swing.JPanel;
-import javax.swing.JTabbedPane;
-import javax.swing.SwingUtilities;
-import javax.swing.border.Border;
-
-import basesource.convertor.ui.ResourceManager;
-import basesource.convertor.ui.util.RootSwingContainer;
 
 /**
  * This class is used to manage drag operations for <code>Dockable</code> components.  Application 

@@ -57,9 +57,14 @@ public class FileTablePanel extends ElegantPanel {
 //                UIManager.getColor("titleGradientColor1"),
 //                UIManager.getColor("titleGradientColor2")));
         JScrollPane innerTablePanel = new JScrollPane();
-        super.add(innerTablePanel);
         innerTablePanel.setViewportView(this.createFileTable());
+        innerTablePanel.setOpaque(false);
+        innerTablePanel.getViewport().setOpaque(false);
+
+        super.add(innerTablePanel);
         this.innerTablePanel = innerTablePanel;
+        this.setOpaque(false);
+        this.setBackground(Color.WHITE);
     }
 
     public void doLayout() {
@@ -82,7 +87,6 @@ public class FileTablePanel extends ElegantPanel {
         fileTable.setDefaultRenderer(String.class, new DefaultTableCellRenderer());
 
         this.bindListener(fileTable);
-
         this.fileTable = fileTable;
         return fileTable;
     }

@@ -118,7 +118,9 @@ public class MainPanel extends SingleFrameApplication {
         } catch (Exception e) {
         }
 
+        UIManager.put("TabbedPane.contentOpaque", false);
         UIManager.put("TableUI", RowProgressTableUI.class.getName());
+
 
         //调整默认字体
         for (int i = 0; i < DEFAULT_FONT.length; i++) {
@@ -161,6 +163,7 @@ public class MainPanel extends SingleFrameApplication {
                 DpiUtils.getDpiExtendedSize(DefaultUIConstant.DEFAULT_HEIGHT)
         ));
         mainDockingPanel.setBorder(DefaultUIConstant.EMPTY_BORDER);
+//        mainDockingPanel.setBackground(Color.BLUE);
 
 
         FileTreePanel fileBrowserPanel = new FileTreePanel(this.listableFileManager);
@@ -168,6 +171,7 @@ public class MainPanel extends SingleFrameApplication {
                 DpiUtils.getDpiExtendedSize(DefaultUIConstant.DEFAULT_FILE_TREE_PANEL_WITH),
                 DpiUtils.getDpiExtendedSize(DefaultUIConstant.DEFAULT_HEIGHT)
                 ));
+        fileBrowserPanel.setOpaque(false);
         mainDockingPanel.add(fileBrowserPanel, DockingPort.WEST_REGION);
 
 
@@ -186,7 +190,7 @@ public class MainPanel extends SingleFrameApplication {
                 DpiUtils.getDpiExtendedSize(DefaultUIConstant.DEFAULT_WIDTH),
                 DpiUtils.getDpiExtendedSize(DefaultUIConstant.DEFAULT_HEIGHT)
         ));
-        rootPanel.add(mainDockingPanel, "Center");
+        rootPanel.add(mainDockingPanel, BorderLayout.CENTER);
 
 
         ListableFileObservable listableFileConnector = new ListableFileObservable(rootPanel, fileBrowserPanel, fileListPanel, listableFileManager, fileAlterationMonitor);
@@ -195,10 +199,9 @@ public class MainPanel extends SingleFrameApplication {
 
         ToolBar toolBar = new ToolBar(JToolBar.HORIZONTAL, listableFileConnector);
         JPanel toolBarPanel = new JPanel(new BorderLayout());
-        toolBarPanel.add(toolBar, "Center");
-        rootPanel.add(toolBarPanel, "North");
-        
-        
+        toolBarPanel.add(toolBar, BorderLayout.CENTER);
+        rootPanel.add(toolBarPanel, BorderLayout.NORTH);
+
         this.fileBrowserPanel = fileBrowserPanel;
         this.fileListPanel = fileListPanel;
         this.mainDockingPanel = mainDockingPanel;

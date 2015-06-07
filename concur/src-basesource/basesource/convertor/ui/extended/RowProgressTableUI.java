@@ -11,6 +11,7 @@
  */
 package basesource.convertor.ui.extended;
 
+import basesource.convertor.contansts.DefaultUIConstant;
 import basesource.convertor.ui.ProgressTableModel;
 import basesource.convertor.utils.SmoothUtilities;
 import org.jb2011.lnf.beautyeye.ch5_table.BETableUI;
@@ -177,7 +178,7 @@ public class RowProgressTableUI extends BETableUI
 			Component component = table.prepareRenderer(renderer, row, column);
 
 			TableModel tableModel = table.getModel();
-			if (tableModel instanceof ProgressTableModel) {
+			if (tableModel.getClass() == ProgressTableModel.class) {
 				ProgressTableModel progressTableModel = (ProgressTableModel) tableModel;
 				int progress = (int) (progressTableModel.getProgress(row) * rowWidth);
 				if (progress > cellRect.x) {
@@ -185,11 +186,13 @@ public class RowProgressTableUI extends BETableUI
 					w = w > cellRect.width ? cellRect.width : w;
 
 					SmoothUtilities.configureGraphics(g);
-					g.setColor(new Color(31, 255, 0));
+					g.setColor(DefaultUIConstant.TABLE_ROW_PROGRESS_BAR_COLOR1);
 
-					int y = cellRect.y + cellRect.height - 2;
+					int h = DefaultUIConstant.TABLE_ROW_PROGRESS_BAR_HEIGHT;
+					h = h <= 0 ? cellRect.height : h;
+					int y = cellRect.y + cellRect.height - h;
 
-					g.fillRect(cellRect.x, y, w, 2);
+					g.fillRect(cellRect.x, y, w, h);
 				}
 			}
 
@@ -213,12 +216,32 @@ public class RowProgressTableUI extends BETableUI
 		Rectangle maxCell = table.getCellRect(rMax, cMax, true);
 		Rectangle damagedArea = minCell.union( maxCell );
 
+		boolean showprogress = false;
+		ProgressTableModel progressTableModel = null;
+		TableModel tableModel = table.getModel();
+		if (tableModel.getClass() == ProgressTableModel.class) {
+			progressTableModel = (ProgressTableModel) tableModel;
+			showprogress = true;
+		}
+
 		if (table.getShowHorizontalLines()) {
 			int tableWidth = damagedArea.x + damagedArea.width;
 			int y = damagedArea.y;
 			for (int row = rMin; row <= rMax; row++) {
 				y += table.getRowHeight(row);
-				g.drawLine(damagedArea.x, y - 1, tableWidth - 1, y - 1);
+
+				if (showprogress) {
+					int progress = (int) (progressTableModel.getProgress(row) * tableWidth);
+					g.setColor(DefaultUIConstant.TABLE_ROW_PROGRESS_BAR_COLOR2);
+					g.drawLine(damagedArea.x, y - 1, progress, y - 1);
+
+					g.setColor(table.getGridColor());
+					g.drawLine(damagedArea.x + progress, y - 1, tableWidth - 1, y - 1);
+
+				} else {
+					g.drawLine(damagedArea.x, y - 1, tableWidth - 1, y - 1);
+				}
+
 			}
 		}
 		if (table.getShowVerticalLines()) {

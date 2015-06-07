@@ -118,4 +118,20 @@ public interface DefaultUIConstant {
      */
     String FILE_TREE_PANEL_TITTLE = "输入文件夹";
 
+    /**
+     * 表格进度条高度
+     */
+    int TABLE_ROW_PROGRESS_BAR_HEIGHT = -1;
+
+
+    /**
+     * 表格进度条颜色
+     */
+    Color TABLE_ROW_PROGRESS_BAR_COLOR1 = new Color(246, 246, 246);
+
+    /**
+     * 表格进度条颜色
+     */
+    Color TABLE_ROW_PROGRESS_BAR_COLOR2 = new Color(45, 255, 2);
+
 }

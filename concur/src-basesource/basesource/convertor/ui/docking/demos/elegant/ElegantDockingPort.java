@@ -9,6 +9,7 @@ public class ElegantDockingPort extends DefaultDockingPort {
 	public ElegantDockingPort() {
 		setComponentProvider(new ChildComponentDelegate());
 		setBorderManager(new StandardBorderManager(new RoundedBorder(10)));
+		setOpaque(false);
 	}
 	
 	public void add(ElegantPanel view) {

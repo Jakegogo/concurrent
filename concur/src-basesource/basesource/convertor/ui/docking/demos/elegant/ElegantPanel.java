@@ -1,5 +1,6 @@
 package basesource.convertor.ui.docking.demos.elegant;
 
+import basesource.convertor.contansts.DefaultUIConstant;
 import basesource.convertor.tools.Utilities;
 import basesource.convertor.ui.docking.Dockable;
 import basesource.convertor.ui.extended.RoundedPanel;
@@ -19,10 +20,10 @@ public class ElegantPanel extends RoundedPanel {
 	private JLabel titleLabel;
 	
 	public ElegantPanel(String title) {
-		this.setLayout(new BorderLayout());
-		super.add(getTitleLabel(), BorderLayout.NORTH);
+		super.add(getTitleLabel());
 		setTitle(title);
 		dockable = getDockable();
+		setOpaque(false);
 	}
 	
 	public void doLayout() {
@@ -70,7 +71,7 @@ public class ElegantPanel extends RoundedPanel {
 //		int w = farRight - in.left;
 		
 		int width = getWidth();
-		int height = getHeight();
+		int height = DefaultUIConstant.PANEL_TITTLE_BORDER_HEIGHT;
 		int x = in.left;
 		int y = in.top;
 		
