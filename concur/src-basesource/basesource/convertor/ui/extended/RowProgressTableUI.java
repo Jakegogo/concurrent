@@ -180,7 +180,8 @@ public class RowProgressTableUI extends BETableUI
 			TableModel tableModel = table.getModel();
 			if (tableModel.getClass() == ProgressTableModel.class) {
 				ProgressTableModel progressTableModel = (ProgressTableModel) tableModel;
-				int progress = (int) (progressTableModel.getProgress(row) * rowWidth);
+				int modelRow = table.convertRowIndexToModel(row);
+				int progress = (int) (progressTableModel.getProgress(modelRow) * rowWidth);
 				if (progress > cellRect.x) {
 					int w = progress - cellRect.x;
 					w = w > cellRect.width ? cellRect.width : w;
@@ -231,7 +232,8 @@ public class RowProgressTableUI extends BETableUI
 				y += table.getRowHeight(row);
 
 				if (showprogress) {
-					int progress = (int) (progressTableModel.getProgress(row) * tableWidth);
+					int modelRow = table.convertRowIndexToModel(row);
+					int progress = (int) (progressTableModel.getProgress(modelRow) * tableWidth);
 					g.setColor(DefaultUIConstant.TABLE_ROW_PROGRESS_BAR_COLOR2);
 					g.drawLine(damagedArea.x, y - 1, progress, y - 1);
 

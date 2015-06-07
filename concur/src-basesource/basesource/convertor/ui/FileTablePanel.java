@@ -96,8 +96,8 @@ public class FileTablePanel extends ElegantPanel {
         listSelectionListener = new ListSelectionListener() {
             @Override
             public void valueChanged(ListSelectionEvent lse) {
-                int row = fileTable.getSelectionModel().getLeadSelectionIndex();
-                ((ProgressTableModel)fileTable.getModel()).getFile(row);
+                int row = fileTable.convertRowIndexToModel(fileTable.getSelectedRow());
+                File file = ((ProgressTableModel) fileTable.getModel()).getFile(row);
             }
         };
         
@@ -114,7 +114,7 @@ public class FileTablePanel extends ElegantPanel {
         
         
     private void doOpenFile(final JTable fileTable) {
-		int row = fileTable.getSelectionModel().getLeadSelectionIndex();
+        int row = fileTable.convertRowIndexToModel(fileTable.getSelectedRow());
 		File file = ((ProgressTableModel) fileTable.getModel()).getFile(row);
         listableFileManager.openFileView(file);
 	}
