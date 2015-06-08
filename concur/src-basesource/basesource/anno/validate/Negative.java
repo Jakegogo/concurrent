@@ -33,6 +33,6 @@ public @interface Negative {
 	 * 获取值的类
 	 * @return
 	 */
-	public Class<? extends ValueGetter> valueGetter();
+	public Class<? extends ValueGetter> valueGetter() default ValueGetter.class;
 	
 }
