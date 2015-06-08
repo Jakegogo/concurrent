@@ -78,6 +78,9 @@ public class RowProgressTableUI extends BETableUI
      * 重画行
      */
     public void repaintRows(int startModelIndex, int endModelIndex) {
+    	if (endModelIndex < 0) {
+    		return;
+    	}
         if (startModelIndex > endModelIndex) {
             // Too much has changed, punt
         	table.repaint();

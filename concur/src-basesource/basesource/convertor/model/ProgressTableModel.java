@@ -85,6 +85,9 @@ public class ProgressTableModel extends AbstractTableModel {
     }
 
     public File getFile(int row) {
+    	if (row < 0 || row >= this.files.length) {
+    		return null;
+    	}
         return files[row];
     }
 
@@ -101,6 +104,9 @@ public class ProgressTableModel extends AbstractTableModel {
     }
 
     public double getProgress(int row) {
+    	if (row < 0 || row >= this.files.length) {
+    		return 0d;
+    	}
         Double progress = progresses.get(row);
         if (progress == null) {
             return 0d;
@@ -109,6 +115,9 @@ public class ProgressTableModel extends AbstractTableModel {
     }
     
     public void changeProgress(int row, double progress) {
+    	if (row < 0 || row >= this.files.length) {
+    		return;
+    	}
     	progresses.put(row, progress);
     	RowProgressTableUI.updateProgressUI(jTable, row, row);
     }
