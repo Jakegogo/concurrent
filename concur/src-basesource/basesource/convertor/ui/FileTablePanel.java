@@ -2,6 +2,7 @@ package basesource.convertor.ui;
 
 import basesource.convertor.contansts.DefaultUIConstant;
 import basesource.convertor.model.ListableFileManager;
+import basesource.convertor.model.ProgressTableModel;
 import basesource.convertor.ui.docking.demos.elegant.ElegantPanel;
 import basesource.convertor.utils.DpiUtils;
 
@@ -10,6 +11,7 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableColumn;
+
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -65,6 +67,26 @@ public class FileTablePanel extends ElegantPanel {
         this.innerTablePanel = innerTablePanel;
         this.setOpaque(false);
         this.setBackground(Color.WHITE);
+        
+        new Thread() {
+        	public void run() {
+        		double progress = 0d;
+        		while (true) {
+	        		try {
+						Thread.sleep(1000);
+					} catch (InterruptedException e) {
+						e.printStackTrace();
+					}
+	        		progress += 0.01d;
+	        		if (progress >= 1d) {
+	        			break;
+	        		}
+	        		if (fileTableModel != null) {
+	        			fileTableModel.changeProgress(0, progress);
+	        		}
+        		}
+        	};
+        }.start();
     }
 
     public void doLayout() {
@@ -96,8 +118,11 @@ public class FileTablePanel extends ElegantPanel {
         listSelectionListener = new ListSelectionListener() {
             @Override
             public void valueChanged(ListSelectionEvent lse) {
-                int row = fileTable.convertRowIndexToModel(fileTable.getSelectedRow());
-                File file = ((ProgressTableModel) fileTable.getModel()).getFile(row);
+            	int viewRow = fileTable.getSelectedRow();
+            	if (viewRow >= 0) {
+        	        int row = fileTable.convertRowIndexToModel(viewRow);
+        	        File file = ((ProgressTableModel) fileTable.getModel()).getFile(row);
+            	}
             }
         };
         
@@ -114,9 +139,12 @@ public class FileTablePanel extends ElegantPanel {
         
         
     private void doOpenFile(final JTable fileTable) {
-        int row = fileTable.convertRowIndexToModel(fileTable.getSelectedRow());
-		File file = ((ProgressTableModel) fileTable.getModel()).getFile(row);
-        listableFileManager.openFileView(file);
+    	int viewRow = fileTable.getSelectedRow();
+    	if (viewRow >= 0) {
+	        int row = fileTable.convertRowIndexToModel(viewRow);
+			File file = ((ProgressTableModel) fileTable.getModel()).getFile(row);
+	        listableFileManager.openFileView(file);
+    	}
 	}
 
 
@@ -129,7 +157,7 @@ public class FileTablePanel extends ElegantPanel {
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
                 if (fileTableModel==null) {
-                    fileTableModel = new ProgressTableModel();
+                    fileTableModel = new ProgressTableModel(fileTable);
                     fileTable.setModel(fileTableModel);
                 }
                 fileTable.getSelectionModel().removeListSelectionListener(listSelectionListener);

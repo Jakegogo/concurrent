@@ -31,7 +31,7 @@ import javax.swing.table.TableModel;
 import org.jb2011.lnf.beautyeye.ch5_table.BETableUI;
 
 import basesource.convertor.contansts.DefaultUIConstant;
-import basesource.convertor.ui.ProgressTableModel;
+import basesource.convertor.model.ProgressTableModel;
 import basesource.convertor.utils.SmoothUtilities;
 
 // TODO: Auto-generated Javadoc
@@ -88,15 +88,15 @@ public class RowProgressTableUI extends BETableUI
         int height = 0;
         Rectangle firstCellRectangle = null;
         int viewIndex = table.convertRowIndexToView(modelIndex++);
-        if (viewIndex <= 0) {
+        if (viewIndex < 0) {
         	return;
         }
-        firstCellRectangle = table.getCellRect(viewIndex, 0, false);
+        firstCellRectangle = table.getCellRect(viewIndex, 0, true);
         height += firstCellRectangle.height;
         
         while (modelIndex <= endModelIndex) {
             viewIndex = table.convertRowIndexToView(modelIndex++);
-            if (viewIndex != -1) {
+            if (viewIndex < 0) {
             	Rectangle dirty = table.getCellRect(viewIndex, 0,
                         false);
             	height += dirty.height;
@@ -162,7 +162,9 @@ public class RowProgressTableUI extends BETableUI
 		if (cMax == -1) {
 			cMax = table.getColumnCount()-1;
 		}
-
+		
+		SmoothUtilities.configureGraphics(g);
+		
 		// Paint the grid.
 		paintGrid(g, rMin, rMax, cMin, cMax);
 
@@ -247,7 +249,6 @@ public class RowProgressTableUI extends BETableUI
 					int w = progress - cellRect.x;
 					w = w > cellRect.width ? cellRect.width : w;
 
-					SmoothUtilities.configureGraphics(g);
 					g.setColor(DefaultUIConstant.TABLE_ROW_PROGRESS_BAR_COLOR1);
 
 					int h = DefaultUIConstant.TABLE_ROW_PROGRESS_BAR_HEIGHT;

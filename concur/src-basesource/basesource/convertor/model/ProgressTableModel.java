@@ -1,10 +1,12 @@
-package basesource.convertor.ui;
+package basesource.convertor.model;
 
 import basesource.convertor.contansts.DefaultUIConstant;
+import basesource.convertor.ui.extended.RowProgressTableUI;
 
 import javax.swing.*;
 import javax.swing.filechooser.FileSystemView;
 import javax.swing.table.AbstractTableModel;
+
 import java.io.File;
 import java.util.Date;
 import java.util.HashMap;
@@ -20,15 +22,19 @@ public class ProgressTableModel extends AbstractTableModel {
     private Map<Integer, Double> progresses = new HashMap<Integer, Double>();
 	
 	private File[] files;
+	
+	private JTable jTable;
+	
 	/** FileSystemView */
     private FileSystemView fileSystemView = FileSystemView.getFileSystemView();
 
-    ProgressTableModel() {
-        this(new File[0]);
+    public ProgressTableModel(JTable jTable) {
+        this(new File[0], jTable);
     }
 
-    ProgressTableModel(File[] files) {
+    public ProgressTableModel(File[] files, JTable jTable) {
         this.files = files;
+        this.jTable = jTable;
     }
 
     public Object getValueAt(int row, int column) {
@@ -97,9 +103,18 @@ public class ProgressTableModel extends AbstractTableModel {
     public double getProgress(int row) {
         Double progress = progresses.get(row);
         if (progress == null) {
-            progress = Math.random();
-            progresses.put(row, progress);
+            return 0d;
         }
         return progress;
     }
+    
+    public void changeProgress(int row, double progress) {
+    	progresses.put(row, progress);
+    	RowProgressTableUI.updateProgressUI(jTable, row, row);
+    }
+    
+    public void clearProgress() {
+    	progresses.clear(); 
+    }
+    
 }
