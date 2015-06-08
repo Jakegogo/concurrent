@@ -90,12 +90,6 @@ public class DelayDbPersistService implements DbPersistService {
 
 	@PostConstruct
 	public void init() {
-
-		//初始化延时入库检测线程
-		final long delayWaitTimmer = dbRuleService.getDelayWaitTimmer();//延迟入库时间(毫秒)
-
-		final long delayCheckTimmer = 1000;//延迟入库队列检测时间间隔(毫秒)
-
 		// 初始化入库线程
 		ThreadGroup threadGroup = new ThreadGroup("缓存模块");
 		NamedThreadFactory threadFactory = new NamedThreadFactory(threadGroup, "延时入库线程池");
@@ -103,66 +97,9 @@ public class DelayDbPersistService implements DbPersistService {
 
 		// 初始化入库线程
 		DB_POOL_SERVICE.submit(new Runnable() {
-
 			@Override
 			public void run() {
-
-				//循环定时检测入库,失败自动进入重试
-				QueuedAction updateAction = updateQueue.poll();
-				while (!Thread.interrupted()) {
-
-					try {
-						long timeDiff = 0l;
-						do {
-
-							if (updateAction == null) {
-
-								//等待下一个检测时间
-								Thread.sleep(delayCheckTimmer);
-
-							} else if (updateAction.persistAction.valid()) {
-
-								timeDiff = System.currentTimeMillis() - updateAction.createTime;
-
-								//未到延迟入库时间
-								if (timeDiff < delayWaitTimmer) {
-
-									currentDelayUpdateAction = updateAction;
-
-									//等待
-									Thread.sleep(delayWaitTimmer - timeDiff);
-								}
-
-								//执行入库
-								updateAction.doRunTask();
-							}
-
-							if (Thread.interrupted()) {
-								break;
-							}
-							//获取下一个有效的操作元素
-							updateAction = updateQueue.poll();
-
-						} while (true);
-					} catch (InterruptedException e0) {
-							// do nothing
-					} catch (Exception e) {
-						e.printStackTrace();
-
-						if (updateAction != null && updateAction.persistAction != null) {
-							logger.error("执行入库时产生异常! 如果是主键冲突异常可忽略!" + updateAction.persistAction.getPersistInfo(), e);
-						} else {
-							logger.error("执行批量入库时产生异常! 如果是主键冲突异常可忽略!", e);
-						}
-						
-						//等待下一个检测时间重试入库
-						try {
-							Thread.sleep(delayCheckTimmer);
-						} catch (InterruptedException e1) {
-							e1.printStackTrace();
-						}
-					}
-				}
+				processAction();
 			}
 		});
 
@@ -294,6 +231,64 @@ public class DelayDbPersistService implements DbPersistService {
 	private void handlePersist(PersistAction persistAction) {
 		updateQueue.add(QueuedAction.valueOf(persistAction));
 	}
+	
+	
+	// 处理入库任务
+	private void processAction() {
+		//初始化延时入库检测线程
+		final long delayWaitTimmer = dbRuleService.getDelayWaitTimmer();//延迟入库时间(毫秒)
+
+		final long delayCheckTimmer = 1000;//延迟入库队列检测时间间隔(毫秒)
+				
+		//循环定时检测入库,失败自动进入重试
+		QueuedAction updateAction = updateQueue.poll();
+		while (!Thread.interrupted()) {
+
+			try {
+				long timeDiff = 0l;
+				do {
+
+					if (updateAction == null) {
+						//等待下一个检测时间
+						Thread.sleep(delayCheckTimmer);
+					} else if (updateAction.persistAction.valid()) {
+
+						timeDiff = System.currentTimeMillis() - updateAction.createTime;
+						//未到延迟入库时间
+						if (timeDiff < delayWaitTimmer) {
+
+							currentDelayUpdateAction = updateAction;
+
+							//等待
+							Thread.sleep(delayWaitTimmer - timeDiff);
+						}
+						//执行入库
+						updateAction.doRunTask();
+					}
+
+					if (Thread.interrupted()) {
+						break;
+					}
+					//获取下一个有效的操作元素
+					updateAction = updateQueue.poll();
+
+				} while (true);
+			} catch (Exception e) {
+				e.printStackTrace();
+
+				if (updateAction != null && updateAction.persistAction != null) {
+					logger.error("执行入库时产生异常! 如果是主键冲突异常可忽略!" + updateAction.persistAction.getPersistInfo(), e);
+				} else {
+					logger.error("执行批量入库时产生异常! 如果是主键冲突异常可忽略!", e);
+				}
+				
+				//等待下一个检测时间重试入库
+				try {
+					Thread.sleep(delayCheckTimmer);
+				} catch (InterruptedException e1) {}
+			}
+		}
+	}
 
 
 	@Override
@@ -312,9 +307,7 @@ public class DelayDbPersistService implements DbPersistService {
 				e.printStackTrace();
 				try {
 					Thread.sleep(3000);
-				} catch (InterruptedException e1) {
-					e1.printStackTrace();
-				}
+				} catch (InterruptedException e1) {}
 			}
 		}
 	}

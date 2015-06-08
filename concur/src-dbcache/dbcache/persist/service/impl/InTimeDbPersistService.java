@@ -89,47 +89,11 @@ public class InTimeDbPersistService implements DbPersistService {
 		// 初始化线程池
 		DB_POOL_SERVICE = SimpleOrderedThreadPoolExecutor.newFixedThreadPool(dbPoolSize, threadFactory);
 		
-		
-		// 定时检测失败操作
-		final long delayWaitTimmer = dbRuleService.getDelayWaitTimmer();//延迟入库时间(毫秒)
 		// 初始化检测线程
 		checkRetryThread = new Thread() {
-			
 			public void run() {
-				OrderedPersistAction action = null;
-				
-				while (!Thread.interrupted()) {
-					try {
-						action = retryQueue.poll();
-						while (action != null) {
-							handlePersist(action);
-							if (Thread.interrupted()) {
-								break;
-							}
-							action = retryQueue.poll();
-						}
-
-						Thread.sleep(delayWaitTimmer);
-					} catch (InterruptedException e0) {
-						// do nothing
-					} catch (Exception e) {
-						e.printStackTrace();
-						
-						if (action != null) {
-							logger.error("执行入库时产生异常! 如果是主键冲突异常可忽略!" + action.getPersistInfo(), e);
-						} else {
-							logger.error("执行批量入库时产生异常! 如果是主键冲突异常可忽略!", e);
-						}
-						
-						try {
-							Thread.sleep(delayWaitTimmer);
-						} catch (InterruptedException e1) {
-							e1.printStackTrace();
-						}
-					}
-				}
+				processRetry();
 			}
-			
 		};
 		checkRetryThread.start();
 		
@@ -137,7 +101,7 @@ public class InTimeDbPersistService implements DbPersistService {
 
 
 	abstract class OrderedPersistAction extends SimpleLinkingRunnable implements PersistAction {
-
+		
 	}
 
 
@@ -188,7 +152,7 @@ public class InTimeDbPersistService implements DbPersistService {
 
 				return JsonUtils.object2JsonString(cacheObject.getEntity());
 			}
-
+			
 			@Override
 			public boolean valid() {
 				return cacheObject.getPersistStatus() == PersistStatus.TRANSIENT;
@@ -295,6 +259,39 @@ public class InTimeDbPersistService implements DbPersistService {
 		});
 
 	}
+	
+	
+	// 处理失败任务
+	private void processRetry() {
+		// 定时检测失败操作
+		final long delayWaitTimmer = dbRuleService.getDelayWaitTimmer();//延迟入库时间(毫秒)
+		OrderedPersistAction action = null;
+		while (!Thread.interrupted()) {
+			try {
+				action = retryQueue.poll();
+				while (action != null) {
+					handlePersist(action);
+					if (Thread.interrupted()) {
+						break;
+					}
+					action = retryQueue.poll();
+				}
+			} catch (Exception e) {
+				if (action != null) {
+					logger.error("执行入库时产生异常! 如果是主键冲突异常可忽略!" + action.getPersistInfo(), e);
+				} else {
+					logger.error("执行批量入库时产生异常! 如果是主键冲突异常可忽略!", e);
+				}
+				e.printStackTrace();
+			}
+			try {
+				Thread.sleep(delayWaitTimmer);
+			} catch (InterruptedException e1) {
+				e1.printStackTrace();
+			}
+		}
+	}
+	
 
 	@Override
 	public void destroy() {

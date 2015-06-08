@@ -11,10 +11,8 @@ import dbcache.persist.PersistStatus;
 import dbcache.persist.service.DbBatchAccessService;
 import dbcache.persist.service.DbPersistService;
 import utils.JsonUtils;
-import utils.collections.concurrent.ConcurrentHashMapV8;
 import utils.thread.NamedThreadFactory;
 import utils.thread.ThreadUtils;
-
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,11 +21,9 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
-
 import java.util.*;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -40,7 +36,7 @@ import java.util.concurrent.Executors;
  */
 @Component("delayBatchDbPersistService")
 public class DelayBatchDbPersistService implements DbPersistService {
-
+	
 	/**
 	 * logger
 	 */
@@ -83,47 +79,38 @@ public class DelayBatchDbPersistService implements DbPersistService {
 	 */
 	static class BatchTasks {
 		
-		final ConcurrentMap<Class<?>, ConcurrentLinkedQueue<CacheObject<?>>> saveBatchQueue = new ConcurrentHashMapV8<Class<?>, ConcurrentLinkedQueue<CacheObject<?>>>();
+		final Map<Class<?>, LinkedList<CacheObject<?>>> saveBatchQueue = new HashMap<Class<?>, LinkedList<CacheObject<?>>>();
 		
-		final ConcurrentMap<Class<?>, ConcurrentLinkedQueue<CacheObject<?>>> updateBatchQueue = new ConcurrentHashMapV8<Class<?>, ConcurrentLinkedQueue<CacheObject<?>>>();
+		final Map<Class<?>, LinkedList<CacheObject<?>>> updateBatchQueue = new HashMap<Class<?>, LinkedList<CacheObject<?>>>();
 		
-		final ConcurrentMap<Class<?>, ConcurrentLinkedQueue<CacheObject<?>>> deleteBatchQueue = new ConcurrentHashMapV8<Class<?>, ConcurrentLinkedQueue<CacheObject<?>>>();
+		final Map<Class<?>, LinkedList<CacheObject<?>>> deleteBatchQueue = new HashMap<Class<?>, LinkedList<CacheObject<?>>>();
 		
 		// 添加插入数据任务
 		public void addSaveTask(CacheObject<?> object) {
-			ConcurrentLinkedQueue<CacheObject<?>> list = saveBatchQueue.get(object.getEntity().getClass());
+			LinkedList<CacheObject<?>> list = saveBatchQueue.get(object.getEntity().getClass());
 			if (list == null) {
-				list = new ConcurrentLinkedQueue<CacheObject<?>>();
-				ConcurrentLinkedQueue<CacheObject<?>> oldList = saveBatchQueue.putIfAbsent(object.getEntity().getClass(), list);
-				if (oldList != null) {
-					list = oldList;
-				}
+				list = new LinkedList<CacheObject<?>>();
+				saveBatchQueue.put(object.getEntity().getClass(), list);
 			}
 			list.add(object);
 		}
 		
 		// 添加更新数据任务
 		public void addUpdateTask(CacheObject<?> object) {
-			ConcurrentLinkedQueue<CacheObject<?>> list = updateBatchQueue.get(object.getEntity().getClass());
+			LinkedList<CacheObject<?>> list = updateBatchQueue.get(object.getEntity().getClass());
 			if (list == null) {
-				list = new ConcurrentLinkedQueue<CacheObject<?>>();
-				ConcurrentLinkedQueue<CacheObject<?>> oldList = updateBatchQueue.putIfAbsent(object.getEntity().getClass(), list);
-				if (oldList != null) {
-					list = oldList;
-				}
+				list = new LinkedList<CacheObject<?>>();
+				updateBatchQueue.put(object.getEntity().getClass(), list);
 			}
 			list.add(object);
 		}
 		
 		// 添加更新数据任务
 		public void addDeleteTask(CacheObject<?> object) {
-			ConcurrentLinkedQueue<CacheObject<?>> list = deleteBatchQueue.get(object.getEntity().getClass());
+			LinkedList<CacheObject<?>> list = deleteBatchQueue.get(object.getEntity().getClass());
 			if (list == null) {
-				list = new ConcurrentLinkedQueue<CacheObject<?>>();
-				ConcurrentLinkedQueue<CacheObject<?>> oldList = deleteBatchQueue.put(object.getEntity().getClass(), list);
-				if (oldList != null) {
-					list = oldList;
-				}
+				list = new LinkedList<CacheObject<?>>();
+				deleteBatchQueue.put(object.getEntity().getClass(), list);
 			}
 			list.add(object);
 		}
@@ -135,15 +122,14 @@ public class DelayBatchDbPersistService implements DbPersistService {
 	protected void flushBatchTask() {
 		
 		// 保存
-		for (Entry<Class<?>, ConcurrentLinkedQueue<CacheObject<?>>> entry : this.batchTasks.saveBatchQueue.entrySet()) {
+		for (Entry<Class<?>, LinkedList<CacheObject<?>>> entry : this.batchTasks.saveBatchQueue.entrySet()) {
 			try {
-				ConcurrentLinkedQueue<CacheObject<?>> list = entry.getValue();
+				LinkedList<CacheObject<?>> list = entry.getValue();
 				if (list.isEmpty()) {
 					continue;
 				}
 				List<Object> entityList = new ArrayList<Object>();
-				CacheObject<?> cacheObj = null;
-				while ((cacheObj = list.poll()) != null) {
+				for (CacheObject<?> cacheObj : list) {
 					if (cacheObj.getPersistStatus() == PersistStatus.TRANSIENT) {
 						entityList.add(cacheObj.getEntity());
 					}
@@ -156,15 +142,14 @@ public class DelayBatchDbPersistService implements DbPersistService {
 		}
 		
 		// 更新
-		for (Entry<Class<?>, ConcurrentLinkedQueue<CacheObject<?>>> entry : this.batchTasks.updateBatchQueue.entrySet()) {
+		for (Entry<Class<?>, LinkedList<CacheObject<?>>> entry : this.batchTasks.updateBatchQueue.entrySet()) {
 			try {
-				ConcurrentLinkedQueue<CacheObject<?>> list = entry.getValue();
+				LinkedList<CacheObject<?>> list = entry.getValue();
 				if (list.isEmpty()) {
 					continue;
 				}
 				List<Object> entityList = new ArrayList<Object>();
-				CacheObject<?> cacheObj = null;
-				while ((cacheObj = list.poll()) != null) {
+				for (CacheObject<?> cacheObj : list) {
 					entityList.add(cacheObj.getEntity());
 				}
 				this.dbAccessService.update(entry.getKey(), entityList);
@@ -175,15 +160,14 @@ public class DelayBatchDbPersistService implements DbPersistService {
 		}
 		
 		// 删除
-		for (Entry<Class<?>, ConcurrentLinkedQueue<CacheObject<?>>> entry : this.batchTasks.deleteBatchQueue.entrySet()) {
+		for (Entry<Class<?>, LinkedList<CacheObject<?>>> entry : this.batchTasks.deleteBatchQueue.entrySet()) {
 			try {
-				ConcurrentLinkedQueue<CacheObject<?>> list = entry.getValue();
+				LinkedList<CacheObject<?>> list = entry.getValue();
 				if (list.isEmpty()) {
 					continue;
 				}
 				List<Object> entityList = new ArrayList<Object>();
-				CacheObject<?> cacheObj = null;
-				while ((cacheObj = list.poll()) != null) {
+				for (CacheObject<?> cacheObj : list) {
 					if (cacheObj.getPersistStatus() == PersistStatus.PERSIST) {
 						entityList.add(cacheObj.getEntity());
 					}
@@ -200,12 +184,6 @@ public class DelayBatchDbPersistService implements DbPersistService {
 
 	@PostConstruct
 	public void init() {
-
-		//初始化延时入库检测线程
-		final long delayWaitTimmer = dbRuleService.getDelayWaitTimmer();//延迟入库时间(毫秒)
-
-		final long delayCheckTimmer = 1000;//延迟入库队列检测时间间隔(毫秒)
-
 		// 初始化入库线程
 		ThreadGroup threadGroup = new ThreadGroup("缓存模块");
 		NamedThreadFactory threadFactory = new NamedThreadFactory(threadGroup, "延时入库线程池");
@@ -216,79 +194,9 @@ public class DelayBatchDbPersistService implements DbPersistService {
 
 			@Override
 			public void run() {
-
-				ConcurrentLinkedQueue<PersistAction> processQueue = updateQueue;
-				PersistAction persistAction = processQueue.poll();
-				
-				//循环定时检测入库,失败自动进入重试
-				while (!Thread.interrupted()) {
-					
-					try {
-						
-						long timeDiff = 0l;
-						long lastFlush = System.currentTimeMillis();
-						do {
-							
-							if (persistAction == null) {
-								// 执行批量入库任务
-								flushBatchTask();
-								// 等待下一个检测时间
-								Thread.sleep(delayCheckTimmer);
-							}
-
-							timeDiff = System.currentTimeMillis() - lastFlush;
-							
-							if (timeDiff >= delayWaitTimmer) {
-								// 替换updateQueue
-								if (processQueue == updateQueue) {
-									updateQueue = swapQueue;
-								}
-								
-								do {
-									//执行入库
-									if (persistAction != null && persistAction.valid()) {
-										persistAction.run();
-									}
-									if (Thread.interrupted()) {
-										break;
-									}
-								} while ((persistAction = processQueue.poll()) != null); // 获取下一个有效的操作元素
-								
-								// 执行批量入库任务
-								flushBatchTask();
-								
-								lastFlush = System.currentTimeMillis();
-								
-								swapQueue = processQueue;
-								processQueue = updateQueue;
-								
-							} else {
-								// 等待
-								Thread.sleep(timeDiff);
-							}
-							
-						} while (!Thread.interrupted());
-
-					} catch (InterruptedException e0) {
-						// do nothing
-					} catch (Exception e) {
-						e.printStackTrace();
-
-						if (persistAction != null) {
-							logger.error("执行入库时产生异常! 如果是主键冲突异常可忽略!" + persistAction.getPersistInfo(), e);
-						} else {
-							logger.error("执行批量入库时产生异常! 如果是主键冲突异常可忽略!", e);
-						}
-						
-						//等待下一个检测时间重试入库
-						try {
-							Thread.sleep(delayCheckTimmer);
-						} catch (InterruptedException e1) {
-							e1.printStackTrace();
-						}
-					}
-				}
+				processAction();
 			}
+
 		});
 
 	}
@@ -417,6 +325,78 @@ public class DelayBatchDbPersistService implements DbPersistService {
 		updateQueue.add(persistAction);
 	}
 
+	
+	// 处理入库任务
+	private void processAction() {
+		//初始化延时入库检测线程
+		final long delayWaitTimmer = dbRuleService.getDelayWaitTimmer();//延迟入库时间(毫秒)
+		final long delayCheckTimmer = 1000;//延迟入库队列检测时间间隔(毫秒)
+				
+		ConcurrentLinkedQueue<PersistAction> processQueue = updateQueue;
+		PersistAction persistAction = processQueue.poll();
+		
+		//循环定时检测入库,失败自动进入重试
+		while (!Thread.interrupted()) {
+			
+			try {
+				
+				long timeDiff = 0l;
+				long lastFlush = System.currentTimeMillis();
+				do {
+					if (persistAction == null) {
+						// 执行批量入库任务
+						flushBatchTask();
+						// 等待下一个检测时间
+						Thread.sleep(delayCheckTimmer);
+					}
+
+					timeDiff = System.currentTimeMillis() - lastFlush;
+					if (timeDiff >= delayWaitTimmer) {
+						// 替换updateQueue
+						if (processQueue == updateQueue) {
+							updateQueue = swapQueue;
+						}
+						
+						do {
+							//执行入库
+							if (persistAction != null && persistAction.valid()) {
+								persistAction.run();
+							}
+							if (Thread.interrupted()) {
+								break;
+							}
+						} while ((persistAction = processQueue.poll()) != null); // 获取下一个有效的操作元素
+						
+						// 执行批量入库任务
+						flushBatchTask();
+						
+						lastFlush = System.currentTimeMillis();
+						
+						swapQueue = processQueue;
+						processQueue = updateQueue;
+					} else {
+						// 等待
+						Thread.sleep(timeDiff);
+					}
+					
+				} while (!Thread.interrupted());
+
+			} catch (Exception e) {
+				e.printStackTrace();
+				if (persistAction != null) {
+					logger.error("执行入库时产生异常! 如果是主键冲突异常可忽略!" + persistAction.getPersistInfo(), e);
+				} else {
+					logger.error("执行批量入库时产生异常! 如果是主键冲突异常可忽略!", e);
+				}
+				
+				//等待下一个检测时间重试入库
+				try {
+					Thread.sleep(delayCheckTimmer);
+				} catch (InterruptedException e1) {}
+			}
+		}
+	}
+	
 
 	@Override
 	public void destroy() {
@@ -434,9 +414,7 @@ public class DelayBatchDbPersistService implements DbPersistService {
 				e.printStackTrace();
 				try {
 					Thread.sleep(3000);
-				} catch (InterruptedException e1) {
-					e1.printStackTrace();
-				}
+				} catch (InterruptedException e1) {}
 			}
 		}
 	}
