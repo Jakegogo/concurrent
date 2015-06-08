@@ -11,15 +11,28 @@
  */
 package basesource.convertor.ui.extended;
 
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Graphics;
+import java.awt.Point;
+import java.awt.Rectangle;
+
+import javax.swing.JComponent;
+import javax.swing.JTable;
+import javax.swing.UIDefaults;
+import javax.swing.UIManager;
+import javax.swing.plaf.ComponentUI;
+import javax.swing.table.JTableHeader;
+import javax.swing.table.TableCellRenderer;
+import javax.swing.table.TableColumn;
+import javax.swing.table.TableColumnModel;
+import javax.swing.table.TableModel;
+
+import org.jb2011.lnf.beautyeye.ch5_table.BETableUI;
+
 import basesource.convertor.contansts.DefaultUIConstant;
 import basesource.convertor.ui.ProgressTableModel;
 import basesource.convertor.utils.SmoothUtilities;
-import org.jb2011.lnf.beautyeye.ch5_table.BETableUI;
-
-import javax.swing.*;
-import javax.swing.plaf.ComponentUI;
-import javax.swing.table.*;
-import java.awt.*;
 
 // TODO: Auto-generated Javadoc
 /**
@@ -43,7 +56,55 @@ public class RowProgressTableUI extends BETableUI
     {
         return new RowProgressTableUI();
     }
-
+    
+    /**
+     * 更新进度显示
+     * @param table
+     * @param startModelIndex
+     * @param endModelIndex
+     */
+    public static void updateProgressUI(JTable table, int startModelIndex, int endModelIndex) {
+    	if (table.getUI().getClass() != RowProgressTableUI.class) {
+    		return;
+    	}
+    	RowProgressTableUI ui = (RowProgressTableUI) table.getUI();
+    	if (ui != null) {
+    		ui.repaintRows(startModelIndex, endModelIndex);
+    	}
+    }
+    
+    
+    /**
+     * 重画行
+     */
+    public void repaintRows(int startModelIndex, int endModelIndex) {
+        if (startModelIndex > endModelIndex) {
+            // Too much has changed, punt
+        	table.repaint();
+            return;
+        }
+        int modelIndex = startModelIndex;
+        
+        int height = 0;
+        Rectangle firstCellRectangle = null;
+        int viewIndex = table.convertRowIndexToView(modelIndex++);
+        if (viewIndex <= 0) {
+        	return;
+        }
+        firstCellRectangle = table.getCellRect(viewIndex, 0, false);
+        height += firstCellRectangle.height;
+        
+        while (modelIndex <= endModelIndex) {
+            viewIndex = table.convertRowIndexToView(modelIndex++);
+            if (viewIndex != -1) {
+            	Rectangle dirty = table.getCellRect(viewIndex, 0,
+                        false);
+            	height += dirty.height;
+            }
+        }
+        table.repaint(firstCellRectangle.x, firstCellRectangle.y, table.getWidth(), height);
+    }
+    
 
 	/** Paint a representation of the <code>table</code> instance
 	 * that was set in installUI().
