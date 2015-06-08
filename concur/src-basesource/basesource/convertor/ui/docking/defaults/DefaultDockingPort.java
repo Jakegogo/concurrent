@@ -18,11 +18,7 @@ CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFT
 OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 package basesource.convertor.ui.docking.defaults;
 
-import java.awt.Component;
-import java.awt.Container;
-import java.awt.Dimension;
-import java.awt.Insets;
-import java.awt.LayoutManager;
+import java.awt.*;
 import java.util.HashSet;
 import java.util.WeakHashMap;
 
@@ -114,6 +110,7 @@ public class DefaultDockingPort extends JPanel implements DockingPort {
 	public DefaultDockingPort() {
 		setDockingInsets(new Insets(12, 12, 8, 8));
 		setDockingAllowed(true);
+		setOpaque(false);
 	}
 
 	/**
@@ -211,7 +208,8 @@ public class DefaultDockingPort extends JPanel implements DockingPort {
 		if(NORTH_REGION.equals(region) || SOUTH_REGION.equals(region))
 			orient = JSplitPane.VERTICAL_SPLIT;
 		pane.setOrientation(orient);
-		
+		pane.setOpaque(false);
+
 		cachedSplitDividerSize = pane.getDividerSize();
 		if(!resize)
 			pane.setDividerSize(0);
@@ -268,7 +266,7 @@ public class DefaultDockingPort extends JPanel implements DockingPort {
 		Component docked = getDockedComponent();
 		if(comp==docked)
 			return false;
-		
+
 		resizableDesired = resizable;
 		COMPONENT_TITLES.put(comp, desc);
 		if(docked==null) {
@@ -331,7 +329,9 @@ public class DefaultDockingPort extends JPanel implements DockingPort {
 		// we should throw a NullPointerException instead.
 		if(tabs==null)
 			return false;
-		
+
+		tabs.setOpaque(false);
+
 		// remove the currently docked component and add it to the tabbed pane
 		remove(docked);
 		tabs.add(docked, getValidTabTitle(tabs, docked));
@@ -382,7 +382,6 @@ public class DefaultDockingPort extends JPanel implements DockingPort {
 
 		// now set the wrapper panel as the currently docked component
 		setComponent(newDockedContent);
-
 		return true;
 	}
 

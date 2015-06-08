@@ -33,6 +33,11 @@ public interface DefaultUIConstant {
     int DEFAULT_FILE_LIST_PANEL_HEIGHT = 400;
 
     /**
+     * 面板标题栏高度
+     */
+    int PANEL_TITTLE_BORDER_HEIGHT = 25;
+
+    /**
      * 空边框实例
      */
     Border EMPTY_BORDER = new EmptyBorder(0, 0, 0, 0);
@@ -112,5 +117,21 @@ public interface DefaultUIConstant {
      * 文件树目录面板标题
      */
     String FILE_TREE_PANEL_TITTLE = "输入文件夹";
+
+    /**
+     * 表格进度条高度
+     */
+    int TABLE_ROW_PROGRESS_BAR_HEIGHT = -1;
+
+
+    /**
+     * 表格进度条颜色
+     */
+    Color TABLE_ROW_PROGRESS_BAR_COLOR1 = new Color(246, 246, 246);
+
+    /**
+     * 表格进度条颜色
+     */
+    Color TABLE_ROW_PROGRESS_BAR_COLOR2 = new Color(45, 255, 2);
 
 }

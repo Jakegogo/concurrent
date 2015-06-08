@@ -1,16 +1,8 @@
 package basesource.convertor.ui.docking.demos.elegant;
 
-import javax.swing.JFrame;
-import javax.swing.JPanel;
-import javax.swing.JSplitPane;
-import javax.swing.UIManager;
+import javax.swing.*;
 import javax.swing.plaf.basic.BasicSplitPaneDivider;
 import javax.swing.plaf.basic.BasicSplitPaneUI;
-
-import basesource.convertor.ui.docking.Dockable;
-import basesource.convertor.ui.docking.DockingPort;
-import basesource.convertor.ui.docking.defaults.DefaultDockingPort;
-import basesource.convertor.ui.docking.defaults.StandardBorderManager;
 
 
 public class ElegantDemo extends JFrame {

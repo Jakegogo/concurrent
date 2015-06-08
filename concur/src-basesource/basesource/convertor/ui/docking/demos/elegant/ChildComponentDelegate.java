@@ -1,12 +1,11 @@
 package basesource.convertor.ui.docking.demos.elegant;
 
-import javax.swing.JSplitPane;
-import javax.swing.JTabbedPane;
-import javax.swing.plaf.basic.BasicSplitPaneDivider;
-import javax.swing.plaf.basic.BasicSplitPaneUI;
-
 import basesource.convertor.ui.docking.DockingPort;
 import basesource.convertor.ui.docking.defaults.SubComponentProvider;
+
+import javax.swing.*;
+import javax.swing.plaf.basic.BasicSplitPaneDivider;
+import javax.swing.plaf.basic.BasicSplitPaneUI;
 
 public class ChildComponentDelegate implements SubComponentProvider {
 
@@ -23,6 +22,7 @@ public class ChildComponentDelegate implements SubComponentProvider {
 
 		// set the divider size for a more reasonable, less bulky look 
 		split.setDividerSize(3);
+		split.setOpaque(false);
 
 		// check the UI.  If we can't work with the UI any further, then
 		// exit here.
@@ -39,7 +39,9 @@ public class ChildComponentDelegate implements SubComponentProvider {
 	}
 
 	public JTabbedPane createTabbedPane() {
-		return new JTabbedPane(JTabbedPane.BOTTOM);
+		JTabbedPane tabbedPane = new JTabbedPane(JTabbedPane.BOTTOM);
+		tabbedPane.setOpaque(false);
+		return tabbedPane;
 	}
 
 	public double getInitialDividerLocation() {

@@ -1,19 +1,5 @@
 package basesource.convertor.ui;
 
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Dimension;
-
-import javax.swing.JComponent;
-import javax.swing.JPanel;
-import javax.swing.JSplitPane;
-import javax.swing.JToolBar;
-import javax.swing.UIManager;
-
-import org.jb2011.lnf.beautyeye.BeautyEyeLNFHelper;
-import org.jdesktop.application.SingleFrameApplication;
-import org.jdesktop.application.View;
-
 import basesource.convertor.contansts.DefaultUIConstant;
 import basesource.convertor.files.monitor.FileAlterationMonitor;
 import basesource.convertor.files.monitor.FileAlterationObserver;
@@ -21,8 +7,14 @@ import basesource.convertor.model.ListableFileManager;
 import basesource.convertor.model.ListableFileObservable;
 import basesource.convertor.ui.docking.DockingPort;
 import basesource.convertor.ui.docking.demos.elegant.ElegantDockingPort;
-import basesource.convertor.ui.extended.AnimatingSplitPane;
+import basesource.convertor.ui.extended.RowProgressTableUI;
 import basesource.convertor.utils.DpiUtils;
+import org.jb2011.lnf.beautyeye.BeautyEyeLNFHelper;
+import org.jdesktop.application.SingleFrameApplication;
+import org.jdesktop.application.View;
+
+import javax.swing.*;
+import java.awt.*;
 
 /**
  * 主面板
@@ -125,7 +117,11 @@ public class MainPanel extends SingleFrameApplication {
         	org.jb2011.lnf.beautyeye.BeautyEyeLNFHelper.launchBeautyEyeLNF();
         } catch (Exception e) {
         }
-        
+
+        UIManager.put("TabbedPane.contentOpaque", false);
+        UIManager.put("TableUI", RowProgressTableUI.class.getName());
+
+
         //调整默认字体
         for (int i = 0; i < DEFAULT_FONT.length; i++) {
             UIManager.put(DEFAULT_FONT[i], DefaultUIConstant.DEFAULT_FONT);
@@ -167,6 +163,7 @@ public class MainPanel extends SingleFrameApplication {
                 DpiUtils.getDpiExtendedSize(DefaultUIConstant.DEFAULT_HEIGHT)
         ));
         mainDockingPanel.setBorder(DefaultUIConstant.EMPTY_BORDER);
+//        mainDockingPanel.setBackground(Color.BLUE);
 
 
         FileTreePanel fileBrowserPanel = new FileTreePanel(this.listableFileManager);
@@ -174,6 +171,7 @@ public class MainPanel extends SingleFrameApplication {
                 DpiUtils.getDpiExtendedSize(DefaultUIConstant.DEFAULT_FILE_TREE_PANEL_WITH),
                 DpiUtils.getDpiExtendedSize(DefaultUIConstant.DEFAULT_HEIGHT)
                 ));
+        fileBrowserPanel.setOpaque(false);
         mainDockingPanel.add(fileBrowserPanel, DockingPort.WEST_REGION);
 
 
@@ -192,7 +190,7 @@ public class MainPanel extends SingleFrameApplication {
                 DpiUtils.getDpiExtendedSize(DefaultUIConstant.DEFAULT_WIDTH),
                 DpiUtils.getDpiExtendedSize(DefaultUIConstant.DEFAULT_HEIGHT)
         ));
-        rootPanel.add(mainDockingPanel, "Center");
+        rootPanel.add(mainDockingPanel, BorderLayout.CENTER);
 
 
         ListableFileObservable listableFileConnector = new ListableFileObservable(rootPanel, fileBrowserPanel, fileListPanel, listableFileManager, fileAlterationMonitor);
@@ -201,10 +199,9 @@ public class MainPanel extends SingleFrameApplication {
 
         ToolBar toolBar = new ToolBar(JToolBar.HORIZONTAL, listableFileConnector);
         JPanel toolBarPanel = new JPanel(new BorderLayout());
-        toolBarPanel.add(toolBar, "Center");
-        rootPanel.add(toolBarPanel, "North");
-        
-        
+        toolBarPanel.add(toolBar, BorderLayout.CENTER);
+        rootPanel.add(toolBarPanel, BorderLayout.NORTH);
+
         this.fileBrowserPanel = fileBrowserPanel;
         this.fileListPanel = fileListPanel;
         this.mainDockingPanel = mainDockingPanel;

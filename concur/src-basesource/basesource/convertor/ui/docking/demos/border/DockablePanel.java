@@ -1,15 +1,12 @@
 package basesource.convertor.ui.docking.demos.border;
 
-import java.awt.BorderLayout;
-import java.awt.Component;
-import java.awt.Dimension;
-
-import javax.swing.JPanel;
-import javax.swing.border.TitledBorder;
-
 import basesource.convertor.ui.docking.Dockable;
 import basesource.convertor.ui.docking.DockableAdapter;
 import basesource.convertor.ui.docking.DockingManager;
+
+import javax.swing.*;
+import javax.swing.border.TitledBorder;
+import java.awt.*;
 
 public class DockablePanel extends JPanel {
 	private String title;
