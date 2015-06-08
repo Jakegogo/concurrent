@@ -11,8 +11,10 @@ import dbcache.persist.PersistStatus;
 import dbcache.persist.service.DbBatchAccessService;
 import dbcache.persist.service.DbPersistService;
 import utils.JsonUtils;
+import utils.collections.concurrent.ConcurrentHashMapV8;
 import utils.thread.NamedThreadFactory;
 import utils.thread.ThreadUtils;
+
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,9 +23,11 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
+
 import java.util.*;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -79,38 +83,47 @@ public class DelayBatchDbPersistService implements DbPersistService {
 	 */
 	static class BatchTasks {
 		
-		final Map<Class<?>, LinkedList<CacheObject<?>>> saveBatchQueue = new HashMap<Class<?>, LinkedList<CacheObject<?>>>();
+		final ConcurrentMap<Class<?>, ConcurrentLinkedQueue<CacheObject<?>>> saveBatchQueue = new ConcurrentHashMapV8<Class<?>, ConcurrentLinkedQueue<CacheObject<?>>>();
 		
-		final Map<Class<?>, LinkedList<CacheObject<?>>> updateBatchQueue = new HashMap<Class<?>, LinkedList<CacheObject<?>>>();
+		final ConcurrentMap<Class<?>, ConcurrentLinkedQueue<CacheObject<?>>> updateBatchQueue = new ConcurrentHashMapV8<Class<?>, ConcurrentLinkedQueue<CacheObject<?>>>();
 		
-		final Map<Class<?>, LinkedList<CacheObject<?>>> deleteBatchQueue = new HashMap<Class<?>, LinkedList<CacheObject<?>>>();
+		final ConcurrentMap<Class<?>, ConcurrentLinkedQueue<CacheObject<?>>> deleteBatchQueue = new ConcurrentHashMapV8<Class<?>, ConcurrentLinkedQueue<CacheObject<?>>>();
 		
 		// 添加插入数据任务
 		public void addSaveTask(CacheObject<?> object) {
-			LinkedList<CacheObject<?>> list = saveBatchQueue.get(object.getEntity().getClass());
+			ConcurrentLinkedQueue<CacheObject<?>> list = saveBatchQueue.get(object.getEntity().getClass());
 			if (list == null) {
-				list = new LinkedList<CacheObject<?>>();
-				saveBatchQueue.put(object.getEntity().getClass(), list);
+				list = new ConcurrentLinkedQueue<CacheObject<?>>();
+				ConcurrentLinkedQueue<CacheObject<?>> oldList = saveBatchQueue.putIfAbsent(object.getEntity().getClass(), list);
+				if (oldList != null) {
+					list = oldList;
+				}
 			}
 			list.add(object);
 		}
 		
 		// 添加更新数据任务
 		public void addUpdateTask(CacheObject<?> object) {
-			LinkedList<CacheObject<?>> list = updateBatchQueue.get(object.getEntity().getClass());
+			ConcurrentLinkedQueue<CacheObject<?>> list = updateBatchQueue.get(object.getEntity().getClass());
 			if (list == null) {
-				list = new LinkedList<CacheObject<?>>();
-				updateBatchQueue.put(object.getEntity().getClass(), list);
+				list = new ConcurrentLinkedQueue<CacheObject<?>>();
+				ConcurrentLinkedQueue<CacheObject<?>> oldList = updateBatchQueue.putIfAbsent(object.getEntity().getClass(), list);
+				if (oldList != null) {
+					list = oldList;
+				}
 			}
 			list.add(object);
 		}
 		
 		// 添加更新数据任务
 		public void addDeleteTask(CacheObject<?> object) {
-			LinkedList<CacheObject<?>> list = deleteBatchQueue.get(object.getEntity().getClass());
+			ConcurrentLinkedQueue<CacheObject<?>> list = deleteBatchQueue.get(object.getEntity().getClass());
 			if (list == null) {
-				list = new LinkedList<CacheObject<?>>();
-				deleteBatchQueue.put(object.getEntity().getClass(), list);
+				list = new ConcurrentLinkedQueue<CacheObject<?>>();
+				ConcurrentLinkedQueue<CacheObject<?>> oldList = deleteBatchQueue.put(object.getEntity().getClass(), list);
+				if (oldList != null) {
+					list = oldList;
+				}
 			}
 			list.add(object);
 		}
@@ -122,14 +135,15 @@ public class DelayBatchDbPersistService implements DbPersistService {
 	protected void flushBatchTask() {
 		
 		// 保存
-		for (Entry<Class<?>, LinkedList<CacheObject<?>>> entry : this.batchTasks.saveBatchQueue.entrySet()) {
+		for (Entry<Class<?>, ConcurrentLinkedQueue<CacheObject<?>>> entry : this.batchTasks.saveBatchQueue.entrySet()) {
 			try {
-				LinkedList<CacheObject<?>> list = entry.getValue();
+				ConcurrentLinkedQueue<CacheObject<?>> list = entry.getValue();
 				if (list.isEmpty()) {
 					continue;
 				}
 				List<Object> entityList = new ArrayList<Object>();
-				for (CacheObject<?> cacheObj : list) {
+				CacheObject<?> cacheObj = null;
+				while ((cacheObj = list.poll()) != null) {
 					if (cacheObj.getPersistStatus() == PersistStatus.TRANSIENT) {
 						entityList.add(cacheObj.getEntity());
 					}
@@ -142,14 +156,15 @@ public class DelayBatchDbPersistService implements DbPersistService {
 		}
 		
 		// 更新
-		for (Entry<Class<?>, LinkedList<CacheObject<?>>> entry : this.batchTasks.updateBatchQueue.entrySet()) {
+		for (Entry<Class<?>, ConcurrentLinkedQueue<CacheObject<?>>> entry : this.batchTasks.updateBatchQueue.entrySet()) {
 			try {
-				LinkedList<CacheObject<?>> list = entry.getValue();
+				ConcurrentLinkedQueue<CacheObject<?>> list = entry.getValue();
 				if (list.isEmpty()) {
 					continue;
 				}
 				List<Object> entityList = new ArrayList<Object>();
-				for (CacheObject<?> cacheObj : list) {
+				CacheObject<?> cacheObj = null;
+				while ((cacheObj = list.poll()) != null) {
 					entityList.add(cacheObj.getEntity());
 				}
 				this.dbAccessService.update(entry.getKey(), entityList);
@@ -160,14 +175,15 @@ public class DelayBatchDbPersistService implements DbPersistService {
 		}
 		
 		// 删除
-		for (Entry<Class<?>, LinkedList<CacheObject<?>>> entry : this.batchTasks.deleteBatchQueue.entrySet()) {
+		for (Entry<Class<?>, ConcurrentLinkedQueue<CacheObject<?>>> entry : this.batchTasks.deleteBatchQueue.entrySet()) {
 			try {
-				LinkedList<CacheObject<?>> list = entry.getValue();
+				ConcurrentLinkedQueue<CacheObject<?>> list = entry.getValue();
 				if (list.isEmpty()) {
 					continue;
 				}
 				List<Object> entityList = new ArrayList<Object>();
-				for (CacheObject<?> cacheObj : list) {
+				CacheObject<?> cacheObj = null;
+				while ((cacheObj = list.poll()) != null) {
 					if (cacheObj.getPersistStatus() == PersistStatus.PERSIST) {
 						entityList.add(cacheObj.getEntity());
 					}
