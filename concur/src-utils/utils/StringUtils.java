@@ -61,6 +61,16 @@ public class StringUtils {
 	 * @return
 	 */
 	public static boolean isEmpty(String str) {
+		return str == null || str.length() == 0;
+	}
+
+	
+	/**
+	 * 判断字符串是否为空
+	 * @param str 目标字符串
+	 * @return
+	 */
+	public static boolean isBlank(String str) {
 		return str == null || str.trim().length() == 0;
 	}
 
