@@ -53,14 +53,14 @@ public class ResourceDefinition {
 		Resource anno = clz.getAnnotation(Resource.class);
 		StringBuilder builder = new StringBuilder();
 		builder.append(format.getLocation()).append(FILE_PATH);
-		if (StringUtils.isNotBlank(anno.value())) {
+		if (!StringUtils.isBlank(anno.value())) {
 			String dir = anno.value();
 			int start = 0;
 			int end = dir.length();
-			if (StringUtils.startsWith(dir, FILE_PATH)) {
+			if (dir.startsWith(FILE_PATH)) {
 				start++;
 			}
-			if (StringUtils.endsWith(dir, FILE_PATH)) {
+			if (dir.endsWith(FILE_PATH)) {
 				end--;
 			}
 			builder.append(dir.substring(start, end)).append(FILE_PATH);
@@ -111,9 +111,10 @@ public class ResourceDefinition {
 	 * @return
 	 */
 	public boolean isNeedValidate() {
-		if (Validate.class.isAssignableFrom(clz)) {
-			return true;
-		}
+		// TODO
+//		if (Validate.class.isAssignableFrom(clz)) {
+//			return true;
+//		}
 		return false;
 	}
 	

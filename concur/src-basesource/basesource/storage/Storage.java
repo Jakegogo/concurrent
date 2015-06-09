@@ -236,7 +236,8 @@ public class Storage<K, V> extends Observable implements ApplicationContextAware
 				if (resourceDefinition.isNeedValidate()) {
 					boolean pass = false;
 					try {
-						pass = ((Validate) obj).isValid();
+						// TODO validate
+//						pass = ((Validate) obj).isValid();
 					} catch (Exception e) {
 						logger.error("进行静态数据[{}]校验时出现异常", resourceDefinition.getClz().getSimpleName(), e);
 					} finally {

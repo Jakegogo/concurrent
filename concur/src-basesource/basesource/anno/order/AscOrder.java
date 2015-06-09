@@ -1,4 +1,4 @@
-package basesource.anno;
+package basesource.anno.order;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -6,18 +6,18 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * 倒序排序
+ * 正序排序
  * @author Jake
  *
  */
 @Target({ElementType.FIELD, ElementType.PARAMETER})
 @Retention(RetentionPolicy.RUNTIME)
-public @interface DescOrder {
+public @interface AscOrder {
 	
 	/**
 	 * 排序名称
 	 * @return
 	 */
 	public String name();
-		
+	
 }
