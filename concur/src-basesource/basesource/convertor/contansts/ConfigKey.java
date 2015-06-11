@@ -4,7 +4,7 @@ package basesource.convertor.contansts;
  * 配置的Key
  * Created by Jake on 2015/6/6.
  */
-public class ConfigKey {
+public interface ConfigKey {
 
 
     /**
@@ -107,5 +107,15 @@ public class ConfigKey {
      * 文件树目录面板标题
      */
     String FILE_TREE_PANEL_TITTLE = "FILE_TREE_PANEL_TITTLE";
+
+    /**
+     * 文件输出路径
+     */
+    String FILE_SOURCE_OUTPUT_PATH = "FILE_SOURCE_OUTPUT_PATH";
+
+    /**
+     * 文件输入路径
+     */
+    String FILE_SOURCE_INPUT_PATH = "FILE_SOURCE_INPUT_PATH";
 
 }

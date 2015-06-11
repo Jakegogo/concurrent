@@ -6,10 +6,9 @@ import basesource.convertor.files.monitor.FileAlterationObserver;
 import basesource.convertor.ui.FileTablePanel;
 import basesource.convertor.ui.FileTreePanel;
 
+import javax.swing.*;
 import java.io.File;
 import java.util.List;
-
-import javax.swing.JPanel;
 
 /**
  * 列表更新通知接口
@@ -82,6 +81,9 @@ public class ListableFileObservable {
         if (!file.exists()) {
         	return;
         }
+
+        // 保存到配置文件
+        UserConfig.getInstance().changeInPutPath(file);
         
         List<File> childFiles = listableFileManager.filterChildFiles(file);
         this.updateTableData(childFiles);

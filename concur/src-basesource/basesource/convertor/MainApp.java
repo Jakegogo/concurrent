@@ -1,5 +1,6 @@
 package basesource.convertor;
 
+import basesource.convertor.contansts.Configurations;
 import basesource.convertor.ui.MainPanel;
 
 /**
@@ -15,7 +16,10 @@ public class MainApp {
     	// enable anti-aliasing
     	System.setProperty("awt.useSystemAAFontSettings","on");
     	System.setProperty("swing.aatext", "true");
-    	
+
+        // 加载文件配置
+        Configurations.loadConfigure();
+
         new MainApp().init(args);
     }
 

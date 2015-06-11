@@ -4,6 +4,7 @@ import basesource.convertor.contansts.DefaultUIConstant;
 import basesource.convertor.model.FolderInfo;
 import basesource.convertor.model.ListableFileManager;
 import basesource.convertor.model.ListableFileObservable;
+import basesource.convertor.model.UserConfig;
 import basesource.convertor.ui.docking.demos.elegant.ElegantPanel;
 import basesource.convertor.ui.extended.FileNode;
 import basesource.convertor.ui.extended.FileTreeCellRenderer;
@@ -13,8 +14,9 @@ import javax.swing.*;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.DefaultTreeModel;
-
+import javax.swing.tree.TreePath;
 import java.awt.*;
+import java.io.File;
 import java.util.List;
 
 /**
@@ -41,7 +43,12 @@ public class FileTreePanel extends ElegantPanel {
      * @param listableFileConnector ListableFileConnector
      */
     public void setListableFileConnector(ListableFileObservable listableFileConnector) {
+
         this.listableFileConnector = listableFileConnector;
+
+        File userInputPath = UserConfig.getInstance().getInputPath();
+        // 初始化表格默认显示数据
+        listableFileConnector.updateSelectDirectory(this.listableFileManager.generateFolderInfo(userInputPath));
     }
 
     public FileTreePanel(ListableFileManager listableFileManager) {
@@ -82,14 +89,23 @@ public class FileTreePanel extends ElegantPanel {
 
         // the File tree
         FileNode root = new FileNode();
-        // 初始化默认文件夹节点
-        listableFileManager.convertDefaultFileListToTreeNode(root);
+
+        // 读取上一次选择路径
+        File userInputPath = UserConfig.getInstance().getInputPath();
+
+        TreePath defaultTreePath = createDefaultTreeModel(root, userInputPath);
 
         DefaultTreeModel treeModel = new DefaultTreeModel(root);
         JTree fileTree = new JTree(treeModel);
         fileTree.setRootVisible(false);
         fileTree.setCellRenderer(new FileTreeCellRenderer());
-        fileTree.expandRow(0);
+
+        if (defaultTreePath != null) {
+            fileTree.expandPath(defaultTreePath);
+            fileTree.addSelectionPath(defaultTreePath);
+        } else {
+            fileTree.expandRow(0);
+        }
 
         TreeSelectionListener treeSelectionListener = new TreeSelectionListener() {
             public void valueChanged(TreeSelectionEvent tse){
@@ -107,7 +123,16 @@ public class FileTreePanel extends ElegantPanel {
     }
 
 
-
+    private TreePath createDefaultTreeModel(FileNode root, File userInputPath) {
+        if (userInputPath != null && userInputPath.exists()) {
+            // 初始化默认选中的文件夹
+            return listableFileManager.convertToTreeLeafNode(userInputPath, root);
+        } else {
+            // 初始化默认文件夹节点
+            listableFileManager.convertDefaultFileListToTreeNode(root);
+        }
+        return null;
+    }
 
 
     /** Add the files that are contained within the directory of this node.
@@ -132,7 +157,6 @@ public class FileTreePanel extends ElegantPanel {
 
                 // 联动 更新 表格
                 listableFileConnector.updateSelectDirectory(folderInfo);
-
                 return null;
             }
 

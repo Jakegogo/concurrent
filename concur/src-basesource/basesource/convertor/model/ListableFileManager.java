@@ -7,16 +7,13 @@ import sun.awt.shell.ShellFolder;
 
 import javax.swing.*;
 import javax.swing.filechooser.FileSystemView;
-
+import javax.swing.tree.TreePath;
 import java.awt.*;
 import java.io.File;
 import java.io.IOException;
 import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
+import java.util.*;
 import java.util.List;
-import java.util.Set;
 
 /**
  * 文件管理器
@@ -177,20 +174,94 @@ public class ListableFileManager {
             FileNode node = new FileNode(this.generateFolderInfo(fileSystemRoot));
             root.add(node);
 
-            File[] files = fileSystemView.getFiles(fileSystemRoot, true);
-            for (File file : files) {
-                if (file.isDirectory()) {
-                    FileNode fileNode = new FileNode(this.generateFolderInfo(file));
-                    node.add(fileNode);
-                }
-            }
+            addChildNodes(node, fileSystemRoot);
         }
 
     }
 
-    
+    /**
+     * 添加路径子节点
+     * @param path
+     * @param root
+     */
+    public TreePath convertToTreeLeafNode(File path, FileNode root) {
+        File parent = fileSystemView.getParentDirectory(path);
+
+        FileNode expandToNode = null;
+        File tempParentFile = null;
+        FileNode tempParentNode = null;
+        for (; !fileSystemView.isRoot(parent); parent = fileSystemView.getParentDirectory(parent)) {
+
+            FileNode parentNode = new FileNode(this.generateFolderInfo(parent));
+
+            File[] files = fileSystemView.getFiles(parent, true);
+            for (File file : files) {
+                if (!file.isDirectory()) {
+                    continue;
+                }
+
+                FileNode leafNode = new FileNode(this.generateFolderInfo(file));
+                parentNode.add(leafNode);
+
+                if (file.equals(tempParentFile)) {
+                    leafNode.add(tempParentNode);
+                }
+                if (file.equals(path)) {
+                    addChildNodes(leafNode, file);
+                    expandToNode = leafNode;
+                }
+            }
+
+            tempParentFile = parent;
+            tempParentNode = parentNode;
+        }
+
+        File[] roots = fileSystemView.getRoots();
+        for (File fileSystemRoot : roots) {
+            if (fileSystemRoot.equals(tempParentFile)) {
+                root.add(tempParentNode);
+                continue;
+            }
+            FileNode node = new FileNode(this.generateFolderInfo(fileSystemRoot));
+            root.add(node);
+
+            File[] files = fileSystemView.getFiles(fileSystemRoot, true);
+            for (File file : files) {
+                if (!file.isDirectory()) {
+                    continue;
+                }
+                if (file.equals(path)) {
+                    addChildNodes(node, path);
+                    expandToNode = node;
+                }
+                if (file.equals(tempParentFile)) {
+                    node.add(tempParentNode);
+                    continue;
+                }
+                FileNode fileNode = new FileNode(this.generateFolderInfo(file));
+                node.add(fileNode);
+            }
+        }
+
+        if (expandToNode != null) {
+            return new TreePath(expandToNode.getPath());
+        }
+        return null;
+    }
+
+    private void addChildNodes(FileNode leafNode, File path) {
+        File[] files = fileSystemView.getFiles(path, true);
+        for (File file : files) {
+            if (file.isDirectory()) {
+                FileNode fileNode = new FileNode(this.generateFolderInfo(file));
+                leafNode.add(fileNode);
+            }
+        }
+    }
+
+
     // 生成文件夹信息
-    private FolderInfo generateFolderInfo(File file) {
+    public FolderInfo generateFolderInfo(File file) {
     	FolderInfo folderInfo = new FolderInfo();
     	folderInfo.setName(fileSystemView.getSystemDisplayName(file));
     	folderInfo.setIcon(fileSystemView.getSystemIcon(file));
@@ -252,5 +323,6 @@ public class ListableFileManager {
             return "";
         }
     }
+
 
 }

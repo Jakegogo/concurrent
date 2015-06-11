@@ -6,11 +6,8 @@ import basesource.convertor.ui.extended.RowProgressTableUI;
 import javax.swing.*;
 import javax.swing.filechooser.FileSystemView;
 import javax.swing.table.AbstractTableModel;
-
 import java.io.File;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 /**
  * 文件列表表格模型
@@ -79,6 +76,18 @@ public class ProgressTableModel extends AbstractTableModel {
     public String getColumnName(int column) {
         return DefaultUIConstant.FILE_TABLE_HREADER[column];
     }
+
+
+    public List<File> getSortedRowFiles() {
+        int size = this.files.length;
+        List<File> rows = new ArrayList<File>(size);
+        for (int i = 0;i < size;i++) {
+            File f = this.files[this.jTable.convertColumnIndexToModel(i)];
+            rows.add(f);
+        }
+        return rows;
+    }
+
 
     public int getRowCount() {
         return files.length;
