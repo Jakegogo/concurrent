@@ -47,8 +47,10 @@ public class FileTreePanel extends ElegantPanel {
         this.listableFileConnector = listableFileConnector;
 
         File userInputPath = UserConfig.getInstance().getInputPath();
-        // 初始化表格默认显示数据
-        listableFileConnector.updateSelectDirectory(this.listableFileManager.generateFolderInfo(userInputPath));
+        if (userInputPath != null && userInputPath.exists()) {
+            // 初始化表格默认显示数据
+            listableFileConnector.updateSelectDirectory(this.listableFileManager.generateFolderInfo(userInputPath));
+        }
     }
 
     public FileTreePanel(ListableFileManager listableFileManager) {
