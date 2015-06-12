@@ -90,6 +90,9 @@ public class ResourceDefineClassLoader extends ClassLoader {
         File classFile = new File(basePath + File.separator + path);
 
         ClassMeta classMeta = ClassMetaUtil.getClassMeta(classFile);
+        if (classMeta == null) {
+            return super.findClass(name);
+        }
         Class<?> clazz = loadClass(classMeta.getClassName(), classMeta.getBytes());
 
         if (clazz != null) {

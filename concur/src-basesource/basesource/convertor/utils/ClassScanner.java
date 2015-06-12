@@ -180,6 +180,9 @@ public class ClassScanner {
 
 	private void defineClass(Set<Class<?>> classes, File file, ResourceDefineClassLoader classLoader) {
 		ClassMeta classMeta = ClassMetaUtil.getClassMeta(file);
+		if (classMeta == null) {
+			return;
+		}
 		Class<?> clazz = classLoader.loadClass(classMeta.getClassName(), classMeta.getBytes());
 		classes.add(clazz);
 	}
