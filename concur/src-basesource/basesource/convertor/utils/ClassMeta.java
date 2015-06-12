@@ -14,4 +14,5 @@ public interface ClassMeta {
 
 	String getSignature();
 
+	byte[] getBytes();
 }

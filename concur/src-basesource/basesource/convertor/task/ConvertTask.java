@@ -1,6 +1,7 @@
 package basesource.convertor.task;
 
 import basesource.convertor.model.ProgressTableModel;
+import basesource.convertor.utils.ClassScanner;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.ss.usermodel.*;
 
@@ -40,6 +41,9 @@ public class ConvertTask {
      * 开始任务
      */
     public void start() {
+
+        ClassScanner classScanner = new ClassScanner();
+
         cur = tableModel.getSortedRowFiles().iterator();
         runSubTask(cur.next());
     }
@@ -52,6 +56,7 @@ public class ConvertTask {
 
         Workbook workbook = getWorkbook(file);
         Map<String, List<Sheet>> sheets = listSheets(workbook, file);
+
 
 
 

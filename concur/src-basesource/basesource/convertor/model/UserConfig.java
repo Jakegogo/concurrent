@@ -18,6 +18,8 @@ public class UserConfig {
 
     private File inputPath;
 
+    private File sourceDefineInputPath;
+
     UserConfig() {
         this.init();
     }
@@ -36,6 +38,15 @@ public class UserConfig {
             File outputFile = new File(outputPath);
             if (outputFile.exists()) {
                 this.outputPath = outputFile;
+            }
+        }
+
+
+        String sourceDefineInputPath = Configurations.getConfigure(ConfigKey.CODE_SOURCE_INPUT_PATH);
+        if (!StringUtils.isBlank(sourceDefineInputPath)) {
+            File sourceDefineInputFile = new File(sourceDefineInputPath);
+            if (sourceDefineInputFile.exists()) {
+                this.sourceDefineInputPath = sourceDefineInputFile;
             }
         }
     }
@@ -57,11 +68,21 @@ public class UserConfig {
         Configurations.saveConfigure(ConfigKey.FILE_SOURCE_INPUT_PATH, inputPath.getPath());
     }
 
+    public void changeSourceDefineInputPath(File sourceDefineInputPath) {
+        this.sourceDefineInputPath = sourceDefineInputPath;
+        // 保存到配置文件
+        Configurations.saveConfigure(ConfigKey.CODE_SOURCE_INPUT_PATH, sourceDefineInputPath.getPath());
+    }
+
     public File getOutputPath() {
         return outputPath;
     }
 
     public File getInputPath() {
         return inputPath;
+    }
+
+    public File getSourceDefineInputPath() {
+        return sourceDefineInputPath;
     }
 }

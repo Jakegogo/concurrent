@@ -26,6 +26,8 @@ class ClassMetaVisitor implements ClassVisitor, ClassMeta {
 	private String[] interfaces;
 
 	private String signature;
+
+	private byte[] bytes;
 	
 	@Override
 	public void visit(int version, int access, String name, String signature,
@@ -108,4 +110,12 @@ class ClassMetaVisitor implements ClassVisitor, ClassMeta {
 		return signature;
 	}
 
+	@Override
+	public byte[] getBytes() {
+		return this.bytes;
+	}
+
+	void setBytes(byte[] bytes) {
+		this.bytes = bytes;
+	}
 }
