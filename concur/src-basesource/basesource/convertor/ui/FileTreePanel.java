@@ -8,7 +8,7 @@ import basesource.convertor.model.UserConfig;
 import basesource.convertor.ui.docking.demos.elegant.ElegantPanel;
 import basesource.convertor.ui.extended.FileNode;
 import basesource.convertor.ui.extended.FileTreeCellRenderer;
-import basesource.convertor.utils.ComponentUtils;
+import basesource.convertor.utils.SwingComponentUtils;
 
 import javax.swing.*;
 import javax.swing.event.TreeSelectionEvent;
@@ -67,7 +67,7 @@ public class FileTreePanel extends ElegantPanel {
         	@Override
         	public void doLayout() {
         		super.doLayout();
-        		ComponentUtils.addMargin(this, this.getViewport(), 3, 2);
+        		SwingComponentUtils.addMargin(this, this.getViewport(), 3, 2);
         	}
 
         };

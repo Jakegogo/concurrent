@@ -117,5 +117,11 @@ public interface ConfigKey {
      * 文件输入路径
      */
     String FILE_SOURCE_INPUT_PATH = "FILE_SOURCE_INPUT_PATH";
+    
+    /**
+     * 基础数据定义输入路径
+     * jar或class文件路径
+     */
+    String CODE_SOURCE_INPUT_PATH = "CODE_SOURCE_INPUT_PATH";
 
 }

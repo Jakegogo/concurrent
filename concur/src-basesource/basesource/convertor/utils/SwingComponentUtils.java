@@ -5,7 +5,7 @@ import java.awt.Rectangle;
 
 import javax.swing.JComponent;
 
-public class ComponentUtils {
+public class SwingComponentUtils {
 
 	/**
 	 * 增加边距
