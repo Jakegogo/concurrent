@@ -103,7 +103,7 @@ public class FileTreePanel extends ElegantPanel {
         fileTree.setCellRenderer(new FileTreeCellRenderer());
 
         if (defaultTreePath != null) {
-            fileTree.expandPath(defaultTreePath);
+            fileTree.expandPath(defaultTreePath.getParentPath());
             fileTree.addSelectionPath(defaultTreePath);
         } else {
             fileTree.expandRow(0);

@@ -185,7 +185,7 @@ public class ListableFileManager {
      * @param root
      */
     public TreePath convertToTreeLeafNode(File path, FileNode root) {
-        File parent = fileSystemView.getParentDirectory(path);
+    	
         File[] roots = fileSystemView.getRoots();
 
         Set<File> rootSet = new HashSet<File>();
@@ -193,71 +193,58 @@ public class ListableFileManager {
             rootSet.add(roots[i]);
         }
 
+        
         FileNode expandToNode = null;
         File tempParentFile = null;
         FileNode tempParentNode = null;
-        for (; !rootSet.contains(parent); parent = fileSystemView.getParentDirectory(parent)) {
-
-            FileNode parentNode = new FileNode(this.generateFolderInfo(parent));
-
-            File[] files = fileSystemView.getFiles(parent, true);
+        
+        File parent = fileSystemView.getParentDirectory(path);
+        while (true) {
+        	
+        	File[] files = null;
+        	FileNode parentNode = null;
+        	
+        	if (parent == null) {
+        		parentNode = root;
+        		files = roots;
+        	} else {
+        		parentNode = new FileNode(this.generateFolderInfo(parent));
+        		files = fileSystemView.getFiles(parent, true);
+        	}
+        	
             for (File file : files) {
                 if (!file.isDirectory()) {
                     continue;
-                }
-
-                FileNode leafNode = new FileNode(this.generateFolderInfo(file));
-                if (file.equals(path)) {
-                    addChildNodes(leafNode, file);
-                    expandToNode = parentNode;
-                } else {
-                    parentNode.add(leafNode);
                 }
 
                 if (file.equals(tempParentFile)) {
                     parentNode.add(tempParentNode);
-                }
-            }
-
-            tempParentFile = parent;
-            tempParentNode = parentNode;
-        }
-
-
-        for (File fileSystemRoot : roots) {
-            if (!fileSystemRoot.isDirectory()) {
-                continue;
-            }
-            if (fileSystemRoot.equals(path)) {
-                addChildNodes(tempParentNode, fileSystemRoot);
-                expandToNode = tempParentNode;
-            }
-            if (fileSystemRoot.equals(tempParentFile)) {
-                root.add(tempParentNode);
-                continue;
-            }
-            FileNode node = new FileNode(this.generateFolderInfo(fileSystemRoot));
-            root.add(node);
-
-            File[] files = fileSystemView.getFiles(fileSystemRoot, true);
-            for (File file : files) {
-                if (!file.isDirectory()) {
                     continue;
                 }
-
-                FileNode fileNode = new FileNode(this.generateFolderInfo(file));
+                
+                FileNode leafNode = new FileNode(this.generateFolderInfo(file));
                 if (file.equals(path)) {
-                    addChildNodes(fileNode, path);
-                    expandToNode = node;
-                } else {
-                    node.add(fileNode);
+                    expandToNode = leafNode;
+                    addChildNodes(leafNode, file);
                 }
-
-                if (file.equals(tempParentFile)) {
-                    node.add(tempParentNode);
-                }
+                
+                parentNode.add(leafNode);
 
             }
+            
+            if (parent == null) {
+            	break;
+            }
+            
+            tempParentFile = parent;
+            tempParentNode = parentNode;
+            
+            if (!rootSet.contains(parent)) {
+            	parent = fileSystemView.getParentDirectory(parent);
+            } else {
+            	parent = null;
+            }
+            
         }
 
         if (expandToNode != null) {
@@ -266,6 +253,8 @@ public class ListableFileManager {
         return null;
     }
 
+    
+    // 添加子节点
     private void addChildNodes(FileNode leafNode, File path) {
         File[] files = fileSystemView.getFiles(path, true);
         for (File file : files) {
