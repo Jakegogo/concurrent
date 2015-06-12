@@ -186,11 +186,17 @@ public class ListableFileManager {
      */
     public TreePath convertToTreeLeafNode(File path, FileNode root) {
         File parent = fileSystemView.getParentDirectory(path);
+        File[] roots = fileSystemView.getRoots();
+
+        Set<File> rootSet = new HashSet<File>();
+        for (int i = 0;i < roots.length;i++) {
+            rootSet.add(roots[i]);
+        }
 
         FileNode expandToNode = null;
         File tempParentFile = null;
         FileNode tempParentNode = null;
-        for (; !fileSystemView.isRoot(parent); parent = fileSystemView.getParentDirectory(parent)) {
+        for (; !rootSet.contains(parent); parent = fileSystemView.getParentDirectory(parent)) {
 
             FileNode parentNode = new FileNode(this.generateFolderInfo(parent));
 
@@ -201,14 +207,15 @@ public class ListableFileManager {
                 }
 
                 FileNode leafNode = new FileNode(this.generateFolderInfo(file));
-                parentNode.add(leafNode);
-
-                if (file.equals(tempParentFile)) {
-                    leafNode.add(tempParentNode);
-                }
                 if (file.equals(path)) {
                     addChildNodes(leafNode, file);
-                    expandToNode = leafNode;
+                    expandToNode = parentNode;
+                } else {
+                    parentNode.add(leafNode);
+                }
+
+                if (file.equals(tempParentFile)) {
+                    parentNode.add(tempParentNode);
                 }
             }
 
@@ -216,8 +223,15 @@ public class ListableFileManager {
             tempParentNode = parentNode;
         }
 
-        File[] roots = fileSystemView.getRoots();
+
         for (File fileSystemRoot : roots) {
+            if (!fileSystemRoot.isDirectory()) {
+                continue;
+            }
+            if (fileSystemRoot.equals(path)) {
+                addChildNodes(tempParentNode, fileSystemRoot);
+                expandToNode = tempParentNode;
+            }
             if (fileSystemRoot.equals(tempParentFile)) {
                 root.add(tempParentNode);
                 continue;
@@ -230,16 +244,19 @@ public class ListableFileManager {
                 if (!file.isDirectory()) {
                     continue;
                 }
+
+                FileNode fileNode = new FileNode(this.generateFolderInfo(file));
                 if (file.equals(path)) {
-                    addChildNodes(node, path);
+                    addChildNodes(fileNode, path);
                     expandToNode = node;
+                } else {
+                    node.add(fileNode);
                 }
+
                 if (file.equals(tempParentFile)) {
                     node.add(tempParentNode);
-                    continue;
                 }
-                FileNode fileNode = new FileNode(this.generateFolderInfo(file));
-                node.add(fileNode);
+
             }
         }
 
