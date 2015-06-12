@@ -20,8 +20,6 @@ import java.util.jar.JarFile;
  */
 public class ClassScanner {
 
-	private static ResourceDefineClassLoader classLoader = new ResourceDefineClassLoader();
-
 
 	/**
 	 * 从包package中获取所有的Class
@@ -30,6 +28,9 @@ public class ClassScanner {
 	 * @return
 	 */
 	public Set<Class<?>> scanPackage(String path) {
+
+		ResourceDefineClassLoader classLoader = new ResourceDefineClassLoader(path);
+
 		// 第一个class类的集合
 		Set<Class<?>> classes = new LinkedHashSet<Class<?>>();
 
@@ -47,9 +48,9 @@ public class ClassScanner {
 					// 获取包的物理路径
 					String filePath = URLDecoder.decode(url.getFile(), "UTF-8");
 					// 以文件的方式扫描整个包下的文件 并添加到集合中
-					loadFileClasses(filePath, classes);
+					loadFileClasses(filePath, classes, classLoader);
 				} else if ("jar".equals(protocol)) {
-					loadJarClasses(url, classes);
+					loadJarClasses(new File(url.getFile()), classes);
 				}
 			}
 		} catch (IOException e) {
@@ -67,39 +68,38 @@ public class ClassScanner {
 	 * @return
 	 */
 	public Set<Class<?>> scanPath(String path) {
+
+		ResourceDefineClassLoader classLoader = new ResourceDefineClassLoader(path);
+
 		// 第一个class类的集合
 		Set<Class<?>> classes = new LinkedHashSet<Class<?>>();
 
-		try {
-			// 获取此包的目录 建立一个File
-			File dir = new File(path);
+		// 获取此包的目录 建立一个File
+		File dir = new File(path);
 
-			// 如果不存在或者 也不是目录就直接返回
-			if (!dir.exists() || !dir.isDirectory()) {
-				return classes;
+		// 如果不存在或者 也不是目录就直接返回
+		if (!dir.exists() || !dir.isDirectory()) {
+			return classes;
+		}
+
+		// 如果存在 就获取包下的所有文件 包括目录
+		File[] dirfiles = dir.listFiles(new FileFilter() {
+			// 自定义过滤规则 如果可以循环(包含子目录) 或则是以.class结尾的文件(编译好的java类文件)
+			public boolean accept(File file) {
+				return file.isDirectory()
+						|| file.getName().endsWith(".class")
+						|| file.getName().endsWith(".jar");
 			}
+		});
 
-			// 如果存在 就获取包下的所有文件 包括目录
-			File[] dirfiles = dir.listFiles(new FileFilter() {
-				// 自定义过滤规则 如果可以循环(包含子目录) 或则是以.class结尾的文件(编译好的java类文件)
-				public boolean accept(File file) {
-					return file.isDirectory()
-							|| file.getName().endsWith(".class")
-							|| file.getName().endsWith(".jar");
-				}
-			});
-
-			for (File file : dirfiles) {
-				if (file.isDirectory()) {
-					loadFileClasses(file.getAbsolutePath(), classes);
-				} else if (file.getName().endsWith(".jar")) {
-					loadJarClasses(file.toURI().toURL(), classes);
-				} else {
-					defineClass(classes, file);
-				}
+		for (File file : dirfiles) {
+			if (file.isDirectory()) {
+				loadFileClasses(file.getAbsolutePath(), classes, classLoader);
+			} else if (file.getName().endsWith(".jar")) {
+				loadJarClasses(file, classes);
+			} else {
+				defineClass(classes, file, classLoader);
 			}
-		} catch (IOException e) {
-			e.printStackTrace();
 		}
 
 		return classes;
@@ -108,17 +108,18 @@ public class ClassScanner {
 
 	/**
 	 * 加载Jar的类文件
-	 * @param url URL
+	 * @param file File
 	 * @param classes class Set
 	 */
-	private void loadJarClasses(URL url, Set<Class<?>> classes) {
-		//自己定义的classLoader类，把外部路径也加到load路径里，使系统去该路经load对象
-		URLClassLoader loader = new URLClassLoader(new URL[]{url});
+	private void loadJarClasses(File file, Set<Class<?>> classes) {
+
 		// 如果是jar包文件
 		try {
+			//自己定义的classLoader类，把外部路径也加到load路径里，使系统去该路经load对象
+			URLClassLoader loader = new URLClassLoader(new URL[]{file.toURL()});
+
             // 获取jar
-            JarFile jar = ((java.net.JarURLConnection) url.openConnection())
-                    .getJarFile();
+            JarFile jar = new JarFile(file);
             // 从此jar包 得到一个枚举类
             Enumeration<JarEntry> entries = jar.entries();
             // 同样的进行循环迭代
@@ -151,7 +152,7 @@ public class ClassScanner {
 	 * @param packagePath packagePath
 	 * @param classes class Set
 	 */
-	public void loadFileClasses(String packagePath, Set<Class<?>> classes) {
+	public void loadFileClasses(String packagePath, Set<Class<?>> classes, ResourceDefineClassLoader classLoader) {
 		// 获取此包的目录 建立一个File
 		File dir = new File(packagePath);
 
@@ -170,14 +171,14 @@ public class ClassScanner {
 
 		for (File file : dirfiles) {
 			if (file.isDirectory()) {
-				loadFileClasses(file.getAbsolutePath(), classes);
+				loadFileClasses(file.getAbsolutePath(), classes, classLoader);
 			} else {
-				defineClass(classes, file);
+				defineClass(classes, file, classLoader);
 			}
 		}
 	}
 
-	private void defineClass(Set<Class<?>> classes, File file) {
+	private void defineClass(Set<Class<?>> classes, File file, ResourceDefineClassLoader classLoader) {
 		ClassMeta classMeta = ClassMetaUtil.getClassMeta(file);
 		Class<?> clazz = classLoader.loadClass(classMeta.getClassName(), classMeta.getBytes());
 		classes.add(clazz);

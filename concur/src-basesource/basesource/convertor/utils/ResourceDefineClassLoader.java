@@ -2,7 +2,10 @@ package basesource.convertor.utils;
 
 import dbcache.DbCacheService;
 
+import java.io.File;
 import java.security.PrivilegedAction;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Asm字节码类加载器
@@ -13,6 +16,10 @@ public class ResourceDefineClassLoader extends ClassLoader {
 
     private static java.security.ProtectionDomain DOMAIN;
 
+    private String basePath;
+
+    private Map<String, Class<?>> loadedClass = new HashMap<String, Class<?>>();
+
     static {
         DOMAIN = (java.security.ProtectionDomain) java.security.AccessController.doPrivileged(new PrivilegedAction<Object>() {
 
@@ -22,12 +29,14 @@ public class ResourceDefineClassLoader extends ClassLoader {
         });
     }
 
-    public ResourceDefineClassLoader(){
+    public ResourceDefineClassLoader(String basePath){
         super(getParentClassLoader());
+        this.basePath = basePath;
     }
 
-    public ResourceDefineClassLoader(ClassLoader parent){
+    public ResourceDefineClassLoader(ClassLoader parent, String basePath){
         super (parent);
+        this.basePath = basePath;
     }
 
     static ClassLoader getParentClassLoader() {
@@ -59,19 +68,33 @@ public class ResourceDefineClassLoader extends ClassLoader {
             return null;
         }
 
-        Class<?> clazz = defineClass(name, classBytes, 0, classBytes.length);
+        Class<?> clazz = loadedClass.get(name);
+        if (clazz != null) {
+            return clazz;
+        }
+
+        clazz = defineClass(name, classBytes, 0, classBytes.length);
 
         if(clazz != null){
             super.resolveClass(clazz);
         }
 
+        loadedClass.put(name, clazz);
         return clazz;
     }
 
     @Override
-    protected Class<?> findClass(String name) throws ClassNotFoundException {
+    protected Class<?> findClass(final String name) throws ClassNotFoundException {
 
+        String path = name.replace('.', '/').concat(".class");
+        File classFile = new File(basePath + File.separator + path);
 
+        ClassMeta classMeta = ClassMetaUtil.getClassMeta(classFile);
+        Class<?> clazz = loadClass(classMeta.getClassName(), classMeta.getBytes());
+
+        if (clazz != null) {
+            return clazz;
+        }
 
         return super.findClass(name);
     }
