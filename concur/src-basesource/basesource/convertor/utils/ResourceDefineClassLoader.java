@@ -68,6 +68,14 @@ public class ResourceDefineClassLoader extends ClassLoader {
         return clazz;
     }
 
+    @Override
+    protected Class<?> findClass(String name) throws ClassNotFoundException {
+
+
+
+        return super.findClass(name);
+    }
+
     public boolean isExternalClass(Class<?> clazz) {
         ClassLoader classLoader = clazz.getClassLoader();
 

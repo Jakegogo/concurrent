@@ -59,60 +59,51 @@ public class ClassScanner {
 		return classes;
 	}
 
-//
-//	/**
-//	 * 从文件夹所有的Class
-//	 *
-//	 * @param path
-//	 * @return
-//	 */
-//	public Set<Class<?>> scanPath(String path) {
-//		// 第一个class类的集合
-//		Set<Class<?>> classes = new LinkedHashSet<Class<?>>();
-//
-//		try {
-//			// 获取此包的目录 建立一个File
-//			File dir = new File(path);
-//
-//			// 如果不存在或者 也不是目录就直接返回
-//			if (!dir.exists() || !dir.isDirectory()) {
-//				return classes;
-//			}
-//
-//			// 如果存在 就获取包下的所有文件 包括目录
-//			File[] dirfiles = dir.listFiles(new FileFilter() {
-//				// 自定义过滤规则 如果可以循环(包含子目录) 或则是以.class结尾的文件(编译好的java类文件)
-//				public boolean accept(File file) {
-//					return file.isDirectory() || file.getName().endsWith(".class");
-//				}
-//			});
-//
-//			for (File file : dirfiles) {
-//				if (file.isDirectory()) {
-//
-//				} else {
-//
-//				}
-//				URL url = dirs.nextElement();
-//				// 得到协议的名称
-//				String protocol = url.getProtocol();
-//
-//				// 如果是以文件的形式保存在服务器上
-//				if ("file".equals(protocol)) {
-//					// 获取包的物理路径
-//					String filePath = URLDecoder.decode(url.getFile(), "UTF-8");
-//					// 以文件的方式扫描整个包下的文件 并添加到集合中
-//					loadFileClasses(filePath, classes);
-//				} else if ("jar".equals(protocol)) {
-//					loadJarClasses(url, classes);
-//				}
-//			}
-//		} catch (IOException e) {
-//			e.printStackTrace();
-//		}
-//
-//		return classes;
-//	}
+
+	/**
+	 * 从文件夹所有的Class
+	 *
+	 * @param path
+	 * @return
+	 */
+	public Set<Class<?>> scanPath(String path) {
+		// 第一个class类的集合
+		Set<Class<?>> classes = new LinkedHashSet<Class<?>>();
+
+		try {
+			// 获取此包的目录 建立一个File
+			File dir = new File(path);
+
+			// 如果不存在或者 也不是目录就直接返回
+			if (!dir.exists() || !dir.isDirectory()) {
+				return classes;
+			}
+
+			// 如果存在 就获取包下的所有文件 包括目录
+			File[] dirfiles = dir.listFiles(new FileFilter() {
+				// 自定义过滤规则 如果可以循环(包含子目录) 或则是以.class结尾的文件(编译好的java类文件)
+				public boolean accept(File file) {
+					return file.isDirectory()
+							|| file.getName().endsWith(".class")
+							|| file.getName().endsWith(".jar");
+				}
+			});
+
+			for (File file : dirfiles) {
+				if (file.isDirectory()) {
+					loadFileClasses(file.getAbsolutePath(), classes);
+				} else if (file.getName().endsWith(".jar")) {
+					loadJarClasses(file.toURI().toURL(), classes);
+				} else {
+					defineClass(classes, file);
+				}
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
+		return classes;
+	}
 
 
 	/**
@@ -181,13 +172,16 @@ public class ClassScanner {
 			if (file.isDirectory()) {
 				loadFileClasses(file.getAbsolutePath(), classes);
 			} else {
-				ClassMeta classMeta = ClassMetaUtil.getClassMeta(file);
-				Class<?> clazz = classLoader.loadClass(classMeta.getClassName(), classMeta.getBytes());
-				classes.add(clazz);
+				defineClass(classes, file);
 			}
 		}
 	}
 
+	private void defineClass(Set<Class<?>> classes, File file) {
+		ClassMeta classMeta = ClassMetaUtil.getClassMeta(file);
+		Class<?> clazz = classLoader.loadClass(classMeta.getClassName(), classMeta.getBytes());
+		classes.add(clazz);
+	}
 
 
 }

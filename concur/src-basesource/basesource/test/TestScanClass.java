@@ -10,7 +10,7 @@ import java.util.Set;
 public class TestScanClass {
 
     public static void main(String[] args) {
-        Set<Class<?>> classes = new ClassScanner().scanPackage("\\");
+        Set<Class<?>> classes = new ClassScanner().scanPath("E:\\Project\\java_old\\sanguohun2\\target\\classes");
         System.out.println(classes.size());
     }
 
