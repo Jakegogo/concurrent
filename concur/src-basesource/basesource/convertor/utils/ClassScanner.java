@@ -20,23 +20,25 @@ import java.util.jar.JarFile;
  */
 public class ClassScanner {
 
+	// 是否修正路径
+	private boolean fixedPath = false;
 
 	/**
 	 * 从包package中获取所有的Class
 	 * 
-	 * @param path
+	 * @param packageName
 	 * @return
 	 */
-	public Set<Class<?>> scanPackage(String path) {
+	public Set<Class<?>> scanPackage(String packageName) {
 
-		ResourceDefineClassLoader classLoader = new ResourceDefineClassLoader(path);
+		ResourceDefineClassLoader classLoader = new ResourceDefineClassLoader(packageName);
 
 		// 第一个class类的集合
 		Set<Class<?>> classes = new LinkedHashSet<Class<?>>();
 
 		try {
 			Enumeration<URL> dirs = Thread.currentThread().getContextClassLoader()
-					.getResources(path);
+					.getResources(packageName);
 
 			while (dirs.hasMoreElements()) {
 				URL url = dirs.nextElement();
@@ -178,6 +180,7 @@ public class ClassScanner {
 		}
 	}
 
+
 	private void defineClass(Set<Class<?>> classes, File file, ResourceDefineClassLoader classLoader) {
 		ClassMeta classMeta = ClassMetaUtil.getClassMeta(file);
 		if (classMeta == null) {
@@ -185,6 +188,24 @@ public class ClassScanner {
 		}
 		Class<?> clazz = classLoader.loadClass(classMeta.getClassName(), classMeta.getBytes());
 		classes.add(clazz);
+
+		if (!this.fixedPath) {
+
+			String className = classMeta.getClassName();
+			String classDirectory = className.replace(".", File.separator);
+			classDirectory = classDirectory.substring(0, classDirectory.lastIndexOf(File.separator));
+
+			String absPath = file.getAbsolutePath();
+			absPath = absPath.substring(0, absPath.lastIndexOf(File.separator));
+
+			int overlapping = absPath.lastIndexOf(classDirectory);
+			if (overlapping > -1) {
+				String fixedPath = absPath.substring(0, overlapping);
+				classLoader.setBasePath(fixedPath);
+			}
+			this.fixedPath = true;
+		}
+
 	}
 
 

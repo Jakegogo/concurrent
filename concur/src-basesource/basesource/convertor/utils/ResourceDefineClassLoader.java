@@ -112,6 +112,7 @@ public class ResourceDefineClassLoader extends ClassLoader {
         ClassLoader current = this;
         while (current != null) {
             if (current == classLoader) {
+
                 return false;
             }
 
@@ -119,6 +120,10 @@ public class ResourceDefineClassLoader extends ClassLoader {
         }
 
         return true;
+    }
+
+    protected void setBasePath(String basePath) {
+        this.basePath = basePath;
     }
 
 }
