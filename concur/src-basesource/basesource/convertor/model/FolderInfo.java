@@ -1,8 +1,7 @@
 package basesource.convertor.model;
 
+import javax.swing.*;
 import java.io.File;
-
-import javax.swing.Icon;
 
 /**
  * 文件夹信息
@@ -35,7 +34,10 @@ public class FolderInfo {
 	 * 文件缓存
 	 */
 	private File fileCache;
-	
+
+
+	// --- get/set ---
+
 	public String getName() {
 		return name;
 	}

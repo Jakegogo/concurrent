@@ -67,26 +67,11 @@ public class FileTablePanel extends ElegantPanel {
         this.innerTablePanel = innerTablePanel;
         this.setOpaque(false);
         this.setBackground(Color.WHITE);
-        
-        new Thread() {
-        	public void run() {
-        		double progress = 0d;
-        		while (true) {
-	        		try {
-						Thread.sleep(1000);
-					} catch (InterruptedException e) {
-						e.printStackTrace();
-					}
-	        		progress += 0.01d;
-	        		if (progress >= 1d) {
-	        			break;
-	        		}
-	        		if (fileTableModel != null) {
-	        			fileTableModel.changeProgress(0, progress);
-	        		}
-        		}
-        	};
-        }.start();
+
+        // 初始化表格数据模型
+        fileTableModel = new ProgressTableModel(fileTable);
+        fileTable.setModel(fileTableModel);
+
     }
 
     public void doLayout() {
@@ -156,10 +141,7 @@ public class FileTablePanel extends ElegantPanel {
 
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
-                if (fileTableModel==null) {
-                    fileTableModel = new ProgressTableModel(fileTable);
-                    fileTable.setModel(fileTableModel);
-                }
+
                 fileTable.getSelectionModel().removeListSelectionListener(listSelectionListener);
                 fileTableModel.setFiles(files);
 
@@ -201,6 +183,9 @@ public class FileTablePanel extends ElegantPanel {
         tableColumn.setCellRenderer(iconTableCellRenderer != null ? iconTableCellRenderer : (iconTableCellRenderer = new ImageIconTableCellRenderer()));
     }
 
+    public ProgressTableModel getFileTableModel() {
+        return fileTableModel;
+    }
 
     static class ImageIconTableCellRenderer extends DefaultTableCellRenderer {
 

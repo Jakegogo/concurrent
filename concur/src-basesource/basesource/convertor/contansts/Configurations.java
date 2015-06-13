@@ -11,6 +11,7 @@ import java.util.Properties;
  * Created by Jake on 2015/6/6.
  */
 public class Configurations {
+
     /** 文件保存名称 */
     private static String SAVE_FILE_NAME = "config.properties";
 
@@ -23,6 +24,7 @@ public class Configurations {
      * 配置的Map
      */
     private final Map<String, Object> configures = new HashMap<String, Object>();
+
 
     private Configurations() {
 
@@ -68,7 +70,7 @@ public class Configurations {
         }
     }
 
-
+    // 读取常量值
     private static void readContants(Map<String, Object> configures) {
         for (Field field : DefaultUIConstant.class.getDeclaredFields()) {
             try {
@@ -90,6 +92,10 @@ public class Configurations {
         outPutConfigure(configures);
     }
 
+    /**
+     * 输出配置到文件
+     * @param configures Map<String, Object> 键 - 值
+     */
     private static void outPutConfigure(Map<String, Object> configures) {
         // 保存文件
         Properties properties = new Properties();
@@ -113,7 +119,7 @@ public class Configurations {
 
     /**
      * 获取实例
-     * @return Configurations
+     * @return Configurations Configurations
      */
     public static Configurations getInstance() {
         return instance;

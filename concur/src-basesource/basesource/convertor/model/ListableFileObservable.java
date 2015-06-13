@@ -34,13 +34,17 @@ public class ListableFileObservable {
     /** 文件更新监视器 */
     private FileAlterationMonitor fileAlterationMonitor;
 
+    /** 任务管理器 */
+    private TaskManager taskManager;
 
-    public ListableFileObservable(JPanel rootPanel, FileTreePanel fileBrowserPanel, FileTablePanel fileListPanel, ListableFileManager listableFileManager, FileAlterationMonitor fileAlterationMonitor) {
+
+    public ListableFileObservable(JPanel rootPanel, FileTreePanel fileBrowserPanel, FileTablePanel fileListPanel, ListableFileManager listableFileManager, FileAlterationMonitor fileAlterationMonitor, TaskManager taskManager) {
         this.fileBrowserPanel = fileBrowserPanel;
         this.fileListPanel = fileListPanel;
         this.listableFileManager = listableFileManager;
         this.fileAlterationMonitor = fileAlterationMonitor;
         this.rootPanel = rootPanel;
+        this.taskManager = taskManager;
     }
 
 
@@ -83,7 +87,11 @@ public class ListableFileObservable {
         }
 
         // 保存到配置文件
-        UserConfig.getInstance().changeInPutPath(file);
+        boolean changed = UserConfig.getInstance().changeInPutPath(file);
+        if (changed) {
+            // 修改任务进度
+            this.taskManager.changeInputPath(file);
+        }
         
         List<File> childFiles = listableFileManager.filterChildFiles(file);
         this.updateTableData(childFiles);
@@ -131,8 +139,12 @@ public class ListableFileObservable {
             e.printStackTrace();
         }
     }
-    
-    
+
+    /**
+     * 更新主面板尺寸
+     * @param w
+     * @param h
+     */
     public void updateSize(int w, int h) {
     	this.rootPanel.setSize(w, h);
     	this.fileListPanel.setSize(w, h);

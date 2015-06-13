@@ -1,10 +1,11 @@
 package basesource.convertor.utils;
 
-import java.awt.Insets;
-import java.awt.Rectangle;
+import javax.swing.*;
+import java.awt.*;
 
-import javax.swing.JComponent;
-
+/**
+ * Swing组件工具类
+ */
 public class SwingComponentUtils {
 
 	/**

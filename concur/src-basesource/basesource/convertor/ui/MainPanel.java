@@ -5,6 +5,7 @@ import basesource.convertor.files.monitor.FileAlterationMonitor;
 import basesource.convertor.files.monitor.FileAlterationObserver;
 import basesource.convertor.model.ListableFileManager;
 import basesource.convertor.model.ListableFileObservable;
+import basesource.convertor.model.TaskManager;
 import basesource.convertor.ui.docking.DockingPort;
 import basesource.convertor.ui.docking.demos.elegant.ElegantDockingPort;
 import basesource.convertor.ui.extended.RowProgressTableUI;
@@ -22,45 +23,6 @@ import java.awt.*;
  */
 public class MainPanel extends SingleFrameApplication {
 	
-    /**
-     * UIManager中UI字体相关的key
-     */
-    public static String[] DEFAULT_FONT = new String[]{
-            "Table.font"
-            , "TableHeader.font"
-            , "CheckBox.font"
-            , "Tree.font"
-            , "Viewport.font"
-            , "ProgressBar.font"
-            , "RadioButtonMenuItem.font"
-            , "ToolBar.font"
-            , "ColorChooser.font"
-            , "ToggleButton.font"
-            , "Panel.font"
-            , "TextArea.font"
-            , "Menu.font"
-            , "TableHeader.font"
-            , "TextField.font"
-            , "OptionPane.font"
-            , "MenuBar.font"
-            , "Button.font"
-            , "Label.font"
-            , "PasswordField.font"
-            , "ScrollPane.font"
-            , "MenuItem.font"
-            , "ToolTip.font"
-            , "List.font"
-            , "EditorPane.font"
-            , "Table.font"
-            , "TabbedPane.font"
-            , "RadioButton.font"
-            , "CheckBoxMenuItem.font"
-            , "TextPane.font"
-            , "PopupMenu.font"
-            , "TitledBorder.font"
-            , "ComboBox.font"
-    };
-    
     /**
      * 根面板
      */
@@ -83,6 +45,9 @@ public class MainPanel extends SingleFrameApplication {
 
     /** 文件管理器 */
     private ListableFileManager listableFileManager = new ListableFileManager();
+
+    /** 任务管理器 */
+    private TaskManager taskManager;
 
     /** 文件更新监视器 */
     private FileAlterationMonitor fileAlterationMonitor = new FileAlterationMonitor(DefaultUIConstant.FILE_MONITOR_INTERVAL);
@@ -123,8 +88,8 @@ public class MainPanel extends SingleFrameApplication {
 
 
         //调整默认字体
-        for (int i = 0; i < DEFAULT_FONT.length; i++) {
-            UIManager.put(DEFAULT_FONT[i], DefaultUIConstant.DEFAULT_FONT);
+        for (int i = 0; i < DefaultUIConstant.DEFAULT_FONT_COMPONENT.length; i++) {
+            UIManager.put(DefaultUIConstant.DEFAULT_FONT_COMPONENT[i], DefaultUIConstant.DEFAULT_FONT);
         }
         
         // 导航条渐变颜色
@@ -167,9 +132,9 @@ public class MainPanel extends SingleFrameApplication {
                 DpiUtils.getDpiExtendedSize(DefaultUIConstant.DEFAULT_HEIGHT)
         ));
         mainDockingPanel.setBorder(DefaultUIConstant.EMPTY_BORDER);
-//        mainDockingPanel.setBackground(Color.BLUE);
 
 
+        // 文件树面板
         FileTreePanel fileBrowserPanel = new FileTreePanel(this.listableFileManager);
         fileBrowserPanel.setPreferredSize(new Dimension(
                 DpiUtils.getDpiExtendedSize(DefaultUIConstant.DEFAULT_FILE_TREE_PANEL_WITH),
@@ -179,7 +144,7 @@ public class MainPanel extends SingleFrameApplication {
         mainDockingPanel.add(fileBrowserPanel, DockingPort.WEST_REGION);
 
 
-
+        // 文件表格面板
         FileTablePanel fileListPanel = new FileTablePanel(this.listableFileManager);
         fileListPanel.setPreferredSize(new Dimension(
                 DpiUtils.getDpiExtendedSize(DefaultUIConstant.DEFAULT_WIDTH - DefaultUIConstant.DEFAULT_FILE_TREE_PANEL_WITH),
@@ -188,7 +153,7 @@ public class MainPanel extends SingleFrameApplication {
         mainDockingPanel.add(fileListPanel, DockingPort.EAST_REGION);
 
 
-
+        // 跟面板
         JPanel rootPanel = new JPanel(new BorderLayout());
         rootPanel.setSize(new Dimension(
                 DpiUtils.getDpiExtendedSize(DefaultUIConstant.DEFAULT_WIDTH),
@@ -196,12 +161,17 @@ public class MainPanel extends SingleFrameApplication {
         ));
         rootPanel.add(mainDockingPanel, BorderLayout.CENTER);
 
+        // 创建任务管理器
+        TaskManager taskManager = new TaskManager(fileListPanel.getFileTableModel());
 
-        ListableFileObservable listableFileConnector = new ListableFileObservable(rootPanel, fileBrowserPanel, fileListPanel, listableFileManager, fileAlterationMonitor);
+
+        // 创建文件选择监听器
+        ListableFileObservable listableFileConnector = new ListableFileObservable(rootPanel, fileBrowserPanel, fileListPanel, listableFileManager, fileAlterationMonitor, taskManager);
         fileBrowserPanel.setListableFileConnector(listableFileConnector);
 
 
-        ToolBar toolBar = new ToolBar(JToolBar.HORIZONTAL, listableFileConnector);
+        // 创建工具条
+        ToolBar toolBar = new ToolBar(JToolBar.HORIZONTAL, listableFileConnector, taskManager);
         JPanel toolBarPanel = new JPanel(new BorderLayout());
         toolBarPanel.add(toolBar, BorderLayout.CENTER);
         rootPanel.add(toolBarPanel, BorderLayout.NORTH);
@@ -211,7 +181,8 @@ public class MainPanel extends SingleFrameApplication {
         this.mainDockingPanel = mainDockingPanel;
         this.rootPanel = rootPanel;
         this.listableFileConnector = listableFileConnector;
-        
+        this.taskManager = taskManager;
+
         return rootPanel;
     }
 

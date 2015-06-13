@@ -1,19 +1,7 @@
 package basesource.reader;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
-
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
-import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.Row;
-import org.apache.poi.ss.usermodel.Sheet;
-import org.apache.poi.ss.usermodel.Workbook;
-import org.apache.poi.ss.usermodel.WorkbookFactory;
+import org.apache.poi.ss.usermodel.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.helpers.FormattingTuple;
@@ -22,9 +10,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.core.convert.ConverterNotFoundException;
 import org.springframework.core.convert.TypeDescriptor;
-
 import utils.StringUtils;
 import utils.reflect.ReflectionUtility;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
 
 
 /**
@@ -36,9 +31,9 @@ public class ExcelReader implements ResourceReader {
 	private final static Logger logger = LoggerFactory.getLogger(ExcelReader.class);
 	
 	/** 服务端控制标识同时也是数据开始标识 */
-	private final static String ROW_SERVER = "SERVER";
+	public final static String ROW_SERVER = "SERVER";
 	/** 结束标识 */
-	private final static String ROW_END = "END";
+	public final static String ROW_END = "END";
 	
 	private final static TypeDescriptor sourceType = TypeDescriptor.valueOf(String.class);
 

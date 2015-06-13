@@ -14,16 +14,22 @@ public class UserConfig {
 
     private static final UserConfig instance = new UserConfig();
 
+    /** 输出文件夹 */
     private File outputPath;
 
+    /** 输入文件夹 */
     private File inputPath;
 
+    /** 基础数据定义代码路径 */
     private File sourceDefineInputPath;
 
     UserConfig() {
         this.init();
     }
 
+    /**
+     * 初始化配置
+     */
     private void init() {
         String inputPath = Configurations.getConfigure(ConfigKey.FILE_SOURCE_INPUT_PATH);
         if (!StringUtils.isBlank(inputPath)) {
@@ -51,10 +57,15 @@ public class UserConfig {
         }
     }
 
+    // 获取实例
     public static UserConfig getInstance() {
         return instance;
     }
 
+    /**
+     * 修改输出路径
+     * @param outputPath File
+     */
     public void changeOutPutPath(File outputPath) {
         this.outputPath = outputPath;
         // 保存到配置文件
@@ -62,17 +73,34 @@ public class UserConfig {
     }
 
 
-    public void changeInPutPath(File inputPath) {
+    /**
+     * 修改输入路径
+     * @param inputPath File
+     */
+    public boolean changeInPutPath(File inputPath) {
+        if (inputPath == null || !inputPath.exists()) {
+            return false;
+        }
+        boolean isChanged = !inputPath.equals(this.inputPath);
+
         this.inputPath = inputPath;
         // 保存到配置文件
         Configurations.saveConfigure(ConfigKey.FILE_SOURCE_INPUT_PATH, inputPath.getPath());
+
+        return isChanged;
     }
 
+    /**
+     * 修改基础数据定义代码路径
+     * @param sourceDefineInputPath File
+     */
     public void changeSourceDefineInputPath(File sourceDefineInputPath) {
         this.sourceDefineInputPath = sourceDefineInputPath;
         // 保存到配置文件
         Configurations.saveConfigure(ConfigKey.CODE_SOURCE_INPUT_PATH, sourceDefineInputPath.getPath());
     }
+
+    // --- get/set ---
 
     public File getOutputPath() {
         return outputPath;

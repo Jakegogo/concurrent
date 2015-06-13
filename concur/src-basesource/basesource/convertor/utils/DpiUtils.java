@@ -3,6 +3,7 @@ package basesource.convertor.utils;
 import basesource.convertor.contansts.DefaultUIConstant;
 
 /**
+ * 兼容高分辨率显示屏的自适应组件大小
  * Created by Jake on 2015/5/31.
  */
 public class DpiUtils {

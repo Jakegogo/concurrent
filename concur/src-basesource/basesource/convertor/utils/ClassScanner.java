@@ -20,13 +20,20 @@ import java.util.jar.JarFile;
  */
 public class ClassScanner {
 
-	// 是否修正路径
+	/**
+	 * <p>是否修正路径</p>
+	 * <p>修正路径后兼容从跟路径搜索自动匹配合适的包路径</p>
+	 * 如:
+	 * <li>真实路径E:\\mybase\\1\\com\\XXX\\basesource</li>
+	 * <li>如果输入的是E:\\mybase</li>
+	 * <li>修正后则是E:\\mybase\\1\\</li>
+ 	 */
 	private boolean fixedPath = false;
 
 	/**
 	 * 从包package中获取所有的Class
 	 * 
-	 * @param packageName
+	 * @param packageName 包路径 如:com.xxx
 	 * @return
 	 */
 	public Set<Class<?>> scanPackage(String packageName) {
@@ -66,7 +73,7 @@ public class ClassScanner {
 	/**
 	 * 从文件夹所有的Class
 	 *
-	 * @param path
+	 * @param path 文件路径 如 E:\\
 	 * @return
 	 */
 	public Set<Class<?>> scanPath(String path) {
@@ -180,7 +187,12 @@ public class ClassScanner {
 		}
 	}
 
-
+	/**
+	 * 解析类
+	 * @param classes classes 类缓存容器
+	 * @param file File
+	 * @param classLoader 类加载器
+	 */
 	private void defineClass(Set<Class<?>> classes, File file, ResourceDefineClassLoader classLoader) {
 		ClassMeta classMeta = ClassMetaUtil.getClassMeta(file);
 		if (classMeta == null) {

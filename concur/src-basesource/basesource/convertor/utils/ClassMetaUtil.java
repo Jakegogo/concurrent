@@ -16,7 +16,7 @@ public class ClassMetaUtil {
 	
 	/**
 	 * 获取字节码类信息
-	 * @param input
+	 * @param input InputStream
 	 * @return
 	 */
 	public static ClassMeta getClassMeta(InputStream input){
@@ -44,7 +44,7 @@ public class ClassMetaUtil {
 	
 	/**
 	 * 获取字节码类信息
-	 * @param file
+	 * @param file 文件路径字符串 E:\\
 	 * @return
 	 */
 	public static ClassMeta getClassMeta(String file){
@@ -75,7 +75,7 @@ public class ClassMetaUtil {
 
 	/**
 	 * 获取字节码类信息
-	 * @param file
+	 * @param file File
 	 * @return
 	 */
 	public static ClassMeta getClassMeta(File file){
@@ -107,7 +107,7 @@ public class ClassMetaUtil {
 	
 	/**
 	 * 获取字节码类信息
-	 * @param bytes
+	 * @param bytes byte[] 类文件字节数组
 	 * @return
 	 */
 	public static ClassMeta getClassMeta(byte[] bytes){
@@ -119,6 +119,12 @@ public class ClassMetaUtil {
 	}
 
 
+	/**
+	 * 输入流转换成字节数组
+	 * @param inputStream InputStream
+	 * @return
+	 * @throws IOException
+	 */
 	private static byte[] toBytes(InputStream inputStream) throws IOException {
 		if(inputStream == null) {
 			throw new IOException("Class not found");

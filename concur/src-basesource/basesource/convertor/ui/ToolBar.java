@@ -1,9 +1,7 @@
 package basesource.convertor.ui;
 
 import basesource.convertor.contansts.DefaultUIConstant;
-import basesource.convertor.model.ListableFileManager;
-import basesource.convertor.model.ListableFileObservable;
-import basesource.convertor.model.UserConfig;
+import basesource.convertor.model.*;
 
 import javax.swing.*;
 import javax.swing.filechooser.FileFilter;
@@ -27,21 +25,20 @@ public class ToolBar extends JToolBar {
     /** 文件列表更新通知接口 */
     private ListableFileObservable listableFileConnector;
 
+    /** 任务管理器 */
+    private TaskManager taskManager;
+
     private boolean showStop = true;
 
     private ButtonGroup startStopButtonGroup;
     
     private JToggleButton expandButton;
 
-    public ToolBar(ListableFileManager listableFileManager) {
-        this.listableFileManager = listableFileManager;
-        this.init();
-    }
-
-    public ToolBar(int horizontal, ListableFileObservable listableFileConnector) {
+    public ToolBar(int horizontal, ListableFileObservable listableFileConnector, TaskManager taskManager) {
         super(horizontal);
         this.listableFileConnector = listableFileConnector;
         this.listableFileManager = listableFileConnector.getListableFileManager();
+        this.taskManager = taskManager;
         this.init();
     }
 
@@ -89,11 +86,15 @@ public class ToolBar extends JToolBar {
             public void actionPerformed(ActionEvent e) {
                 if (showStop) {
                     showCancel();
+                    // 暂停任务
+                    taskManager.stop();
                 } else {
                     showStop();
                     startStopButtonGroup.clearSelection();
                     stopButton.setEnabled(false);
                     saveButton.setEnabled(true);
+                    // 取消任务
+                    taskManager.cancel();
                 }
             }
         });
@@ -110,6 +111,16 @@ public class ToolBar extends JToolBar {
                 }
                 stopButton.setEnabled(true);
                 saveButton.setEnabled(false);
+                // 开始任务
+                taskManager.start(new TaskCompleteCallback() {
+                    @Override
+                    public void onComplete() {
+                        showStop();
+                        startStopButtonGroup.clearSelection();
+                        stopButton.setEnabled(false);
+                        saveButton.setEnabled(true);
+                    }
+                });
             }
         });
 

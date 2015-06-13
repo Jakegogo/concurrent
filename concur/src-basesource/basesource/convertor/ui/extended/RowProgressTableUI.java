@@ -11,28 +11,15 @@
  */
 package basesource.convertor.ui.extended;
 
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Graphics;
-import java.awt.Point;
-import java.awt.Rectangle;
-
-import javax.swing.JComponent;
-import javax.swing.JTable;
-import javax.swing.UIDefaults;
-import javax.swing.UIManager;
-import javax.swing.plaf.ComponentUI;
-import javax.swing.table.JTableHeader;
-import javax.swing.table.TableCellRenderer;
-import javax.swing.table.TableColumn;
-import javax.swing.table.TableColumnModel;
-import javax.swing.table.TableModel;
-
-import org.jb2011.lnf.beautyeye.ch5_table.BETableUI;
-
 import basesource.convertor.contansts.DefaultUIConstant;
 import basesource.convertor.model.ProgressTableModel;
 import basesource.convertor.utils.SmoothUtilities;
+import org.jb2011.lnf.beautyeye.ch5_table.BETableUI;
+
+import javax.swing.*;
+import javax.swing.plaf.ComponentUI;
+import javax.swing.table.*;
+import java.awt.*;
 
 // TODO: Auto-generated Javadoc
 /**
@@ -59,9 +46,9 @@ public class RowProgressTableUI extends BETableUI
     
     /**
      * 更新进度显示
-     * @param table
-     * @param startModelIndex
-     * @param endModelIndex
+     * @param table JTable
+     * @param startModelIndex 开始行 从0开始
+     * @param endModelIndex 结束行
      */
     public static void updateProgressUI(JTable table, int startModelIndex, int endModelIndex) {
     	if (table.getUI().getClass() != RowProgressTableUI.class) {
@@ -72,7 +59,16 @@ public class RowProgressTableUI extends BETableUI
     		ui.repaintRows(startModelIndex, endModelIndex);
     	}
     }
-    
+
+
+	/**
+	 * 清理进度显示
+	 * @param table JTable
+	 */
+	public static void clearProgressUI(JTable table) {
+		table.repaint();
+	}
+
     
     /**
      * 重画行

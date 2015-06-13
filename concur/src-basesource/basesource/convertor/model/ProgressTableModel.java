@@ -34,6 +34,96 @@ public class ProgressTableModel extends AbstractTableModel {
         this.jTable = jTable;
     }
 
+
+    /**
+     * 获取含排序信息的文件列表
+     * @return
+     */
+    public List<File> getSortedRowFiles() {
+        int size = this.files.length;
+        List<File> rows = new ArrayList<File>(size);
+        for (int i = 0;i < size;i++) {
+            File f = this.files[this.jTable.convertRowIndexToModel(i)];
+            rows.add(f);
+        }
+        return rows;
+    }
+
+    /**
+     * 获取总行数
+     * @return
+     */
+    public int getRowCount() {
+        return files.length;
+    }
+
+    /**
+     * 获取行文件
+     * @param row 行号 从0开始
+     * @return
+     */
+    public File getFile(int row) {
+    	if (row < 0 || row >= this.files.length) {
+    		return null;
+    	}
+        return files[row];
+    }
+
+    /**
+     * 设置模型的文件值
+     * @param files File[]
+     */
+    public void setFiles(File[] files) {
+        this.files = files;
+        fireTableDataChanged();
+    }
+
+    public boolean isSameFiles(File[] files) {
+        if (files == null) {
+            return false;
+        }
+        return files.equals(this.files);
+    }
+
+    /**
+     * 获取行进度
+     * @param row 行号 从0开始
+     * @return
+     */
+    public double getProgress(int row) {
+    	if (row < 0 || row >= this.files.length) {
+    		return 0d;
+    	}
+        Double progress = progresses.get(row);
+        if (progress == null) {
+            return 0d;
+        }
+        return progress;
+    }
+
+    /**
+     * 改变进度
+     * @param row 行号 从0开始
+     * @param progress 进度 double 最大值1d
+     */
+    public void changeProgress(int row, double progress) {
+    	if (row < 0 || row >= this.files.length) {
+    		return;
+    	}
+    	progresses.put(row, progress);
+    	RowProgressTableUI.updateProgressUI(jTable, row, row);
+    }
+
+    /**
+     * 重置进度
+     */
+    public void clearProgress() {
+    	progresses.clear();
+        RowProgressTableUI.clearProgressUI(jTable);
+    }
+
+    // --- for JTable ---
+
     public Object getValueAt(int row, int column) {
         File file = files[row];
         switch (column) {
@@ -52,7 +142,7 @@ public class ProgressTableModel extends AbstractTableModel {
     }
 
     private Object getFileIcon(File file) {
-    	Icon icon = fileSystemView.getSystemIcon(file);
+        Icon icon = fileSystemView.getSystemIcon(file);
         return icon;
     }
 
@@ -75,64 +165,6 @@ public class ProgressTableModel extends AbstractTableModel {
 
     public String getColumnName(int column) {
         return DefaultUIConstant.FILE_TABLE_HREADER[column];
-    }
-
-
-    public List<File> getSortedRowFiles() {
-        int size = this.files.length;
-        List<File> rows = new ArrayList<File>(size);
-        for (int i = 0;i < size;i++) {
-            File f = this.files[this.jTable.convertColumnIndexToModel(i)];
-            rows.add(f);
-        }
-        return rows;
-    }
-
-
-    public int getRowCount() {
-        return files.length;
-    }
-
-    public File getFile(int row) {
-    	if (row < 0 || row >= this.files.length) {
-    		return null;
-    	}
-        return files[row];
-    }
-
-    public void setFiles(File[] files) {
-        this.files = files;
-        fireTableDataChanged();
-    }
-
-    public boolean isSameFiles(File[] files) {
-        if (files == null) {
-            return false;
-        }
-        return files.equals(this.files);
-    }
-
-    public double getProgress(int row) {
-    	if (row < 0 || row >= this.files.length) {
-    		return 0d;
-    	}
-        Double progress = progresses.get(row);
-        if (progress == null) {
-            return 0d;
-        }
-        return progress;
-    }
-    
-    public void changeProgress(int row, double progress) {
-    	if (row < 0 || row >= this.files.length) {
-    		return;
-    	}
-    	progresses.put(row, progress);
-    	RowProgressTableUI.updateProgressUI(jTable, row, row);
-    }
-    
-    public void clearProgress() {
-    	progresses.clear(); 
     }
     
 }
