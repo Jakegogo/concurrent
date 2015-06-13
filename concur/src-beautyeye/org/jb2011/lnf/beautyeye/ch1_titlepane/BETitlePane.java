@@ -578,10 +578,11 @@ public class BETitlePane extends JComponent
 			{
 				public void actionPerformed(ActionEvent e)
 				{
-					JOptionPane.showMessageDialog(rootPane, "This button just used for demo." +
-							"In the future,you can customize it.\n" +
-							"Now, you can set UIManager.put(\"RootPane.setupButtonVisible\", false) to hide it(detault is true).\n" +
-							"BeautyEye L&F developed by Jack Jiang, you can mail with jb2011@163.com.");
+					JOptionPane.showConfirmDialog(rootPane,
+							UIManager.get("BETitlePane.optionPanel") ,
+							UIManager.getString("BETitlePane.setupButtonText",getLocale()),
+							JOptionPane.OK_CANCEL_OPTION,
+							JOptionPane.PLAIN_MESSAGE);
 				}
 			};
 		}

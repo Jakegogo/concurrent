@@ -1,6 +1,7 @@
 package basesource.convertor.task;
 
 import basesource.convertor.model.ProgressTableModel;
+import basesource.convertor.model.UserConfig;
 import basesource.convertor.utils.ClassScanner;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.ss.usermodel.*;
@@ -57,7 +58,13 @@ public class ConvertTask {
         Workbook workbook = getWorkbook(file);
         Map<String, List<Sheet>> sheets = listSheets(workbook, file);
 
+        File sourceDefineInputPath = UserConfig.getInstance().getSourceDefineInputPath();
+        if (sourceDefineInputPath != null && sourceDefineInputPath.exists()) {
+            ClassScanner classScanner = new ClassScanner();
+            Set<Class<?>> loadedClass = classScanner.scanPath(sourceDefineInputPath.getAbsolutePath());
 
+
+        }
 
 
     }

@@ -134,4 +134,9 @@ public interface DefaultUIConstant {
      */
     Color TABLE_ROW_PROGRESS_BAR_COLOR2 = new Color(45, 255, 2);
 
+    /**
+     * 选择代码路径提示
+     */
+    String CODE_INPUT_PATH_TIP = "代码路径";
+
 }

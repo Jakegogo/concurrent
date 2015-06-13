@@ -134,6 +134,9 @@ public class MainPanel extends SingleFrameApplication {
                 Color.getHSBColor(hsb[0] - 0.013F, 0.15F, 0.85F));
         UIManager.put("titleGradientColor2",
                 Color.getHSBColor(hsb[0] - 0.005F, 0.24F, 0.8F));
+
+        // 设置面板
+        UIManager.put("BETitlePane.optionPanel", new OptionPanel());
         
         //设置此开关量为false即表示关闭之，BeautyEye LNF中默认是true 
         BeautyEyeLNFHelper.translucencyAtFrameInactive = false;
@@ -147,6 +150,7 @@ public class MainPanel extends SingleFrameApplication {
         } catch (Exception e) {
             e.printStackTrace();
         }
+
     }
 
 
