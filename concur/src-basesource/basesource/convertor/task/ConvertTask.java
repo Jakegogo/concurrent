@@ -25,7 +25,7 @@ import java.util.*;
  * 转换任务
  * Created by Jake on 2015/6/11.
  */
-public class ConvertTask {
+public class ConvertTask implements ProgressMonitorAble {
 
     /**
      * 文件夹路径
@@ -154,7 +154,7 @@ public class ConvertTask {
     private void runSubTask(File file, Map<String, Class<?>> loadedClassMap) {
 
         Workbook workbook = getWorkbook(file);
-        updateProgress(0.1d);
+        updateProgress(0.37d);
         Map<String, SheetInfo> sheets = listSheets(workbook, file);
 
         int size = sheets.size();
@@ -176,20 +176,20 @@ public class ConvertTask {
                 this.writeFile(name, JsonUtils.object2JsonString(beanList));
             } else {
                 // 创建数据集
-                List<Map<String, String>> beanList = readSheetData(sheetInfo, ((double)curSheetIndex + 1) / size);
+                List<Map<String, String>> beanList = readSheetData(sheetInfo, ((double)curSheetIndex + 1) / size * (1-0.37d) + 0.37d);
 
                 this.writeFile(name, JsonUtils.object2JsonString(beanList));
             }
 
             curSheetIndex ++;
-            updateProgress(((double)curSheetIndex) / size);
+            updateProgress(((double)curSheetIndex) / size * (1-0.37d) + 0.37d);
         }
         updateProgress(1d);
     }
 
 
     // 改变转换进度
-    private void updateProgress(double v) {
+    public void updateProgress(double v) {
         this.tableModel.changeProgress(curTaskIndex, v);
     }
 
@@ -337,10 +337,18 @@ public class ConvertTask {
                 if (cell == null) {
                     continue;
                 }
+                // 获取属性控制行
+                Row fieldRow = getFieldRow(sheet);
+                if (fieldRow == null) {
+                    continue;
+                }
                 if (cell.getCellType() != Cell.CELL_TYPE_STRING) {
                     cell.setCellType(Cell.CELL_TYPE_STRING);
                 }
                 String text = cell.getStringCellValue();
+                if (StringUtils.isBlank(text)) {
+                    continue;
+                }
 
                 SheetInfo sheetInfo = result.get(text);
                 if (sheetInfo == null) {
@@ -401,7 +409,12 @@ public class ConvertTask {
      */
     private Workbook getWorkbook(File file) {
         try {
-            return WorkbookFactory.create(new FileInputStream(file));
+            return WorkbookFactory.create(new ProgressMonitorInputStream(new FileInputStream(file), 0.1f) {
+                @Override
+                public void updateProgress(double progresss) {
+                    updateProgress(0.37d * progresss);
+                }
+            });
         } catch (InvalidFormatException e) {
             throw new RuntimeException("静态资源[" + file.getPath() + "]异常,无效的文件格式", e);
         } catch (IOException e) {

@@ -257,7 +257,20 @@ public class ToolBar extends JToolBar {
         startStopButtonGroup.clearSelection();
     }
 
-
-
-
+//    @Override
+//    public void paint(Graphics g) {
+//
+//        SmoothUtilities.configureGraphics(g);
+//
+//        Insets insets = getInsets();
+//        Rectangle bounds = getBounds();
+//
+//
+//
+//        super.paint(g);
+//
+//
+//        g.setColor(DefaultUIConstant.TABLE_ROW_PROGRESS_BAR_COLOR2);
+//        g.fillRect(insets.left, insets.top + bounds.height - 2, bounds.width, bounds.height);
+//    }
 }

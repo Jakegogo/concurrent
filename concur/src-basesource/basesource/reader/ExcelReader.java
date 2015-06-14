@@ -32,6 +32,8 @@ public class ExcelReader implements ResourceReader {
 	
 	/** 服务端控制标识同时也是数据开始标识 */
 	public final static String ROW_SERVER = "SERVER";
+	/** 客户端控制标识同时也是数据开始标识 */
+	public final static String ROW_CLIENT = "CLIENT";
 	/** 结束标识 */
 	public final static String ROW_END = "END";
 	
