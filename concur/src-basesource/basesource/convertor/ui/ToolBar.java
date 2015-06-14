@@ -2,6 +2,7 @@ package basesource.convertor.ui;
 
 import basesource.convertor.contansts.DefaultUIConstant;
 import basesource.convertor.model.*;
+import basesource.convertor.task.TaskStatus;
 
 import javax.swing.*;
 import javax.swing.filechooser.FileFilter;
@@ -27,8 +28,6 @@ public class ToolBar extends JToolBar {
 
     /** 任务管理器 */
     private TaskManager taskManager;
-
-    private boolean showStop = true;
 
     private ButtonGroup startStopButtonGroup;
     
@@ -84,19 +83,20 @@ public class ToolBar extends JToolBar {
         stopButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                if (showStop) {
+                if (taskManager.isStarted()) {
                     showCancel();
                     // 暂停任务
                     taskManager.stop();
-                } else {
+                    startButton.setEnabled(true);
+                } else if (taskManager.getStatus() == TaskStatus.STOPED) {
                     showStop();
                     startStopButtonGroup.clearSelection();
                     stopButton.setEnabled(false);
                     saveButton.setEnabled(true);
                     // 取消任务
                     taskManager.cancel();
+                    startButton.setEnabled(true);
                 }
-                startButton.setEnabled(true);
             }
         });
         startStopButtonGroup.add(stopButton);
@@ -107,22 +107,29 @@ public class ToolBar extends JToolBar {
 
             @Override
             public void actionPerformed(ActionEvent e) {
-                if (!showStop) {
-                    showStop();
-                }
-                startButton.setEnabled(false);
-                stopButton.setEnabled(true);
-                saveButton.setEnabled(false);
                 // 开始任务
-                taskManager.start(new TaskCompleteCallback() {
+                taskManager.start(new TaskStatusChangeCallback() {
+
+                    @Override
+                    public void onStart() {
+                        if (taskManager.isStarted()) {
+                            showStop();
+                            startButton.setEnabled(false);
+                            stopButton.setEnabled(true);
+                            saveButton.setEnabled(false);
+                        }
+                    }
+
                     @Override
                     public void onComplete() {
                         showStop();
                         startStopButtonGroup.clearSelection();
                         stopButton.setEnabled(false);
                         saveButton.setEnabled(true);
+                        startButton.setEnabled(true);
                     }
                 });
+
             }
         });
 
@@ -217,25 +224,25 @@ public class ToolBar extends JToolBar {
     }
 
 
+    // 显示暂停按钮
     private void showStop() {
         stopButton.setIcon(new ImageIcon(getClass().getResource("resources/images/stop.png")));
         stopButton.setRolloverIcon(new ImageIcon(getClass().getResource("resources/images/stop.png")));
         stopButton.setPressedIcon(new ImageIcon(getClass().getResource("resources/images/stop.png")));
         stopButton.setText(DefaultUIConstant.STOP_CONVERT_BUTTON);
         stopButton.setSelected(false);
-        showStop = true;
     }
 
 
+    // 显示取消按钮
     private void showCancel() {
         stopButton.setIcon(new ImageIcon(getClass().getResource("resources/images/cancel.png")));
         stopButton.setRolloverIcon(new ImageIcon(getClass().getResource("resources/images/cancel.png")));
         stopButton.setPressedIcon(new ImageIcon(getClass().getResource("resources/images/cancel.png")));
         stopButton.setText(DefaultUIConstant.CANCLE_CONVERT_BUTTON);
-        showStop = false;
     }
     
-    
+    // 显示展开按钮
     private void showExpand() {
     	expandButton.setIcon(new ImageIcon(getClass().getResource("resources/images/expand.png")));
     	expandButton.setRolloverIcon(new ImageIcon(getClass().getResource("resources/images/expand.png")));
@@ -243,7 +250,7 @@ public class ToolBar extends JToolBar {
     	expandButton.setSelected(true);
     }
 
-
+    // 显示折叠按钮
     private void showCollapse() {
     	expandButton.setIcon(new ImageIcon(getClass().getResource("resources/images/collapse.png")));
     	expandButton.setRolloverIcon(new ImageIcon(getClass().getResource("resources/images/collapse.png")));

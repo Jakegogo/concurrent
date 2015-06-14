@@ -1,6 +1,7 @@
 package basesource.convertor.task;
 
 import basesource.convertor.model.ProgressTableModel;
+import basesource.convertor.model.TaskStatusChangeCallback;
 import basesource.convertor.model.UserConfig;
 import basesource.convertor.utils.ClassScanner;
 import basesource.reader.ExcelReader;
@@ -68,13 +69,15 @@ public class ConvertTask implements ProgressMonitorable {
     /**
      * 开始任务
      */
-    public void start() {
+    public void start(TaskStatusChangeCallback completeCallback) {
         // 任务已经开始了
         if (status == TaskStatus.STARTED) {
             return;
         }
         // 改变任务状态
         status = TaskStatus.STARTED;
+        // 状态改变回调
+        completeCallback.onStart();
 
         // 读取基础数据定义类
         Map<String, Class<?>> loadedClassMap = loadCodeSource();
@@ -107,6 +110,11 @@ public class ConvertTask implements ProgressMonitorable {
         // 验证数据 TODO
 
 
+        if (status == TaskStatus.STARTED) {
+            // 任务结束回调
+            completeCallback.onComplete();
+            status = TaskStatus.FINISHED;
+        }
         // 销毁迭代器
         cur = null;
     }
@@ -140,6 +148,13 @@ public class ConvertTask implements ProgressMonitorable {
         tableModel.clearProgress();
     }
 
+    /**
+     * 获取任务状态
+     * @return
+     */
+    public TaskStatus getStatus() {
+        return status;
+    }
 
     /**
      * 改变输入路径
@@ -492,38 +507,6 @@ public class ConvertTask implements ProgressMonitorable {
         String name;
 
         int column;
-
-    }
-
-    /**
-     * 任务状态枚举
-     */
-    static enum TaskStatus {
-
-        /**
-         * 初始化状态
-         */
-        INIT,
-
-        /**
-         * 任务进行中
-         */
-        STARTED,
-
-        /**
-         * 已经暂停
-         */
-        STOPED,
-
-        /**
-         * 已经完成
-         */
-        FINISHED,
-
-        /**
-         * 已经取消
-         */
-        CANCEL
 
     }
 

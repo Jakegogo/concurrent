@@ -1,6 +1,7 @@
 package basesource.convertor.model;
 
 import basesource.convertor.task.ConvertTask;
+import basesource.convertor.task.TaskStatus;
 import utils.thread.NamedThreadFactory;
 
 import java.io.File;
@@ -49,7 +50,7 @@ public class TaskManager {
     /**
      * 开始任务
      */
-    public void start(TaskCompleteCallback completeCallback) {
+    public void start(TaskStatusChangeCallback completeCallback) {
         DB_POOL_SERVICE.submit(createRunnable(completeCallback));
     }
 
@@ -59,7 +60,7 @@ public class TaskManager {
      * @param completeCallback
      * @return
      */
-    private Runnable createRunnable(final TaskCompleteCallback completeCallback) {
+    private Runnable createRunnable(final TaskStatusChangeCallback completeCallback) {
         return new Runnable() {
             @Override
             public void run() {
@@ -67,14 +68,9 @@ public class TaskManager {
                 if (curTask == null) {
                     File inputPath = UserConfig.getInstance().getInputPath();
                     curTask = new ConvertTask(inputPath, tableModel);
-                    curTask.start();
+                    curTask.start(completeCallback);
                 } else {
-                    curTask.start();
-                }
-
-                if (!curTask.isStop()) {
-                    // 任务结束回调
-                    completeCallback.onComplete();
+                    curTask.start(completeCallback);
                 }
             }
         };
@@ -103,6 +99,29 @@ public class TaskManager {
         }
         curTask = null;
         return true;
+    }
+
+
+    /**
+     * 获取任务状态
+     * @return
+     */
+    public TaskStatus getStatus() {
+        if (curTask == null) {
+            return TaskStatus.INIT;
+        }
+        return curTask.getStatus();
+    }
+
+    /**
+     * 是否为暂停状态
+     * @return
+     */
+    public boolean isStarted() {
+        if (curTask == null) {
+            return false;
+        }
+        return curTask.getStatus() == TaskStatus.STARTED;
     }
 
     /**
