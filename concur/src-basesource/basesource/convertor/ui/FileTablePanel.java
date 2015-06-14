@@ -64,6 +64,7 @@ public class FileTablePanel extends ElegantPanel {
         innerTablePanel.setOpaque(false);
         innerTablePanel.getViewport().setOpaque(false);
 
+        // 添加到容器
         super.add(innerTablePanel);
 
         this.innerTablePanel = innerTablePanel;
@@ -101,6 +102,10 @@ public class FileTablePanel extends ElegantPanel {
     }
 
 
+    /**
+     * 绑定表格事件
+     * @param fileTable JTable
+     */
     private void bindListener(final JTable fileTable) {
         listSelectionListener = new ListSelectionListener() {
             @Override
@@ -123,8 +128,12 @@ public class FileTablePanel extends ElegantPanel {
         fileTable.addMouseListener(rowClickMouseListener);
         
     }
-        
-        
+
+
+    /**
+     * 打开当前选择的文件
+     * @param fileTable JTable
+     */
     private void doOpenFile(final JTable fileTable) {
     	int viewRow = fileTable.getSelectedRow();
     	if (viewRow >= 0) {
@@ -164,7 +173,11 @@ public class FileTablePanel extends ElegantPanel {
         });
     }
 
-
+    /**
+     * 设定列宽度
+     * @param column 列编号
+     * @param width 宽度
+     */
     private void setColumnWidth(int column, int width) {
         TableColumn tableColumn = fileTable.getColumnModel().getColumn(column);
         if (width < 0) {
@@ -179,7 +192,7 @@ public class FileTablePanel extends ElegantPanel {
         tableColumn.setMinWidth(width);
     }
 
-
+    // 设定图标列渲染
     private void convertToImageCell(int column) {
         TableColumn tableColumn = fileTable.getColumnModel().getColumn(column);
         tableColumn.setCellRenderer(iconTableCellRenderer != null
@@ -191,6 +204,9 @@ public class FileTablePanel extends ElegantPanel {
         return fileTableModel;
     }
 
+    /**
+     * 文件图标显示渲染器
+     */
     static class ImageIconTableCellRenderer extends DefaultTableCellRenderer {
 
         private static final long serialVersionUID = 1L;

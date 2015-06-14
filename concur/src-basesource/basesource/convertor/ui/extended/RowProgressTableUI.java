@@ -23,7 +23,7 @@ import java.awt.*;
 
 // TODO: Auto-generated Javadoc
 /**
- * JTable的UI实现类。.
+ * JTable的进度显示UI实现类。.
  *
  * @author Jack Jiang(jb2011@163.com)
  */

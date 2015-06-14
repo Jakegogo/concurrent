@@ -11,7 +11,9 @@ import java.awt.image.BufferedImage;
 import java.net.URL;
 import java.util.Enumeration;
 
-
+/**
+ * Graphics 工具类
+ */
 public class Utilities {
 	
     public static String getURLFileName(URL url) {

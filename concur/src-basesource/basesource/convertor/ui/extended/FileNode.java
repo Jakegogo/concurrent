@@ -5,10 +5,13 @@
 
 package basesource.convertor.ui.extended;
 
-import javax.swing.tree.DefaultMutableTreeNode;
-
 import basesource.convertor.model.FolderInfo;
 
+import javax.swing.tree.DefaultMutableTreeNode;
+
+/**
+ * 文件类型的树节点
+ */
 public class FileNode extends DefaultMutableTreeNode {
 	private static final long serialVersionUID = -937774607532009623L;
 	

@@ -43,6 +43,7 @@ public class ToolBar extends JToolBar {
 
     private void init() {
 
+        // 构建保存按钮
         final JToggleButton saveButton = new JToggleButton();
         saveButton.setBorderPainted(false);
         saveButton.setFocusPainted(false);
@@ -53,12 +54,15 @@ public class ToolBar extends JToolBar {
         saveButton.setPressedIcon(new ImageIcon(getClass().getResource("resources/images/save.png")));
         saveButton.setToolTipText("button with rollover image");
 
+        // 保存按钮文件选择
         final JFileChooser fileChooser = this.createFileChooser();
         this.add(saveButton);
 
 
+        // 构建开始暂停按钮组
         final ButtonGroup startStopButtonGroup = new ButtonGroup();
 
+        // 构建开始按钮
         final JToggleButton startButton = new JToggleButton();
         startButton.setBorderPainted(false);
         startButton.setIcon(new ImageIcon(getClass().getResource("resources/images/start.png")));
@@ -71,6 +75,7 @@ public class ToolBar extends JToolBar {
         this.add(startButton);
 
 
+        // 构建暂停按钮
         final JToggleButton stopButton = new JToggleButton();
         stopButton.setBorderPainted(false);
         stopButton.setEnabled(false);
@@ -80,6 +85,7 @@ public class ToolBar extends JToolBar {
         stopButton.setRolloverIcon(new ImageIcon(getClass().getResource("resources/images/stop.png")));
         stopButton.setPressedIcon(new ImageIcon(getClass().getResource("resources/images/stop.png")));
         stopButton.setToolTipText("button with rollover image");
+        // 绑定暂停事件
         stopButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -102,7 +108,7 @@ public class ToolBar extends JToolBar {
         startStopButtonGroup.add(stopButton);
         this.add(stopButton);
 
-
+        // 绑定开始事件
         startButton.addActionListener(new ActionListener() {
 
             @Override
@@ -134,6 +140,7 @@ public class ToolBar extends JToolBar {
         });
 
 
+        // 构建查看按钮
         final JToggleButton openButton = new JToggleButton();
         openButton.setFocusPainted(false);
         openButton.setBorderPainted(false);
@@ -153,7 +160,8 @@ public class ToolBar extends JToolBar {
         openButton.setEnabled(UserConfig.getInstance().getOutputPath() != null);
         this.add(openButton);
         
-        
+
+        // 构建展开/折叠按钮
         final JToggleButton expandButton = new JToggleButton();
         expandButton.setFocusPainted(false);
         expandButton.setBorderPainted(false);
@@ -180,6 +188,7 @@ public class ToolBar extends JToolBar {
         this.add(expandButton);
         
 
+        // 构建输入路径选择按钮
         saveButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -204,6 +213,10 @@ public class ToolBar extends JToolBar {
         this.startStopButtonGroup = startStopButtonGroup;
     }
 
+    /**
+     * 创建文件选择器
+     * @return
+     */
     private JFileChooser createFileChooser() {
         JFileChooser fileChooser = new JFileChooser();
         fileChooser.setMultiSelectionEnabled(false);

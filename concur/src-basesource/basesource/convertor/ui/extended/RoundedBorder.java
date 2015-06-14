@@ -1,13 +1,15 @@
 
 package basesource.convertor.ui.extended;
 
-import javax.swing.border.Border;
-
 import basesource.convertor.tools.Utilities;
 
+import javax.swing.border.Border;
 import java.awt.*;
 
 
+/**
+ * 圆形边框
+ */
 public class RoundedBorder
         implements Border {
     private int cornerRadius;

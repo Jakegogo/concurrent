@@ -6,6 +6,7 @@ import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 
 /**
+ * 带提示的输入框
  * Created by Jake on 2015/6/13.
  */
 public class HintTextField extends JTextField implements FocusListener {

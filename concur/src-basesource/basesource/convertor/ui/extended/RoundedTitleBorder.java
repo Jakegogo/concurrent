@@ -1,19 +1,14 @@
 
 package basesource.convertor.ui.extended;
 
-import java.awt.AlphaComposite;
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.FontMetrics;
-import java.awt.GradientPaint;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.Insets;
-import java.awt.RenderingHints;
-import java.awt.image.BufferedImage;
-
 import basesource.convertor.tools.Utilities;
 
+import java.awt.*;
+import java.awt.image.BufferedImage;
+
+/**
+ * 圆角标题
+ */
 public class RoundedTitleBorder extends RoundedBorder {
     private final String title;
     private final Color[] titleGradientColors;

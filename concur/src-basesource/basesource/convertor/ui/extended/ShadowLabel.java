@@ -2,13 +2,12 @@ package basesource.convertor.ui.extended;
 
 //package mw.client.utils.gui;
 
-import java.awt.Color;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.RenderingHints;
+import javax.swing.*;
+import java.awt.*;
 
-import javax.swing.JLabel;
-
+/**
+ * 带阴影的标签
+ */
 public class ShadowLabel extends JLabel {
 	private static final long serialVersionUID = -2662918636235396435L;
 

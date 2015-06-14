@@ -5,6 +5,9 @@ import org.jdesktop.swingx.JXPanel;
 import java.awt.*;
 import java.awt.geom.RoundRectangle2D;
 
+/**
+ * 带圆形边框的面板
+ */
 public class RoundedPanel extends JXPanel {
 	private static final long serialVersionUID = 308319891171620353L;
 	

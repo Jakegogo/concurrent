@@ -24,6 +24,7 @@ public class OptionPanel extends JPanel {
 
     private void init() {
 
+        // 构建布局
         GridBagLayout gridBagLayout = new GridBagLayout();
         this.setLayout(gridBagLayout);
 
@@ -32,6 +33,7 @@ public class OptionPanel extends JPanel {
                 new ImageIcon(getClass().getResource("resources/images/code.png")),
                 JLabel.RIGHT);
 
+        // 路径文件输入框
         final JTextField textField = new HintTextField(DefaultUIConstant.CODE_INPUT_PATH_TIP);
         textField.setEnabled(false);
 
@@ -50,6 +52,7 @@ public class OptionPanel extends JPanel {
                         new Insets(0, 0, 0, 0), 0,0));
 
 
+        // 构建文件选择器
         final JFileChooser fileChooser = this.createFileChooser();
         textField.addMouseListener(new MouseAdapter() {
             @Override
@@ -69,6 +72,7 @@ public class OptionPanel extends JPanel {
         });
 
 
+        // 初始化显示路径
         File sourceDefineInputPath = UserConfig.getInstance().getSourceDefineInputPath();
         if (sourceDefineInputPath != null && sourceDefineInputPath.exists()) {
             textField.setText(sourceDefineInputPath.getAbsolutePath());
@@ -77,6 +81,10 @@ public class OptionPanel extends JPanel {
     }
 
 
+    /**
+     * 构建文件选择器
+     * @return
+     */
     private JFileChooser createFileChooser() {
         JFileChooser fileChooser = new JFileChooser();
         fileChooser.setMultiSelectionEnabled(false);

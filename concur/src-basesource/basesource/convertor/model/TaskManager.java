@@ -92,6 +92,7 @@ public class TaskManager {
 
     /**
      * 取消当前任务
+     * 重置任务进度且销毁当前任务(避免多线程问题)
      */
     public boolean cancel() {
         if (curTask == null) {
