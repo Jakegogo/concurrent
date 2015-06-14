@@ -8,7 +8,7 @@ import java.io.InputStream;
  * 进度监控的输入流
  * Created by Jake on 2015/6/14.
  */
-public class ProgressMonitorInputStream extends InputStream implements ProgressMonitorAble {
+public class ProgressMonitorInputStream extends InputStream implements ProgressMonitorable {
 
     /** 输入流 */
     FileInputStream fileInputStream;

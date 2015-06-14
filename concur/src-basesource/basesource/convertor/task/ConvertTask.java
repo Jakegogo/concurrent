@@ -25,7 +25,7 @@ import java.util.*;
  * 转换任务
  * Created by Jake on 2015/6/11.
  */
-public class ConvertTask implements ProgressMonitorAble {
+public class ConvertTask implements ProgressMonitorable {
 
     /**
      * 文件夹路径
