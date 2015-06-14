@@ -97,6 +97,7 @@ public class TaskManager {
         if (curTask == null) {
             return false;
         }
+        curTask.reset();
         curTask = null;
         return true;
     }
