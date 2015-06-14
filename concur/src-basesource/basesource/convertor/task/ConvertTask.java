@@ -55,7 +55,7 @@ public class ConvertTask implements ProgressMonitorable {
     /**
      * 是否暂停
      */
-    private volatile boolean stop = false;
+    private volatile TaskStatus status = TaskStatus.INIT;
 
 
     public ConvertTask(File path, ProgressTableModel tableModel) {
@@ -69,6 +69,12 @@ public class ConvertTask implements ProgressMonitorable {
      * 开始任务
      */
     public void start() {
+        // 任务已经开始了
+        if (status == TaskStatus.STARTED) {
+            return;
+        }
+        // 改变任务状态
+        status = TaskStatus.STARTED;
 
         // 读取基础数据定义类
         Map<String, Class<?>> loadedClassMap = loadCodeSource();
@@ -81,11 +87,10 @@ public class ConvertTask implements ProgressMonitorable {
             // 重置进度
             tableModel.clearProgress();
         }
-        stop = false;
 
         // 开始转换
         while (cur.hasNext()) {
-            if (stop) {
+            if (status != TaskStatus.STARTED) {
                 return;
             }
             File file = cur.next();
@@ -111,7 +116,7 @@ public class ConvertTask implements ProgressMonitorable {
      * 暂停任务
      */
     public void stop() {
-        stop = true;
+        status = TaskStatus.STOPED;
     }
 
     /**
@@ -119,7 +124,7 @@ public class ConvertTask implements ProgressMonitorable {
      * @return
      */
     public boolean isStop() {
-        return stop;
+        return status == TaskStatus.STOPED || status == TaskStatus.CANCEL;
     }
 
     /**
@@ -129,6 +134,7 @@ public class ConvertTask implements ProgressMonitorable {
         // 重置迭代器
         cur = tableModel.getSortedRowFiles().iterator();
         curTaskIndex = 0;
+        status = TaskStatus.CANCEL;
 
         // 重置进度
         tableModel.clearProgress();
@@ -486,6 +492,38 @@ public class ConvertTask implements ProgressMonitorable {
         String name;
 
         int column;
+
+    }
+
+    /**
+     * 任务状态枚举
+     */
+    static enum TaskStatus {
+
+        /**
+         * 初始化状态
+         */
+        INIT,
+
+        /**
+         * 任务进行中
+         */
+        STARTED,
+
+        /**
+         * 已经暂停
+         */
+        STOPED,
+
+        /**
+         * 已经完成
+         */
+        FINISHED,
+
+        /**
+         * 已经取消
+         */
+        CANCEL
 
     }
 

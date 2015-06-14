@@ -24,7 +24,7 @@ public class TaskManager {
     /**
      * 当前任务
      */
-    private ConvertTask curTask;
+    private volatile ConvertTask curTask;
 
     /**
      * 文件表格数据模型
@@ -101,7 +101,7 @@ public class TaskManager {
         if (curTask == null) {
             return false;
         }
-        curTask.reset();
+        curTask = null;
         return true;
     }
 

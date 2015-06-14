@@ -96,6 +96,7 @@ public class ToolBar extends JToolBar {
                     // 取消任务
                     taskManager.cancel();
                 }
+                startButton.setEnabled(true);
             }
         });
         startStopButtonGroup.add(stopButton);
@@ -109,6 +110,7 @@ public class ToolBar extends JToolBar {
                 if (!showStop) {
                     showStop();
                 }
+                startButton.setEnabled(false);
                 stopButton.setEnabled(true);
                 saveButton.setEnabled(false);
                 // 开始任务
