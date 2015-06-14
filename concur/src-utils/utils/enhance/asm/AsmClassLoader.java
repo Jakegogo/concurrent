@@ -1,6 +1,5 @@
 package utils.enhance.asm;
 
-import dbcache.DbCacheService;
 
 import java.security.PrivilegedAction;
 
@@ -34,13 +33,13 @@ public class AsmClassLoader extends ClassLoader {
         ClassLoader contextClassLoader = Thread.currentThread().getContextClassLoader();
         if (contextClassLoader != null) {
             try {
-                contextClassLoader.loadClass(DbCacheService.class.getName());
+                contextClassLoader.loadClass(AsmClassLoader.class.getName());
                 return contextClassLoader;
             } catch (ClassNotFoundException e) {
                 // skip
             }
         }
-        return DbCacheService.class.getClassLoader();
+        return AsmClassLoader.class.getClassLoader();
     }
 
     public Class<?> defineClass(String name, byte[] b) throws ClassFormatError {

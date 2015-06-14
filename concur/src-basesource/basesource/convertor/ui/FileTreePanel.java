@@ -37,22 +37,12 @@ public class FileTreePanel extends ElegantPanel {
 
     /** 文件列表更新通知接口 */
     private ListableFileObservable listableFileConnector;
-    
+
+
     /**
-     * 设置文件列表更新通知实例
-     * @param listableFileConnector ListableFileConnector
+     * 构造方法
+     * @param listableFileManager 文件管理器
      */
-    public void setListableFileConnector(ListableFileObservable listableFileConnector) {
-
-        this.listableFileConnector = listableFileConnector;
-
-        File userInputPath = UserConfig.getInstance().getInputPath();
-        if (userInputPath != null && userInputPath.exists()) {
-            // 初始化表格默认显示数据
-            listableFileConnector.updateSelectDirectory(this.listableFileManager.generateFolderInfo(userInputPath));
-        }
-    }
-
     public FileTreePanel(ListableFileManager listableFileManager) {
         super(DefaultUIConstant.FILE_TREE_PANEL_TITTLE);
         this.listableFileManager = listableFileManager;
@@ -95,13 +85,15 @@ public class FileTreePanel extends ElegantPanel {
         // 读取上一次选择路径
         File userInputPath = UserConfig.getInstance().getInputPath();
 
+        // 构建数据模型
         TreePath defaultTreePath = createDefaultTreeModel(root, userInputPath);
-
         DefaultTreeModel treeModel = new DefaultTreeModel(root);
+
         JTree fileTree = new JTree(treeModel);
         fileTree.setRootVisible(false);
         fileTree.setCellRenderer(new FileTreeCellRenderer());
 
+        // 设置默认展开树节点
         if (defaultTreePath != null) {
             fileTree.expandPath(defaultTreePath.getParentPath());
             fileTree.addSelectionPath(defaultTreePath);
@@ -109,6 +101,7 @@ public class FileTreePanel extends ElegantPanel {
             fileTree.expandRow(0);
         }
 
+        // 文件树节点选择监听
         TreeSelectionListener treeSelectionListener = new TreeSelectionListener() {
             public void valueChanged(TreeSelectionEvent tse){
                 FileNode fileNode =
@@ -125,6 +118,12 @@ public class FileTreePanel extends ElegantPanel {
     }
 
 
+    /**
+     * 创建默认文件树数据模型
+     * @param root 跟节点
+     * @param userInputPath 默认选择的文件夹
+     * @return
+     */
     private TreePath createDefaultTreeModel(FileNode root, File userInputPath) {
         if (userInputPath != null && userInputPath.exists()) {
             // 初始化默认选中的文件夹
@@ -134,6 +133,21 @@ public class FileTreePanel extends ElegantPanel {
             listableFileManager.convertDefaultFileListToTreeNode(root);
         }
         return null;
+    }
+
+
+    /**
+     * 设置文件列表更新通知实例
+     * @param listableFileConnector ListableFileConnector
+     */
+    public void setListableFileConnector(ListableFileObservable listableFileConnector) {
+        this.listableFileConnector = listableFileConnector;
+
+        // 初始化文件表格数据显示
+        File userInputPath = UserConfig.getInstance().getInputPath();
+        if (userInputPath != null && userInputPath.exists()) {
+            listableFileConnector.updateSelectDirectory(this.listableFileManager.generateFolderInfo(userInputPath));
+        }
     }
 
 

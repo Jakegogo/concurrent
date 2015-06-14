@@ -1,7 +1,5 @@
 package basesource.convertor.utils;
 
-import dbcache.DbCacheService;
-
 import java.io.File;
 import java.security.PrivilegedAction;
 import java.util.HashMap;
@@ -43,13 +41,13 @@ public class ResourceDefineClassLoader extends ClassLoader {
         ClassLoader contextClassLoader = Thread.currentThread().getContextClassLoader();
         if (contextClassLoader != null) {
             try {
-                contextClassLoader.loadClass(DbCacheService.class.getName());
+                contextClassLoader.loadClass(ResourceDefineClassLoader.class.getName());
                 return contextClassLoader;
             } catch (ClassNotFoundException e) {
                 // skip
             }
         }
-        return DbCacheService.class.getClassLoader();
+        return ResourceDefineClassLoader.class.getClassLoader();
     }
 
     public Class<?> defineClass(String name, byte[] b) throws ClassFormatError {

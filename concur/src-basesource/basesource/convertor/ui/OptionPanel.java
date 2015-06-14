@@ -27,16 +27,27 @@ public class OptionPanel extends JPanel {
         GridBagLayout gridBagLayout = new GridBagLayout();
         this.setLayout(gridBagLayout);
 
-        JLabel openSelectPathButton = new JLabel(new ImageIcon(getClass().getResource("resources/images/code.png")));
+        JLabel openSelectPathButton = new JLabel(
+                DefaultUIConstant.CODE_INPUT_PATH_TIP,
+                new ImageIcon(getClass().getResource("resources/images/code.png")),
+                JLabel.RIGHT);
 
         final JTextField textField = new HintTextField(DefaultUIConstant.CODE_INPUT_PATH_TIP);
         textField.setEnabled(false);
 
         add(openSelectPathButton);
-        gridBagLayout.setConstraints(openSelectPathButton, new GridBagConstraints(0,0,1,1,1,1, GridBagConstraints.WEST,GridBagConstraints.BOTH,new Insets(0, 0, 0, 0), 0,0));
+        gridBagLayout.setConstraints(openSelectPathButton,
+                new GridBagConstraints(0,0,1,1,1,1,
+                        GridBagConstraints.WEST,
+                        GridBagConstraints.BOTH,
+                        new Insets(0, 0, 0, 0), 0,0));
 
         add(textField);
-        gridBagLayout.setConstraints(textField, new GridBagConstraints(1,0,6,1,5,1, GridBagConstraints.WEST,GridBagConstraints.BOTH,new Insets(0, 0, 0, 0), 0,0));
+        gridBagLayout.setConstraints(textField,
+                new GridBagConstraints(1,0,6,1,5,1,
+                        GridBagConstraints.WEST,
+                        GridBagConstraints.BOTH,
+                        new Insets(0, 0, 0, 0), 0,0));
 
 
         final JFileChooser fileChooser = this.createFileChooser();

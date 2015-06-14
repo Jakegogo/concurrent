@@ -137,8 +137,13 @@ public class ListableFileManager {
     }
 
 
-    private boolean validFileExtension(File child) {
-        return validFileExtension.contains(getFileExtension(child));
+    /**
+     * 文件扩展类型是否可用
+     * @param file File
+     * @return
+     */
+    private boolean validFileExtension(File file) {
+        return validFileExtension.contains(getFileExtension(file));
     }
 
 

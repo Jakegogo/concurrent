@@ -10,11 +10,13 @@ import basesource.convertor.ui.docking.DockingPort;
 import basesource.convertor.ui.docking.demos.elegant.ElegantDockingPort;
 import basesource.convertor.ui.extended.RowProgressTableUI;
 import basesource.convertor.utils.DpiUtils;
+
 import org.jb2011.lnf.beautyeye.BeautyEyeLNFHelper;
 import org.jdesktop.application.SingleFrameApplication;
 import org.jdesktop.application.View;
 
 import javax.swing.*;
+
 import java.awt.*;
 
 /**
@@ -22,7 +24,7 @@ import java.awt.*;
  * Created by Jake on 2015/5/31.
  */
 public class MainPanel extends SingleFrameApplication {
-	
+
     /**
      * 根面板
      */
@@ -58,10 +60,10 @@ public class MainPanel extends SingleFrameApplication {
     public MainPanel(String[] args) {
         launch(MainPanel.class, args);
     }
-    
+
     public static void main(String[] args) {
-    	new MainPanel(args);
-	}
+        new MainPanel(args);
+    }
 
     @Override
     protected void startup() {
@@ -78,10 +80,11 @@ public class MainPanel extends SingleFrameApplication {
      * 初始化配置
      */
     private void initConfig() {
+
         try {
-        	org.jb2011.lnf.beautyeye.BeautyEyeLNFHelper.launchBeautyEyeLNF();
-        } catch (Exception e) {
-        }
+            org.jb2011.lnf.beautyeye.BeautyEyeLNFHelper.launchBeautyEyeLNF();
+        } catch (Exception e) {}
+
 
         UIManager.put("TabbedPane.contentOpaque", false);
         UIManager.put("TableUI", RowProgressTableUI.class.getName());
@@ -91,7 +94,7 @@ public class MainPanel extends SingleFrameApplication {
         for (int i = 0; i < DefaultUIConstant.DEFAULT_FONT_COMPONENT.length; i++) {
             UIManager.put(DefaultUIConstant.DEFAULT_FONT_COMPONENT[i], DefaultUIConstant.DEFAULT_FONT);
         }
-        
+
         // 导航条渐变颜色
         Color titleColor = UIManager.getColor("activeCaption");
         float[] hsb = Color.RGBtoHSB(titleColor.getRed(), titleColor.getGreen(), titleColor.getBlue(), null);
@@ -102,7 +105,7 @@ public class MainPanel extends SingleFrameApplication {
 
         // 设置面板
         UIManager.put("BETitlePane.optionPanel", new OptionPanel());
-        
+
         //设置此开关量为false即表示关闭之，BeautyEye LNF中默认是true 
         BeautyEyeLNFHelper.translucencyAtFrameInactive = false;
 
@@ -116,8 +119,18 @@ public class MainPanel extends SingleFrameApplication {
             e.printStackTrace();
         }
 
+        // 更改图标
+        this.changeIcon();
+
     }
 
+
+    // 更改图标
+    private void changeIcon() {
+        this.getMainFrame().setIconImage(
+                new ImageIcon(getClass().getResource("resources/images/icon.png")).getImage());
+        this.getMainFrame().setTitle(DefaultUIConstant.CONVERTOR_TITLE);
+    }
 
 
     /**
@@ -126,6 +139,7 @@ public class MainPanel extends SingleFrameApplication {
      */
     private JComponent createRootPanel() {
 
+        // 主布局框架
         ElegantDockingPort mainDockingPanel = new ElegantDockingPort();
         mainDockingPanel.setSize(new Dimension(
                 DpiUtils.getDpiExtendedSize(DefaultUIConstant.DEFAULT_WIDTH),
@@ -139,7 +153,7 @@ public class MainPanel extends SingleFrameApplication {
         fileBrowserPanel.setPreferredSize(new Dimension(
                 DpiUtils.getDpiExtendedSize(DefaultUIConstant.DEFAULT_FILE_TREE_PANEL_WITH),
                 DpiUtils.getDpiExtendedSize(DefaultUIConstant.DEFAULT_HEIGHT)
-                ));
+        ));
         fileBrowserPanel.setOpaque(false);
         mainDockingPanel.add(fileBrowserPanel, DockingPort.WEST_REGION);
 
@@ -147,7 +161,8 @@ public class MainPanel extends SingleFrameApplication {
         // 文件表格面板
         FileTablePanel fileListPanel = new FileTablePanel(this.listableFileManager);
         fileListPanel.setPreferredSize(new Dimension(
-                DpiUtils.getDpiExtendedSize(DefaultUIConstant.DEFAULT_WIDTH - DefaultUIConstant.DEFAULT_FILE_TREE_PANEL_WITH),
+                DpiUtils.getDpiExtendedSize(
+                        DefaultUIConstant.DEFAULT_WIDTH - DefaultUIConstant.DEFAULT_FILE_TREE_PANEL_WITH),
                 DpiUtils.getDpiExtendedSize(DefaultUIConstant.DEFAULT_FILE_LIST_PANEL_HEIGHT)
         ));
         mainDockingPanel.add(fileListPanel, DockingPort.EAST_REGION);
@@ -166,7 +181,13 @@ public class MainPanel extends SingleFrameApplication {
 
 
         // 创建文件选择监听器
-        ListableFileObservable listableFileConnector = new ListableFileObservable(rootPanel, fileBrowserPanel, fileListPanel, listableFileManager, fileAlterationMonitor, taskManager);
+        ListableFileObservable listableFileConnector = new ListableFileObservable(
+                rootPanel,
+                fileBrowserPanel,
+                fileListPanel,
+                listableFileManager,
+                fileAlterationMonitor,
+                taskManager);
         fileBrowserPanel.setListableFileConnector(listableFileConnector);
 
 

@@ -58,12 +58,14 @@ public class FileTablePanel extends ElegantPanel {
 //        setBorder(new RoundedTitleBorder(DefaultUIConstant.FILE_TABLE_TITLE,
 //                UIManager.getColor("titleGradientColor1"),
 //                UIManager.getColor("titleGradientColor2")));
+        // 包装一层滚动面板
         JScrollPane innerTablePanel = new JScrollPane();
         innerTablePanel.setViewportView(this.createFileTable());
         innerTablePanel.setOpaque(false);
         innerTablePanel.getViewport().setOpaque(false);
 
         super.add(innerTablePanel);
+
         this.innerTablePanel = innerTablePanel;
         this.setOpaque(false);
         this.setBackground(Color.WHITE);
@@ -180,7 +182,9 @@ public class FileTablePanel extends ElegantPanel {
 
     private void convertToImageCell(int column) {
         TableColumn tableColumn = fileTable.getColumnModel().getColumn(column);
-        tableColumn.setCellRenderer(iconTableCellRenderer != null ? iconTableCellRenderer : (iconTableCellRenderer = new ImageIconTableCellRenderer()));
+        tableColumn.setCellRenderer(iconTableCellRenderer != null
+                ? iconTableCellRenderer
+                : (iconTableCellRenderer = new ImageIconTableCellRenderer()));
     }
 
     public ProgressTableModel getFileTableModel() {

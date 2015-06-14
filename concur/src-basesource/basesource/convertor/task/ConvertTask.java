@@ -157,33 +157,37 @@ public class ConvertTask implements ProgressMonitorable {
         updateProgress(0.37d);
         Map<String, SheetInfo> sheets = listSheets(workbook, file);
 
-        int size = sheets.size();
-        int curSheetIndex = 0;
+        int size = sheets.size();// 总Sheet数量
+        int curSheetIndex = 0;// 当前转换的Sheet序号
 
         for (Map.Entry<String, SheetInfo> entry : sheets.entrySet()) {
             String name = entry.getKey();
             SheetInfo sheetInfo = entry.getValue();
 
             if (loadedClassMap.containsKey(name)) {
+                // 有基础数据类定义的
                 Class<?> cls = loadedClassMap.get(name);
                 // 创建基础数据资源定义
                 ResourceDefinition resourceDefinition = createResourceDefinition(cls, loadedClassMap, name, sheetInfo.file);
+                // 初始化基础数据定义
                 this.storageManager.initialize(resourceDefinition);
 
                 Storage<?, ?> storage = this.storageManager.getStorage(cls);
                 Collection<?> beanList = storage.getAll();
 
-                this.writeFile(name, JsonUtils.object2JsonString(beanList));
+                this.writeFile(name, beanList);
             } else {
+                // 直接转换
                 // 创建数据集
                 List<Map<String, String>> beanList = readSheetData(sheetInfo, ((double)curSheetIndex + 1) / size * (1-0.37d) + 0.37d);
 
-                this.writeFile(name, JsonUtils.object2JsonString(beanList));
+                this.writeFile(name, beanList);
             }
 
             curSheetIndex ++;
             updateProgress(((double)curSheetIndex) / size * (1-0.37d) + 0.37d);
         }
+
         updateProgress(1d);
     }
 
@@ -269,7 +273,10 @@ public class ConvertTask implements ProgressMonitorable {
 
 
     // 保存到文件
-    private void writeFile(String name, String content) {
+    private void writeFile(String name, Object beanList) {
+        // 转换成json
+        String content = JsonUtils.object2PrettyJsonString(beanList);
+
         String path = UserConfig.getInstance().getOutputPath().getAbsolutePath();
         String fileName = path + File.separator + name + ".json";
         try {
@@ -297,7 +304,7 @@ public class ConvertTask implements ProgressMonitorable {
      * @return
      */
     private Map<String, Class<?>> loadCodeSource() {
-        Map<String, Class<?>> loadedClassMap = null;
+        Map<String, Class<?>> loadedClassMap = new HashMap<String, Class<?>>();
         File sourceDefineInputPath = UserConfig.getInstance().getSourceDefineInputPath();
         if (sourceDefineInputPath != null && sourceDefineInputPath.exists()) {
             ClassScanner classScanner = new ClassScanner();

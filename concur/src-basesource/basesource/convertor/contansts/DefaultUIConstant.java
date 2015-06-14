@@ -139,6 +139,10 @@ public interface DefaultUIConstant {
      */
     String CODE_INPUT_PATH_TIP = "代码路径";
 
+    /**
+     * App图标
+     */
+    String CONVERTOR_TITLE = "Excel转换工具";
 
     /**
      * UIManager中UI字体相关的key
