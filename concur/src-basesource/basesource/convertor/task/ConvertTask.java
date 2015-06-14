@@ -215,7 +215,9 @@ public class ConvertTask implements ProgressMonitorable {
 
     // 改变转换进度
     public void updateProgress(double v) {
-        this.tableModel.changeProgress(curTaskIndex, v);
+        if (this.getStatus() == TaskStatus.STARTED) {
+            this.tableModel.changeProgress(curTaskIndex, v);
+        }
     }
 
 
