@@ -412,7 +412,7 @@ public class ConvertTask implements ProgressMonitorAble {
             return WorkbookFactory.create(new ProgressMonitorInputStream(new FileInputStream(file), 0.1f) {
                 @Override
                 public void updateProgress(double progresss) {
-                    updateProgress(0.37d * progresss);
+                    ConvertTask.this.updateProgress(0.37d * progresss);
                 }
             });
         } catch (InvalidFormatException e) {

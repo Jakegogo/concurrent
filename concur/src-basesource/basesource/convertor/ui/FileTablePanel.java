@@ -69,7 +69,7 @@ public class FileTablePanel extends ElegantPanel {
         this.setBackground(Color.WHITE);
 
         // 初始化表格数据模型
-        fileTableModel = new ProgressTableModel(fileTable);
+        fileTableModel = new ProgressTableModel(fileTable, innerTablePanel);
         fileTable.setModel(fileTableModel);
 
     }

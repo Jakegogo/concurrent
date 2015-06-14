@@ -6,8 +6,10 @@ import basesource.convertor.ui.extended.RowProgressTableUI;
 import javax.swing.*;
 import javax.swing.filechooser.FileSystemView;
 import javax.swing.table.AbstractTableModel;
+import java.awt.*;
 import java.io.File;
 import java.util.*;
+import java.util.List;
 
 /**
  * 文件列表表格模型
@@ -21,17 +23,21 @@ public class ProgressTableModel extends AbstractTableModel {
 	private File[] files;
 	
 	private JTable jTable;
+
+    /** 父容器 必须为滚动面板 */
+    private JScrollPane parent;
 	
 	/** FileSystemView */
     private FileSystemView fileSystemView = FileSystemView.getFileSystemView();
 
-    public ProgressTableModel(JTable jTable) {
-        this(new File[0], jTable);
+    public ProgressTableModel(JTable jTable, JScrollPane parent) {
+        this(new File[0], jTable, parent);
     }
 
-    public ProgressTableModel(File[] files, JTable jTable) {
+    public ProgressTableModel(File[] files, JTable jTable, JScrollPane parent) {
         this.files = files;
         this.jTable = jTable;
+        this.parent = parent;
     }
 
 
@@ -112,6 +118,19 @@ public class ProgressTableModel extends AbstractTableModel {
     	}
     	progresses.put(row, progress);
     	RowProgressTableUI.updateProgressUI(jTable, row, row);
+
+        Rectangle cellRectangle = jTable.getCellRect(jTable.convertRowIndexToView(row), 0, true);
+        // 获取JScrollPane中的纵向JScrollBar
+        JScrollBar sBar = this.parent.getVerticalScrollBar();
+
+        if (cellRectangle.y > sBar.getVisibleAmount()) {
+            sBar.setValue(cellRectangle.y);
+        }
+
+        if (row == 0) {
+            sBar.setValue(0);
+        }
+
     }
 
     /**
