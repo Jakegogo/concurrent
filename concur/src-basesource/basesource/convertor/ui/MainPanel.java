@@ -122,6 +122,8 @@ public class MainPanel extends SingleFrameApplication {
         // 更改图标
         this.changeIcon();
 
+        // 默认窗口大小
+        this.getMainFrame().setSize(1200, 800);
     }
 
 
@@ -182,7 +184,7 @@ public class MainPanel extends SingleFrameApplication {
 
         // 创建文件选择监听器
         ListableFileObservable listableFileConnector = new ListableFileObservable(
-                rootPanel,
+                this.getMainFrame(),
                 fileBrowserPanel,
                 fileListPanel,
                 listableFileManager,

@@ -6,6 +6,7 @@ import basesource.convertor.task.TaskStatus;
 
 import javax.swing.*;
 import javax.swing.filechooser.FileFilter;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
@@ -43,6 +44,9 @@ public class ToolBar extends JToolBar {
 
     private void init() {
 
+        this.setLayout(new BorderLayout());
+        JPanel wrapperPanel = new JPanel();
+
         // 构建保存按钮
         final JToggleButton saveButton = new JToggleButton();
         saveButton.setBorderPainted(false);
@@ -56,7 +60,7 @@ public class ToolBar extends JToolBar {
 
         // 保存按钮文件选择
         final JFileChooser fileChooser = this.createFileChooser();
-        this.add(saveButton);
+        wrapperPanel.add(saveButton);
 
 
         // 构建开始暂停按钮组
@@ -72,7 +76,7 @@ public class ToolBar extends JToolBar {
         startButton.setPressedIcon(new ImageIcon(getClass().getResource("resources/images/start.png")));
         startButton.setToolTipText("button with rollover image");
         startStopButtonGroup.add(startButton);
-        this.add(startButton);
+        wrapperPanel.add(startButton);
 
         // 开始按钮默认开启状态
         boolean chooseOutputPath = UserConfig.getInstance().getOutputPath() != null;
@@ -110,7 +114,7 @@ public class ToolBar extends JToolBar {
             }
         });
         startStopButtonGroup.add(stopButton);
-        this.add(stopButton);
+        wrapperPanel.add(stopButton);
 
         // 绑定开始事件
         startButton.addActionListener(new ActionListener() {
@@ -162,7 +166,9 @@ public class ToolBar extends JToolBar {
             }
         });
         openButton.setEnabled(UserConfig.getInstance().getOutputPath() != null);
-        this.add(openButton);
+        wrapperPanel.add(openButton);
+
+        this.add(BorderLayout.WEST, wrapperPanel);
         
 
         // 构建展开/折叠按钮
@@ -181,7 +187,7 @@ public class ToolBar extends JToolBar {
             public void actionPerformed(ActionEvent e) {
             	if (showExpand) {
             		showCollapse();
-            		listableFileConnector.updateSize(800, 600);
+            		listableFileConnector.updateSize(1200, 800);
             	} else {
             		showExpand();
             		listableFileConnector.updateSize(0, 0);
@@ -189,8 +195,8 @@ public class ToolBar extends JToolBar {
             	showExpand = !showExpand;
             }
         });
-        this.add(expandButton);
-        
+        this.add(BorderLayout.EAST, expandButton);
+
 
         // 构建输入路径选择按钮
         saveButton.addActionListener(new ActionListener() {

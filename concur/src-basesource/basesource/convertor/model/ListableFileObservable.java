@@ -17,7 +17,7 @@ import java.util.List;
 public class ListableFileObservable {
 	
 	/** 根面板 */
-    private JPanel rootPanel;
+    private JFrame rootFrame;
 
     /** 文件浏览面板(左侧) */
     private FileTreePanel fileBrowserPanel;
@@ -38,12 +38,12 @@ public class ListableFileObservable {
     private TaskManager taskManager;
 
 
-    public ListableFileObservable(JPanel rootPanel, FileTreePanel fileBrowserPanel, FileTablePanel fileListPanel, ListableFileManager listableFileManager, FileAlterationMonitor fileAlterationMonitor, TaskManager taskManager) {
+    public ListableFileObservable(JFrame rootPanel, FileTreePanel fileBrowserPanel, FileTablePanel fileListPanel, ListableFileManager listableFileManager, FileAlterationMonitor fileAlterationMonitor, TaskManager taskManager) {
         this.fileBrowserPanel = fileBrowserPanel;
         this.fileListPanel = fileListPanel;
         this.listableFileManager = listableFileManager;
         this.fileAlterationMonitor = fileAlterationMonitor;
-        this.rootPanel = rootPanel;
+        this.rootFrame = rootPanel;
         this.taskManager = taskManager;
     }
 
@@ -146,8 +146,11 @@ public class ListableFileObservable {
      * @param h
      */
     public void updateSize(int w, int h) {
-    	this.rootPanel.setSize(w, h);
-    	this.fileListPanel.setSize(w, h);
+        if (w <= 0) {
+            this.rootFrame.pack();
+        } else {
+            this.rootFrame.setSize(w, h);
+        }
     }
     
 
