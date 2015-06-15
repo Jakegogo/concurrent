@@ -1,6 +1,8 @@
 package basesource.convertor.model;
 
 import basesource.convertor.contansts.DefaultUIConstant;
+import basesource.convertor.task.TaskInfo;
+import basesource.convertor.task.TaskStatus;
 import basesource.convertor.ui.extended.RowProgressTableUI;
 
 import javax.swing.*;
@@ -8,6 +10,8 @@ import javax.swing.filechooser.FileSystemView;
 import javax.swing.table.AbstractTableModel;
 import java.awt.*;
 import java.io.File;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.*;
 import java.util.List;
 
@@ -21,6 +25,9 @@ public class ProgressTableModel extends AbstractTableModel {
     private Map<Integer, Double> progresses = new HashMap<Integer, Double>();
 	
 	private File[] files;
+
+    /** 任务信息 */
+    private TaskInfo[] taskInfo;
 	
 	private JTable jTable;
 
@@ -38,6 +45,7 @@ public class ProgressTableModel extends AbstractTableModel {
         this.files = files;
         this.jTable = jTable;
         this.parent = parent;
+        this.taskInfo = new TaskInfo[files.length];
     }
 
 
@@ -81,6 +89,7 @@ public class ProgressTableModel extends AbstractTableModel {
      */
     public void setFiles(File[] files) {
         this.files = files;
+        this.taskInfo = new TaskInfo[files.length];
         fireTableDataChanged();
     }
 
@@ -116,9 +125,110 @@ public class ProgressTableModel extends AbstractTableModel {
     	if (row < 0 || row >= this.files.length) {
     		return;
     	}
+        Double oldProgress = progresses.get(row);
+        if (oldProgress != null && oldProgress < 0) {
+            return;
+        }
     	progresses.put(row, progress);
     	RowProgressTableUI.updateProgressUI(jTable, row, row);
 
+        checkScroll(row);
+
+    }
+
+    /**
+     * 标记为任务失败
+     * @param row 行号 从0开始
+     */
+    public void markAsFail(int row, String name, Exception e) {
+        if (row < 0 || row >= this.files.length) {
+            return;
+        }
+        // 保存失败信息
+        this.saveTaskInfo(row, name, e);
+
+        Double progress = progresses.get(row);
+        if (progress != null && progress < 0) {
+            return;
+        }
+        if (progress == null) {
+            progress = -1d;
+        } else {
+            progress = - progress;
+        }
+        progresses.put(row, progress);
+        RowProgressTableUI.updateProgressUI(jTable, row, row);
+
+        checkScroll(row);
+    }
+
+    // 保存任务信息
+    private void saveTaskInfo(int row, String name, Exception e) {
+        if (row < 0 || row >= this.files.length) {
+            return;
+        }
+
+        TaskInfo taskInfo = this.taskInfo[row];
+        if (taskInfo == null) {
+            taskInfo = new TaskInfo();
+            this.taskInfo[row] = taskInfo;
+        }
+
+        taskInfo.setTaskStatus(TaskStatus.EXCEPTION);
+        taskInfo.getFailSheets().add(name);
+
+        StringWriter sw = new StringWriter();
+        PrintWriter pw = new PrintWriter(sw);
+        e.printStackTrace(pw);
+        String errorInfo = sw.toString();
+        errorInfo = errorInfo.replace("\n", "<br/>&nbsp;&nbsp;");
+        taskInfo.getFailErrors().add(errorInfo);
+    }
+
+
+    /**
+     * 获取任务信息
+     * @param row 行号 从0开始
+     * @return
+     */
+    public TaskInfo getTaskInfo(int row) {
+        if (row < 0 || row >= this.files.length) {
+            return null;
+        }
+
+        TaskInfo taskInfo = this.taskInfo[row];
+        return taskInfo;
+    }
+
+
+    /**
+     * 判断任务是否失败
+     * @param row 行号 从0开始
+     * @return
+     */
+    public boolean isFail(int row) {
+        if (row < 0 || row >= this.files.length) {
+            return false;
+        }
+
+        Double progress = progresses.get(row);
+        if (progress != null && progress < 0) {
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * 重置进度
+     */
+    public void clearProgress() {
+    	progresses.clear();
+        RowProgressTableUI.clearProgressUI(jTable);
+    }
+
+
+    // 滚动到对应位置
+    private void checkScroll(int row) {
         Rectangle cellRectangle = jTable.getCellRect(jTable.convertRowIndexToView(row), 0, true);
         // 获取JScrollPane中的纵向JScrollBar
         JScrollBar sBar = this.parent.getVerticalScrollBar();
@@ -130,15 +240,6 @@ public class ProgressTableModel extends AbstractTableModel {
         if (row == 0) {
             sBar.setValue(0);
         }
-
-    }
-
-    /**
-     * 重置进度
-     */
-    public void clearProgress() {
-    	progresses.clear();
-        RowProgressTableUI.clearProgressUI(jTable);
     }
 
     // --- for JTable ---
@@ -185,5 +286,6 @@ public class ProgressTableModel extends AbstractTableModel {
     public String getColumnName(int column) {
         return DefaultUIConstant.FILE_TABLE_HREADER[column];
     }
-    
+
+
 }

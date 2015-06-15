@@ -74,6 +74,10 @@ public class ToolBar extends JToolBar {
         startStopButtonGroup.add(startButton);
         this.add(startButton);
 
+        // 开始按钮默认开启状态
+        boolean chooseOutputPath = UserConfig.getInstance().getOutputPath() != null;
+        startButton.setEnabled(chooseOutputPath);
+
 
         // 构建暂停按钮
         final JToggleButton stopButton = new JToggleButton();
@@ -203,7 +207,10 @@ public class ToolBar extends JToolBar {
                 if (selectedFile != null) {
                     UserConfig.getInstance().changeOutPutPath(selectedFile);
                 }
-                openButton.setEnabled(UserConfig.getInstance().getOutputPath() != null);
+
+                boolean chooseOutputPath = UserConfig.getInstance().getOutputPath() != null;
+                openButton.setEnabled(chooseOutputPath);
+                startButton.setEnabled(chooseOutputPath);
             }
         });
 

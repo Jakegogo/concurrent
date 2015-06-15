@@ -125,14 +125,24 @@ public interface DefaultUIConstant {
 
 
     /**
-     * 表格进度条颜色
+     * 表格进度条颜色1
      */
     Color TABLE_ROW_PROGRESS_BAR_COLOR1 = new Color(246, 246, 246);
 
     /**
-     * 表格进度条颜色
+     * 表格进度条颜色2
      */
     Color TABLE_ROW_PROGRESS_BAR_COLOR2 = new Color(45, 255, 2);
+
+    /**
+     * 表格进度条颜色1
+     */
+    Color TABLE_ROW_PROGRESS_BAR_COLOR3 = new Color(255, 224, 224);
+
+    /**
+     * 表格进度条颜色2
+     */
+    Color TABLE_ROW_PROGRESS_BAR_COLOR4 = new Color(250, 52, 55);
 
     /**
      * 选择代码路径提示

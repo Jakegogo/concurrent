@@ -185,28 +185,37 @@ public class ConvertTask implements ProgressMonitorable {
             String name = entry.getKey();
             SheetInfo sheetInfo = entry.getValue();
 
-            if (loadedClassMap.containsKey(name)) {
-                // 有基础数据类定义的
-                Class<?> cls = loadedClassMap.get(name);
-                // 创建基础数据资源定义
-                ResourceDefinition resourceDefinition = createResourceDefinition(cls, loadedClassMap, name, sheetInfo.file);
-                // 初始化基础数据定义
-                this.storageManager.initialize(resourceDefinition);
+            try {
 
-                Storage<?, ?> storage = this.storageManager.getStorage(cls);
-                Collection<?> beanList = storage.getAll();
+                if (loadedClassMap.containsKey(name)) {
+                    // 有基础数据类定义的
+                    Class<?> cls = loadedClassMap.get(name);
+                    // 创建基础数据资源定义
+                    ResourceDefinition resourceDefinition = createResourceDefinition(cls, loadedClassMap, name, sheetInfo.file);
+                    // 初始化基础数据定义
+                    this.storageManager.initialize(resourceDefinition);
 
-                this.writeFile(name, beanList);
-            } else {
-                // 直接转换
-                // 创建数据集
-                List<Map<String, String>> beanList = readSheetData(sheetInfo, ((double)curSheetIndex + 1) / size * (1-0.37d) + 0.37d);
+                    Storage<?, ?> storage = this.storageManager.getStorage(cls);
+                    Collection<?> beanList = storage.getAll();
 
-                this.writeFile(name, beanList);
+                    this.writeFile(name, beanList);
+                } else {
+                    // 直接转换
+                    // 创建数据集
+                    List<Map<String, String>> beanList = readSheetData(sheetInfo, ((double)curSheetIndex + 1) / size * (1-0.37d) + 0.37d);
+//                    if (curTaskIndex % 5 == 0) {
+//                        throw new RuntimeException();
+//                    }
+                    this.writeFile(name, beanList);
+                }
+
+                curSheetIndex ++;
+                updateProgress(((double)curSheetIndex) / size * (1-0.37d) + 0.37d);
+            } catch (RuntimeException e) {
+                markAsFail(name, e);
+                System.err.println("表格转换异常:" + name);
+                e.printStackTrace();
             }
-
-            curSheetIndex ++;
-            updateProgress(((double)curSheetIndex) / size * (1-0.37d) + 0.37d);
         }
 
         updateProgress(1d);
@@ -217,6 +226,13 @@ public class ConvertTask implements ProgressMonitorable {
     public void updateProgress(double v) {
         if (this.getStatus() == TaskStatus.STARTED || this.getStatus() == TaskStatus.STOPED) {
             this.tableModel.changeProgress(curTaskIndex, v);
+        }
+    }
+
+    // 标记为任务失败
+    public void markAsFail(String name, Exception e) {
+        if (this.getStatus() == TaskStatus.STARTED || this.getStatus() == TaskStatus.STOPED) {
+            this.tableModel.markAsFail(curTaskIndex, name, e);
         }
     }
 

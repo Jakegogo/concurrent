@@ -3,6 +3,7 @@ package basesource.convertor.ui;
 import basesource.convertor.contansts.DefaultUIConstant;
 import basesource.convertor.model.ListableFileManager;
 import basesource.convertor.model.ProgressTableModel;
+import basesource.convertor.task.TaskInfo;
 import basesource.convertor.ui.docking.demos.elegant.ElegantPanel;
 import basesource.convertor.utils.DpiUtils;
 
@@ -11,7 +12,6 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableColumn;
-
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -75,6 +75,8 @@ public class FileTablePanel extends ElegantPanel {
         fileTableModel = new ProgressTableModel(fileTable, innerTablePanel);
         fileTable.setModel(fileTableModel);
 
+        // 绑定事件
+        this.bindListener(fileTable);
     }
 
     public void doLayout() {
@@ -89,14 +91,19 @@ public class FileTablePanel extends ElegantPanel {
      * @return
      */
     private Component createFileTable() {
-        JTable fileTable = new JTable() {
-
+        final JTable fileTable = new JTable() {
+//            @Override
+//            public JToolTip createToolTip() {
+//                JCustomTooltip tip = new JCustomTooltip(this, new JPanel());
+//                tip.setPersistent(true);
+//                tip.setComponent(this);
+//                return tip;
+//            }
         };
         fileTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         fileTable.setAutoCreateRowSorter(true);
         fileTable.setDefaultRenderer(String.class, new DefaultTableCellRenderer());
 
-        this.bindListener(fileTable);
         this.fileTable = fileTable;
         return fileTable;
     }
@@ -126,7 +133,36 @@ public class FileTablePanel extends ElegantPanel {
 			}
         };
         fileTable.addMouseListener(rowClickMouseListener);
-        
+
+
+        //悬浮提示单元格的值
+        fileTable.addMouseMotionListener(new MouseAdapter() {
+            public void mouseMoved(MouseEvent e) {
+
+                // 展示任务信息
+                int row = fileTable.rowAtPoint(e.getPoint());
+                int col = fileTable.columnAtPoint(e.getPoint());
+                if (row > -1 && col > -1) {
+                    int modelRow = fileTable.convertRowIndexToModel(row);
+                    if (fileTableModel.isFail(modelRow)) {
+                        TaskInfo taskInfo = fileTableModel.getTaskInfo(modelRow);
+                        if (taskInfo != null) {
+                            fileTable.setToolTipText(taskInfo.toString());//悬浮显示单元格内容
+                        } else {
+                            fileTable.setToolTipText(null);//关闭提示
+                        }
+                    } else {
+                        Object value = fileTable.getValueAt(row, col);
+                        if (null != value && !"".equals(value)) {
+                            fileTable.setToolTipText(value.toString());//悬浮显示单元格内容
+                        } else {
+                            fileTable.setToolTipText(null);//关闭提示
+                        }
+                    }
+                }
+            }
+        });
+
     }
 
 

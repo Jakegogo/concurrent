@@ -243,12 +243,17 @@ public class RowProgressTableUI extends BETableUI
 			if (tableModel.getClass() == ProgressTableModel.class) {
 				ProgressTableModel progressTableModel = (ProgressTableModel) tableModel;
 				int modelRow = table.convertRowIndexToModel(row);
-				int progress = (int) (progressTableModel.getProgress(modelRow) * rowWidth);
+				double progressPct = progressTableModel.getProgress(modelRow);
+				int progress = (int) (Math.abs(progressPct) * rowWidth);
 				if (progress > cellRect.x) {
 					int w = progress - cellRect.x;
 					w = w > cellRect.width ? cellRect.width : w;
 
-					g.setColor(DefaultUIConstant.TABLE_ROW_PROGRESS_BAR_COLOR1);
+					if (progressPct > 0) {
+						g.setColor(DefaultUIConstant.TABLE_ROW_PROGRESS_BAR_COLOR1);
+					} else {
+						g.setColor(DefaultUIConstant.TABLE_ROW_PROGRESS_BAR_COLOR3);
+					}
 
 					int h = DefaultUIConstant.TABLE_ROW_PROGRESS_BAR_HEIGHT;
 					h = h <= 0 ? cellRect.height : h;
@@ -294,8 +299,14 @@ public class RowProgressTableUI extends BETableUI
 
 				if (showprogress) {
 					int modelRow = table.convertRowIndexToModel(row);
-					int progress = (int) (progressTableModel.getProgress(modelRow) * tableWidth);
-					g.setColor(DefaultUIConstant.TABLE_ROW_PROGRESS_BAR_COLOR2);
+					double progressPct = progressTableModel.getProgress(modelRow);
+					int progress = (int) (Math.abs(progressPct) * tableWidth);
+
+					if (progressPct > 0) {
+						g.setColor(DefaultUIConstant.TABLE_ROW_PROGRESS_BAR_COLOR2);
+					} else {
+						g.setColor(DefaultUIConstant.TABLE_ROW_PROGRESS_BAR_COLOR4);
+					}
 					g.drawLine(damagedArea.x, y - 1, progress, y - 1);
 
 					g.setColor(table.getGridColor());

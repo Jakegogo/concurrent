@@ -1,19 +1,18 @@
 package basesource.storage;
 
+import basesource.anno.InjectBean;
+import basesource.anno.Resource;
+import org.apache.commons.lang.builder.ReflectionToStringBuilder;
+import org.springframework.util.ReflectionUtils.FieldCallback;
+import org.springframework.util.ReflectionUtils.FieldFilter;
+import utils.StringUtils;
+import utils.reflect.ReflectionUtility;
+
 import java.io.File;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.HashSet;
 import java.util.Set;
-
-import org.apache.commons.lang.builder.ReflectionToStringBuilder;
-import org.springframework.util.ReflectionUtils.FieldCallback;
-import org.springframework.util.ReflectionUtils.FieldFilter;
-
-import utils.StringUtils;
-import utils.reflect.ReflectionUtility;
-import basesource.anno.InjectBean;
-import basesource.anno.Resource;
 
 
 /**
@@ -51,9 +50,10 @@ public class ResourceDefinition {
 		this.clz = clz;
 		this.format = format.getType();
 		Resource anno = clz.getAnnotation(Resource.class);
+
 		StringBuilder builder = new StringBuilder();
 		builder.append(format.getLocation()).append(FILE_PATH);
-		if (!StringUtils.isBlank(anno.value())) {
+		if (anno != null && !StringUtils.isBlank(anno.value())) {
 			String dir = anno.value();
 			int start = 0;
 			int end = dir.length();

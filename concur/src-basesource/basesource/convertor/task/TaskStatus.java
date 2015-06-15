@@ -28,6 +28,11 @@ public enum TaskStatus {
     /**
      * 已经取消
      */
-    CANCEL
+    CANCEL,
+
+    /**
+     * 包含异常
+     */
+    EXCEPTION
 
 }
