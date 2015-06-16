@@ -755,7 +755,7 @@ public class DefaultDockingPort extends JPanel implements DockingPort {
 		 * @see basesource.convertor.ui.docking.defaults.SubComponentProvider#getInitialDividerLocation()
 		 */
 		public double getInitialDividerLocation() {
-			return 0.5d;
+			return 0.3d;
 		}
 	}
 }

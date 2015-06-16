@@ -89,7 +89,7 @@ public class BEToolBarUI extends BasicToolBarUI
 	/* (non-Javadoc)
 	 * @see javax.swing.plaf.basic.BasicToolBarUI#createRolloverBorder()
 	 */
-	protected Border createRolloverBorder() 
+	protected Border createRolloverBorder()
 	{
 		return new EmptyBorder(3, 3, 3, 3);
 	}
@@ -97,7 +97,7 @@ public class BEToolBarUI extends BasicToolBarUI
 	/* (non-Javadoc)
 	 * @see javax.swing.plaf.basic.BasicToolBarUI#createNonRolloverBorder()
 	 */
-	protected Border createNonRolloverBorder() 
+	protected Border createNonRolloverBorder()
 	{
 		return new EmptyBorder(3, 3, 3, 3);
 	}
@@ -198,42 +198,25 @@ public class BEToolBarUI extends BasicToolBarUI
  	    public void componentAdded(ContainerEvent evt) {
             Component c = evt.getChild();
 
-			if (c instanceof JPanel) {
-				JPanel jPanel = (JPanel) c;
-				int count = jPanel.getComponentCount();
-				for (int i = 0; i < count; i++) {
-					Component component = jPanel.getComponent(i);
-					if (toolBarFocusListener != null) {
-						component.addFocusListener(toolBarFocusListener);
-					}
 
-					if (isRolloverBorders()) {
-						setBorderToRollover(component);
-					} else {
-						setBorderToNonRollover(component);
-					}
-				}
+			if (toolBarFocusListener != null) {
+				c.addFocusListener(toolBarFocusListener);
+			}
+
+			if (isRolloverBorders()) {
+				setBorderToRollover(c);
 			} else {
+				setBorderToNonRollover(c);
+			}
 
-				if (toolBarFocusListener != null) {
-					c.addFocusListener(toolBarFocusListener);
-				}
-
-				if (isRolloverBorders()) {
-					setBorderToRollover(c);
-				} else {
-					setBorderToNonRollover(c);
-				}
-
-				//## Bug FIX：Issue 51(https://code.google.com/p/beautyeye/issues/detail?id=51)
-				//* 由Jack Jiang201210-12日注释掉：它样做将导致各种放入的组
-				//* 件（如文本框）等都将透明，从而不绘制该 组件的背景，那就错误了哦
-				//* 其实以下代码原本是为了解决放入到JToggleButton的白色背景问题，现在它
-				//* 已经在BEToolgleButtonUI里解决了，此处就不需要了，也不应该要！
+			//## Bug FIX：Issue 51(https://code.google.com/p/beautyeye/issues/detail?id=51)
+			//* 由Jack Jiang201210-12日注释掉：它样做将导致各种放入的组
+			//* 件（如文本框）等都将透明，从而不绘制该 组件的背景，那就错误了哦
+			//* 其实以下代码原本是为了解决放入到JToggleButton的白色背景问题，现在它
+			//* 已经在BEToolgleButtonUI里解决了，此处就不需要了，也不应该要！
 //            //* 只有它一行是由jb2011加的
 //            if(c instanceof JComponent)
 //            	((JComponent)c).setOpaque(false);
-			}
         }
 
         /* (non-Javadoc)
@@ -281,42 +264,42 @@ public class BEToolBarUI extends BasicToolBarUI
     	/* (non-Javadoc)
 	     * @see javax.swing.border.AbstractBorder#paintBorder(java.awt.Component, java.awt.Graphics, int, int, int, int)
 	     */
-	    public void paintBorder(Component c, Graphics g, int x, int y, 
+	    public void paintBorder(Component c, Graphics g, int x, int y,
     			int width, int height) {
     		g.translate(x, y);
-    		
+
     		//需要绘制拖动触点
-    		if (((JToolBar)c).isFloatable()) 
+    		if (((JToolBar)c).isFloatable())
     		{
     			boolean vertical = ((JToolBar)c).getOrientation() == VERTICAL;
-    			
+
     			//虚线样式
     			Stroke oldStroke = ((Graphics2D)g).getStroke();
     	        Stroke sroke = new BasicStroke(1, BasicStroke.CAP_BUTT,
     	                BasicStroke.JOIN_BEVEL, 0, new float[]{1, 1}, 0);//实线，空白
     	                    ((Graphics2D)g).setStroke(sroke);
 //    	        int gap_top = 5,gap_bottom = 4; //！！10,-1
-    			if (!vertical) 
+    			if (!vertical)
     			{
-    				int gap_top = 8,gap_bottom = 8; 
-    				if (c.getComponentOrientation().isLeftToRight()) 
+    				int gap_top = 8,gap_bottom = 8;
+    				if (c.getComponentOrientation().isLeftToRight())
     				{
     					int drawX = 3;
     					drawTouchH(g, drawX, gap_top -1, drawX, height - gap_bottom -1);
-    				} 
+    				}
     				else
     				{
     					int drawX = 3 - 1;
     					drawTouchH(g, width - drawX, gap_top -1, width - drawX, height - gap_bottom -1);
     				}
-    			} 
+    			}
     			else // Vertical
-    			{ 
-    				int gap_left = 8,gap_right = 8; 
+    			{
+    				int gap_left = 8,gap_right = 8;
     				int drawY = 3;
     				drawTouchV(g, gap_left -1, drawY, width - gap_right -1, drawY);
     			}
-    			
+
     			((Graphics2D)g).setStroke(oldStroke);
     		}
 

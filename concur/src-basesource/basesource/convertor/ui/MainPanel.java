@@ -8,22 +8,20 @@ import basesource.convertor.model.ListableFileObservable;
 import basesource.convertor.model.TaskManager;
 import basesource.convertor.ui.docking.DockingPort;
 import basesource.convertor.ui.docking.demos.elegant.ElegantDockingPort;
+import basesource.convertor.ui.extended.CustomFrameApplication;
 import basesource.convertor.ui.extended.RowProgressTableUI;
 import basesource.convertor.utils.DpiUtils;
-
 import org.jb2011.lnf.beautyeye.BeautyEyeLNFHelper;
-import org.jdesktop.application.SingleFrameApplication;
 import org.jdesktop.application.View;
 
 import javax.swing.*;
-
 import java.awt.*;
 
 /**
  * 主面板
  * Created by Jake on 2015/5/31.
  */
-public class MainPanel extends SingleFrameApplication {
+public class MainPanel extends CustomFrameApplication {
 
     /**
      * 根面板
@@ -76,6 +74,26 @@ public class MainPanel extends SingleFrameApplication {
         show(view);
     }
 
+
+    /**
+     * 在show之前
+     */
+    @Override
+    protected void postInit() {
+        // 默认窗口大小
+        this.getMainFrame().setSize(1200, 800);
+
+        // 设置窗口居中
+        Toolkit kit = Toolkit.getDefaultToolkit(); // 定义工具包
+        Dimension screenSize = kit.getScreenSize(); // 获取屏幕的尺寸
+        int screenWidth = screenSize.width / 2; // 获取屏幕的宽
+        int screenHeight = screenSize.height / 2; // 获取屏幕的高
+        int height = this.getMainFrame().getHeight();
+        int width = this.getMainFrame().getWidth();
+        this.getMainFrame().setLocation(screenWidth - width / 2, screenHeight - height / 2);
+    }
+
+
     /**
      * 初始化配置
      */
@@ -122,8 +140,6 @@ public class MainPanel extends SingleFrameApplication {
         // 更改图标
         this.changeIcon();
 
-        // 默认窗口大小
-        this.getMainFrame().setSize(1200, 800);
     }
 
 
@@ -198,6 +214,7 @@ public class MainPanel extends SingleFrameApplication {
         JPanel toolBarPanel = new JPanel(new BorderLayout());
         toolBarPanel.add(toolBar, BorderLayout.CENTER);
         rootPanel.add(toolBarPanel, BorderLayout.NORTH);
+
 
         this.fileBrowserPanel = fileBrowserPanel;
         this.fileListPanel = fileListPanel;

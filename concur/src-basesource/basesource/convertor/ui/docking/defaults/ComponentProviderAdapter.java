@@ -18,10 +18,9 @@ CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFT
 OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 package basesource.convertor.ui.docking.defaults;
 
-import javax.swing.JSplitPane;
-import javax.swing.JTabbedPane;
-
 import basesource.convertor.ui.docking.DockingPort;
+
+import javax.swing.*;
 
 /**
  * Provides a default implementation of the <code>SubComponentProvider</code>.  This class may be extended
@@ -61,7 +60,7 @@ public class ComponentProviderAdapter implements SubComponentProvider {
 	 * @see basesource.convertor.ui.docking.defaults.SubComponentProvider#getInitialDividerLocation()
 	 */
 	public double getInitialDividerLocation() {
-		return -1;
+		return 0.3d;
 	}
 
 }

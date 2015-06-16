@@ -45,7 +45,7 @@ public class ChildComponentDelegate implements SubComponentProvider {
 	}
 
 	public double getInitialDividerLocation() {
-		return 0.5d;
+		return 0.3d;
 	}
 
 }
