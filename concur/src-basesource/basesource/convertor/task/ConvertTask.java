@@ -59,10 +59,16 @@ public class ConvertTask implements ProgressMonitorable {
     private volatile TaskStatus status = TaskStatus.INIT;
 
 
-    public ConvertTask(File path, ProgressTableModel tableModel) {
+    /**
+     * 构造方法
+     * @param storageManager StorageManager
+     * @param path 扫描路径
+     * @param tableModel 表格数据模型
+     */
+    public ConvertTask(StorageManager storageManager, File path, ProgressTableModel tableModel) {
         this.path = path;
         this.tableModel = tableModel;
-        this.storageManager = new StorageManager();
+        this.storageManager = storageManager;
     }
 
 

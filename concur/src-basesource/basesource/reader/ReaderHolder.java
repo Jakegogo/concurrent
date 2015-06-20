@@ -1,19 +1,20 @@
 package basesource.reader;
 
-import java.util.concurrent.ConcurrentHashMap;
-
-import javax.annotation.PostConstruct;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+import org.springframework.stereotype.Component;
+
+import javax.annotation.PostConstruct;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * 资源读取器持有者
  * @author frank
  */
+@Component
 public class ReaderHolder implements ApplicationContextAware {
 	
 	@SuppressWarnings("unused")

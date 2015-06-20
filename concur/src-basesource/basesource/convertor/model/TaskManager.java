@@ -1,7 +1,9 @@
 package basesource.convertor.model;
 
+import basesource.convertor.MainApp;
 import basesource.convertor.task.ConvertTask;
 import basesource.convertor.task.TaskStatus;
+import basesource.storage.StorageManager;
 import utils.thread.NamedThreadFactory;
 
 import java.io.File;
@@ -32,18 +34,26 @@ public class TaskManager {
      */
     private ProgressTableModel tableModel;
 
+    /**
+     * 基础数据缓存管理器
+     */
+    private StorageManager storageManager;
+
 
     public TaskManager(ProgressTableModel tableModel) {
         this.tableModel = tableModel;
-        this.initExcutor();
+        this.init();
     }
 
-    private void initExcutor() {
+    private void init() {
         // 初始化线程池
         ThreadGroup threadGroup = new ThreadGroup("基础数据表转换模块");
         NamedThreadFactory threadFactory = new NamedThreadFactory(threadGroup, "转换任务线程池");
 
         DB_POOL_SERVICE = Executors.newFixedThreadPool(taskThreadSize, threadFactory);
+
+        this.storageManager = MainApp.getApplicationContext().getAutowireCapableBeanFactory().createBean(StorageManager.class);
+
     }
 
 
@@ -67,7 +77,7 @@ public class TaskManager {
                 // 不存在则创建新的任务
                 if (curTask == null) {
                     File inputPath = UserConfig.getInstance().getInputPath();
-                    curTask = new ConvertTask(inputPath, tableModel);
+                    curTask = new ConvertTask(storageManager, inputPath, tableModel);
                     curTask.start(completeCallback);
                 } else {
                     curTask.start(completeCallback);
