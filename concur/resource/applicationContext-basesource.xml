@@ -12,6 +12,17 @@
 
 	<context:annotation-config />
 
+	<!-- 基础数据定义扫描包 -->
+	<bean id="BASE_SOURCE_SCAN_PATTERN" class="java.lang.String">
+		<constructor-arg value="basesource.test" />
+	</bean>
+
+	<!-- 基础数据文件路径 -->
+	<bean id="BASE_SOURCE_FILE_PATH" class="java.lang.String">
+		<constructor-arg value="json-source" />
+	</bean>
+
+
 	<!-- 下面是一些全局配置 -->
 	
 	<context:component-scan base-package="basesource"></context:component-scan>
