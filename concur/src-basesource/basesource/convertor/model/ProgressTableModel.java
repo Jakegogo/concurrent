@@ -132,6 +132,7 @@ public class ProgressTableModel extends AbstractTableModel {
     	progresses.put(row, progress);
     	RowProgressTableUI.updateProgressUI(jTable, row, row);
 
+        // 检查滚动面板显示区域
         checkScroll(row);
 
     }
@@ -233,8 +234,8 @@ public class ProgressTableModel extends AbstractTableModel {
         // 获取JScrollPane中的纵向JScrollBar
         JScrollBar sBar = this.parent.getVerticalScrollBar();
 
-        if (cellRectangle.y > sBar.getVisibleAmount()) {
-            sBar.setValue(cellRectangle.y);
+        if (cellRectangle.y > sBar.getVisibleAmount() + sBar.getValue()) {
+            sBar.setValue(cellRectangle.y - 50);
         }
 
         if (row == 0) {

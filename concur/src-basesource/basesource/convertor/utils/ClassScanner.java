@@ -14,7 +14,7 @@ import java.util.jar.JarFile;
 
 /**
  * 类文件扫描器
- * 
+ * <P>支持jar格式,支持绝对路径扫描(scanPath)</P>
  * @author Jake
  *
  */
@@ -31,7 +31,7 @@ public class ClassScanner {
 	private boolean fixedPath = false;
 
 	/**
-	 * 从包package中获取所有的Class
+	 * 扫描包packageName中所有的Class
 	 * 
 	 * @param packageName 包路径 如:com.xxx
 	 * @return
@@ -71,7 +71,7 @@ public class ClassScanner {
 
 
 	/**
-	 * 从文件夹所有的Class
+	 * 扫描文件夹所有的Class
 	 *
 	 * @param path 文件路径 如 E:\\
 	 * @return
