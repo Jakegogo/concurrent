@@ -21,6 +21,7 @@
 	<!-- Enable @AspectJ support -->
     <aop:aspectj-autoproxy/>
 
-
+	<bean
+			class="org.springframework.context.support.ConversionServiceFactoryBean" />
 	
 </beans>

@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.core.convert.ConverterNotFoundException;
 import org.springframework.core.convert.TypeDescriptor;
+import org.springframework.stereotype.Component;
 import utils.StringUtils;
 import utils.reflect.ReflectionUtility;
 
@@ -26,6 +27,7 @@ import java.util.List;
  * Excel格式的静态资源读取器
  * @author frank
  */
+@Component
 public class ExcelReader implements ResourceReader {
 	
 	private final static Logger logger = LoggerFactory.getLogger(ExcelReader.class);

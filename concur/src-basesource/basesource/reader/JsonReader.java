@@ -1,21 +1,22 @@
 package basesource.reader;
 
+import basesource.exceptions.DecodeException;
+import org.codehaus.jackson.map.ObjectMapper;
+import org.codehaus.jackson.map.type.TypeFactory;
+import org.codehaus.jackson.type.JavaType;
+import org.springframework.stereotype.Component;
+
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-
-import org.codehaus.jackson.map.ObjectMapper;
-import org.codehaus.jackson.map.type.TypeFactory;
-import org.codehaus.jackson.type.JavaType;
-
-import basesource.exceptions.DecodeException;
 
 
 /**
  * JSON 资源读取器
  * @author frank
  */
+@Component
 public class JsonReader implements ResourceReader {
 	
 	private static final ObjectMapper mapper = new ObjectMapper();

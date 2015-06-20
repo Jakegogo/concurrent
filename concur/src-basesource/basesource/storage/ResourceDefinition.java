@@ -1,14 +1,11 @@
 package basesource.storage;
 
 import basesource.anno.InjectBean;
-import basesource.anno.Resource;
 import org.apache.commons.lang.builder.ReflectionToStringBuilder;
 import org.springframework.util.ReflectionUtils.FieldCallback;
 import org.springframework.util.ReflectionUtils.FieldFilter;
-import utils.StringUtils;
 import utils.reflect.ReflectionUtility;
 
-import java.io.File;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.HashSet;
@@ -22,9 +19,6 @@ import java.util.Set;
  */
 public class ResourceDefinition {
 	
-	public final static String FILE_SPLIT = ".";
-	public final static String FILE_PATH = File.separator;
-
 	/** 注入属性域过滤器 */
 	private final static FieldFilter INJECT_FILTER = new FieldFilter() {
 		@Override
@@ -49,24 +43,8 @@ public class ResourceDefinition {
 	public ResourceDefinition(Class<?> clz, FormatDefinition format) {
 		this.clz = clz;
 		this.format = format.getType();
-		Resource anno = clz.getAnnotation(Resource.class);
 
-		StringBuilder builder = new StringBuilder();
-		builder.append(format.getLocation()).append(FILE_PATH);
-		if (anno != null && !StringUtils.isBlank(anno.value())) {
-			String dir = anno.value();
-			int start = 0;
-			int end = dir.length();
-			if (dir.startsWith(FILE_PATH)) {
-				start++;
-			}
-			if (dir.endsWith(FILE_PATH)) {
-				end--;
-			}
-			builder.append(dir.substring(start, end)).append(FILE_PATH);
-		}
-		builder.append(clz.getSimpleName()).append(FILE_SPLIT).append(format.getSuffix());
-		this.location = builder.toString();
+		this.location = format.getLocation();
 		ReflectionUtility.doWithDeclaredFields(clz, new FieldCallback() {
 			@Override
 			public void doWith(Field field) throws IllegalArgumentException, IllegalAccessException {

@@ -209,9 +209,7 @@ public class ConvertTask implements ProgressMonitorable {
                     // 直接转换
                     // 创建数据集
                     List<Map<String, String>> beanList = readSheetData(sheetInfo, ((double)curSheetIndex + 1) / size * (1-0.37d) + 0.37d);
-//                    if (curTaskIndex % 5 == 0) {
-//                        throw new RuntimeException();
-//                    }
+
                     this.writeFile(name, beanList);
                 }
 
