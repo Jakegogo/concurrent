@@ -83,7 +83,7 @@ public class ResourceDefinition {
 		}
 		return result;
 	}
-	
+
 	/**
 	 * 资源是否需要校验
 	 * @return
