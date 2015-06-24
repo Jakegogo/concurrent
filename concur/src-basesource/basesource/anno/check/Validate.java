@@ -1,8 +1,6 @@
 package basesource.anno.check;
 
-import basesource.contants.ValueType;
 import basesource.validators.Validator;
-import basesource.validators.ValueGetter;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -35,17 +33,5 @@ public @interface Validate {
 	 * @return
 	 */
 	public String msg() default "";
-	
-	/**
-	 * 值(json格式的值使用:{value}.xxx.xx)
-	 * @return
-	 */
-	public String[] value() default ValueType.VALUE;
-	
-	/**
-	 * 获取值的类
-	 * @return
-	 */
-	public Class<? extends ValueGetter> valueGetter() default ValueGetter.class;
 	
 }

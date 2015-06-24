@@ -5,9 +5,6 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import basesource.contants.ValueType;
-import basesource.validators.ValueGetter;
-
 /**
  * 最大值限制
  * @author Jake
@@ -28,17 +25,5 @@ public @interface Max {
 	 * @return
 	 */
 	public String msg() default "";
-	
-	/**
-	 * 值(json格式的值使用:{value}.xxx.xx)
-	 * @return
-	 */
-	public String[] value() default ValueType.VALUE;
-	
-	/**
-	 * 获取值的类
-	 * @return
-	 */
-	public Class<? extends ValueGetter> valueGetter() default ValueGetter.class;
 	
 }
