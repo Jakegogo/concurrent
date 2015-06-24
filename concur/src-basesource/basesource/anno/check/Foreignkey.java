@@ -24,7 +24,7 @@ public @interface Foreignkey {
 	 * 关联类属性
 	 * @return
 	 */
-	public String attr();
+	public String key();
 	
 	/**
 	 * 错误提示信息
