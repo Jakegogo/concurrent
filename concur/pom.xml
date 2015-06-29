@@ -270,6 +270,41 @@
 
 	<build>
 		<finalName>${project.artifactId}</finalName>
+		<resources>
+			<resource>
+				<directory>resource</directory>
+			</resource>
+			<resource>
+				<directory>src-basesource</directory>
+			</resource>
+			<resource>
+				<directory>src-beautyeye</directory>
+			</resource>
+			<resource>
+				<directory>src-chainlock</directory>
+			</resource>
+			<resource>
+				<directory>src-dbcache</directory>
+			</resource>
+			<resource>
+				<directory>src-game</directory>
+			</resource>
+			<resource>
+				<directory>src-mis</directory>
+			</resource>
+			<resource>
+				<directory>src-readwritelock</directory>
+			</resource>
+			<resource>
+				<directory>src-test</directory>
+			</resource>
+			<resource>
+				<directory>src-transfer</directory>
+			</resource>
+			<resource>
+				<directory>src-utils</directory>
+			</resource>
+		</resources>
 		<plugins>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
