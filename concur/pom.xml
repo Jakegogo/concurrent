@@ -266,6 +266,49 @@
 			<artifactId>commons-io</artifactId>
 			<version>1.4</version>
 		</dependency>
+		<dependency>
+			<groupId>AnimatedTransitions</groupId>
+			<artifactId>AnimatedTransitions</artifactId>
+			<scope>system</scope>
+			<version>1.0</version>
+			<systemPath>${basedir}\lib\AnimatedTransitions.jar</systemPath>
+		</dependency>
+		<dependency>
+			<groupId>AppFramework</groupId>
+			<artifactId>AppFramework</artifactId>
+			<scope>system</scope>
+			<version>1.0</version>
+			<systemPath>${basedir}\lib\AppFramework.jar</systemPath>
+		</dependency>
+		<dependency>
+			<groupId>ninepatch4j</groupId>
+			<artifactId>ninepatch4j</artifactId>
+			<scope>system</scope>
+			<version>1.0</version>
+			<systemPath>${basedir}\lib\ninepatch4j.jar</systemPath>
+		</dependency>
+		<dependency>
+			<groupId>swing-worker</groupId>
+			<artifactId>swing-worker</artifactId>
+			<scope>system</scope>
+			<version>1.0</version>
+			<systemPath>${basedir}\lib\swing-worker.jar</systemPath>
+		</dependency>
+		<dependency>
+			<groupId>swingx</groupId>
+			<artifactId>swingx</artifactId>
+			<scope>system</scope>
+			<version>1.0</version>
+			<systemPath>${basedir}\lib\swingx.jar</systemPath>
+		</dependency>
+		<dependency>
+			<groupId>TimingFramework</groupId>
+			<artifactId>TimingFramework</artifactId>
+			<scope>system</scope>
+			<version>1.0</version>
+			<systemPath>${basedir}\lib\TimingFramework.jar</systemPath>
+		</dependency>
+
 	</dependencies>
 
 	<build>
