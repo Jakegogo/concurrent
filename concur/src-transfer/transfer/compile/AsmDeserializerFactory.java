@@ -69,7 +69,7 @@ public class AsmDeserializerFactory implements Opcodes {
      * 构造解码器字节码
      * @param className 解码器asm类名
      * @param type 解码类型
-     * @param outerSerializer 最外层解码器
+     * @param outerDeserializer 最外层解码器
      * @return
      */
 	private static byte[] createDeserializerClassBytes(String className,

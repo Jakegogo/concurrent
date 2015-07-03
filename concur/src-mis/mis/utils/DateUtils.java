@@ -34,14 +34,23 @@ public class DateUtils {
 			return formatorMap;
 		}
 	};
-	
 
+
+	/**
+	 * 获取日期转换器
+	 * @return
+	 */
 	public static DateFormat getDateFormat() {
 		Map<String, DateFormat> map = threadLocal
 				.get();
 		return map.get(DATE_FORMAT);
 	}
 
+	/**
+	 * 获取日期转换器
+	 * @param format 格式
+	 * @return
+	 */
 	public static DateFormat getDateFormat(String format) {
 		Map<String, DateFormat> map = threadLocal
 				.get();
@@ -145,7 +154,6 @@ public class DateUtils {
 	/**
 	 * 获取今天的开始时间点
 	 * 
-	 * @param date
 	 * @return
 	 */
 	public static Date getTodayStartPointer() {
@@ -161,7 +169,6 @@ public class DateUtils {
 	/**
 	 * 获取今天的最后时间点
 	 * 
-	 * @param date
 	 * @return
 	 */
 	public static Date getTodayEndPointer() {
@@ -479,8 +486,12 @@ public class DateUtils {
 
 		return (Date) currentDate.getTime().clone();
 	}
-	
 
+
+	/**
+	 * 获取星期一是第几天
+	 * @return
+	 */
 	private static int getMondayPlus() {
 		Calendar cd = Calendar.getInstance();
 		int dayOfWeek = cd.get(7) - 1;
@@ -977,19 +988,35 @@ public class DateUtils {
 		currentDate.add(Calendar.YEAR, 200);
 		return (Date) currentDate.getTime().clone();
 	}
-	
+
+	/**
+	 * long转化成Date
+	 * @param millis 毫秒
+	 * @return
+	 */
 	public static Date longToDate(long millis){
 		Calendar cl = Calendar.getInstance();
 		cl.setTimeInMillis(millis);
 		return cl.getTime();
 	}
-	
+
+	/**
+	 * Date转化成long
+	 * @param date Date
+	 * @return
+	 */
 	public static long getMillisDate(Date date){
 		Calendar cl = Calendar.getInstance();
 		cl.setTime(date);
 		return cl.getTimeInMillis();
 	}
-	
+
+	/**
+	 * 是否为同一个月
+	 * @param date1 Date
+	 * @param date2 Date
+	 * @return
+	 */
 	public static boolean isSameMonth(Date date1,Date date2){
 		Date d=getLastMonthStartPointer(date1);
 		Date d2=getLastMonthStartPointer(date2);
