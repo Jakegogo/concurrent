@@ -44,7 +44,7 @@ public class UserFileListener implements FileAlterationListener {
 
     @Override
     public void onFileChange(File file) {
-
+        this.listableFileConnector.updateSelectDirectory();
     }
 
     @Override
