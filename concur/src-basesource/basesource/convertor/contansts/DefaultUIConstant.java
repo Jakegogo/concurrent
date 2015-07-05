@@ -127,22 +127,22 @@ public interface DefaultUIConstant {
     /**
      * 表格进度条颜色1
      */
-    Color TABLE_ROW_PROGRESS_BAR_COLOR1 = new Color(246, 246, 246);
+    Color TABLE_ROW_PROGRESS_BAR_COLOR1 = new Color(234, 255, 235);
 
     /**
      * 表格进度条颜色2
      */
-    Color TABLE_ROW_PROGRESS_BAR_COLOR2 = new Color(45, 255, 2);
+    Color TABLE_ROW_PROGRESS_BAR_COLOR2 = new Color(185, 255, 162);
 
     /**
      * 表格进度条颜色1
      */
-    Color TABLE_ROW_PROGRESS_BAR_COLOR3 = new Color(255, 224, 224);
+    Color TABLE_ROW_PROGRESS_BAR_COLOR3 = new Color(255, 235, 232);
 
     /**
      * 表格进度条颜色2
      */
-    Color TABLE_ROW_PROGRESS_BAR_COLOR4 = new Color(250, 52, 55);
+    Color TABLE_ROW_PROGRESS_BAR_COLOR4 = new Color(250, 202, 183);
 
     /**
      * 选择代码路径提示

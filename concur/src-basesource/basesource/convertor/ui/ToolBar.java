@@ -173,14 +173,14 @@ public class ToolBar extends JToolBar {
         final JToggleButton expandButton = new JToggleButton();
         expandButton.setFocusPainted(false);
         expandButton.setBorderPainted(false);
-        expandButton.setIcon(new ImageIcon(getClass().getResource("resources/images/expand.png")));
+        expandButton.setIcon(new ImageIcon(getClass().getResource("resources/images/collapse.png")));
         expandButton.setRolloverEnabled(true);
-        expandButton.setRolloverIcon(new ImageIcon(getClass().getResource("resources/images/expand.png")));
-        expandButton.setPressedIcon(new ImageIcon(getClass().getResource("resources/images/expand.png")));
+        expandButton.setRolloverIcon(new ImageIcon(getClass().getResource("resources/images/collapse.png")));
+        expandButton.setPressedIcon(new ImageIcon(getClass().getResource("resources/images/collapse.png")));
         expandButton.setToolTipText("button with rollover image");
         expandButton.setSelected(true);
         expandButton.addActionListener(new ActionListener() {
-        	private boolean showExpand = true;
+        	private boolean showExpand = false;
             @Override
             public void actionPerformed(ActionEvent e) {
             	if (showExpand) {
