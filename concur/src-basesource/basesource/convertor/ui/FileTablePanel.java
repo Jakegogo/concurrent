@@ -103,6 +103,7 @@ public class FileTablePanel extends ElegantPanel {
         fileTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         fileTable.setAutoCreateRowSorter(true);
         fileTable.setDefaultRenderer(String.class, new DefaultTableCellRenderer());
+        fileTable.setGridColor(new Color(238, 238, 238));
 
         this.fileTable = fileTable;
         return fileTable;
