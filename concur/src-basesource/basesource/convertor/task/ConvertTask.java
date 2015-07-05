@@ -145,10 +145,11 @@ public class ConvertTask implements ProgressMonitorable {
      * 重置任务
      */
     public void reset() {
-        // 重置迭代器
-        cur = tableModel.getSortedRowFiles().iterator();
-        curTaskIndex = 0;
         status = TaskStatus.CANCEL;
+        curTaskIndex = 0;
+
+        // 重置迭代器
+        cur = null;
 
         // 重置进度
         tableModel.clearProgress();

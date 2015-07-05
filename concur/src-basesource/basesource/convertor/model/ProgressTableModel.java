@@ -4,6 +4,8 @@ import basesource.convertor.contansts.DefaultUIConstant;
 import basesource.convertor.task.TaskInfo;
 import basesource.convertor.task.TaskStatus;
 import basesource.convertor.ui.extended.RowProgressTableUI;
+import utils.DateUtils;
+import utils.StringUtils;
 
 import javax.swing.*;
 import javax.swing.filechooser.FileSystemView;
@@ -50,7 +52,7 @@ public class ProgressTableModel extends AbstractTableModel {
 
 
     /**
-     * 获取含排序信息的文件列表
+     * 获取含排序顺序的文件列表
      * @return
      */
     public List<File> getSortedRowFiles() {
@@ -118,13 +120,16 @@ public class ProgressTableModel extends AbstractTableModel {
 
     /**
      * 改变进度
-     * @param row 行号 从0开始
+     * @param row 行号 从0开始 View row
      * @param progress 进度 double 最大值1d
      */
     public void changeProgress(int row, double progress) {
     	if (row < 0 || row >= this.files.length) {
     		return;
     	}
+
+        row = this.jTable.convertRowIndexToModel(row);
+
         Double oldProgress = progresses.get(row);
         if (oldProgress != null && oldProgress < 0) {
             return;
@@ -145,6 +150,9 @@ public class ProgressTableModel extends AbstractTableModel {
         if (row < 0 || row >= this.files.length) {
             return;
         }
+
+        row = this.jTable.convertRowIndexToModel(row);
+
         // 保存失败信息
         this.saveTaskInfo(row, name, e);
 
@@ -253,9 +261,9 @@ public class ProgressTableModel extends AbstractTableModel {
             case 1:
                 return fileSystemView.getSystemDisplayName(file);
             case 2:
-                return file.length();
+                return new SizeFormattedString(file.length());
             case 3:
-                return file.lastModified();
+                return new DateFormattedString(file.lastModified());
             default:
                 System.err.println("Logic Error");
         }
@@ -277,9 +285,9 @@ public class ProgressTableModel extends AbstractTableModel {
             case 0:
                 return Icon.class;
             case 2:
-                return Long.class;
+                return SizeFormattedString.class;
             case 3:
-                return Date.class;
+                return DateFormattedString.class;
         }
         return String.class;
     }
@@ -288,5 +296,66 @@ public class ProgressTableModel extends AbstractTableModel {
         return DefaultUIConstant.FILE_TABLE_HREADER[column];
     }
 
+
+    public static class SizeFormattedString implements Comparable {
+
+        private long size;
+
+        private String str;
+
+        SizeFormattedString(long size) {
+            this.size = size;
+            this.str = StringUtils.formatFileSize(size, true);
+        }
+
+        @Override
+        public int compareTo(Object o) {
+            if (o == this) {
+                return 0;
+            }
+            if (o == null || o.getClass() != SizeFormattedString.class) {
+                return -1;
+            }
+
+            SizeFormattedString target = (SizeFormattedString) o;
+            return (int) (target.size - this.size);
+        }
+
+        @Override
+        public String toString() {
+            return this.str;
+        }
+    }
+
+
+    public static class DateFormattedString implements Comparable {
+
+        private long time;
+
+        private String str;
+
+        DateFormattedString(long time) {
+            this.time = time;
+            this.str = DateUtils.format(new Date(time));
+        }
+
+        @Override
+        public int compareTo(Object o) {
+            if (o == this) {
+                return 0;
+            }
+            if (o == null || o.getClass() != DateFormattedString.class) {
+                return -1;
+            }
+
+            DateFormattedString target = (DateFormattedString) o;
+            return (int) (target.time - this.time);
+        }
+
+        @Override
+        public String toString() {
+            return this.str;
+        }
+    }
 
 }

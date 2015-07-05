@@ -74,4 +74,19 @@ public class StringUtils {
 		return str == null || str.trim().length() == 0;
 	}
 
+
+	/**
+	 * 格式化文件大小显示
+	 * @param bytes 字节数
+	 * @param si 是否使用1000单位进制
+	 * @return
+	 */
+	public static String formatFileSize(long bytes, boolean si) {
+		int unit = si ? 1000 : 1024;
+		if (bytes < unit) return bytes + " B";
+		int exp = (int) (Math.log(bytes) / Math.log(unit));
+		String pre = (si ? "kMGTPE" : "KMGTPE").charAt(exp-1) + (si ? "" : "i");
+		return String.format("%.1f %sB", bytes / Math.pow(unit, exp), pre);
+	}
+
 }
