@@ -165,7 +165,7 @@ public class ToolBar extends JToolBar {
                 listableFileManager.openFileView(UserConfig.getInstance().getOutputPath());
             }
         });
-        openButton.setEnabled(UserConfig.getInstance().getOutputPath() != null);
+        openButton.setEnabled(chooseOutputPath);
         add(openButton);
 
 
@@ -215,6 +215,7 @@ public class ToolBar extends JToolBar {
                 }
 
                 UserConfig.getInstance().changeOutPutPath(selectedFile);
+                fileChooser.setCurrentDirectory(selectedFile);
 
                 openButton.setEnabled(true);
                 startButton.setEnabled(true);
@@ -247,6 +248,11 @@ public class ToolBar extends JToolBar {
         });
         fileChooser.setAcceptAllFileFilterUsed(false);
         fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);//只能选择目录
+
+        File dir = UserConfig.getInstance().getOutputPath();
+        if (dir != null && dir.exists() && dir.isDirectory()) {
+            fileChooser.setCurrentDirectory(dir);
+        }
         return fileChooser;
     }
 
