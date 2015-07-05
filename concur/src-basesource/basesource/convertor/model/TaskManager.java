@@ -67,10 +67,25 @@ public class TaskManager {
 
     /**
      * 创建任务Runnable
-     * @param completeCallback
+     * @param completeCallback TaskStatusChangeCallback
      * @return
      */
     private Runnable createRunnable(final TaskStatusChangeCallback completeCallback) {
+
+        final TaskStatusChangeCallback wrapperCompleteCallback = new TaskStatusChangeCallback() {
+            @Override
+            public void onStart() {
+                storageManager.clear();// 清除所有基础数据缓存
+                completeCallback.onStart();
+            }
+
+            @Override
+            public void onComplete() {
+                completeCallback.onComplete();
+                curTask = null;// 删除任务
+            }
+        };
+
         return new Runnable() {
             @Override
             public void run() {
@@ -78,9 +93,9 @@ public class TaskManager {
                 if (curTask == null) {
                     File inputPath = UserConfig.getInstance().getInputPath();
                     curTask = new ConvertTask(storageManager, inputPath, tableModel);
-                    curTask.start(completeCallback);
+                    curTask.start(wrapperCompleteCallback);
                 } else {
-                    curTask.start(completeCallback);
+                    curTask.start(wrapperCompleteCallback);
                 }
             }
         };
