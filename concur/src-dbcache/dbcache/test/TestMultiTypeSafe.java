@@ -3,7 +3,6 @@ package dbcache.test;
 import utils.typesafe.extended.MultiSafeActor;
 import utils.typesafe.extended.MultiSafeType;
 
-import java.util.Random;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -20,13 +19,15 @@ public class TestMultiTypeSafe {
 		final B b = new B();
 		final C c = new C();
 				
-		final int TEST_LOOP = 1;
+		final int TEST_LOOP = 10;
+
+		final int TEST_COUNT = 10000;
 		
 		final CountDownLatch ct = new CountDownLatch(1);
 
-		final CountDownLatch ct1 = new CountDownLatch(10000);
+		final CountDownLatch ct1 = new CountDownLatch(TEST_LOOP * TEST_COUNT);
 
-		for (int j = 0; j < 10000;j++) {
+		for (int j = 0; j < TEST_COUNT;j++) {
 			
 			final int l = j;
 			new Thread() {
@@ -40,11 +41,11 @@ public class TestMultiTypeSafe {
 						e.printStackTrace();
 					}
 
-					try {
-						Thread.sleep(new Random().nextInt(10));
-					} catch (InterruptedException e) {
-						e.printStackTrace();
-					}
+//					try {
+//						Thread.sleep(new Random().nextInt(10));
+//					} catch (InterruptedException e) {
+//						e.printStackTrace();
+//					}
 
 					if( l %2 == 0) {
 					
