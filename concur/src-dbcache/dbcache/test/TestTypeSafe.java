@@ -3,6 +3,7 @@ package dbcache.test;
 import utils.typesafe.SafeActor;
 import utils.typesafe.SafeType;
 
+import java.util.Random;
 import java.util.concurrent.CountDownLatch;
 
 public class TestTypeSafe {
@@ -32,8 +33,14 @@ public class TestTypeSafe {
 					} catch (InterruptedException e) {
 						e.printStackTrace();
 					}
-					
-					if( l < 2) {
+
+					try {
+						Thread.sleep(new Random().nextInt(10));
+					} catch (InterruptedException e) {
+						e.printStackTrace();
+					}
+
+					if( l % 2 == 0) {
 					
 						for (int k = 0;k < TEST_LOOP;k++) {
 							
@@ -54,7 +61,7 @@ public class TestTypeSafe {
 									int j = b.j;
 									j += 1;
 									b.j = j;
-									
+									System.out.println(Thread.currentThread().getId());
 								}
 								
 							}.start();
@@ -81,7 +88,7 @@ public class TestTypeSafe {
 									int k = c.k;
 									k += 1;
 									c.k = k;
-									
+									System.out.println(Thread.currentThread().getId());
 								}
 								
 							}.start();
@@ -105,7 +112,7 @@ public class TestTypeSafe {
 		
 	}
 
-	static class A implements SafeType {
+	static class A extends SafeType {
 		
 		int i = 0;
 
@@ -116,7 +123,7 @@ public class TestTypeSafe {
 		
 	}
 	
-	static class B implements SafeType {
+	static class B extends SafeType {
 		
 		int j = 0;
 
@@ -127,7 +134,7 @@ public class TestTypeSafe {
 		
 	}
 	
-	static class C implements SafeType {
+	static class C extends SafeType {
 		
 		int k = 0;
 

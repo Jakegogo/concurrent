@@ -34,7 +34,7 @@ public abstract class SimpleLinkingRunnable implements Runnable {
     public void onException(Throwable t) {}
 
     /**
-     * 覆盖(重写)次方法需要在方法末尾调用super.runNext();
+     * 覆盖(重写)次方法需要在方法末尾调用super.executeNext();
      */
     public void run() {
         if (this.impl == null) {
@@ -47,7 +47,7 @@ public abstract class SimpleLinkingRunnable implements Runnable {
 //     * 执行下一个任务
 //     */
 //    @Deprecated
-//    protected void runNext() {
+//    protected void executeNext() {
 //        if (!next.compareAndSet(null, this)) { // has more job to run
 //        	SimpleLinkingRunnable nextRunnable = next.get();
 //        	if (nextRunnable != this) {

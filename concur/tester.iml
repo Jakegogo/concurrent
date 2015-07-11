@@ -4,17 +4,17 @@
     <output url="file://$MODULE_DIR$/target/classes" />
     <output-test url="file://$MODULE_DIR$/target/test-classes" />
     <content url="file://$MODULE_DIR$">
+      <sourceFolder url="file://$MODULE_DIR$/resource" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src-basesource" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src-beautyeye" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src-chainlock" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src-dbcache" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src-game" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/src-readwritelock" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src-mis" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src-readwritelock" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src-test" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src-transfer" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src-utils" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/resource" isTestSource="false" />
       <excludeFolder url="file://$MODULE_DIR$/src-basesource/basesource/test/hotswapagent" />
       <excludeFolder url="file://$MODULE_DIR$/target" />
     </content>

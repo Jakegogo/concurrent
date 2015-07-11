@@ -24,7 +24,7 @@ public abstract class SafeActor implements Runnable {
 	}
 
 	/**
-	 * 之下下一个联合序列任务
+	 * 执行下一个联合序列任务
 	 */
 	void runNext() {
 		safeRunable.runNext();

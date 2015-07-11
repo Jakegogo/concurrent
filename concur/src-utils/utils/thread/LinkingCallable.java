@@ -36,7 +36,7 @@ public abstract class LinkingCallable<V> implements Callable<V>, LinkingExecutab
     public void onException(Throwable t) {}
 
     /**
-     * 覆盖(重写)次方法需要在方法末尾调用super.runNext();
+     * 覆盖(重写)次方法需要在方法末尾调用super.executeNext();
      */
     public V call() throws Exception {
         if (this.impl == null) {

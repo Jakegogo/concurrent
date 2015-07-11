@@ -8,7 +8,7 @@ import java.util.concurrent.atomic.AtomicReference;
  * @author Jake
  *
  */
-public interface SafeType {
+public abstract class SafeType {
 	
 	/**
 	 * 上一次执行的Actor

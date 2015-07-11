@@ -35,7 +35,7 @@ public abstract class LinkingRunnable implements Runnable, LinkingExecutable {
     public void onException(Throwable t) {}
 
     /**
-     * 覆盖(重写)次方法需要在方法末尾调用super.runNext();
+     * 覆盖(重写)次方法需要在方法末尾调用super.executeNext();
      */
     public void run() {
         if (this.impl == null) {
