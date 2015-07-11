@@ -65,6 +65,11 @@ public class TestMultiTypeSafeForMulti {
 									int j = b.j;
 									j += 1;
 									b.j = j;
+
+									int k = c.k;
+									k += 1;
+									c.k = k;
+
 									System.out.println(Thread.currentThread().getId());
 								}
 
@@ -75,7 +80,7 @@ public class TestMultiTypeSafeForMulti {
 
 						for (int k = 0;k < TEST_LOOP;k++) {
 
-							new MultiSafeActor(executorService, a) {
+							new MultiSafeActor(executorService, a, c) {
 
 								@Override
 								public void run() {

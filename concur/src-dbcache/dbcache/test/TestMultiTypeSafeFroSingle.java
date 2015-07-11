@@ -66,10 +66,15 @@ public class TestMultiTypeSafeFroSingle {
 
 						for (int k = 0;k < TEST_LOOP;k++) {
 
-							new MultiSafeActor(executorService, c) {
+							new MultiSafeActor(executorService, a, c) {
 
 								@Override
 								public void run() {
+
+									int i = a.i;
+									i += 1;
+									a.i = i;
+
 									int k = c.k;
 									k += 1;
 									c.k = k;
