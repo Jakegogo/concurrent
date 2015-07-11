@@ -70,28 +70,48 @@ public abstract class MultiSafeActor implements Runnable {
 			runnable.runQueue();
 		} else {
 			// CAS loop
+			int casLoop = 1;
 			for (; ; ) {
 
-				MultiSafeActor last = lastRef.get();
-
-				AtomicReference<MultiSafeActor> nextRef = last.next;
-				MultiSafeActor next = nextRef.get();
-
-				if (next != null) {
-					if (next == last && lastRef.compareAndSet(last, this)) {
-						// previous message is handled, order is
-						// guaranteed.
-						runnable.runQueue();
-						return;
-					}
-				} else if (nextRef.compareAndSet(null, this)) {
-					lastRef.compareAndSet(last, this);// fail is OK
-					// successfully append to previous task
+				if (casAppend(runnable, lastRef))
 					return;
+
+				if (casLoop ++ > 3) {
+					break;
 				}
 			}
+
+			synchronized (head) {
+				for (; ; ) {
+					if (casAppend(runnable, lastRef))
+						return;
+				}
+			}
+
 		}
 
+	}
+
+	// 追加到末尾
+	private boolean casAppend(MultiSafeActor runnable, AtomicReference<MultiSafeActor> lastRef) {
+		MultiSafeActor last = lastRef.get();
+
+		AtomicReference<MultiSafeActor> nextRef = last.next;
+		MultiSafeActor next = nextRef.get();
+
+		if (next != null) {
+            if (next == last && lastRef.compareAndSet(last, this)) {
+                // previous message is handled, order is
+                // guaranteed.
+                runnable.runQueue();
+				return true;
+            }
+        } else if (nextRef.compareAndSet(null, this)) {
+            lastRef.compareAndSet(last, this);// fail is OK
+            // successfully append to previous task
+			return true;
+        }
+		return false;
 	}
 
 
