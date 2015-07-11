@@ -40,11 +40,8 @@ public class MultiSafeRunable implements Runnable {
 	private void safeExecute() {
 		// 未到达最后一个SafeType
 		if (safeActor.incrementAndGet() < safeActor.getCount()) {
-//			System.out.println(this + " count " + safeActor.getCurCount() + " hash " + safeActor.hashCode());
 			return;
 		}
-
-//		System.out.println(this + " call run " + " hash " + safeActor.hashCode());
 
 		try {
 			safeActor.run();
@@ -73,7 +70,6 @@ public class MultiSafeRunable implements Runnable {
 		} else {
 			if (last.next.compareAndSet(null, this)) {
 				// successfully append to previous task
-//				System.out.println("append " + this + " actor hash " + this.safeActor.hashCode());
 			} else {
 				// previous message is handled, order is guaranteed.
 				submitRunnable(this);
@@ -88,8 +84,6 @@ public class MultiSafeRunable implements Runnable {
 	 */
 	protected void executeNext() {
 
-//		System.out.println(this + " call execute next " + " hash " + safeActor.hashCode());
-
 		// 派发其他依赖实体线程
 		if (this.safeActor.getCount() > 1) {
 			this.safeActor.dispathNext(this);
@@ -102,9 +96,6 @@ public class MultiSafeRunable implements Runnable {
 	 * run 下一个runnable
 	 */
 	public void runNext() {
-
-//		System.out.println(this + " call run next " + " hash " + safeActor.hashCode());
-
 		if (!this.next.compareAndSet(null, this)) { // has more job to run
 			this.next.get().safeExecute();
 		}
@@ -124,13 +115,7 @@ public class MultiSafeRunable implements Runnable {
 
 	// 提交任务
 	private void submitRunnable(Runnable safeRunable) {
-//		System.out.println("submit " + safeRunable + " actor hash " + this.safeActor.hashCode());
 		executorService.execute(safeRunable);
-	}
-
-
-	public MultiSafeType getSafeType() {
-		return safeType;
 	}
 
 

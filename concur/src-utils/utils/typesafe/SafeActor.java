@@ -2,7 +2,7 @@ package utils.typesafe;
 
 /**
  * 线程安全的Actor
- * <br/>支持单个对象锁的顺序执行,可并发提交。与提交线程的关系是同步或异步
+ * <br/>支持单个对象操作的顺序执行,可并发提交。与提交线程的关系是同步或异步
  * <br/>序列执行子类型
  * <br/>需要覆盖run方法, 方法内可以调用super.afterExecute(Object[])执行结束后会进行回调
  * @author Jake

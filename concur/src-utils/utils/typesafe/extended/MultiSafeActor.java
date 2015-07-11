@@ -7,13 +7,18 @@ import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * 线程安全的Actor
- * <br/>支持单个对象锁的顺序执行,可并发提交。与提交线程的关系是同步或异步
+ * <br/>支持多个对象操作的顺序执行,可并发提交。与提交线程的关系是同步或异步
  * <br/>序列执行子类型
  * <br/>需要覆盖run方法, 方法内可以调用super.afterExecute(Object[])执行结束后会进行回调
  * @author Jake
  *
  */
-public abstract class MultiSafeActor implements AbstractMultiSafeActor, Runnable {
+public abstract class MultiSafeActor implements Runnable {
+
+	/**
+	 * 上一次执行的Actor
+	 */
+	private static final AtomicReference<MultiSafeActor> head = new AtomicReference<MultiSafeActor>();
 
 	private MultiSafeType[] safeTypes;
 	private MultiSafeRunable[] safeRunables;
@@ -22,10 +27,6 @@ public abstract class MultiSafeActor implements AbstractMultiSafeActor, Runnable
 
 	// 计数器
 	private AtomicInteger curCount = new AtomicInteger(0);
-
-	private int hash;
-
-	private static AtomicInteger hashGen = new AtomicInteger(0);
 
 	AtomicReference<MultiSafeActor> next = new AtomicReference<MultiSafeActor>(null);
 
@@ -63,7 +64,7 @@ public abstract class MultiSafeActor implements AbstractMultiSafeActor, Runnable
 	protected void addToQueue(MultiSafeActor runnable) {
 
 		// messages from the same client are handled orderly
-		AtomicReference<AbstractMultiSafeActor> lastRef = runnable.head;
+		AtomicReference<MultiSafeActor> lastRef = head;
 
 		if (lastRef.get() == null && lastRef.compareAndSet(null, this)) { // No previous job
 			runnable.runQueue();
@@ -71,7 +72,7 @@ public abstract class MultiSafeActor implements AbstractMultiSafeActor, Runnable
 			// CAS loop
 			for (; ; ) {
 
-				MultiSafeActor last = (MultiSafeActor) lastRef.get();
+				MultiSafeActor last = lastRef.get();
 
 				AtomicReference<MultiSafeActor> nextRef = last.next;
 				MultiSafeActor next = nextRef.get();
@@ -96,7 +97,6 @@ public abstract class MultiSafeActor implements AbstractMultiSafeActor, Runnable
 
 	// 执行提交任务
 	protected void runQueue() {
-		hash = hashGen.incrementAndGet();
 		// 执行SafeRunable序列
 		for (final MultiSafeRunable safeRunable : safeRunables) {
 			safeRunable.execute();
@@ -119,8 +119,7 @@ public abstract class MultiSafeActor implements AbstractMultiSafeActor, Runnable
 	 * @param exclude 对后一个依赖执行的Runnable
  	 */
 	public void dispathNext(MultiSafeRunable exclude) {
-//		System.out.println("dispatch " + this);
-		for (final MultiSafeRunable safeRunable : safeRunables) {
+		for (MultiSafeRunable safeRunable : safeRunables) {
 			if (safeRunable != exclude) {
 				safeRunable.submitRunNext();
 			}
@@ -136,11 +135,6 @@ public abstract class MultiSafeActor implements AbstractMultiSafeActor, Runnable
 		return count;
 	}
 
-	public int getCurCount() {
-		return this.curCount.get();
-	}
-
-
 	/**
 	 * 执行异常回调()
 	 * @param t Throwable
@@ -153,8 +147,4 @@ public abstract class MultiSafeActor implements AbstractMultiSafeActor, Runnable
 		return Arrays.toString(safeTypes) + ", count=" + this.curCount + ", hash=" + this.hashCode();
 	}
 
-	@Override
-	public int hashCode() {
-		return this.hash;
-	}
 }
