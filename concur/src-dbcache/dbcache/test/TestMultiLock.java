@@ -1,19 +1,16 @@
 package dbcache.test;
 
-import utils.typesafe.extended.MultiSafeActor;
+import lock.ChainLock;
+import lock.LockUtils;
 import utils.typesafe.extended.MultiSafeType;
 
 import java.util.Random;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
-public class TestMultiTypeSafe {
+public class TestMultiLock {
 
 	public static void main(String[] args) {
 
-		final ExecutorService executorService = Executors.newFixedThreadPool(5);
-		
 //		while(true) {
 		
 		final A a = new A();
@@ -25,7 +22,7 @@ public class TestMultiTypeSafe {
 		final CountDownLatch ct = new CountDownLatch(1);
 
 		final CountDownLatch ct1 = new CountDownLatch(10000);
-
+		
 		for (int j = 0; j < 10000;j++) {
 			
 			final int l = j;
@@ -50,13 +47,12 @@ public class TestMultiTypeSafe {
 					
 						for (int k = 0;k < TEST_LOOP;k++) {
 
-							new MultiSafeActor(executorService, a, b) {
-
-								@Override
-								public void run() {
-									int i = a.i;
-									i += 1;
-									a.i = i;
+							ChainLock lock = LockUtils.getLock(a, b);
+							lock.lock();
+							try {
+								int i = a.i;
+								i += 1;
+								a.i = i;
 
 //									try {
 //										Thread.sleep(3);
@@ -64,28 +60,26 @@ public class TestMultiTypeSafe {
 //										e.printStackTrace();
 //									}
 
-									int j = b.j;
-									j += 1;
-									b.j = j;
-//									System.out.println(Thread.currentThread().getId());
+								int j = b.j;
+								j += 1;
+								b.j = j;
+//								System.out.println(Thread.currentThread().getId());
+							} finally {
+								lock.unlock();
+							}
 
-									ct1.countDown();
-								}
-
-							}.start();
 						}
 						
 					} else {
 
 						for (int k = 0;k < TEST_LOOP;k++) {
+							ChainLock lock = LockUtils.getLock(a, b);
+							lock.lock();
+							try {
 
-							new MultiSafeActor(executorService, a, c) {
-
-								@Override
-								public void run() {
-									int i = a.i;
-									i += 1;
-									a.i = i;
+								int i = a.i;
+								i += 1;
+								a.i = i;
 
 //									try {
 //										Thread.sleep(5);
@@ -93,20 +87,19 @@ public class TestMultiTypeSafe {
 //										e.printStackTrace();
 //									}
 
-									int k = c.k;
-									k += 1;
-									c.k = k;
+								int l = c.k;
+								l += 1;
+								c.k = l;
 //									System.out.println(Thread.currentThread().getId());
-
-									ct1.countDown();
-								}
-
-							}.start();
+							} finally {
+								lock.unlock();
+							}
 						}
-
-
 						
 					}
+
+					ct1.countDown();
+
 				}
 			}.start();
 		}
@@ -116,7 +109,6 @@ public class TestMultiTypeSafe {
 			ct.countDown();
 			ct1.await();
 			System.out.println(System.currentTimeMillis() - t1);
-			executorService.shutdown();
 			System.out.println("a.i:" + a.i);
 			System.out.println("b.j:" + b.j);
 			System.out.println("c.k:" + c.k);

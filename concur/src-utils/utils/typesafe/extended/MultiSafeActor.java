@@ -119,7 +119,7 @@ public abstract class MultiSafeActor implements AbstractMultiSafeActor, Runnable
 	 * @param exclude 对后一个依赖执行的Runnable
  	 */
 	public void dispathNext(MultiSafeRunable exclude) {
-		System.out.println("dispatch " + this);
+//		System.out.println("dispatch " + this);
 		for (final MultiSafeRunable safeRunable : safeRunables) {
 			if (safeRunable != exclude) {
 				safeRunable.submitRunNext();
