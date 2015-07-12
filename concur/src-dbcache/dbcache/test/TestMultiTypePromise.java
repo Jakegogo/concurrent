@@ -25,7 +25,7 @@ public class TestMultiTypePromise {
 
 		final int TEST_LOOP = 10;
 
-		final int TEST_COUNT = 100;
+		final int TEST_COUNT = 1000;
 
 		final CountDownLatch ct = new CountDownLatch(1);
 
