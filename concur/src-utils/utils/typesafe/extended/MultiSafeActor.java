@@ -11,6 +11,7 @@ import java.util.concurrent.atomic.AtomicReference;
  * <br/>支持多个对象操作的顺序执行,可并发提交。与提交线程的关系是同步或异步
  * <br/>序列执行子类型
  * <br/>需要覆盖run方法, 方法内可以调用super.afterExecute(Object[])执行结束后会进行回调
+ * <br/>不会因为死锁而阻塞线程,但嵌套死锁会导致后续任务不执行(汗！结果相对于死锁了)
  * @author Jake
  *
  */
