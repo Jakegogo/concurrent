@@ -17,28 +17,28 @@ public class TestMultiTypePromise {
 	public static void main(String[] args) {
 
 		final ExecutorService executorService = Executors.newFixedThreadPool(5);
-		
+
 //		while(true) {
-		
+
 		final A a = new A();
 		final B b = new B();
 
 		final int TEST_LOOP = 10;
 
 		final int TEST_COUNT = 100;
-		
+
 		final CountDownLatch ct = new CountDownLatch(1);
 
 		final CountDownLatch ct1 = new CountDownLatch(TEST_LOOP * TEST_COUNT);
 
 		for (int j = 0; j < TEST_COUNT;j++) {
-			
+
 			final int l = j;
 			new Thread() {
-				
+
 				@Override
 				public void run() {
-					
+
 					try {
 						ct.await();
 					} catch (InterruptedException e) {
@@ -52,7 +52,7 @@ public class TestMultiTypePromise {
 					}
 
 					if( l %2 == 0) {
-					
+
 						for (int k = 0;k < TEST_LOOP;k++) {
 
 							final Promiseable<B> bp = new Promiseable<B>() {
@@ -77,7 +77,7 @@ public class TestMultiTypePromise {
 //									}
 
 									int j = b.j;
-									j += 1;
+									j -= 1;
 									b.j = j;
 //									System.out.println(Thread.currentThread().getId());
 
@@ -90,23 +90,24 @@ public class TestMultiTypePromise {
 
 								@Override
 								public void run() {
-									int i = a.i;
-									i += 1;
-									a.i = i;
 
-									bp.call();
+									int k = bp.call().j;
+                                    k -= 1;
+                                    b.j = k;
+
+                                    a.i ++;
 
 									ct1.countDown();
 								}
 
 							}.when(bp).start();
 						}
-						
+
 					} else {
 
 						for (int k = 0;k < TEST_LOOP;k++) {
 
-							new MultiSafeActor(executorService, a, b) {
+							new MultiSafeActor(executorService, b) {
 
 								@Override
 								public void run() {
@@ -120,37 +121,17 @@ public class TestMultiTypePromise {
 //										e.printStackTrace();
 //									}
 
-									new MultiSafeActor(executorService, a) {
-										@Override
-										public void run() {
-
-
-//									try {
-//										Thread.sleep(3);
-//									} catch (InterruptedException e) {
-//										e.printStackTrace();
-//									}
-
-											int i = a.i;
-											i += 1;
-											a.i = i;
-//									System.out.println(Thread.currentThread().getId());
-
-											ct1.countDown();
-										}
-									}.start();
+									ct1.countDown();
 								}
 
 							}.start();
 						}
 
-
-						
 					}
 				}
 			}.start();
 		}
-		
+
 		try {
 			long t1 = System.currentTimeMillis();
 			ct.countDown();
@@ -163,40 +144,40 @@ public class TestMultiTypePromise {
 			e.printStackTrace();
 		}
 //		}
-		
+
 	}
 
 	static class A extends MultiSafeType {
-		
+
 		int i = 0;
 
 		@Override
 		public String toString() {
 			return "A [i=" + i + "]";
 		}
-		
+
 	}
-	
+
 	static class B extends MultiSafeType {
-		
-		int j = 0;
+
+		volatile int j = 0;
 
 		@Override
 		public String toString() {
 			return "B [j=" + j + "]";
 		}
-		
+
 	}
-	
+
 	static class C extends MultiSafeType {
-		
+
 		int k = 0;
 
 		@Override
 		public String toString() {
 			return "C [k=" + k + "]";
 		}
-		
+
 	}
-	
+
 }
