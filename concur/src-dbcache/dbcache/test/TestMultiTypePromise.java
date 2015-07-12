@@ -159,8 +159,7 @@ public class TestMultiTypePromise {
 	}
 
 	static class B extends MultiSafeType {
-
-		volatile int j = 0;
+        int j = 0;
 
 		@Override
 		public String toString() {
