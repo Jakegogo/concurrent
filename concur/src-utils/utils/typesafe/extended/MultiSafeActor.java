@@ -1,6 +1,7 @@
 package utils.typesafe.extended;
 
-import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
@@ -20,23 +21,31 @@ public abstract class MultiSafeActor implements Runnable {
 	 */
 	private static final AtomicReference<MultiSafeActor> head = new AtomicReference<MultiSafeActor>();
 
-	private MultiSafeType[] safeTypes;
-	private MultiSafeRunable[] safeRunables;
+	private AtomicReference<MultiSafeActor> next = new AtomicReference<MultiSafeActor>(null);
+
+	private List<MultiSafeType> safeTypes;
+	private List<MultiSafeRunable> safeRunables;
 
 	private int count;
-
 	// 计数器
 	private AtomicInteger curCount = new AtomicInteger(0);
 
-	AtomicReference<MultiSafeActor> next = new AtomicReference<MultiSafeActor>(null);
+	private ExecutorService executorService;
+
 
 	public MultiSafeActor(ExecutorService executorService, MultiSafeType... safeTypes) {
 		if (safeTypes == null || safeTypes.length == 0) {
 			throw new IllegalArgumentException("safeTypes must more than one arguments");
 		}
-		
-		this.safeTypes = safeTypes;
+
+		List<MultiSafeType> safeTypesList = new ArrayList<MultiSafeType>();
+		for (MultiSafeType safeType : safeTypes) {
+			safeTypesList.add(safeType);
+		}
+		this.safeTypes = safeTypesList;
+
 		this.count = safeTypes.length;
+		this.executorService = executorService;
 
 		initSafeRunnables(safeTypes, executorService);
 	}
@@ -44,9 +53,9 @@ public abstract class MultiSafeActor implements Runnable {
 
 	// 初始化MultiSafeRunable
 	private void initSafeRunnables(MultiSafeType[] safeTypes, ExecutorService executorService) {
-		MultiSafeRunable[] safeRunables = new MultiSafeRunable[safeTypes.length];
+		List<MultiSafeRunable> safeRunables = new ArrayList<MultiSafeRunable>();
 		for (int i = 0;i < safeTypes.length;i++) {
-			safeRunables[i] = new MultiSafeRunable(safeTypes[i], this, executorService);
+			safeRunables.add(new MultiSafeRunable(safeTypes[i], this, executorService));
 		}
 		this.safeRunables = safeRunables;
 	}
@@ -58,6 +67,30 @@ public abstract class MultiSafeActor implements Runnable {
     public void start() {
 		addToQueue(this);
     }
+
+
+	/**
+	 * 当获取所需要的关联操作后,when代表将子操作纳入本操作组成新的原子性操作
+	 * @param promiseables
+	 * @return
+	 */
+	public MultiSafeActor when(Promiseable<?>... promiseables) {
+		if (promiseables == null || promiseables.length == 0) {
+			throw new IllegalArgumentException("promiseables must more than one arguments");
+		}
+
+		for (int i = 0;i < promiseables.length;i++) {
+			Promiseable<?> promiseable = promiseables[i];
+			for (MultiSafeType safeType : promiseable.promiseTypes()) {
+				safeTypes.add(safeType);
+				safeRunables.add(new MultiSafeRunable(safeType, this, executorService));
+			}
+		}
+
+		this.count += promiseables.length;
+
+		return this;
+	}
 
 
 	// 追加提交任务
@@ -164,7 +197,7 @@ public abstract class MultiSafeActor implements Runnable {
 
 	@Override
 	public String toString() {
-		return Arrays.toString(safeTypes) + ", count=" + this.curCount + ", hash=" + this.hashCode();
+		return safeTypes + ", count=" + this.curCount + ", hash=" + this.hashCode();
 	}
 
 }
