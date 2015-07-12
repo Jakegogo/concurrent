@@ -8,12 +8,14 @@ public interface Promiseable<T> {
 
     /**
      * 获取值
+     * <p>只读的方式获取值</p>
      * @return
      */
     public T get();
 
     /**
      * 执行并获取值
+     * <p>需要在actor内调用,可写</p>
      * @return
      */
     public T call();
