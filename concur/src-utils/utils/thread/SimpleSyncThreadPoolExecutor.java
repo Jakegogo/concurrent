@@ -9,7 +9,7 @@ import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * 顺序执行的线程池
- * <br/>顺序执行;同时复用线程,减少线程切换。适用于并发提交
+ * <br/>顺序执行;同时复用线程,减少线程切换。适用于单线程发提交
  * <br/> 只能提交SimpleLinkingRunnable
  * Created by Jake on 2015/2/1.
  */
