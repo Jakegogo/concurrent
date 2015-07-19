@@ -34,6 +34,22 @@ public abstract class MultiSafeActor implements Runnable {
 
 	private ExecutorService executorService;
 
+	/**
+	 * 构造方法
+	 * @param executorService 线程池
+	 * @param promiseable 线程安全的操作组
+	 */
+	public MultiSafeActor(ExecutorService executorService, Promiseable<?> promiseable) {
+		if (promiseable == null) {
+			throw new IllegalArgumentException("promiseable cannot be null");
+		}
+
+		this.safeTypes = new ArrayList<MultiSafeType>();
+		this.safeRunables = new ArrayList<MultiSafeRunable>();
+		this.executorService = executorService;
+
+		this.when(promiseable);
+	}
 
 	/**
 	 * 构造方法
@@ -69,14 +85,6 @@ public abstract class MultiSafeActor implements Runnable {
 
 
 	/**
-     * 开始执行Actor
-     */
-    public void start() {
-		addToQueue(this);
-    }
-
-
-	/**
 	 * 当获取所需要的关联操作后,when代表将子操作纳入本操作组成新的原子性操作
 	 * @param promiseables
 	 * @return
@@ -95,9 +103,16 @@ public abstract class MultiSafeActor implements Runnable {
 		}
 
 		this.count += promiseables.length;
-
 		return this;
 	}
+
+
+	/**
+     * 开始执行Actor
+     */
+    public void start() {
+		addToQueue(this);
+    }
 
 
 	// 追加提交任务
