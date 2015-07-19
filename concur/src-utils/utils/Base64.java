@@ -3,7 +3,6 @@ package utils;
 import java.util.Arrays;
 
 /**
- * 
  * @version 2.2
  * @author Mikael Grev Date: 2004-aug-02 Time: 11:31:11
  */

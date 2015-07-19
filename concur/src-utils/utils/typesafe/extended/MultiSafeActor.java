@@ -14,7 +14,6 @@ import java.util.concurrent.atomic.AtomicReference;
  * <br/>不会因为死锁而阻塞线程,但嵌套死锁会导致后续任务不执行(汗！结果相对于死锁了)
  * <br/>建议业务逻辑层不创建和执行MultiSafeActor,由托举容器进行创建和执行
  * @author Jake
- *
  */
 public abstract class MultiSafeActor implements Runnable {
 

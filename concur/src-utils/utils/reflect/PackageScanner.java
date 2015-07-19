@@ -3,10 +3,6 @@
  */
 package utils.reflect;
 
-import java.io.IOException;
-import java.util.Collection;
-import java.util.HashSet;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.io.Resource;
@@ -18,11 +14,14 @@ import org.springframework.core.type.classreading.MetadataReaderFactory;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.SystemPropertyUtils;
 
+import java.io.IOException;
+import java.util.Collection;
+import java.util.HashSet;
+
 
 /**
  * 包扫描器
  * @author fansth
- *
  */
 public class PackageScanner {
 	

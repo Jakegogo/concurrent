@@ -14,9 +14,7 @@ import java.util.Map;
 /**
  * 日期工具类 <br/>
  * 修复多线程共用DateFormat的产生多线程问题,单线程只创建一个DateFormat
- * 
  * @author JY253
- * 
  */
 public class DateUtils {
 

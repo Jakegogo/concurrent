@@ -16,7 +16,6 @@ import java.util.Map;
 
 /**
  * 类操作的工具集
- *
  * @author Jake
  * @date 2014年9月6日上午12:10:37
  */

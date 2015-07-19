@@ -6,7 +6,6 @@ package utils.typesafe;
  * <br/>序列执行子类型
  * <br/>需要覆盖run方法, 方法内可以调用super.afterExecute(Object[])执行结束后会进行回调
  * @author Jake
- *
  */
 public abstract class SafeActor implements Runnable {
 

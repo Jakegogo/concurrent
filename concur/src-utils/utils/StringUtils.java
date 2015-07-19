@@ -2,9 +2,7 @@ package utils;
 
 /**
  * String 工具类合集
- * 
  * @author Jake
- *
  */
 public class StringUtils {
 

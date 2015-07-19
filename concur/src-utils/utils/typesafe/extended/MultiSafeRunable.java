@@ -6,9 +6,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * 线程安全的SafeRunable
- * 
  * @author Jake
- *
  */
 public class MultiSafeRunable implements Runnable {
 
