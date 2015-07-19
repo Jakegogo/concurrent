@@ -9,6 +9,7 @@ import java.util.List;
  */
 public abstract class PromiseActor<T> implements Promiseable<T> {
 
+    // 关联的所有线程安全对象
     private List<MultiSafeType> safeTypes = new ArrayList<MultiSafeType>();
 
     /**
