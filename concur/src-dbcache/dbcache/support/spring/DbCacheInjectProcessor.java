@@ -77,27 +77,29 @@ public class DbCacheInjectProcessor extends InstantiationAwareBeanPostProcessorA
 		}
 
 		Class<? extends IEntity> clz = null;
-		DbCacheService service = null;
+		DbCacheService serviceBean;
 
 		try {
 			Type type = field.getGenericType();
 			Type[] types = ((ParameterizedType) type).getActualTypeArguments();
 			clz = (Class<? extends IEntity>) types[0];
-			service = this.configFactory.getDbCacheServiceBean(clz);
+			serviceBean = this.configFactory.createCacheService(clz);
 		} catch (Exception e) {
 			FormattingTuple message = MessageFormatter.arrayFormat("Bean[{}]的注入属性[{}<{}, ?>]类型声明错误", new Object[]{beanName, field.getName(), clz != null ?clz.getSimpleName() : null});
 			logger.error(message.getMessage());
 			throw new IllegalStateException(message.getMessage(), e);
 		}
-		if (service == null) {
+		if (serviceBean == null) {
 			FormattingTuple message = MessageFormatter.format("实体[{}]缓存服务对象不存在", clz.getName());
 			logger.debug(message.getMessage());
 			throw new IllegalStateException(message.getMessage());
 		}
 
-		//注入DbCacheService
-		inject(bean, field, service);
+		// 注入DbCacheService
+		inject(bean, field, serviceBean);
 
+		// 注册DbCacheServiceBean
+		this.configFactory.registerDbCacheServiceBean(clz, serviceBean);
 	}
 
 

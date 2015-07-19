@@ -53,6 +53,15 @@ public interface DbConfigFactory {
 
 
 	/**
+	 * 创建DbCacheServiceBean
+	 * @param clz 实体类
+	 * @return
+	 */
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	<T extends IEntity<PK>, PK extends Comparable<PK> & Serializable> DbCacheService<T, PK> createCacheService(Class<T> clz);
+
+
+	/**
 	 * 注册DbCacheServiceBean
 	 * <br/> 必须在 postProcessAfterInitialization执行之前注册DbCacheServiceBean才能生效
 	 * @param clz 实体类

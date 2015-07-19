@@ -127,11 +127,13 @@ public class DbConfigFactoryImpl implements DbConfigFactory, DbCacheMBean {
 
 
 	@SuppressWarnings({ "rawtypes", "unchecked" })
-	private <T extends IEntity<PK>, PK extends Comparable<PK> & Serializable> DbCacheService<T, PK> createCacheService(Class<T> clz) {
+	@Override
+	public <T extends IEntity<PK>, PK extends Comparable<PK> & Serializable> DbCacheService<T, PK> createCacheService(Class<T> clz) {
 
 		try {
 			//获取缓存配置
-			CacheConfig cacheConfig = this.getCacheConfig(clz);
+			CacheConfig cacheConfig = createCacheConfig(clz);
+			cacheConfigMap.put(clz, cacheConfig);
 
 			//创建新的bean
 			DbCacheServiceImpl service = applicationContext.getAutowireCapableBeanFactory().createBean(DbCacheServiceImpl.class);
@@ -270,46 +272,53 @@ public class DbConfigFactoryImpl implements DbConfigFactory, DbCacheMBean {
 
 		//初始化CacheConfig配置
 		if(cacheConfig == null) {
-			cacheConfig = CacheConfig.valueOf(clz);
-
-			final Map<String, ValueGetter<?>> indexes = new HashMap<String, ValueGetter<?>>();
-
-			ReflectionUtils.doWithFields(clz, new FieldCallback() {
-				public void doWith(Field field) throws IllegalArgumentException, IllegalAccessException {
-					// 忽略静态属性和临时属性
-					if (Modifier.isTransient(field.getModifiers()) || Modifier.isStatic(field.getModifiers()) ||
-							field.isAnnotationPresent(javax.persistence.Transient.class)) {
-						return;
-					}
-					
-					// 处理索引注解
-					if (field.isAnnotationPresent(org.hibernate.annotations.Index.class) ||
-							field.isAnnotationPresent(dbcache.anno.Index.class)) {
-						String indexName = null;
-						org.hibernate.annotations.Index indexAno = field.getAnnotation(org.hibernate.annotations.Index.class);
-						if(indexAno != null) {
-							indexName = indexAno.name();
-						} else {
-							dbcache.anno.Index indexAno1 = field.getAnnotation(dbcache.anno.Index.class);
-							indexName = indexAno1.name();
-						}
-
-						try {
-							indexes.put(indexName, AsmAccessHelper.createFieldGetter(field.getName(), clz, field));
-						} catch (Exception e) {
-							logger.error("获取实体配置出错:生成索引失败(" + clz.getName() + "." + field.getName() + ").");
-							e.printStackTrace();
-						}
-					}
-
-				}
-			});
-
-			cacheConfig.setIndexes(indexes);
-			cacheConfig.setFieldCount(clz.getDeclaredFields().length);
-
+			cacheConfig = createCacheConfig(clz);
 			cacheConfigMap.put(clz, cacheConfig);
 		}
+		return cacheConfig;
+	}
+
+
+	// 构建CacheConfig Bean
+	private CacheConfig createCacheConfig(final Class<?> clz) {
+		CacheConfig cacheConfig;
+		cacheConfig = CacheConfig.valueOf(clz);
+
+		final Map<String, ValueGetter<?>> indexes = new HashMap<String, ValueGetter<?>>();
+
+		ReflectionUtils.doWithFields(clz, new FieldCallback() {
+			public void doWith(Field field) throws IllegalArgumentException, IllegalAccessException {
+				// 忽略静态属性和临时属性
+				if (Modifier.isTransient(field.getModifiers()) || Modifier.isStatic(field.getModifiers()) ||
+						field.isAnnotationPresent(javax.persistence.Transient.class)) {
+					return;
+				}
+
+				// 处理索引注解
+				if (field.isAnnotationPresent(org.hibernate.annotations.Index.class) ||
+						field.isAnnotationPresent(dbcache.anno.Index.class)) {
+					String indexName = null;
+					org.hibernate.annotations.Index indexAno = field.getAnnotation(org.hibernate.annotations.Index.class);
+					if (indexAno != null) {
+						indexName = indexAno.name();
+					} else {
+						dbcache.anno.Index indexAno1 = field.getAnnotation(dbcache.anno.Index.class);
+						indexName = indexAno1.name();
+					}
+
+					try {
+						indexes.put(indexName, AsmAccessHelper.createFieldGetter(field.getName(), clz, field));
+					} catch (Exception e) {
+						logger.error("获取实体配置出错:生成索引失败(" + clz.getName() + "." + field.getName() + ").");
+						e.printStackTrace();
+					}
+				}
+
+			}
+		});
+
+		cacheConfig.setIndexes(indexes);
+		cacheConfig.setFieldCount(clz.getDeclaredFields().length);
 		return cacheConfig;
 	}
 
