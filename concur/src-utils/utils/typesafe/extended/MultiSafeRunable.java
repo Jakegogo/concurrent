@@ -12,13 +12,18 @@ import java.util.concurrent.atomic.AtomicReference;
  */
 public class MultiSafeRunable implements Runnable {
 
+	// 下一个将要执行的MultiSafeRunable
 	AtomicReference<MultiSafeRunable> next = new AtomicReference<MultiSafeRunable>(null);
 
+	// 执行线程池
+	private ExecutorService executorService;
+
+
+	/** 关联的线程安全类型对象 */
 	private MultiSafeType safeType;
 
+	/** 对应原子性操作 */
 	private MultiSafeActor safeActor;
-
-	private ExecutorService executorService;
 
 
 	protected MultiSafeRunable(MultiSafeType safeType, MultiSafeActor safeActor, ExecutorService executorService) {

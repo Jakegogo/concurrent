@@ -18,21 +18,27 @@ import java.util.concurrent.atomic.AtomicReference;
  */
 public abstract class MultiSafeActor implements Runnable {
 
-	/**
-	 * 上一次执行的Actor
-	 */
-	private static final AtomicReference<MultiSafeActor> head = new AtomicReference<MultiSafeActor>();
 
+	// 上一次执行的Actor(用于顺序提交任务到线程池)
+	private static final AtomicReference<MultiSafeActor> head = new AtomicReference<MultiSafeActor>();
+	// next MultiSafeActor(用于顺序提交任务到线程池)
 	private AtomicReference<MultiSafeActor> next = new AtomicReference<MultiSafeActor>(null);
 
-	private List<MultiSafeType> safeTypes;
-	private List<MultiSafeRunable> safeRunables;
 
+	// Actor的线程安全对象的总数量(== safeTypes.length)
 	private int count;
-	// 计数器
+	// 计数器,当前的已经执行完成的线程安全操作(<= count)
 	private AtomicInteger curCount = new AtomicInteger(0);
 
+	// 执行的线程池
 	private ExecutorService executorService;
+
+
+	// actor对应的线程安全类型对象
+	private List<MultiSafeType> safeTypes;
+	// 每个线程安全对象需执行的操作
+	private List<MultiSafeRunable> safeRunables;
+
 
 	/**
 	 * 构造方法
