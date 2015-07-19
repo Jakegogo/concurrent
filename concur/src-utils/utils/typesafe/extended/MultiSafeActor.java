@@ -86,7 +86,7 @@ public abstract class MultiSafeActor implements Runnable {
 
 	/**
 	 * 当获取所需要的关联操作后,when代表将子操作纳入本操作组成新的原子性操作
-	 * @param promiseables
+	 * @param promiseables Promiseable[] 线程安全的操作组
 	 * @return
 	 */
 	public MultiSafeActor when(Promiseable<?>... promiseables) {
