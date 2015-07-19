@@ -110,29 +110,29 @@ public class DbIndexServiceImpl<PK extends Comparable<PK> & Serializable>
 		// 查询数据库
 		try {
 			lock.lock();
-
 			wrapper = (ValueWrapper) cacheUnit.get(key);
 			if (wrapper != null) {												// 已经缓存
 				return getIndexMap(wrapper);
 			}
 
-			IndexObject<PK> indexObject = IndexObject.valueOf(IndexKey.valueOf(indexName, indexValue));
-			
 			// 查询数据库索引
 			ValueGetter<?> indexField = cacheConfig.getIndexes().get(indexName);
 
-			Collection<PK> ids = (Collection<PK>) dbAccessService
+			Collection<PK> entityIds = (Collection<PK>) dbAccessService
 					.listIdByIndex(cacheConfig.getClazz(), indexField.getName(), indexValue);
-			if (ids != null) {
+
+
+			IndexObject<PK> indexObject = IndexObject.valueOf(IndexKey.valueOf(indexName, indexValue));
+
+			if (entityIds != null) {
 				ConcurrentMap<PK, Boolean> indexValues = indexObject.getIndexValues();
 				// 需要外层加锁
-				for (PK id : ids) {
+				for (PK id : entityIds) {
 					indexValues.putIfAbsent(id, true);
 				}
 			}
 			
 			wrapper = cacheUnit.putIfAbsent(key, indexObject);
-			
 		} finally {
 			lock.unlock();
 			WAITING_LOCK_MAP.remove(key);
@@ -159,7 +159,9 @@ public class DbIndexServiceImpl<PK extends Comparable<PK> & Serializable>
 
 	@Override
 	public void create(IndexValue<PK> indexValue) {
+
 		this.getPersist(indexValue.getName(), indexValue.getValue()).put(indexValue.getId(), Boolean.valueOf(true));
+
 		// 索引变化监听
 		if (cacheConfig.isHasIndexListeners()) {
 			for (IndexChangeListener listener : cacheConfig.getIndexChangeListener()) {
@@ -171,8 +173,10 @@ public class DbIndexServiceImpl<PK extends Comparable<PK> & Serializable>
 
 	@Override
 	public void remove(IndexValue<PK> indexValue) {
+
 		final Object key = CacheRule.getIndexIdKey(indexValue.getName(), indexValue.getValue());
 		this.getPersist(indexValue.getName(), indexValue.getValue()).remove(key);
+
 		// 索引变化监听
 		if (cacheConfig.isHasIndexListeners()) {
 			for (IndexChangeListener listener : cacheConfig.getIndexChangeListener()) {
@@ -190,8 +194,10 @@ public class DbIndexServiceImpl<PK extends Comparable<PK> & Serializable>
 		// 从旧的索引队列中移除
 		final Object key = CacheRule.getIndexIdKey(indexName, oldValue);
 		this.getPersist(indexName, oldValue).remove(key);
+
 		// 添加到新的索引队列
 		this.getPersist(indexName, newValue).put(entity.getId(), Boolean.valueOf(true));
+
 		// 索引变化监听
 		if (cacheConfig.isHasIndexListeners()) {
 			for (IndexChangeListener listener : cacheConfig.getIndexChangeListener()) {

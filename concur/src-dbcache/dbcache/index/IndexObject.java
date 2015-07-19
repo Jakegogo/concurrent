@@ -1,9 +1,9 @@
 package dbcache.index;
 
+import utils.collections.concurrent.ConcurrentLinkedHashMap8;
+
 import java.io.Serializable;
 import java.util.concurrent.ConcurrentMap;
-
-import utils.collections.concurrent.ConcurrentLinkedHashMap8;
 
 /**
  * 索引缓存对象
@@ -11,7 +11,6 @@ import utils.collections.concurrent.ConcurrentLinkedHashMap8;
  * @date 2014年9月21日下午5:56:10
  */
 public class IndexObject<PK extends Comparable<PK> & Serializable> {
-
 
 	/**
 	 * 索引键

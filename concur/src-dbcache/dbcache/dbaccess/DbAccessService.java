@@ -12,11 +12,8 @@ public interface DbAccessService {
 
 	/**
 	 * 根据主键id取得实体对象
-	 *
-	 * @param entityClazz
-	 *            实体类
-	 * @param id
-	 *            主键id
+	 * @param entityClazz 实体类
+	 * @param id 主键id
 	 * @return 实体对象
 	 */
 	<T> T get(Class<T> entityClazz, Serializable id);
@@ -24,25 +21,20 @@ public interface DbAccessService {
 
 	/**
 	 * 保存实体对象
-	 *
-	 * @param entity
-	 *            实体对象
+	 * @param entity 实体对象
 	 */
 	<T> void save(T entity);
 
 
 	/**
 	 * 更新实体对象
-	 *
-	 * @param entity
-	 *            实体对象
+	 * @param entity 实体对象
 	 */
 	<T> void update(T entity);
 
 	
 	/**
 	 * 更新实体对象
-	 *
 	 * @param entity 实体对象
 	 * @param changeFields 修改过的属性
 	 */
@@ -50,9 +42,7 @@ public interface DbAccessService {
 
 	/**
 	 * 删除实体
-	 *
-	 * @param entity
-	 *            实体对象
+	 * @param entity 实体对象
 	 */
 	<T> void delete(T entity);
 
