@@ -2,6 +2,7 @@ package dbcache.test;
 
 import utils.typesafe.extended.MultiSafeActor;
 import utils.typesafe.extended.MultiSafeType;
+import utils.typesafe.extended.PromiseActor;
 import utils.typesafe.extended.Promiseable;
 
 import java.util.Random;
@@ -25,7 +26,7 @@ public class TestMultiTypePromise {
 
 		final int TEST_LOOP = 10;
 
-		final int TEST_COUNT = 1000;
+		final int TEST_COUNT = 500;
 
 		final CountDownLatch ct = new CountDownLatch(1);
 
@@ -55,11 +56,7 @@ public class TestMultiTypePromise {
 
 						for (int k = 0;k < TEST_LOOP;k++) {
 
-							final Promiseable<B> bp = new Promiseable<B>() {
-								@Override
-								public MultiSafeType[] promiseTypes() {
-									return new MultiSafeType[]{b};
-								}
+							final Promiseable<B> bp = new PromiseActor<B>() {
 
 								@Override
 								public B get() {

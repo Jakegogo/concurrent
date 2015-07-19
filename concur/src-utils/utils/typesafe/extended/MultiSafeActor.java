@@ -12,6 +12,7 @@ import java.util.concurrent.atomic.AtomicReference;
  * <br/>序列执行子类型
  * <br/>需要覆盖run方法, 方法内可以调用super.afterExecute(Object[])执行结束后会进行回调
  * <br/>不会因为死锁而阻塞线程,但嵌套死锁会导致后续任务不执行(汗！结果相对于死锁了)
+ * <br/>建议业务逻辑层不创建和执行MultiSafeActor,由托举容器进行创建和执行
  * @author Jake
  *
  */
@@ -34,6 +35,11 @@ public abstract class MultiSafeActor implements Runnable {
 	private ExecutorService executorService;
 
 
+	/**
+	 * 构造方法
+	 * @param executorService 线程池
+	 * @param safeTypes 线程安全的类型
+	 */
 	public MultiSafeActor(ExecutorService executorService, MultiSafeType... safeTypes) {
 		if (safeTypes == null || safeTypes.length == 0) {
 			throw new IllegalArgumentException("safeTypes must more than one arguments");
