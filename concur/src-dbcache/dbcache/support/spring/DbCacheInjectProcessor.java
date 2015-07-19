@@ -1,11 +1,12 @@
 package dbcache.support.spring;
 
+import dbcache.DbCacheInitError;
 import dbcache.DbCacheService;
 import dbcache.EntityLoadListener;
 import dbcache.IEntity;
 import dbcache.conf.CacheConfig;
 import dbcache.conf.DbConfigFactory;
-import dbcache.DbCacheInitError;
+import dbcache.index.IndexChangeListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.helpers.FormattingTuple;
@@ -16,6 +17,7 @@ import org.springframework.beans.factory.config.InstantiationAwareBeanPostProces
 import org.springframework.stereotype.Component;
 import org.springframework.util.ReflectionUtils;
 import org.springframework.util.ReflectionUtils.FieldCallback;
+import utils.reflect.GenericsUtils;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
@@ -50,8 +52,11 @@ public class DbCacheInjectProcessor extends InstantiationAwareBeanPostProcessorA
 			}
 		});
 
-		//处理EntityLoadEventListener接口
+		// 处理EntityLoadEventListener接口
 		processEntityLoadEventListener(bean);
+
+		// 处理IndexChangeListener接口
+		processIndexChangeListener(bean);
 
 		return super.postProcessAfterInitialization(bean, beanName);
 	}
@@ -108,20 +113,41 @@ public class DbCacheInjectProcessor extends InstantiationAwareBeanPostProcessorA
 
 		EntityLoadListener entityLoadEventListenerBean = (EntityLoadListener) bean;
 
-		Class<?>[] listenClasses = entityLoadEventListenerBean.listenClass();
-		if (listenClasses == null || listenClasses.length == 0) {
+		Class<?> listenClass = GenericsUtils.getSuperClassGenricType(entityLoadEventListenerBean.getClass(), 0);
+		if (listenClass == null) {
 			return;
 		}
 
-		for (Class<?> clazz : listenClasses) {
-			CacheConfig<?> cacheConfig =  configFactory.getCacheConfig(clazz);
-			if (cacheConfig == null) {
-				throw new DbCacheInitError("无法监听加载的实体类型:" + clazz);
-			}
-			cacheConfig.setHasListeners(true);
-			cacheConfig.getEntityLoadEventListeners().add(entityLoadEventListenerBean);
+		CacheConfig<?> cacheConfig =  configFactory.getCacheConfig(listenClass);
+		if (cacheConfig == null) {
+			throw new DbCacheInitError("无法监听加载的实体类型:" + listenClass);
+		}
+		cacheConfig.setHasLoadListeners(true);
+		cacheConfig.getEntityLoadEventListeners().add(entityLoadEventListenerBean);
+
+	}
+
+	/**
+	 * 收集IndexChangeListener bean
+ 	 */
+	private void processIndexChangeListener(Object bean) {
+		if (!(bean instanceof IndexChangeListener)) {
+			return;
 		}
 
+		IndexChangeListener indexChangeListenerBean = (IndexChangeListener) bean;
+
+		Class<?> listenClass = GenericsUtils.getSuperClassGenricType(indexChangeListenerBean.getClass(), 0);
+		if (listenClass == null) {
+			return;
+		}
+
+		CacheConfig<?> cacheConfig =  configFactory.getCacheConfig(listenClass);
+		if (cacheConfig == null) {
+			throw new DbCacheInitError("无法监听加载的实体类型:" + listenClass);
+		}
+		cacheConfig.setHasIndexListeners(true);
+		cacheConfig.getIndexChangeListener().add(indexChangeListenerBean);
 	}
 
 

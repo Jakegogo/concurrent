@@ -7,11 +7,12 @@ import dbcache.anno.EnableIndex;
 import dbcache.anno.Shard;
 import dbcache.cache.impl.ConcurrentLinkedHashMapCache;
 import dbcache.conf.shard.ShardStrategy;
+import dbcache.index.IndexChangeListener;
 import dbcache.pkey.IdGenerator;
 import dbcache.support.asm.ConstructorBuilder;
+import utils.JsonUtils;
 import utils.enhance.asm.ValueGetter;
 import utils.reflect.AnnotationUtils;
-import utils.JsonUtils;
 
 import java.util.*;
 
@@ -76,11 +77,17 @@ public class CacheConfig<T> {
 	/** 分表策略类,null为不分表 */
 	private ShardStrategy shardStrategy;
 
-	/** 实体加载监听bean集合 */
-	private Set<EntityLoadListener> entityLoadEventListeners = new TreeSet<EntityLoadListener>();
+	/** 实体加载监听器集合 */
+	private List<EntityLoadListener> entityLoadEventListeners = new ArrayList<EntityLoadListener>();
 
 	/** 是否存在实体加载监听类 */
-	private boolean hasListeners = false;
+	private boolean hasLoadListeners = false;
+
+	/** 监听索引变化监听器集合 */
+	private List<IndexChangeListener> indexChangeListener = new ArrayList<IndexChangeListener>();
+
+	/** 是否存在索引变化监听类 */
+	private boolean hasIndexListeners = false;
 
 
 	/**
@@ -320,15 +327,27 @@ public class CacheConfig<T> {
 		this.shardStrategy = shardStrategy;
 	}
 
-	public Set<EntityLoadListener> getEntityLoadEventListeners() {
+	public List<EntityLoadListener> getEntityLoadEventListeners() {
 		return entityLoadEventListeners;
 	}
 
-	public boolean isHasListeners() {
-		return hasListeners;
+	public boolean isHasLoadListeners() {
+		return hasLoadListeners;
 	}
 
-	public void setHasListeners(boolean hasListeners) {
-		this.hasListeners = hasListeners;
+	public void setHasLoadListeners(boolean hasLoadListeners) {
+		this.hasLoadListeners = hasLoadListeners;
+	}
+
+	public boolean isHasIndexListeners() {
+		return hasIndexListeners;
+	}
+
+	public void setHasIndexListeners(boolean hasIndexListeners) {
+		this.hasIndexListeners = hasIndexListeners;
+	}
+
+	public List<IndexChangeListener> getIndexChangeListener() {
+		return indexChangeListener;
 	}
 }

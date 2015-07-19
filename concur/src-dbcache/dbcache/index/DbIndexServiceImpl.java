@@ -1,20 +1,5 @@
 package dbcache.index;
 
-import java.io.Serializable;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.stereotype.Component;
-
-import utils.collections.concurrent.ConcurrentHashMapV8;
-import utils.enhance.asm.ValueGetter;
 import dbcache.DbCacheInitError;
 import dbcache.IEntity;
 import dbcache.anno.ThreadSafe;
@@ -24,6 +9,20 @@ import dbcache.conf.CacheConfig;
 import dbcache.conf.CacheRule;
 import dbcache.conf.Inject;
 import dbcache.dbaccess.DbAccessService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.stereotype.Component;
+import utils.collections.concurrent.ConcurrentHashMapV8;
+import utils.enhance.asm.ValueGetter;
+
+import java.io.Serializable;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * 实体索引服务实现类
@@ -161,6 +160,12 @@ public class DbIndexServiceImpl<PK extends Comparable<PK> & Serializable>
 	@Override
 	public void create(IndexValue<PK> indexValue) {
 		this.getPersist(indexValue.getName(), indexValue.getValue()).put(indexValue.getId(), Boolean.valueOf(true));
+		// 索引变化监听
+		if (cacheConfig.isHasIndexListeners()) {
+			for (IndexChangeListener listener : cacheConfig.getIndexChangeListener()) {
+				listener.onCreate(indexValue.getName(), indexValue.getValue(), indexValue.getId());
+			}
+		}
 	}
 
 
@@ -168,6 +173,12 @@ public class DbIndexServiceImpl<PK extends Comparable<PK> & Serializable>
 	public void remove(IndexValue<PK> indexValue) {
 		final Object key = CacheRule.getIndexIdKey(indexValue.getName(), indexValue.getValue());
 		this.getPersist(indexValue.getName(), indexValue.getValue()).remove(key);
+		// 索引变化监听
+		if (cacheConfig.isHasIndexListeners()) {
+			for (IndexChangeListener listener : cacheConfig.getIndexChangeListener()) {
+				listener.onRemove(indexValue.getName(), indexValue.getValue(), indexValue.getId());
+			}
+		}
 	}
 
 
@@ -177,9 +188,16 @@ public class DbIndexServiceImpl<PK extends Comparable<PK> & Serializable>
 			return;
 		}
 		// 从旧的索引队列中移除
-		this.remove(IndexValue.valueOf(indexName, oldValue, entity.getId()));
+		final Object key = CacheRule.getIndexIdKey(indexName, oldValue);
+		this.getPersist(indexName, oldValue).remove(key);
 		// 添加到新的索引队列
-		this.create(IndexValue.valueOf(indexName, newValue, entity.getId()));
+		this.getPersist(indexName, newValue).put(entity.getId(), Boolean.valueOf(true));
+		// 索引变化监听
+		if (cacheConfig.isHasIndexListeners()) {
+			for (IndexChangeListener listener : cacheConfig.getIndexChangeListener()) {
+				listener.onChange(indexName, oldValue, newValue, entity.getId());
+			}
+		}
 	}
 
 

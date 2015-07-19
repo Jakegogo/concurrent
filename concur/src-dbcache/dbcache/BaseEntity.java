@@ -8,8 +8,7 @@ import java.io.Serializable;
 /**
  * 通用实体基类
  * <br/>建议实体类继承此类,或者实现equals()和hashCode()方法
- * @param <PK> 主键ID类型
- * @param <Serializable>
+ * @param <PK & Serializable> 主键ID类型
  */
 public abstract class BaseEntity<PK extends Comparable<PK> & Serializable> implements IEntity<PK>, Serializable{
 

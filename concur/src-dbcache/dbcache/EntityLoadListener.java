@@ -6,14 +6,7 @@ package dbcache;
  * <br/>如:给实体初始化临时属性,并且要求线程安全(原子性操作)的情形
  * Created by Jake on 2015/4/17.
  */
-public interface EntityLoadListener {
-
-    /**
-     * 监听的实体类
-     * @return
-     */
-    public Class<?>[] listenClass();
-
+public interface EntityLoadListener<T extends IEntity<?>> {
 
     /**
      * 加载时回调
@@ -23,6 +16,6 @@ public interface EntityLoadListener {
      * 返回之前
      * @param entity
      */
-    public void onLoad(Object entity);
+    public void onLoad(T entity);
 
 }
