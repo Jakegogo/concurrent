@@ -4,6 +4,10 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.List;
 
+/**
+ * 类型定义
+ * @param <T>
+ */
 public class TypeReference<T> {
 
     private final Type type;
