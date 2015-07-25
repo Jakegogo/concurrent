@@ -1,6 +1,7 @@
 package dbcache.conf;
 
 import dbcache.IEntity;
+import dbcache.conf.impl.CacheConfig;
 import dbcache.support.jdbc.ModelInfo;
 
 import java.util.List;

@@ -1,6 +1,6 @@
 package dbcache;
 
-import dbcache.conf.CacheConfig;
+import dbcache.conf.impl.CacheConfig;
 import dbcache.persist.PersistStatus;
 import utils.thread.SimpleLinkingRunnable;
 import org.apache.commons.lang.builder.EqualsBuilder;
@@ -32,8 +32,8 @@ public class CacheObject<T extends IEntity<?>> {
 	 */
 	private AtomicIntegerArray modifiedFields;
 
+
 	// for persist
-	
 	/**
 	 * 持久化状态
 	 */

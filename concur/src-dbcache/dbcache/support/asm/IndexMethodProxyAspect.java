@@ -44,7 +44,12 @@ public class IndexMethodProxyAspect extends AbstractAsmMethodProxyAspect {
 
 
 		// 添加切面处理对象构造方法,用真实类对象作为参数
-		constructorBuilder.appendParameter(getAspectHandleClass(), new ConstructorBuilder.ParameterInit () {
+		constructorBuilder.appendParameter(new ConstructorBuilder.ParameterInit () {
+
+			@Override
+			Class<?> parameterType() {
+				return getAspectHandleClass();
+			}
 
 			@Override
 			/**
@@ -55,12 +60,18 @@ public class IndexMethodProxyAspect extends AbstractAsmMethodProxyAspect {
 			}
 
 			@Override
-			public void onConstruct(ClassWriter classWriter, MethodVisitor mvInit, Class<?> originalClass, String enhancedClassName, int localIndex) {
+			public void onConstruct(
+					ClassWriter classWriter,
+					MethodVisitor mvInit,
+					Class<?> originalClass,
+					String enhancedClassName,
+					int localIndex) {
 				mvInit.visitVarInsn(Opcodes.ALOAD, 0);
 				mvInit.visitVarInsn(Opcodes.ALOAD, localIndex);
 
 				mvInit.visitFieldInsn(Opcodes.PUTFIELD,
-						AsmUtils.toAsmCls(enhancedClassName), EntityClassProxyAdapter.HANDLER_OBJECT,
+						AsmUtils.toAsmCls(enhancedClassName),
+						EntityClassProxyAdapter.HANDLER_OBJECT,
 						Type.getDescriptor(getAspectHandleClass()));
 			}
 		});
@@ -80,8 +91,9 @@ public class IndexMethodProxyAspect extends AbstractAsmMethodProxyAspect {
 			public void doWith(Field field) throws IllegalArgumentException, IllegalAccessException {
 				if (field.isAnnotationPresent(org.hibernate.annotations.Index.class) ||
 						field.isAnnotationPresent(dbcache.anno.Index.class)) {
-					String indexName = null;
 					org.hibernate.annotations.Index indexAno = field.getAnnotation(org.hibernate.annotations.Index.class);
+
+					String indexName;
 					if(indexAno != null) {
 						indexName = indexAno.name();
 					} else {
@@ -89,8 +101,7 @@ public class IndexMethodProxyAspect extends AbstractAsmMethodProxyAspect {
 						indexName = indexAno1.name();
 					}
 
-					indexesMap.put(field.getName(), indexName);
-					
+
 					try {
 						PropertyDescriptor propertyDescriptor = new PropertyDescriptor(field.getName(), clazz);
 						Method setMethod = propertyDescriptor.getWriteMethod();
@@ -102,6 +113,8 @@ public class IndexMethodProxyAspect extends AbstractAsmMethodProxyAspect {
 					} catch (IntrospectionException e) {
 						e.printStackTrace();
 					}
+
+					indexesMap.put(field.getName(), indexName);
 				}
 			}
 		});
@@ -110,11 +123,10 @@ public class IndexMethodProxyAspect extends AbstractAsmMethodProxyAspect {
 		Map<Method, List<String>> putFieldMethods = AsmAccessHelper.getPutFieldsCallHierarchyMethodMap(clazz);
 		
 		for (Map.Entry<Method, List<String>> methodEntry : putFieldMethods.entrySet()) {
+
 			List<String> modifields = methodEntry.getValue();
 			for (String field : modifields) {
-				
 				if (indexesMap.containsKey(field)) {
-					
 					Method method = methodEntry.getKey();
 					Set<MethodMetaData> methodMetaDataSet = getIndexNameSet(methodsMap, method);
 					
@@ -142,7 +154,14 @@ public class IndexMethodProxyAspect extends AbstractAsmMethodProxyAspect {
 
 
 	@Override
-	public int doBefore(Class<?> entityClass, MethodVisitor mWriter, Method method, int locals, String name, int acc, String desc) {
+	public int doBefore(
+			Class<?> entityClass,
+			MethodVisitor mWriter,
+			Method method,
+			int locals,
+			String name,
+			int acc,
+			String desc) {
 		
 		//获取类信息
 		ClassIndexesMetaData classIndexesMetaData = CLASS_INDEX_INFO.get(entityClass);
@@ -156,16 +175,23 @@ public class IndexMethodProxyAspect extends AbstractAsmMethodProxyAspect {
 			return locals;
 		}
 		
-		Set<MethodMetaData> methodMetaDatas = methodsMap.get(method);
+
 		//获取索引属性
 		final Map<String, Field> fieldsMap = classIndexesMetaData.indexFields;
 
+
+		// 遍历需要处理的方法
+		Set<MethodMetaData> methodMetaDatas = methodsMap.get(method);
 		for (MethodMetaData methodMetaData : methodMetaDatas) {
 			//获取属性
 			final Field field = fieldsMap.get(methodMetaData.indexName);
 			//获取this.obj.fieldName
 			mWriter.visitVarInsn(Opcodes.ALOAD, 0);
-			mWriter.visitFieldInsn(Opcodes.GETFIELD, AsmUtils.toAsmCls(classIndexesMetaData.enhancedClassName), EntityClassProxyAdapter.REAL_OBJECT, Type.getDescriptor(entityClass));
+			mWriter.visitFieldInsn(
+					Opcodes.GETFIELD,
+					AsmUtils.toAsmCls(classIndexesMetaData.enhancedClassName),
+					EntityClassProxyAdapter.REAL_OBJECT,
+					Type.getDescriptor(entityClass));
 
 			PropertyDescriptor propertyDescriptor = null;
 			try {
@@ -177,8 +203,10 @@ public class IndexMethodProxyAspect extends AbstractAsmMethodProxyAspect {
 			Method getMethod = propertyDescriptor.getReadMethod();
 
 			Type mt = Type.getType(getMethod);
-			mWriter.visitMethodInsn(INVOKEVIRTUAL,
-					AsmUtils.toAsmCls(field.getDeclaringClass().getName()), getMethod.getName(),
+			mWriter.visitMethodInsn(
+					INVOKEVIRTUAL,
+					AsmUtils.toAsmCls(field.getDeclaringClass().getName()),
+					getMethod.getName(),
 					mt.toString());
 
 			// 处理返回值类型 到 Object类型
@@ -198,7 +226,14 @@ public class IndexMethodProxyAspect extends AbstractAsmMethodProxyAspect {
 	}
 
 	@Override
-	public int doAfter(Class<?> entityClass, MethodVisitor mWriter, Method method, int locals, String name, int acc, String desc) {
+	public int doAfter(
+			Class<?> entityClass,
+			MethodVisitor mWriter,
+			Method method,
+			int locals,
+			String name,
+			int acc,
+			String desc) {
 		
 		//获取类信息
 		ClassIndexesMetaData classIndexesMetaData = CLASS_INDEX_INFO.get(entityClass);
@@ -211,26 +246,36 @@ public class IndexMethodProxyAspect extends AbstractAsmMethodProxyAspect {
 			return locals;
 		}
 		
-		Set<MethodMetaData> methodMetaDatas = methodsMap.get(method);
 		//获取索引属性
 		final Map<String, Field> fieldsMap = classIndexesMetaData.indexFields;
 
+		// 遍历需要处理的方法
+		Set<MethodMetaData> methodMetaDatas = methodsMap.get(method);
 		for(MethodMetaData methodMetaData : methodMetaDatas) {
+
 			locals ++;
 			//获取属性
 			final Field field = fieldsMap.get(methodMetaData.indexName);
 			//获取this.obj.getFieldName
 			mWriter.visitVarInsn(Opcodes.ALOAD, 0);
-			mWriter.visitFieldInsn(Opcodes.GETFIELD, AsmUtils.toAsmCls(classIndexesMetaData.enhancedClassName), EntityClassProxyAdapter.REAL_OBJECT, Type.getDescriptor(entityClass));
+			mWriter.visitFieldInsn(
+					Opcodes.GETFIELD,
+					AsmUtils.toAsmCls(classIndexesMetaData.enhancedClassName),
+					EntityClassProxyAdapter.REAL_OBJECT,
+					Type.getDescriptor(entityClass));
 
-			PropertyDescriptor propertyDescriptor = null;
+
+			PropertyDescriptor propertyDescriptor;
 			try {
 				propertyDescriptor = new PropertyDescriptor(field.getName(), entityClass);
 			} catch (IntrospectionException e) {
 				e.printStackTrace();
 				return locals;
 			}
+
+
 			Method getMethod = propertyDescriptor.getReadMethod();
+
 
 			Type mt = Type.getType(getMethod);
 			mWriter.visitMethodInsn(INVOKEVIRTUAL,
@@ -247,11 +292,19 @@ public class IndexMethodProxyAspect extends AbstractAsmMethodProxyAspect {
 			//调用 changeIndex(Object entity, String indexName, Object oldValue, Object newValue)
 			//获取this.handler
 			mWriter.visitVarInsn(Opcodes.ALOAD, 0);
-			mWriter.visitFieldInsn(Opcodes.GETFIELD, AsmUtils.toAsmCls(classIndexesMetaData.enhancedClassName), EntityClassProxyAdapter.HANDLER_OBJECT, Type.getDescriptor(this.getAspectHandleClass()));
+			mWriter.visitFieldInsn(
+					Opcodes.GETFIELD,
+					AsmUtils.toAsmCls(classIndexesMetaData.enhancedClassName),
+					EntityClassProxyAdapter.HANDLER_OBJECT,
+					Type.getDescriptor(this.getAspectHandleClass()));
 
 			//获取this.obj
 			mWriter.visitVarInsn(Opcodes.ALOAD, 0);
-			mWriter.visitFieldInsn(Opcodes.GETFIELD,AsmUtils.toAsmCls(classIndexesMetaData.enhancedClassName), EntityClassProxyAdapter.REAL_OBJECT, Type.getDescriptor(entityClass));
+			mWriter.visitFieldInsn(
+					Opcodes.GETFIELD,
+					AsmUtils.toAsmCls(classIndexesMetaData.enhancedClassName),
+					EntityClassProxyAdapter.REAL_OBJECT,
+					Type.getDescriptor(entityClass));
 
 			//load indexName
 			mWriter.visitLdcInsn(methodMetaData.indexName);
@@ -263,7 +316,11 @@ public class IndexMethodProxyAspect extends AbstractAsmMethodProxyAspect {
 			mWriter.visitVarInsn(Opcodes.ALOAD, locals);
 
 			//调用静态方法
-			mWriter.visitMethodInsn(INVOKEINTERFACE, AsmUtils.toAsmCls(getAspectHandleClass().getName()), "update", "(" + Type.getDescriptor(IEntity.class) + "Ljava/lang/String;Ljava/lang/Object;Ljava/lang/Object;)V");
+			mWriter.visitMethodInsn(
+					INVOKEINTERFACE,
+					AsmUtils.toAsmCls(getAspectHandleClass().getName()),
+					"update",
+					"(" + Type.getDescriptor(IEntity.class) + "Ljava/lang/String;Ljava/lang/Object;Ljava/lang/Object;)V");
 
 		}
 
@@ -278,8 +335,7 @@ public class IndexMethodProxyAspect extends AbstractAsmMethodProxyAspect {
 			return false;
 		}
 		//获取需要拦截的方法列表
-		final Map<Method, Set<MethodMetaData>> methodsMap = classIndexesMetaData.changeIndexValueMethods;
-		return methodsMap.containsKey(method);
+		return classIndexesMetaData.changeIndexValueMethods.containsKey(method);
 	}
 
 
@@ -296,21 +352,13 @@ public class IndexMethodProxyAspect extends AbstractAsmMethodProxyAspect {
 	 */
 	static class ClassIndexesMetaData {
 
-		/**
-		 * 代理类类名
-		 */
+		/** 代理类类名 */
 		String enhancedClassName;
 
-		/**
-		 * 索引属性表
-		 * 索引名 - 属性
-		 */
+		/** 索引属性表  索引名 - 属性 */
 		Map<String, Field> indexFields = new HashMap<String, Field>();
 
-		/**
-		 * 更改索引值的方法列表
-		 * 方法 - 索引名
-		 */
+		/** 更改索引值的方法列表 方法 - 索引名 */
 		Map<Method, Set<MethodMetaData>> changeIndexValueMethods = new HashMap<Method, Set<MethodMetaData>>();
 
 	}
@@ -323,19 +371,13 @@ public class IndexMethodProxyAspect extends AbstractAsmMethodProxyAspect {
 	 */
 	static class MethodMetaData implements Comparable<MethodMetaData> {
 
-		/**
-		 * 方法
-		 */
+		/** 方法 */
 		Method method;
 
-		/**
-		 * 索引名
-		 */
+		/**  索引名 */
 		String indexName;
 
-		/**
-		 * asm本地变量计数
-		 */
+		/**  asm本地变量计数 */
 		int local;
 
 

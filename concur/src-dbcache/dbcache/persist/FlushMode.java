@@ -15,8 +15,7 @@ public enum FlushMode {
 	
 	/**
 	 * 延时入库
-	 * (检测时间为1s,延迟时间参考
-	 * @see dbcache.conf.impl.DbRuleServiceImpl.delayWaitTimmer)
+	 * (检测时间为1s)
 	 */
 	DELAY
 	

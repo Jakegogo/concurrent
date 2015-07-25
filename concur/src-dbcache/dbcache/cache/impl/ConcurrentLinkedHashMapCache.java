@@ -147,6 +147,11 @@ public class ConcurrentLinkedHashMapCache implements CacheUnit {
 	}
 
 	@Override
+	public ValueWrapper remove(Object key) {
+		return this.store.remove(key);
+	}
+
+	@Override
 	public void clear() {
 		this.store.clear();
 		this.evictions.clear();

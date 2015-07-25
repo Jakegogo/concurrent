@@ -3,7 +3,7 @@ package dbcache;
 import dbcache.anno.ThreadSafe;
 import dbcache.cache.CacheUnit;
 import dbcache.cache.ValueWrapper;
-import dbcache.conf.CacheConfig;
+import dbcache.conf.impl.CacheConfig;
 import dbcache.conf.DbConfigFactory;
 import dbcache.conf.Inject;
 import dbcache.dbaccess.DbAccessService;
@@ -388,6 +388,11 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 		
 		// 提交持久化任务
 		dbPersistService.handleDelete(cacheObject, this.dbAccessService, id, this.cacheUnit);
+
+		if (cacheConfig.isEvictWhenDelete()) {
+			// 从缓存中移除
+			this.cacheUnit.remove(id);
+		}
 	}
 
 

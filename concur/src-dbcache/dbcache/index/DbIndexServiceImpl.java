@@ -5,7 +5,7 @@ import dbcache.IEntity;
 import dbcache.anno.ThreadSafe;
 import dbcache.cache.CacheUnit;
 import dbcache.cache.ValueWrapper;
-import dbcache.conf.CacheConfig;
+import dbcache.conf.impl.CacheConfig;
 import dbcache.conf.CacheRule;
 import dbcache.conf.Inject;
 import dbcache.dbaccess.DbAccessService;
@@ -72,7 +72,7 @@ public class DbIndexServiceImpl<PK extends Comparable<PK> & Serializable>
 					+ indexName + "]!");
 		}
 		
-		final Map<PK, Boolean> indexValues = this.getPersist(indexName, indexValue);
+		final Map<PK, Boolean> indexValues = this.getPersist(indexName, indexValue).getIndexValues();
 		// 索引为空
 		if (indexValues == null) {
 			return Collections.emptyList();
@@ -88,7 +88,7 @@ public class DbIndexServiceImpl<PK extends Comparable<PK> & Serializable>
 	 * @return Map<PK, Boolean> 主键 - 是否持久化(false:已删除)
 	 */
 	@SuppressWarnings("unchecked")
-	private Map<PK, Boolean> getPersist(String indexName, Object indexValue) {
+	private IndexObject<PK> getPersist(String indexName, Object indexValue) {
 		
 		if (cacheConfig == null) {
 			throw new RuntimeException("CacheConfig未初始化(" + indexName + ")");
@@ -98,7 +98,7 @@ public class DbIndexServiceImpl<PK extends Comparable<PK> & Serializable>
 
 		ValueWrapper wrapper = (ValueWrapper) cacheUnit.get(key);
 		if (wrapper != null) {												// 已经缓存
-			return getIndexMap(wrapper);
+			return (IndexObject<PK>) wrapper.get();
 		}
 		
 
@@ -112,7 +112,7 @@ public class DbIndexServiceImpl<PK extends Comparable<PK> & Serializable>
 			lock.lock();
 			wrapper = (ValueWrapper) cacheUnit.get(key);
 			if (wrapper != null) {												// 已经缓存
-				return getIndexMap(wrapper);
+				return (IndexObject<PK>) wrapper.get();
 			}
 
 			// 查询数据库索引
@@ -138,18 +138,17 @@ public class DbIndexServiceImpl<PK extends Comparable<PK> & Serializable>
 			WAITING_LOCK_MAP.remove(key);
 		}
 
-		return getIndexMap(wrapper);
+		return (IndexObject<PK>) wrapper.get();
 	}
 
 
 	/**
 	 * 获取缓存中的索引Map
-	 * @param wrapper 缓存Wrap
+	 * @param indexObject IndexObject
 	 * @return
 	 */
 	@SuppressWarnings("unchecked")
-	private Map<PK, Boolean> getIndexMap(ValueWrapper wrapper) {
-		IndexObject<PK> indexObject = (IndexObject<PK>) wrapper.get();
+	private Map<PK, Boolean> getIndexMap(IndexObject<PK> indexObject) {
 		if (indexObject == null) {
 			return null;
 		}
@@ -160,7 +159,8 @@ public class DbIndexServiceImpl<PK extends Comparable<PK> & Serializable>
 	@Override
 	public void create(IndexValue<PK> indexValue) {
 
-		this.getPersist(indexValue.getName(), indexValue.getValue()).put(indexValue.getId(), Boolean.valueOf(true));
+		IndexObject<PK> indexObject = this.getPersist(indexValue.getName(), indexValue.getValue())
+				.put(indexValue.getId(), Boolean.valueOf(true));
 
 		// 索引变化监听
 		if (cacheConfig.isHasIndexListeners()) {
@@ -168,6 +168,7 @@ public class DbIndexServiceImpl<PK extends Comparable<PK> & Serializable>
 				listener.onCreate(indexValue.getName(), indexValue.getValue(), indexValue.getId());
 			}
 		}
+
 	}
 
 
@@ -175,7 +176,7 @@ public class DbIndexServiceImpl<PK extends Comparable<PK> & Serializable>
 	public void remove(IndexValue<PK> indexValue) {
 
 		final Object key = CacheRule.getIndexIdKey(indexValue.getName(), indexValue.getValue());
-		this.getPersist(indexValue.getName(), indexValue.getValue()).remove(key);
+		IndexObject<PK> indexObject = this.getPersist(indexValue.getName(), indexValue.getValue()).remove(key);
 
 		// 索引变化监听
 		if (cacheConfig.isHasIndexListeners()) {
@@ -183,6 +184,7 @@ public class DbIndexServiceImpl<PK extends Comparable<PK> & Serializable>
 				listener.onRemove(indexValue.getName(), indexValue.getValue(), indexValue.getId());
 			}
 		}
+
 	}
 
 

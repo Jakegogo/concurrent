@@ -169,6 +169,11 @@ public class ConcurrentWeekHashMapCache implements CacheUnit {
 		return this.store.remove(key);
 	}
 
+	@Override
+	public ValueWrapper remove(Object key) {
+		return null;
+	}
+
 
 	@Override
 	public void clear() {

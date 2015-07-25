@@ -50,6 +50,13 @@ public interface CacheUnit {
 	ValueWrapper evict(Object key);
 
 	/**
+	 * 从缓存移除,如果外部依然保留引用,则会在引用释放且延迟移除
+	 * @param key
+	 * @return
+	 */
+	ValueWrapper remove(Object key);
+
+	/**
 	 * 清空缓存
 	 */
 	void clear();

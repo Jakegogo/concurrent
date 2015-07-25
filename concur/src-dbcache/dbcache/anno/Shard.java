@@ -1,6 +1,6 @@
 package dbcache.anno;
 
-import dbcache.conf.shard.ShardStrategy;
+import dbcache.conf.ShardStrategy;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

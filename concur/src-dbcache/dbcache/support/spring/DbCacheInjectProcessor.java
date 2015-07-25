@@ -4,7 +4,7 @@ import dbcache.DbCacheInitError;
 import dbcache.DbCacheService;
 import dbcache.EntityLoadListener;
 import dbcache.IEntity;
-import dbcache.conf.CacheConfig;
+import dbcache.conf.impl.CacheConfig;
 import dbcache.conf.DbConfigFactory;
 import dbcache.index.IndexChangeListener;
 import org.slf4j.Logger;
@@ -76,9 +76,9 @@ public class DbCacheInjectProcessor extends InstantiationAwareBeanPostProcessorA
 			return;
 		}
 
-		Class<? extends IEntity> clz = null;
-		DbCacheService serviceBean;
 
+		DbCacheService serviceBean;
+		Class<? extends IEntity> clz = null;
 		try {
 			Type type = field.getGenericType();
 			Type[] types = ((ParameterizedType) type).getActualTypeArguments();

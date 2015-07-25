@@ -1,6 +1,6 @@
 package dbcache.persist.service;
 
-import dbcache.conf.CacheConfig;
+import dbcache.conf.impl.CacheConfig;
 import dbcache.CacheObject;
 import dbcache.IEntity;
 import dbcache.cache.CacheUnit;

@@ -13,18 +13,18 @@ import java.sql.Statement;
 @Component
 public class Config {
 
-	String name;
+	Dialect dialect = Dialect.getDefaultDialect();
 
-	private final ThreadLocal<Connection> threadLocal = new ThreadLocal<Connection>();
+	String name;
 
 	@Autowired
 	DataSource dataSource;
 
 	int transactionLevel = Connection.TRANSACTION_READ_COMMITTED;
-
 	boolean showSql = true;
 	boolean devMode = false;
-	Dialect dialect = Dialect.getDefaultDialect();
+
+	private final ThreadLocal<Connection> threadLocal = new ThreadLocal<Connection>();
 
 	/**
 	 * For DbKit.brokenConfig = new Config();

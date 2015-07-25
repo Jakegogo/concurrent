@@ -24,13 +24,11 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface Cached {
 
-
 	/**
 	 * 缓存类型,默认CacheType.LRU
 	 * @return
 	 */
 	public CacheType cacheType() default CacheType.LRU;
-
 
 	/**
 	 * 持久化处理方式,默认PersistType.INTIME
@@ -38,13 +36,23 @@ public @interface Cached {
 	 */
 	public PersistType persistType() default PersistType.INTIME;
 
-
 	/**
 	 * 实体缓存大小上限,默认值10000
+	 * <p>分类缓存的概念在于:</p>
+	 * 1,提高hash命中率
+	 * 2,防止极端情况的LRU出队
+	 * 3,如果超过阀值,则进行立即回收到entitySize的大小
+	 * 4,实际运行的大小限制收全局实体大小设置影响
 	 * @return
 	 */
 	public int entitySize() default 10000;
 
+	/**
+	 * 实体数量阀值,默认20000
+	 * 如果超过阀值,则进行立即回收到entitySize的大小
+	 * @return
+	 */
+	public int threshold() default 20000;
 
 	/**
 	 * 索引缓存大小,不设置则共用entityCache缓存(大小为entitySize)
@@ -64,5 +72,12 @@ public @interface Cached {
 	 * @return
 	 */
 	public boolean enableIndex() default false;
+
+	/**
+	 * 删除后是否从缓存移除
+	 * <br/>比如当一次性使用的实体需要删除时,使用次选项
+	 * @return
+	 */
+	public boolean evictWhenDelete() default false;
 
 }

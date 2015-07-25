@@ -29,15 +29,10 @@ import java.util.concurrent.atomic.AtomicIntegerArray;
 @Component
 public class ModifiedFieldMethodAspect extends AbstractAsmMethodProxyAspect {
 	
-	/**
-	 * 已经修改过的字段数组,0:未修改; 2:修改过
-	 */
+	/** 已经修改过的字段数组,0:未修改; 2:修改过 */
 	private static final String CHANGE_FIELDS_ARRAY = "changeFields";
 	
-	/**
-	 * 索引信息缓存
-	 * 实体类 - 索引信息
-	 */
+	/** 索引信息缓存 实体类 - 索引信息 */
 	private ConcurrentHashMap<Class<?>, ClassIndexesMetaData> CLASS_INDEX_INFO = new ConcurrentHashMap<Class<?>, ClassIndexesMetaData>();
 
 
@@ -49,23 +44,30 @@ public class ModifiedFieldMethodAspect extends AbstractAsmMethodProxyAspect {
 		constructorBuilder.appendField(AtomicIntegerArray.class, CHANGE_FIELDS_ARRAY);
 
 		// 添加切面处理对象构造方法,用真实类对象作为参数
-		constructorBuilder.appendParameter(AtomicIntegerArray.class, new ConstructorBuilder.ParameterInit () {
+		constructorBuilder.appendParameter(new ConstructorBuilder.ParameterInit () {
+			@Override
+			Class<?> parameterType() {
+				return AtomicIntegerArray.class;
+			}
 
 			@Override
-			/**
-			 * @see dbcache.support.asm.ConstructorBuilder#getProxyEntity(java.lang.Class<T>, T, dbcache.index.DbIndexService , java.util.concurrent.atomic.AtomicIntegerArray)
-			 */
 			public int parameterIndexOfgetProxyEntity() {
 				return 2;
 			}
 
 			@Override
-			public void onConstruct(ClassWriter classWriter, MethodVisitor mvInit, Class<?> originalClass, String enhancedClassName, int localIndex) {
+			public void onConstruct(
+					ClassWriter classWriter,
+					MethodVisitor mvInit,
+					Class<?> originalClass,
+					String enhancedClassName,
+					int localIndex) {
 				mvInit.visitVarInsn(Opcodes.ALOAD, 0);
 				mvInit.visitVarInsn(Opcodes.ALOAD, localIndex);
 
 				mvInit.visitFieldInsn(Opcodes.PUTFIELD,
-						AsmUtils.toAsmCls(enhancedClassName), CHANGE_FIELDS_ARRAY,
+						AsmUtils.toAsmCls(enhancedClassName),
+						CHANGE_FIELDS_ARRAY,
 						Type.getDescriptor(AtomicIntegerArray.class));
 			}
 		});
@@ -76,7 +78,9 @@ public class ModifiedFieldMethodAspect extends AbstractAsmMethodProxyAspect {
 	public void initClassMetaInfo(final Class<?> clazz, final String enhancedClassName) {
 
 		final ClassIndexesMetaData indexesMetaData = new ClassIndexesMetaData();
-		final Map<Method, Set<MethodMetaData>> methodsMap = indexesMetaData.changeIndexValueMethods;// 修改属性的方法 - 修改到的属性集合
+
+		// 修改属性的方法 - 修改到的属性集合
+		final Map<Method, Set<MethodMetaData>> methodsMap = indexesMetaData.changeIndexValueMethods;
 		final Map<String, FieldMetaData> fieldsMap = indexesMetaData.fields;// 属性名 - 属性信息
 
 		//扫描属性注解
@@ -84,20 +88,23 @@ public class ModifiedFieldMethodAspect extends AbstractAsmMethodProxyAspect {
 		ReflectionUtils.doWithFields(clazz, new FieldCallback() {
 			public void doWith(Field field) throws IllegalArgumentException, IllegalAccessException {
 				// 忽略静态属性和临时属性
-				if(Modifier.isTransient(field.getModifiers()) || Modifier.isStatic(field.getModifiers()) ||
-						field.isAnnotationPresent(javax.persistence.Transient.class)) {
+				if(Modifier.isTransient(field.getModifiers())
+						|| Modifier.isStatic(field.getModifiers())
+						|| field.isAnnotationPresent(javax.persistence.Transient.class)) {
 					return;
 				}
 				
-				int fieldIndex = fieldIndexCounter.getAndIncrement();
+
 				try {
 					PropertyDescriptor propertyDescriptor = new PropertyDescriptor(field.getName(), clazz);
 					Method setMethod = propertyDescriptor.getWriteMethod();
+
 					Set<MethodMetaData> methodMetaDataSet = getFieldNameSet(methodsMap, setMethod);
 					methodMetaDataSet.add(MethodMetaData.valueOf(field.getName()));
 
+
 					FieldMetaData fieldMetaData = new FieldMetaData();
-					fieldMetaData.fieldIndex = fieldIndex;
+					fieldMetaData.fieldIndex = fieldIndexCounter.getAndIncrement();;
 					
 					fieldsMap.put(field.getName(), fieldMetaData);
 
@@ -122,7 +129,8 @@ public class ModifiedFieldMethodAspect extends AbstractAsmMethodProxyAspect {
 				}
 			}
 		});
-		
+
+
 		// 扫描修改属性的方法
 		Map<Method, List<String>> putFieldMethods = AsmAccessHelper.getPutFieldsCallHierarchyMethodMap(clazz);
 		
@@ -179,7 +187,10 @@ public class ModifiedFieldMethodAspect extends AbstractAsmMethodProxyAspect {
 			final FieldMetaData field = fieldsMap.get(methodMetaData.fieldName);
 			//获取this.obj.fieldName
 			mWriter.visitVarInsn(Opcodes.ALOAD, 0);
-			mWriter.visitFieldInsn(Opcodes.GETFIELD, AsmUtils.toAsmCls(classIndexesMetaData.enhancedClassName), CHANGE_FIELDS_ARRAY,
+			mWriter.visitFieldInsn(
+					Opcodes.GETFIELD,
+					AsmUtils.toAsmCls(classIndexesMetaData.enhancedClassName),
+					CHANGE_FIELDS_ARRAY,
 					Type.getDescriptor(AtomicIntegerArray.class));
 
 			mWriter.visitLdcInsn(field.fieldIndex);
@@ -263,9 +274,7 @@ public class ModifiedFieldMethodAspect extends AbstractAsmMethodProxyAspect {
 	 */
 	static class MethodMetaData implements Comparable<MethodMetaData> {
 
-		/**
-		 * 属性名
-		 */
+		/** 属性名 */
 		String fieldName;
 
 

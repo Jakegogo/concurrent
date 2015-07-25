@@ -17,4 +17,5 @@ public class DbCacheInitError extends RuntimeException {
     public DbCacheInitError(String message, Throwable cause) {
         super(message, cause);
     }
+
 }

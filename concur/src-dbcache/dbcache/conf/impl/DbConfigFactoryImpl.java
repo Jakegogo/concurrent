@@ -136,12 +136,14 @@ public class DbConfigFactoryImpl implements DbConfigFactory, DbCacheMBean {
 			cacheConfigMap.put(clz, cacheConfig);
 
 			//创建新的bean
-			DbCacheServiceImpl service = applicationContext.getAutowireCapableBeanFactory().createBean(DbCacheServiceImpl.class);
+			DbCacheServiceImpl service = applicationContext.getAutowireCapableBeanFactory()
+					.createBean(DbCacheServiceImpl.class);
 
 
 			//设置实体类
 			Field clazzField = DbCacheServiceImpl.class.getDeclaredField(entityClassProperty);
 			inject(service, clazzField, clz);
+
 
 
 			//初始化代理类
@@ -155,13 +157,18 @@ public class DbConfigFactoryImpl implements DbConfigFactory, DbCacheMBean {
 			inject(service, cacheConfigField, cacheConfig);
 
 
+
 			//初始化缓存实例
 			Field cacheField = DbCacheServiceImpl.class.getDeclaredField(cacheProperty);
 			Class<?> cacheClass = cacheConfig.getCacheType().getCacheClass();
-			CacheUnit cacheUnit = (CacheUnit) applicationContext.getAutowireCapableBeanFactory().createBean(cacheClass);
-			int concurrencyLevel = cacheConfig.getConcurrencyLevel() == 0? Runtime.getRuntime().availableProcessors() : cacheConfig.getConcurrencyLevel();
+			CacheUnit cacheUnit = (CacheUnit) applicationContext.getAutowireCapableBeanFactory()
+					.createBean(cacheClass);
+
+			int concurrencyLevel = cacheConfig.getConcurrencyLevel() == 0?
+					Runtime.getRuntime().availableProcessors() : cacheConfig.getConcurrencyLevel();
 			cacheUnit.init("ENTITY_CACHE_" + cacheClass.getSimpleName(), cacheConfig.getEntitySize(), concurrencyLevel);
 			inject(service, cacheField, cacheUnit);
+
 
 
 			//设置持久化PersistType方式的dbPersistService
@@ -171,9 +178,11 @@ public class DbConfigFactoryImpl implements DbConfigFactory, DbCacheMBean {
 			if(dbPersistService == null) {
 				
 				if (persistType.getBeanName() != null) {
-					dbPersistService = (DbPersistService) applicationContext.getBean(persistType.getBeanName(), persistType.getDbPersistServiceClass());
+					dbPersistService = (DbPersistService) applicationContext
+							.getBean(persistType.getBeanName(), persistType.getDbPersistServiceClass());
 				} else {
-					dbPersistService = (DbPersistService) applicationContext.getBean(persistType.getDbPersistServiceClass());
+					dbPersistService = (DbPersistService) applicationContext
+							.getBean(persistType.getDbPersistServiceClass());
 				}
 				
 				persistServiceMap.putIfAbsent(persistType, dbPersistService);
@@ -182,32 +191,40 @@ public class DbConfigFactoryImpl implements DbConfigFactory, DbCacheMBean {
 			inject(service, dbPersistServiceField, dbPersistService);
 
 
+
 			//修改IndexService的cache
 			Field indexServiceField = DbCacheServiceImpl.class.getDeclaredField(indexServiceProperty);
 			ReflectionUtils.makeAccessible(indexServiceField);
 			Class<?> indexServiceClass = indexServiceField.get(service).getClass();
-			DbIndexService indexService = (DbIndexService) applicationContext.getAutowireCapableBeanFactory().createBean(indexServiceClass);
+
+			DbIndexService indexService = (DbIndexService) applicationContext.getAutowireCapableBeanFactory()
+					.createBean(indexServiceClass);
 			inject(service, indexServiceField, indexService);
 
 
+
 			// 索引服务缓存设置
-			CacheUnit indexCacheUnit = (CacheUnit) applicationContext.getAutowireCapableBeanFactory().createBean(cacheConfig.getIndexCacheClass());
+			CacheUnit indexCacheUnit = (CacheUnit) applicationContext.getAutowireCapableBeanFactory()
+					.createBean(cacheConfig.getIndexCacheClass());
 			// 初始化索引缓存
-			indexCacheUnit.init("INDEX_CACHE_" + cacheClass.getSimpleName(), cacheConfig.getIndexSize() > 0 ? cacheConfig.getIndexSize() : cacheConfig.getEntitySize(), concurrencyLevel);
+			indexCacheUnit.init("INDEX_CACHE_" + cacheClass.getSimpleName(),
+					cacheConfig.getIndexSize() > 0 ?
+							cacheConfig.getIndexSize() : cacheConfig.getEntitySize(), concurrencyLevel);
 
 			Field cacheField1 = indexService.getClass().getDeclaredField(cacheProperty);
 			ReflectionUtils.makeAccessible(cacheField1);
 			inject(indexService, cacheField1, indexCacheUnit);
 
 
+
 			//修改IndexService的cacheConfig
 			Field cacheConfigField1 = indexService.getClass().getDeclaredField(proxyCacheConfigProperty);
 			inject(indexService, cacheConfigField1, cacheConfig);
 
+
+
 			// 初始化Id生成器
 			dbRuleService.initIdGenerators(clz, cacheConfig);
-
-
 			// 初始化DbCache服务
 			service.init();
 
@@ -281,24 +298,28 @@ public class DbConfigFactoryImpl implements DbConfigFactory, DbCacheMBean {
 
 	// 构建CacheConfig Bean
 	private CacheConfig createCacheConfig(final Class<?> clz) {
-		CacheConfig cacheConfig;
-		cacheConfig = CacheConfig.valueOf(clz);
 
+		CacheConfig cacheConfig = CacheConfig.valueOf(clz);
 		final Map<String, ValueGetter<?>> indexes = new HashMap<String, ValueGetter<?>>();
 
+		// 解析注解
 		ReflectionUtils.doWithFields(clz, new FieldCallback() {
 			public void doWith(Field field) throws IllegalArgumentException, IllegalAccessException {
 				// 忽略静态属性和临时属性
-				if (Modifier.isTransient(field.getModifiers()) || Modifier.isStatic(field.getModifiers()) ||
-						field.isAnnotationPresent(javax.persistence.Transient.class)) {
+				if (Modifier.isTransient(field.getModifiers())
+						|| Modifier.isStatic(field.getModifiers())
+						|| field.isAnnotationPresent(javax.persistence.Transient.class)) {
 					return;
 				}
 
 				// 处理索引注解
 				if (field.isAnnotationPresent(org.hibernate.annotations.Index.class) ||
 						field.isAnnotationPresent(dbcache.anno.Index.class)) {
-					String indexName = null;
-					org.hibernate.annotations.Index indexAno = field.getAnnotation(org.hibernate.annotations.Index.class);
+
+					org.hibernate.annotations.Index indexAno =
+							field.getAnnotation(org.hibernate.annotations.Index.class);
+
+					String indexName;
 					if (indexAno != null) {
 						indexName = indexAno.name();
 					} else {
@@ -309,7 +330,8 @@ public class DbConfigFactoryImpl implements DbConfigFactory, DbCacheMBean {
 					try {
 						indexes.put(indexName, AsmAccessHelper.createFieldGetter(field.getName(), clz, field));
 					} catch (Exception e) {
-						logger.error("获取实体配置出错:生成索引失败(" + clz.getName() + "." + field.getName() + ").");
+						logger.error("获取实体配置出错:生成索引失败(" +
+								clz.getName() + "." + field.getName() + ").");
 						e.printStackTrace();
 					}
 				}
@@ -345,17 +367,28 @@ public class DbConfigFactoryImpl implements DbConfigFactory, DbCacheMBean {
 
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	@Override
-	public <T extends IEntity<PK>, PK extends Comparable<PK> & Serializable> T createProxyEntity(T entity, Class<? extends IEntity> proxyClass, DbIndexService indexService, CacheConfig<T> cacheConfig, AtomicIntegerArray modifiedFields) {
+	public <T extends IEntity<PK>, PK extends Comparable<PK> & Serializable> T createProxyEntity(
+			T entity,
+			Class<? extends IEntity> proxyClass,
+			DbIndexService indexService,
+			CacheConfig<T> cacheConfig,
+			AtomicIntegerArray modifiedFields) {
 		// 判断是否启用索引服务
 		if(cacheConfig == null || (!cacheConfig.isEnableIndex() && !cacheConfig.isEnableDynamicUpdate())) {
 			return entity;
 		}
-		return (T) cacheConfig.getConstructorBuilder().getProxyEntity(proxyClass, entity, indexService, modifiedFields);
+		return (T) cacheConfig.getConstructorBuilder()
+				.getProxyEntity(proxyClass, entity, indexService, modifiedFields);
 	}
 
 
 	@SuppressWarnings({ "unchecked", "rawtypes" })
-	private <T extends IEntity<PK>, PK extends Comparable<PK> & Serializable> WeakCacheEntity<T, ?> wrapEntity(T entity, Class<? extends IEntity> entityClazz, CacheUnit cacheUnit, Object key, CacheConfig<T> cacheConfig) {
+	private <T extends IEntity<PK>, PK extends Comparable<PK> & Serializable> WeakCacheEntity<T, ?> wrapEntity(
+			T entity,
+			Class<? extends IEntity> entityClazz,
+			CacheUnit cacheUnit,
+			Object key,
+			CacheConfig<T> cacheConfig) {
 		// 判断是否开启弱引用
 		if(cacheConfig == null || cacheConfig.getCacheType() != CacheType.WEEKMAP) {
 			return null;
@@ -366,29 +399,58 @@ public class DbConfigFactoryImpl implements DbConfigFactory, DbCacheMBean {
 
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	@Override
-	public <T extends IEntity<PK>, PK extends Comparable<PK> & Serializable> CacheObject<T> createCacheObject(
+	public <T extends IEntity<PK>, PK extends Comparable<PK> & Serializable> CacheObject<T>
+		createCacheObject(
 			T entity, Class<T> entityClazz,
-			DbIndexService<?> indexService, Object key, CacheUnit cacheUnit, CacheConfig<T> cacheConfig) {
+			DbIndexService<?> indexService,
+			Object key,
+			CacheUnit cacheUnit,
+			CacheConfig<T> cacheConfig) {
 
 		// 启用动态更新
 		AtomicIntegerArray modifiedFields = null;
 		if (cacheConfig.isEnableDynamicUpdate()) {
 			modifiedFields = new AtomicIntegerArray(cacheConfig.getFieldCount());
 		}
-		T proxyEntity = this.createProxyEntity(entity, cacheConfig.getProxyClazz(), indexService, cacheConfig, modifiedFields);
+
+		T proxyEntity = this.createProxyEntity(
+				entity,
+				cacheConfig.getProxyClazz(),
+				indexService,
+				cacheConfig,
+				modifiedFields);
 
 		// 弱引用方式
 		if(cacheConfig.getCacheType() == CacheType.WEEKMAP) {
-			entity = (T) this.wrapEntity(entity, entityClazz, cacheUnit, key, cacheConfig);
-			proxyEntity = (T) this.wrapEntity(proxyEntity, entityClazz, cacheUnit, key, cacheConfig);
+			entity = (T) this.wrapEntity(
+					entity,
+					entityClazz,
+					cacheUnit,
+					key,
+					cacheConfig);
+			proxyEntity = (T) this.wrapEntity(
+					proxyEntity,
+					entityClazz,
+					cacheUnit,
+					key,
+					cacheConfig);
 		}
 
 		// 生成CacheObject
-		CacheObject<T> result = null;
+		CacheObject<T> result;
 		if(cacheConfig.getCacheType() == CacheType.WEEKMAP) {
-			result = new WeakCacheObject<T, WeakCacheEntity<T,?>>(entity, (Class<T>) entityClazz, proxyEntity, key, modifiedFields);
+			result = new WeakCacheObject<T, WeakCacheEntity<T,?>>(
+					entity,
+					entityClazz,
+					proxyEntity,
+					key,
+					modifiedFields);
 		} else {
-			result = new CacheObject<T>(entity, (Class<T>) entityClazz, proxyEntity, modifiedFields);
+			result = new CacheObject<T>(
+					entity,
+					entityClazz,
+					proxyEntity,
+					modifiedFields);
 		}
 		
 		// 初始化执行链
@@ -442,7 +504,11 @@ public class DbConfigFactoryImpl implements DbConfigFactory, DbCacheMBean {
 	 * @throws InstanceAlreadyExistsException
 	 */
 	@PostConstruct
-	public void init() throws MalformedObjectNameException, InstanceAlreadyExistsException, MBeanRegistrationException, NotCompliantMBeanException {
+	public void init() throws
+			MalformedObjectNameException,
+			InstanceAlreadyExistsException,
+			MBeanRegistrationException,
+			NotCompliantMBeanException {
 		// Get the Platform MBean Server
 		final MBeanServer mbs = ManagementFactory.getPlatformMBeanServer();
 

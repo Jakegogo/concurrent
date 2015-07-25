@@ -1,6 +1,6 @@
 package dbcache.persist.service.impl;
 
-import dbcache.conf.CacheConfig;
+import dbcache.conf.impl.CacheConfig;
 import dbcache.CacheObject;
 import dbcache.IEntity;
 import dbcache.persist.PersistAction;
@@ -59,33 +59,6 @@ public class DelayDbPersistService implements DbPersistService {
 	 */
 	private ExecutorService DB_POOL_SERVICE;
 
-
-	/**
-	 * 延迟更新操作
-	 * @author Jake
-	 * @date 2014年9月17日上午12:38:21
-	 */
-	static class QueuedAction {
-
-		PersistAction persistAction;
-
-		long createTime = System.currentTimeMillis();
-
-		public QueuedAction(PersistAction persistAction) {
-			this.persistAction = persistAction;
-		}
-
-		public static QueuedAction valueOf(PersistAction persistAction) {
-			return new QueuedAction(persistAction);
-		}
-
-		public void doRunTask() {
-			if (persistAction.valid()) {
-				persistAction.run();
-			}
-		}
-
-	}
 
 
 	@PostConstruct
@@ -235,57 +208,68 @@ public class DelayDbPersistService implements DbPersistService {
 	
 	// 处理入库任务
 	private void processAction() {
-		//初始化延时入库检测线程
-		final long delayWaitTimmer = dbRuleService.getDelayWaitTimmer();//延迟入库时间(毫秒)
 
-		final long delayCheckTimmer = 1000;//延迟入库队列检测时间间隔(毫秒)
-				
+		//延迟入库队列检测时间间隔(毫秒)
+		final long delayCheckTimmer = 1000;
+
+		//延迟入库时间(毫秒)
+		final long delayWaitTimmer = dbRuleService.getDelayWaitTimmer();
+
+
 		//循环定时检测入库,失败自动进入重试
 		QueuedAction updateAction = updateQueue.poll();
-		while (!Thread.interrupted()) {
 
+		while (!Thread.interrupted()) {
 			try {
+
 				long timeDiff = 0l;
 				do {
 
 					if (updateAction == null) {
-						//等待下一个检测时间
-						Thread.sleep(delayCheckTimmer);
+						Thread.sleep(delayCheckTimmer);//等待下一个检测时间
 					} else if (updateAction.persistAction.valid()) {
 
 						timeDiff = System.currentTimeMillis() - updateAction.createTime;
 						//未到延迟入库时间
 						if (timeDiff < delayWaitTimmer) {
-
 							currentDelayUpdateAction = updateAction;
-
 							//等待
 							Thread.sleep(delayWaitTimmer - timeDiff);
 						}
+
 						//执行入库
 						updateAction.doRunTask();
 					}
 
+
 					if (Thread.interrupted()) {
 						break;
 					}
+
 					//获取下一个有效的操作元素
 					updateAction = updateQueue.poll();
 
 				} while (true);
+
 			} catch (Exception e) {
 				e.printStackTrace();
 
+				// 记录日志
 				if (updateAction != null && updateAction.persistAction != null) {
-					logger.error("执行入库时产生异常! 如果是主键冲突异常可忽略!" + updateAction.persistAction.getPersistInfo(), e);
+					logger.error(
+							"执行入库时产生异常! 如果是主键冲突异常可忽略!"
+									+ updateAction.persistAction.getPersistInfo(), e);
 				} else {
 					logger.error("执行批量入库时产生异常! 如果是主键冲突异常可忽略!", e);
 				}
-				
+
+
 				//等待下一个检测时间重试入库
 				try {
 					Thread.sleep(delayCheckTimmer);
 				} catch (InterruptedException e1) {}
+
+
 			}
 		}
 	}
@@ -303,11 +287,11 @@ public class DelayDbPersistService implements DbPersistService {
 				this.flushAllEntity();
 				break;
 			} catch (Exception e) {
-				failCount ++;
 				e.printStackTrace();
 				try {
 					Thread.sleep(3000);
 				} catch (InterruptedException e1) {}
+				failCount ++;
 			}
 		}
 	}
@@ -351,5 +335,32 @@ public class DelayDbPersistService implements DbPersistService {
 		return DB_POOL_SERVICE;
 	}
 
+
+	/**
+	 * 延迟更新操作
+	 * @author Jake
+	 * @date 2014年9月17日上午12:38:21
+	 */
+	static class QueuedAction {
+
+		PersistAction persistAction;
+
+		long createTime = System.currentTimeMillis();
+
+		public QueuedAction(PersistAction persistAction) {
+			this.persistAction = persistAction;
+		}
+
+		public static QueuedAction valueOf(PersistAction persistAction) {
+			return new QueuedAction(persistAction);
+		}
+
+		public void doRunTask() {
+			if (persistAction.valid()) {
+				persistAction.run();
+			}
+		}
+
+	}
 
 }

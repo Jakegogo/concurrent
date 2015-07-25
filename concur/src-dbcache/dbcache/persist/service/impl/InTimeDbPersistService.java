@@ -1,6 +1,6 @@
 package dbcache.persist.service.impl;
 
-import dbcache.conf.CacheConfig;
+import dbcache.conf.impl.CacheConfig;
 import dbcache.CacheObject;
 import dbcache.IEntity;
 import dbcache.persist.PersistAction;
@@ -84,8 +84,6 @@ public class InTimeDbPersistService implements DbPersistService {
 			dbPoolSize = 4;
 		}
 
-		this.dbPoolSize = dbPoolSize;
-
 		// 初始化线程池
 		DB_POOL_SERVICE = SimpleOrderedThreadPoolExecutor.newFixedThreadPool(dbPoolSize, threadFactory);
 		
@@ -96,7 +94,8 @@ public class InTimeDbPersistService implements DbPersistService {
 			}
 		};
 		checkRetryThread.start();
-		
+
+		this.dbPoolSize = dbPoolSize;
 	}
 
 

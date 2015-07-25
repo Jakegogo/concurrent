@@ -2,10 +2,10 @@ package dbcache.support.asm;
 
 import dbcache.EnhancedEntity;
 import dbcache.IEntity;
+import dbcache.WeakRefHolder;
+import org.objectweb.asm.*;
 import utils.enhance.asm.util.AsmUtils;
 import utils.enhance.asm.util.TypeUtils;
-
-import org.objectweb.asm.*;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -35,6 +35,12 @@ public class EntityClassProxyAdapter extends ClassVisitor implements Opcodes {
 	
 	/** EnhancedEntity.getEntity()方法方法名 */
 	public static final String GET_ENTITY_METHOD = "getEntity";
+
+	/** 引用持有者类型 */
+	public static final Class<?> REF_HOLD_CLS = WeakRefHolder.class;
+
+	/** 引用持有者属性名 */
+	public static final String REF_HOLD_NAME = "weakRefHolder";
 
 	/**
 	 * 切面方法重写器
@@ -105,17 +111,18 @@ public class EntityClassProxyAdapter extends ClassVisitor implements Opcodes {
 	@Override
 	public void visit(int version, int access, String name, String signature,
 			String superName, String[] interfaces) {
+
 		if (interfaces != null) {
 			String[] interfaces1 = new String[interfaces.length + 1];
 			System.arraycopy(interfaces, 0, interfaces1, 0, interfaces.length);
 			interfaces1[interfaces.length] = AsmUtils.toAsmCls(enhanceInterface.getName());
+
 			interfaces = interfaces1;
 		} else {
 			interfaces = new String[] {AsmUtils.toAsmCls(enhanceInterface.getName())};
 		}
 		
 		signature += Type.getType(enhanceInterface).toString();
-		
  		cv.visit(version, Opcodes.ACC_PUBLIC,
 				AsmUtils.toAsmCls(enhancedClassName), signature, name,
 				interfaces);
@@ -152,10 +159,11 @@ public class EntityClassProxyAdapter extends ClassVisitor implements Opcodes {
 	public void visitEnd() {
 
 		// 实现dbcache.model.EnhancedEntity.getEntity()方法
-		this.buildRealObjectMethod();
+		this.buildRealObjectGetterMethod();
 		
 		// 获取所有方法，并重写(main方法 和 Object的方法除外)
 		Method[] methods = originalClass.getMethods();
+
 		for (Method m : methods) {
 			
 			if (!AsmUtils.needOverride(m)) {
@@ -178,8 +186,12 @@ public class EntityClassProxyAdapter extends ClassVisitor implements Opcodes {
 			MethodInfo methodInfo = methodInfoMap.get(getMethodInfoKey(m.getName(), mt.toString()));
 			
 			// 方法 description
-			MethodVisitor mWriter = classWriter.visitMethod(methodInfo.access,
-					m.getName(), mt.toString(), methodInfo.signature, methodInfo.exceptions);
+			MethodVisitor mWriter = classWriter.visitMethod(
+					methodInfo.access,
+					m.getName(),
+					mt.toString(),
+					methodInfo.signature,
+					methodInfo.exceptions);
 
 			//统计当前maxLocals
 			int i = 1;
@@ -196,15 +208,23 @@ public class EntityClassProxyAdapter extends ClassVisitor implements Opcodes {
 			// insert code here (before)
 			int aspectBeforeLocalNum = i;
 			if (this.methodAspect.needOverride(originalClass, m)) {
-				aspectBeforeLocalNum = this.methodAspect.doBefore(originalClass, mWriter, m, i, m.getName(), Opcodes.ACC_PUBLIC, null);
+				aspectBeforeLocalNum = this.methodAspect.doBefore(
+						originalClass,
+						mWriter,
+						m,
+						i,
+						m.getName(),
+						Opcodes.ACC_PUBLIC, null);
 			}
 
 			// 调用被代理对象源方法
 			// 如果不是静态方法 load this.obj对象
 			if (!Modifier.isStatic(m.getModifiers())) {
 				mWriter.visitVarInsn(Opcodes.ALOAD, 0);
-				mWriter.visitFieldInsn(Opcodes.GETFIELD,
-						AsmUtils.toAsmCls(enhancedClassName), REAL_OBJECT,
+				mWriter.visitFieldInsn(
+						Opcodes.GETFIELD,
+						AsmUtils.toAsmCls(enhancedClassName),
+						REAL_OBJECT,
 						Type.getDescriptor(originalClass));
 			}
 
@@ -223,7 +243,12 @@ public class EntityClassProxyAdapter extends ClassVisitor implements Opcodes {
 					mWriter.visitTypeInsn(CHECKCAST, AsmUtils.toAsmCls(EnhancedEntity.class.getName()));
 					Label l3 = new Label();
 					mWriter.visitLabel(l3);
-					mWriter.visitMethodInsn(INVOKEINTERFACE, AsmUtils.toAsmCls(EnhancedEntity.class.getName()), "getEntity", "()" + Type.getDescriptor(IEntity.class), true);
+					mWriter.visitMethodInsn(
+							INVOKEINTERFACE,
+							AsmUtils.toAsmCls(EnhancedEntity.class.getName()),
+							"getEntity",
+							"()" + Type.getDescriptor(IEntity.class),
+							true);
 					mWriter.visitTypeInsn(CHECKCAST, AsmUtils.toAsmCls(tCls.getName()));
 					Label l4 = new Label();
 					mWriter.visitJumpInsn(GOTO, l4);
@@ -256,7 +281,14 @@ public class EntityClassProxyAdapter extends ClassVisitor implements Opcodes {
 
 				// 没有返回值
 				if (rt.toString().equals("V")) {
-					aspectAfterLocalNum = this.methodAspect.doAfter(originalClass, mWriter, m, i, m.getName(), Opcodes.ACC_PUBLIC, null);
+					aspectAfterLocalNum = this.methodAspect.doAfter(
+							originalClass,
+							mWriter,
+							m,
+							i,
+							m.getName(),
+							Opcodes.ACC_PUBLIC,
+							null);
 					mWriter.visitInsn(RETURN);
 				}
 				// 把return xxx() 转变成 ： Object o = xxx(); return o;
@@ -266,7 +298,14 @@ public class EntityClassProxyAdapter extends ClassVisitor implements Opcodes {
 					int returnCode = AsmUtils.rtCode(rt);
 
 					mWriter.visitVarInsn(storeCode, i);
-					aspectAfterLocalNum = this.methodAspect.doAfter(originalClass, mWriter, m, i, m.getName(), Opcodes.ACC_PUBLIC, null);
+					aspectAfterLocalNum = this.methodAspect.doAfter(
+							originalClass,
+							mWriter,
+							m,
+							i,
+							m.getName(),
+							Opcodes.ACC_PUBLIC,
+							null);
 					mWriter.visitVarInsn(loadCode, i);
 					mWriter.visitInsn(returnCode);
 				}
@@ -291,7 +330,7 @@ public class EntityClassProxyAdapter extends ClassVisitor implements Opcodes {
 	}
 
 	// 实现dbcache.model.EnhancedEntity.getEntity()方法
-	private void buildRealObjectMethod() {
+	private void buildRealObjectGetterMethod() {
 		
 		// 获取接口方法EnhancedEntity.getEntity()
 		Method getEntityMethod = null;
@@ -302,21 +341,30 @@ public class EntityClassProxyAdapter extends ClassVisitor implements Opcodes {
 		} catch (NoSuchMethodException e) {
 			e.printStackTrace();
 		}
+
 		if(getEntityMethod == null) {
 			return;
 		}
 		
 		Type mt = Type.getType(getEntityMethod);
 		// 方法 description
-		MethodVisitor mWriter = classWriter.visitMethod(ACC_PUBLIC,
-				getEntityMethod.getName(), mt.toString(), null, null);
+		MethodVisitor mWriter = classWriter.visitMethod(
+				ACC_PUBLIC,
+				getEntityMethod.getName(),
+				mt.toString(),
+				null,
+				null);
 		
 		// 处理返回值类型
 		Type rt = Type.getReturnType(getEntityMethod);
 		int returnCode = AsmUtils.rtCode(rt);
 		
 		mWriter.visitVarInsn(ALOAD, 0);
-		mWriter.visitFieldInsn(GETFIELD, AsmUtils.toAsmCls(enhancedClassName), REAL_OBJECT, Type.getDescriptor(originalClass));
+		mWriter.visitFieldInsn(
+				GETFIELD,
+				AsmUtils.toAsmCls(enhancedClassName),
+				REAL_OBJECT,
+				Type.getDescriptor(originalClass));
 		
 		mWriter.visitInsn(returnCode);
 		
@@ -324,18 +372,27 @@ public class EntityClassProxyAdapter extends ClassVisitor implements Opcodes {
 		mWriter.visitEnd();
 	}
 
+
+
+
+
 	// 构建equals方法
 	private void buildEqualsMethod(Method m) {
 
 		Type mt = Type.getType(m);
 
 		// 方法是被哪个类定义的
-		String declaringCls = AsmUtils.toAsmCls(m.getDeclaringClass()
+		String declaringCls = AsmUtils.toAsmCls(
+				m.getDeclaringClass()
 				.getName());
 
 		// 方法 description
-		MethodVisitor mWriter = classWriter.visitMethod(ACC_PUBLIC,
-				m.getName(), mt.toString(), null, null);
+		MethodVisitor mWriter = classWriter.visitMethod(
+				ACC_PUBLIC,
+				m.getName(),
+				mt.toString(),
+				null,
+				null);
 
 		// 处理返回值类型
 		Type rt = Type.getReturnType(m);
@@ -353,11 +410,23 @@ public class EntityClassProxyAdapter extends ClassVisitor implements Opcodes {
 		Label l1 = new Label();
 		mWriter.visitJumpInsn(IF_ACMPNE, l1);
 		mWriter.visitVarInsn(ALOAD, 0);
-		mWriter.visitFieldInsn(GETFIELD, AsmUtils.toAsmCls(enhancedClassName), REAL_OBJECT, Type.getDescriptor(originalClass));
+		mWriter.visitFieldInsn(
+				GETFIELD,
+				AsmUtils.toAsmCls(enhancedClassName),
+				REAL_OBJECT,
+				Type.getDescriptor(originalClass));
 		mWriter.visitVarInsn(ALOAD, 1);
 		mWriter.visitTypeInsn(CHECKCAST, AsmUtils.toAsmCls(enhancedClassName));
-		mWriter.visitFieldInsn(GETFIELD, AsmUtils.toAsmCls(enhancedClassName), REAL_OBJECT, Type.getDescriptor(originalClass));
-		mWriter.visitMethodInsn(INVOKEVIRTUAL, AsmUtils.toAsmCls(originalClass.getName()), "equals", "(Ljava/lang/Object;)Z", false);
+		mWriter.visitFieldInsn(GETFIELD,
+				AsmUtils.toAsmCls(enhancedClassName),
+				REAL_OBJECT,
+				Type.getDescriptor(originalClass));
+		mWriter.visitMethodInsn(
+				INVOKEVIRTUAL,
+				AsmUtils.toAsmCls(originalClass.getName()),
+				"equals",
+				"(Ljava/lang/Object;)Z",
+				false);
 		mWriter.visitInsn(returnCode);
 		mWriter.visitLabel(l1);
 
@@ -367,8 +436,10 @@ public class EntityClassProxyAdapter extends ClassVisitor implements Opcodes {
 		mWriter.visitFrame(Opcodes.F_SAME, 0, null, 0, null);
 
 		mWriter.visitVarInsn(Opcodes.ALOAD, 0);
-		mWriter.visitFieldInsn(Opcodes.GETFIELD,
-				AsmUtils.toAsmCls(enhancedClassName), REAL_OBJECT,
+		mWriter.visitFieldInsn(
+				Opcodes.GETFIELD,
+				AsmUtils.toAsmCls(enhancedClassName),
+				REAL_OBJECT,
 				Type.getDescriptor(originalClass));
 
 		int i = 1;

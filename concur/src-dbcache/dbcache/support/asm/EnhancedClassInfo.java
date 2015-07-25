@@ -6,8 +6,14 @@ package dbcache.support.asm;
  */
 public class EnhancedClassInfo<T> {
 
+    /**
+     * 代理类
+     */
     private Class<T> proxyClass;
 
+    /**
+     * 构造方法构建器
+     */
     private ConstructorBuilder constructorBuilder;
 
 

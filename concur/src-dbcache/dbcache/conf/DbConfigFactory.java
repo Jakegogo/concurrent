@@ -1,6 +1,7 @@
 package dbcache.conf;
 
 import dbcache.cache.CacheUnit;
+import dbcache.conf.impl.CacheConfig;
 import dbcache.pkey.IdGenerator;
 import dbcache.CacheObject;
 import dbcache.IEntity;

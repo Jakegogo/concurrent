@@ -1,14 +1,13 @@
 package dbcache.support.asm;
 
-import utils.enhance.asm.util.AsmUtils;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
+import utils.enhance.asm.util.AsmUtils;
 
 import java.lang.reflect.Constructor;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.*;
 
 /**
  * 构建构造方法
@@ -16,7 +15,7 @@ import java.util.Map;
  */
 public class ConstructorBuilder implements Opcodes {
 
-    private Map<Class<?>, ParameterInit> initParams = new LinkedHashMap<Class<?>, ParameterInit>();
+    private List<ParameterInit> initParams = new ArrayList<ParameterInit>();
 
     private Map<Class<?>, String> fields = new LinkedHashMap<Class<?>, String>();
 
@@ -29,6 +28,8 @@ public class ConstructorBuilder implements Opcodes {
     //Constructor
     private Constructor constructor;
 
+    private int initParamSize = 0;
+
     public ConstructorBuilder(ClassWriter classWriter, Class<?> originalClass,
                               String enhancedClassName) {
         this.classWriter = classWriter;
@@ -37,14 +38,34 @@ public class ConstructorBuilder implements Opcodes {
     }
 
 
-    public static interface ParameterInit {
-        int parameterIndexOfgetProxyEntity();
-        void onConstruct(ClassWriter classWriter, MethodVisitor mvInit, Class<?> originalClass, String enhancedClassName, int localIndex);
+    public static abstract class ParameterInit implements Comparable<ParameterInit> {
+        abstract Class<?> parameterType();
+        abstract int parameterIndexOfgetProxyEntity();
+        abstract void onConstruct(
+                ClassWriter classWriter,
+                MethodVisitor mvInit,
+                Class<?> originalClass,
+                String enhancedClassName,
+                int localIndex);
+
+        @Override
+        public int compareTo(ParameterInit o) {
+            if (o == this) {
+                return 0;
+            }
+            if (o == null) {
+                return -1;
+            }
+            return this.parameterIndexOfgetProxyEntity() - o.parameterIndexOfgetProxyEntity();
+        }
     }
 
 
-    public ConstructorBuilder appendParameter(Class<?> paramClass, ParameterInit parameterInit) {
-        initParams.put(paramClass, parameterInit);
+    public ConstructorBuilder appendParameter(ParameterInit parameterInit) {
+        initParams.add(parameterInit);
+        if (parameterInit.parameterIndexOfgetProxyEntity() >= 0) {
+            initParamSize++;
+        }
         return this;
     }
 
@@ -76,10 +97,15 @@ public class ConstructorBuilder implements Opcodes {
         mvInit.visitEnd();
 
 
+
         // 添加真实对象和切面处理对象构造方法,用真实类对象作为参数
+        Collections.sort(initParams);
         String paramsDescriptor = "";
-        for (Map.Entry<Class<?>, ParameterInit> initParamEntry : initParams.entrySet()) {
-            paramsDescriptor += Type.getDescriptor(initParamEntry.getKey());
+        for (ParameterInit initParamEntry : initParams) {
+            if (initParamEntry.parameterIndexOfgetProxyEntity() < 0) {
+                continue;
+            }
+            paramsDescriptor += Type.getDescriptor(initParamEntry.parameterType());
         }
 
         MethodVisitor mvInit2 = classWriter.visitMethod(ACC_PUBLIC, EntityClassProxyAdapter.INIT, "("
@@ -91,8 +117,11 @@ public class ConstructorBuilder implements Opcodes {
 
         // onConstruct
         int localIndex = 1;
-        for (Map.Entry<Class<?>, ParameterInit> initParamEntry : initParams.entrySet()) {
-            initParamEntry.getValue().onConstruct(classWriter, mvInit2, originalClass, enhancedClassName, localIndex ++);
+        for (ParameterInit initParamEntry : initParams) {
+            initParamEntry.onConstruct(classWriter, mvInit2, originalClass, enhancedClassName, localIndex);
+            if (initParamEntry.parameterIndexOfgetProxyEntity() >= 0) {
+                localIndex ++;
+            }
         }
 
         mvInit2.visitInsn(RETURN);
@@ -112,10 +141,13 @@ public class ConstructorBuilder implements Opcodes {
         if (constructor != null) {
             return constructor;
         }
-        Class<?>[] paramTypes = new Class<?>[initParams.size()];
+        Class<?>[] paramTypes = new Class<?>[initParamSize];
         int index = 0;
-        for (Map.Entry<Class<?>, ParameterInit> initParamEntry : initParams.entrySet()) {
-            paramTypes[index++] = initParamEntry.getKey();
+        for (ParameterInit initParamEntry : initParams) {
+            if (initParamEntry.parameterIndexOfgetProxyEntity() < 0) {
+                continue;
+            }
+            paramTypes[index++] = initParamEntry.parameterType();
         }
 
         Constructor<?> con;
@@ -143,10 +175,13 @@ public class ConstructorBuilder implements Opcodes {
             throw new IllegalStateException("无法获取类[" + proxyClass + "]的构造方法.");
         }
 
-        Object[] params = new Object[initParams.size()];
+        Object[] params = new Object[initParamSize];
         int index = 0;
-        for (Map.Entry<Class<?>, ParameterInit> initParamEntry : initParams.entrySet()) {
-            int paramIndex = initParamEntry.getValue().parameterIndexOfgetProxyEntity();
+        for (ParameterInit initParamEntry : initParams) {
+            if (initParamEntry.parameterIndexOfgetProxyEntity() < 0) {
+                continue;
+            }
+            int paramIndex = initParamEntry.parameterIndexOfgetProxyEntity();
             params[index++] = constructParams[paramIndex];
         }
 

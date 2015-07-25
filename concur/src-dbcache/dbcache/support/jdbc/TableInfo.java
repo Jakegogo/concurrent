@@ -17,14 +17,13 @@
 package dbcache.support.jdbc;
 
 
+import dbcache.conf.ShardStrategy;
+import org.apache.commons.lang.StringUtils;
+
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-
-import org.apache.commons.lang.StringUtils;
-
-import dbcache.conf.shard.ShardStrategy;
 
 /**
  * TableInfo save the table info like column name and column type.

@@ -1,6 +1,5 @@
 package dbcache.conf.impl;
 
-import dbcache.conf.CacheConfig;
 import dbcache.conf.DbRuleService;
 import dbcache.pkey.IdGenerator;
 import dbcache.pkey.LongGenerator;
@@ -142,7 +141,8 @@ public class DbRuleServiceImpl implements DbRuleService {
 	/**
 	 * 自增部分的ID最小值补齐字符串
 	 */
-	public final String STR_VALUE_OF_AUTOINCR_ID_MIN_VALUE = String.format("%0" + INCREMENT_PART + "d", ID_MIN_VALUE_OF_AUTOINCR);
+	public final String STR_VALUE_OF_AUTOINCR_ID_MIN_VALUE =
+			String.format("%0" + INCREMENT_PART + "d", ID_MIN_VALUE_OF_AUTOINCR);
 
 	/**
 	 * 玩家id长度
@@ -169,7 +169,8 @@ public class DbRuleServiceImpl implements DbRuleService {
 		try {
 			properties.load(resource.getInputStream());
 		} catch (IOException e) {
-			FormattingTuple message = MessageFormatter.format("DbCached 资源[{}]加载失败!", location);
+			FormattingTuple message = MessageFormatter.format(
+					"DbCached 资源[{}]加载失败!", location);
 			logger.error(message.getMessage(), e);
 			throw new RuntimeException(message.getMessage(), e);
 		}
@@ -181,7 +182,8 @@ public class DbRuleServiceImpl implements DbRuleService {
 		}
 
 		if (this.serverIdList == null || this.serverIdList.size() < 1) {
-			FormattingTuple message = MessageFormatter.format("DbCached [{}] 配置项 '服务器ID标识集合[{}]' 配置错误!", location, KEY_SERVER_ID_SET);
+			FormattingTuple message = MessageFormatter.format(
+					"DbCached [{}] 配置项 '服务器ID标识集合[{}]' 配置错误!", location, KEY_SERVER_ID_SET);
 			logger.error(message.getMessage());
 			throw new IllegalArgumentException(message.getMessage());
 		}
@@ -361,7 +363,8 @@ public class DbRuleServiceImpl implements DbRuleService {
 					idGenerators.put(serverId, idGenerator);
 
 					if (logger.isInfoEnabled()) {
-						logger.info("服{}： {} 的当前自动增值ID：{}", new Object[] {serverId, cls.getName(), currMaxId});
+						logger.info("服{}： {} 的当前自动增值ID：{}",
+								new Object[] {serverId, cls.getName(), currMaxId});
 					}
 				}
 			}

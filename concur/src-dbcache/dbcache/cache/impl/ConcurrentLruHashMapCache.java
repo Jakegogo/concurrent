@@ -3,13 +3,11 @@ package dbcache.cache.impl;
 import dbcache.cache.CacheUnit;
 import dbcache.cache.ValueWrapper;
 import dbcache.utils.CacheUtils;
+import org.springframework.stereotype.Component;
 import utils.collections.concurrent.ConcurrentLRUCache;
 import utils.collections.concurrent.ConcurrentReferenceHashMap;
 import utils.collections.concurrent.ConcurrentReferenceHashMap.ReferenceType;
 
-import org.springframework.stereotype.Component;
-
-import java.io.Serializable;
 import java.lang.ref.ReferenceQueue;
 
 /**
@@ -122,6 +120,11 @@ public class ConcurrentLruHashMapCache implements CacheUnit {
 		ValueWrapper value = this.store.remove(key);
 		Object value1 = this.evictions.remove(key);
 		return value == null ? SimpleValueWrapper.valueOf(value1) : value;
+	}
+
+	@Override
+	public ValueWrapper remove(Object key) {
+		return this.store.remove(key);
 	}
 
 	@Override

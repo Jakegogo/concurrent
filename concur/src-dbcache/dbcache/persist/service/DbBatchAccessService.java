@@ -27,7 +27,7 @@ public interface DbBatchAccessService extends DbAccessService {
 
 	/**
 	 * 动态更新实体对象
-	 * @param clzz 实体类
+	 * @param entity 实体
 	 * @param modifiedFields 修改过的属性集合(线程安全)
 	 */
 	public <T> void update(T entity, AtomicIntegerArray modifiedFields);

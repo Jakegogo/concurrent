@@ -4,7 +4,6 @@ import org.objectweb.asm.MethodVisitor;
 
 import java.lang.reflect.Method;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -34,7 +33,7 @@ public class ChainedMethodProxyAspect extends AbstractAsmMethodProxyAspect {
         if (aspects == null || aspects.length == 0) {
             throw new IllegalArgumentException("aspectList cannot be null.");
         }
-        List<AbstractAsmMethodProxyAspect> aspectList = new LinkedList<AbstractAsmMethodProxyAspect>((Collection<AbstractAsmMethodProxyAspect>) Arrays.asList(aspects));
+        List<AbstractAsmMethodProxyAspect> aspectList = new LinkedList<AbstractAsmMethodProxyAspect>(Arrays.asList(aspects));
 
         this.current = aspectList.remove(0);
         if (aspectList.size() > 0) {

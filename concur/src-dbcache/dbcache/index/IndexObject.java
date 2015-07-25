@@ -51,4 +51,13 @@ public class IndexObject<PK extends Comparable<PK> & Serializable> {
 		this.indexValues = indexValues;
 	}
 
+	public IndexObject<PK> put(PK key, Boolean aBoolean) {
+		this.indexValues.put(key, aBoolean);
+		return this;
+	}
+
+	public IndexObject<PK> remove(Object key) {
+		this.indexValues.remove(key);
+		return this;
+	}
 }

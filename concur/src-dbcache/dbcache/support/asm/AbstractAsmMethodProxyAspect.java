@@ -39,7 +39,14 @@ public abstract class AbstractAsmMethodProxyAspect implements Opcodes {
 	 * @param desc 描述
 	 * @return
 	 */
-	public int doBefore(Class<?> entityClass, MethodVisitor mWriter, Method method, int locals, String name, int acc, String desc) {
+	public int doBefore(
+			Class<?> entityClass,
+			MethodVisitor mWriter,
+			Method method,
+			int locals,
+			String name,
+			int acc,
+			String desc) {
 		//do nothing
 		return locals;
 	}
@@ -55,7 +62,14 @@ public abstract class AbstractAsmMethodProxyAspect implements Opcodes {
 	 * @param desc TODO
 	 * @return
 	 */
-	public int doAfter(Class<?> entityClass, MethodVisitor mWriter, Method method, int locals, String name, int acc, String desc) {
+	public int doAfter(
+			Class<?> entityClass,
+			MethodVisitor mWriter,
+			Method method,
+			int locals,
+			String name,
+			int acc,
+			String desc) {
 		//do nothing
 		return locals;
 	}

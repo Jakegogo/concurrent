@@ -37,9 +37,16 @@ public class CacheUtils {
     @SuppressWarnings({ "rawtypes", "unchecked" })
 	public static ConcurrentLRUCache createLruCache(final int size) {
     	int flexibleSize = (size * 4 + 3) / 3;
-    	return new ConcurrentLRUCache(flexibleSize, size, (int) Math
-                .floor((size + flexibleSize) / 2), (int) Math
-                .ceil(0.75f * flexibleSize), true, false, Runtime.getRuntime().availableProcessors(), null, cleanupThread);
+    	return new ConcurrentLRUCache(
+                flexibleSize,
+                size,
+                (int) Math.floor((size + flexibleSize) / 2),
+                (int) Math.ceil(0.75f * flexibleSize),
+                true,
+                false,
+                Runtime.getRuntime().availableProcessors(),
+                null,
+                cleanupThread);
     }
 
     /**
@@ -52,8 +59,16 @@ public class CacheUtils {
     @SuppressWarnings({ "rawtypes", "unchecked" })
 	public static ConcurrentLRUCache createLruCache(final int size, final int initialSize, final int concurrencyLevel) {
     	int flexibleSize = (size * 4 + 3) / 3;
-    	return new ConcurrentLRUCache(flexibleSize, size, (int) Math
-                .floor((size + flexibleSize) / 2), initialSize, true, false, concurrencyLevel, null, cleanupThread);
+    	return new ConcurrentLRUCache(
+                flexibleSize,
+                size,
+                (int) Math.floor((size + flexibleSize) / 2),
+                initialSize,
+                true,
+                false,
+                concurrencyLevel,
+                null,
+                cleanupThread);
     }
 
     /**

@@ -1,7 +1,7 @@
 package dbcache.support.jdbc;
 
 import dbcache.anno.Shard;
-import dbcache.conf.shard.ShardStrategy;
+import dbcache.conf.ShardStrategy;
 import dbcache.pkey.IdGenerator;
 import utils.enhance.asm.util.AsmUtils;
 import dbcache.utils.MutableInteger;
@@ -862,13 +862,15 @@ public class JdbcSupport {
 				tableName = StringUtils.getLString(entityAnno.name());
 			}
 		}
+
+
+    	// 组装TableInfo对象
 		if (StringUtils.isEmpty(tableName)) {
-    		tableName = StringUtils.getLString(clzz.getSimpleName());
-    	}
-		
-    	// 创建TableInfo对象
+			tableName = StringUtils.getLString(clzz.getSimpleName());
+		}
     	final TableInfo tableInfo = new TableInfo(tableName, clzz);
     	modelInfo.setTableInfo(tableInfo);
+
 
     	final Map<String, Class<?>> columnTypeMap = new LinkedHashMap<String, Class<?>>();
     	@SuppressWarnings("rawtypes")
@@ -883,8 +885,9 @@ public class JdbcSupport {
 			public void doWith(Field field) throws IllegalArgumentException, IllegalAccessException {
 				
 				// 忽略静态属性和临时属性
-				if (Modifier.isTransient(field.getModifiers()) || Modifier.isStatic(field.getModifiers()) ||
-						field.isAnnotationPresent(javax.persistence.Transient.class)) {
+				if (Modifier.isTransient(field.getModifiers())
+						|| Modifier.isStatic(field.getModifiers())
+						|| field.isAnnotationPresent(javax.persistence.Transient.class)) {
 					return;
 				}
 
@@ -898,7 +901,8 @@ public class JdbcSupport {
 				String columnName = fieldName;
 				// 定义了别名
 				if (field.isAnnotationPresent(javax.persistence.Column.class)) {
-					javax.persistence.Column columnAnno = field.getAnnotation(javax.persistence.Column.class);
+					javax.persistence.Column columnAnno =
+							field.getAnnotation(javax.persistence.Column.class);
 					if (!StringUtils.isEmpty(columnAnno.name())) {
 						columnName = columnAnno.name();
 					}
@@ -915,7 +919,11 @@ public class JdbcSupport {
 				try {
 					// 属性信息
 					@SuppressWarnings("rawtypes")
-					AttributeInfo attributeInfo = AttributeInfo.valueOf(clzz, field, columnName, indexCounter.incrementAndGet());
+					AttributeInfo attributeInfo = AttributeInfo.valueOf(
+							clzz,
+							field,
+							columnName,
+							indexCounter.incrementAndGet());
 					attrTypeMap.put(fieldName, attributeInfo);
 					// 主键
 					if (isPrimaryKey) {
@@ -924,7 +932,9 @@ public class JdbcSupport {
 					}
 				} catch (Exception e) {
 					e.printStackTrace();
-					throw new IllegalAccessException("无法创建Jdbc表字段信息:ColumnInfo," + clzz.getName() + "#" + fieldName);
+					throw new IllegalAccessException(
+							"无法创建Jdbc表字段信息:ColumnInfo,"
+									+ clzz.getName() + "#" + fieldName);
 				}
 			}
 		});
@@ -940,7 +950,8 @@ public class JdbcSupport {
 				tableInfo.setShardStrategy(shardStrategrClass.newInstance());
 			} catch (Exception e) {
 				e.printStackTrace();
-				throw new IllegalArgumentException("分表策略无法初始化:" + shardStrategrClass.getName(), e);
+				throw new IllegalArgumentException(
+						"分表策略无法初始化:" + shardStrategrClass.getName(), e);
 			}
 		}
 
