@@ -12,14 +12,10 @@ import java.util.concurrent.ConcurrentMap;
  */
 public class IndexObject<PK extends Comparable<PK> & Serializable> {
 
-	/**
-	 * 索引键
-	 */
+	/** 索引键 */
 	private IndexKey indexKey;
 
-	/**
-	 * 索引区域缓存
-	 */
+	/**  索引区域缓存  */
 	private ConcurrentMap<PK, Boolean> indexValues = new ConcurrentLinkedHashMap8<PK, Boolean>();
 
 

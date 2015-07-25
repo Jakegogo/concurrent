@@ -95,8 +95,8 @@ public class DbIndexServiceImpl<PK extends Comparable<PK> & Serializable>
 		}
 
 		final Object key = CacheRule.getIndexIdKey(indexName, indexValue);
-
 		ValueWrapper wrapper = (ValueWrapper) cacheUnit.get(key);
+
 		if (wrapper != null) {												// 已经缓存
 			return (IndexObject<PK>) wrapper.get();
 		}
@@ -110,6 +110,7 @@ public class DbIndexServiceImpl<PK extends Comparable<PK> & Serializable>
 		// 查询数据库
 		try {
 			lock.lock();
+
 			wrapper = (ValueWrapper) cacheUnit.get(key);
 			if (wrapper != null) {												// 已经缓存
 				return (IndexObject<PK>) wrapper.get();
@@ -117,13 +118,11 @@ public class DbIndexServiceImpl<PK extends Comparable<PK> & Serializable>
 
 			// 查询数据库索引
 			ValueGetter<?> indexField = cacheConfig.getIndexes().get(indexName);
-
 			Collection<PK> entityIds = (Collection<PK>) dbAccessService
 					.listIdByIndex(cacheConfig.getClazz(), indexField.getName(), indexValue);
 
 
 			IndexObject<PK> indexObject = IndexObject.valueOf(IndexKey.valueOf(indexName, indexValue));
-
 			if (entityIds != null) {
 				ConcurrentMap<PK, Boolean> indexValues = indexObject.getIndexValues();
 				// 需要外层加锁
@@ -159,7 +158,9 @@ public class DbIndexServiceImpl<PK extends Comparable<PK> & Serializable>
 	@Override
 	public void create(IndexValue<PK> indexValue) {
 
-		IndexObject<PK> indexObject = this.getPersist(indexValue.getName(), indexValue.getValue())
+		IndexObject<PK> indexObject = this.getPersist(
+				indexValue.getName(),
+				indexValue.getValue())
 				.put(indexValue.getId(), Boolean.valueOf(true));
 
 		// 索引变化监听
@@ -176,7 +177,9 @@ public class DbIndexServiceImpl<PK extends Comparable<PK> & Serializable>
 	public void remove(IndexValue<PK> indexValue) {
 
 		final Object key = CacheRule.getIndexIdKey(indexValue.getName(), indexValue.getValue());
-		IndexObject<PK> indexObject = this.getPersist(indexValue.getName(), indexValue.getValue()).remove(key);
+		IndexObject<PK> indexObject = this.getPersist(
+				indexValue.getName(),
+				indexValue.getValue()).remove(key);
 
 		// 索引变化监听
 		if (cacheConfig.isHasIndexListeners()) {
@@ -255,7 +258,8 @@ public class DbIndexServiceImpl<PK extends Comparable<PK> & Serializable>
 				public boolean hasNext() {
 					Map.Entry<E, Boolean> next = null;
 					while (i.hasNext() && 
-							((next = i.next()) == null || !next.getValue().booleanValue()));
+							((next = i.next()) == null
+									|| !next.getValue().booleanValue()));
 					this.next = next;
 					return next != null && next.getValue().booleanValue();
 				}

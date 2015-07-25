@@ -9,14 +9,10 @@ import dbcache.conf.CacheRule;
  */
 public class IndexKey {
 
-	/**
-	 * 索引名
-	 */
+	/** 索引名 */
 	private final String name;
 
-	/**
-	 * 索引值
-	 */
+	/** 索引值 */
 	private final Object value;
 
 

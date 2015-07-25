@@ -39,7 +39,8 @@ public class IndexValue<PK extends Comparable<PK> & Serializable> extends IndexK
 	public PK getId() {
 		return id;
 	}
-	
+
+
 	@SuppressWarnings("unchecked")
 	@Override
 	public boolean equals(Object o) {
@@ -51,6 +52,7 @@ public class IndexValue<PK extends Comparable<PK> & Serializable> extends IndexK
 
 		return id.equals(that.id);
 	}
+
 
 	@Override
 	public int hashCode() {

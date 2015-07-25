@@ -80,7 +80,11 @@ public class DelayDbPersistService implements DbPersistService {
 
 
 	@Override
-	public <T extends IEntity<?>> void handleSave(final CacheObject<T> cacheObject, final DbAccessService dbAccessService, final CacheConfig<T> cacheConfig) {
+	public <T extends IEntity<?>> void handleSave(
+			final CacheObject<T> cacheObject,
+			final DbAccessService dbAccessService,
+			final CacheConfig<T> cacheConfig) {
+
 		this.handlePersist(new PersistAction() {
 
 			@Override
@@ -123,7 +127,10 @@ public class DelayDbPersistService implements DbPersistService {
 	}
 
 	@Override
-	public <T extends IEntity<?>> void handleUpdate(final CacheObject<T> cacheObject, final DbAccessService dbAccessService, final CacheConfig<T> cacheConfig) {
+	public <T extends IEntity<?>> void handleUpdate(
+			final CacheObject<T> cacheObject,
+			final DbAccessService dbAccessService,
+			final CacheConfig<T> cacheConfig) {
 
 		// 改变更新状态
 		if (cacheObject.isUpdateProcessing()) {
@@ -167,7 +174,11 @@ public class DelayDbPersistService implements DbPersistService {
 	}
 
 	@Override
-	public void handleDelete(final CacheObject<?> cacheObject, final DbAccessService dbAccessService, final Object key, final CacheUnit cacheUnit) {
+	public void handleDelete(
+			final CacheObject<?> cacheObject,
+			final DbAccessService dbAccessService,
+			final Object key,
+			final CacheUnit cacheUnit) {
 
 		this.handlePersist(new PersistAction() {
 

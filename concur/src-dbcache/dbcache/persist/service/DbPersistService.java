@@ -21,14 +21,20 @@ public interface DbPersistService {
 	 * @param dbAccessService 数据库存取服务
 	 * @param cacheConfig TODO
 	 */
-	public <T extends IEntity<?>> void handleSave(CacheObject<T> cacheObject, DbAccessService dbAccessService, CacheConfig<T> cacheConfig);
+	public <T extends IEntity<?>> void handleSave(
+			CacheObject<T> cacheObject,
+			DbAccessService dbAccessService,
+			CacheConfig<T> cacheConfig);
 
 	/**
 	 * 处理更新
 	 * @param cacheObject 实体缓存对象
 	 * @param dbAccessService 数据库存取服务
 	 */
-	public <T extends IEntity<?>> void handleUpdate(CacheObject<T> cacheObject, DbAccessService dbAccessService, CacheConfig<T> cacheConfig);
+	public <T extends IEntity<?>> void handleUpdate(
+			CacheObject<T> cacheObject,
+			DbAccessService dbAccessService,
+			CacheConfig<T> cacheConfig);
 
 	/**
 	 * 处理删除
@@ -37,7 +43,11 @@ public interface DbPersistService {
 	 * @param key 缓存key
 	 * @param cacheUnit 缓存容器
 	 */
-	public void handleDelete(CacheObject<?> cacheObject, DbAccessService dbAccessService, Object key, CacheUnit cacheUnit);
+	public void handleDelete(
+			CacheObject<?> cacheObject,
+			DbAccessService dbAccessService,
+			Object key,
+			CacheUnit cacheUnit);
 
 	/**
 	 * 释放并且等待处理完毕
