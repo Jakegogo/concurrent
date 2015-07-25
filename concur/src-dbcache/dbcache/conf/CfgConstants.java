@@ -7,11 +7,6 @@ package dbcache.conf;
 public interface CfgConstants {
 
 	/**
-	 * 分隔符定义
-	 */
-	String SPLIT = ",";
-
-	/**
 	 * 实体缓存最大容量
 	 */
 	String KEY_MAX_CAPACITY_OF_ENTITY_CACHE = "dbcache.entitycache.maxcapacity";
@@ -41,4 +36,8 @@ public interface CfgConstants {
 	 */
 	String DELAY_WAITTIMMER = "dbcache.delay.timmer";
 
+	/**
+	 * 分隔符定义
+	 */
+	String SPLIT = ",";
 }

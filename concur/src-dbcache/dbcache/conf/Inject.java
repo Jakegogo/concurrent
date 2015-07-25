@@ -15,6 +15,4 @@ import java.lang.annotation.Target;
 @Documented
 @Target(ElementType.FIELD)
 @Retention(RetentionPolicy.SOURCE)
-public @interface Inject {
-
-}
+public @interface Inject {}

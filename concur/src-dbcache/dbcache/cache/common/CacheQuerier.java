@@ -1,7 +1,7 @@
 package dbcache.cache.common;
 
 /**
- * 缓存初始查询器
+ * 缓存初始化查询接口
  * Created by Jake on 2014/12/28.
  */
 public interface CacheQuerier<R> {

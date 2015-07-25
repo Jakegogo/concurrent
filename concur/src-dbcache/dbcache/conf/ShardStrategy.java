@@ -3,9 +3,7 @@ package dbcache.conf;
 
 /**
  * 分表策略接口
- * 
  * @author Jake
- *
  */
 public interface ShardStrategy<PK> {
 	
