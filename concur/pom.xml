@@ -13,6 +13,7 @@
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<spring.version>3.0.6.RELEASE</spring.version>
+		<protostuff.version>1.0.8</protostuff.version>
 	</properties>
 
 	<dependencies>
@@ -307,6 +308,28 @@
 			<scope>system</scope>
 			<version>1.0</version>
 			<systemPath>${basedir}\lib\TimingFramework.jar</systemPath>
+		</dependency>
+
+		<!--Protostuff-->
+		<dependency>
+			<groupId>com.dyuproject.protostuff</groupId>
+			<artifactId>protostuff-core</artifactId>
+			<version>${protostuff.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.dyuproject.protostuff</groupId>
+			<artifactId>protostuff-api</artifactId>
+			<version>${protostuff.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.dyuproject.protostuff</groupId>
+			<artifactId>protostuff-collectionschema</artifactId>
+			<version>${protostuff.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.dyuproject.protostuff</groupId>
+			<artifactId>protostuff-runtime</artifactId>
+			<version>${protostuff.version}</version>
 		</dependency>
 
 	</dependencies>
