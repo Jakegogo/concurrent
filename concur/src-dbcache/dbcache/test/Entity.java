@@ -11,6 +11,7 @@ import dbcache.IEntity;
 
 import org.apache.mina.util.ConcurrentHashSet;
 import org.hibernate.annotations.Index;
+import transfer.anno.Transferable;
 
 import javax.persistence.Column;
 import javax.persistence.Id;
@@ -23,6 +24,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 @javax.persistence.Entity
 @DynamicUpdate
 //@MappedSuperclass
+@Transferable(id = 2)
 public class Entity implements EntityInitializer, IEntity<Long> {
 
 	public static final String NUM_INDEX = "num_idx";

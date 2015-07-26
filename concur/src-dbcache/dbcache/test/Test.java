@@ -21,7 +21,9 @@ import org.springframework.stereotype.Component;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.util.ReflectionUtils;
+import transfer.Transfer;
 import utils.JsonUtils;
+import utils.ProtostuffUtils;
 import utils.collections.concurrent.ConcurrentWeakHashMap;
 import utils.thread.ThreadUtils;
 
@@ -635,6 +637,17 @@ public class Test {
 		
 		System.out.println(System.currentTimeMillis() - t1);
 	}
-	
+
+
+	@org.junit.Test
+	public void testHibernateLoad() {
+		Entity entity = (Entity) JdbcUtil.get(Entity.class, 15l);
+		byte[] bytes = ProtostuffUtils.object2Bytes(entity);
+		System.out.println(bytes.length);
+
+
+		byte[] bytes1 = Transfer.encode(entity, Entity.class).toBytes();
+		System.out.println(bytes1.length);
+	}
 
 }
