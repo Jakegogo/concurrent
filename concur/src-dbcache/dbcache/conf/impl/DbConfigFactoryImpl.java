@@ -460,6 +460,11 @@ public class DbConfigFactoryImpl implements DbConfigFactory, DbCacheMBean {
 		
 		// 持久化前回调
 		result.doBeforePersist(cacheConfig);
+
+		// 设置引用持有对象
+		if (proxyEntity instanceof EnhancedEntity) {
+			((EnhancedEntity)proxyEntity).getRefHolder().setCacheObject(result);
+		}
 		
 		return result;
 	}

@@ -14,5 +14,11 @@ public interface EnhancedEntity {
 	 * @return
 	 */
 	public IEntity<?> getEntity();
-	
+
+	/**
+	 * 获取引用持有者
+	 * @return
+	 */
+	public WeakRefHolder getRefHolder();
+
 }

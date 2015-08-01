@@ -95,7 +95,7 @@ public class Test {
 	 * @throws InterruptedException
 	 */
 	@org.junit.Test
-	public void t1() throws InterruptedException {
+	public void testUpdate() throws InterruptedException {
 
 
 		for(int i = 0;i <= 100000000;i++) {
@@ -166,7 +166,7 @@ public class Test {
 	 * 耗时:19s
 	 */
 	@org.junit.Test
-	public void t3() {
+	public void testGet() {
 		Entity entity = new Entity();
 		long t1 = System.currentTimeMillis();
 		for(int i = 0;i < 100000000;i++) {
@@ -291,7 +291,7 @@ public class Test {
 	}
 
 	@org.junit.Test
-	public void t10() {
+	public void testChangeIndexValue() {
 		long t1 = System.currentTimeMillis();
 		Entity entity = this.cacheService.get(1l);
 //		System.out.println("use time0 :" + (System.currentTimeMillis() - t1));
@@ -436,7 +436,7 @@ public class Test {
 
 	@org.junit.Test
 	public void t19() {
-		t10();
+		testChangeIndexValue();
 		t100();
 	}
 
@@ -456,7 +456,7 @@ public class Test {
 	@org.junit.Test
 	public void t21() {
 		for( int i = 0;i < 1000;i++) {
-			t10();
+			testChangeIndexValue();
 		}
 	}
 

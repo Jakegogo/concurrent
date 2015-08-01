@@ -10,7 +10,7 @@ import java.util.concurrent.ConcurrentMap;
  * @author Jake
  * @date 2014年9月21日下午5:56:10
  */
-public class IndexObject<PK extends Comparable<PK> & Serializable> {
+public class IndexObject<PK extends Comparable<PK> & Serializable> implements Comparable<IndexObject<PK>> {
 
 	/** 索引键 */
 	private IndexKey indexKey;
@@ -55,5 +55,28 @@ public class IndexObject<PK extends Comparable<PK> & Serializable> {
 	public IndexObject<PK> remove(Object key) {
 		this.indexValues.remove(key);
 		return this;
+	}
+
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) return true;
+		if (!(o instanceof IndexObject)) return false;
+
+		IndexObject that = (IndexObject) o;
+
+		if (!indexKey.equals(that.indexKey)) return false;
+
+		return true;
+	}
+
+	@Override
+	public int hashCode() {
+		return indexKey.hashCode();
+	}
+
+	@Override
+	public int compareTo(IndexObject<PK> o) {
+		if (this == o) return 0;
+		return this.indexKey.compareTo(o.indexKey);
 	}
 }

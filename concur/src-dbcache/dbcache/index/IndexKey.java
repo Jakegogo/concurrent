@@ -7,7 +7,7 @@ import dbcache.conf.CacheRule;
  * @author Jake
  * @date 2014年8月25日上午1:05:48
  */
-public class IndexKey {
+public class IndexKey implements Comparable<IndexKey> {
 
 	/** 索引名 */
 	private final String name;
@@ -74,7 +74,15 @@ public class IndexKey {
 
 	@Override
 	public String toString() {
-		return this.name + ":" + this.value;
+		return this.name + " : " + this.value;
 	}
 
+	@Override
+	public int compareTo(IndexKey o) {
+		int nameCmp = this.name.compareTo(o.name);
+		if (nameCmp != 0) {
+			return nameCmp;
+		}
+		return ((Comparable) this.value).compareTo(o.value);
+	}
 }

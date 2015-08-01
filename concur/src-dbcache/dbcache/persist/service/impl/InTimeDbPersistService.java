@@ -297,7 +297,7 @@ public class InTimeDbPersistService implements DbPersistService {
 			try {
 				Thread.sleep(delayWaitTimmer);
 			} catch (InterruptedException e1) {
-				e1.printStackTrace();
+				// ignore
 			}
 		}
 	}

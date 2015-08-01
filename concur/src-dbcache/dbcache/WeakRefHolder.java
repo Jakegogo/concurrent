@@ -21,7 +21,11 @@ public class WeakRefHolder {
      */
     private Set<IndexObject<?>> indexObjects = new TreeSet<IndexObject<?>>();
 
-    public WeakRefHolder(CacheObject<?> cacheObject) {
+
+    public WeakRefHolder() {
+    }
+
+    public void setCacheObject(CacheObject<?> cacheObject) {
         this.cacheObject = cacheObject;
     }
 

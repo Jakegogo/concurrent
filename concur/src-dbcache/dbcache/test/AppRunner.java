@@ -44,7 +44,7 @@ public class AppRunner implements Runnable {
 		
 		System.out.println("first call");
 		System.out.println(new Entity().toString());
-		test.t10();
+		test.testChangeIndexValue();
 		
 		System.out.println(new Entity().toString());
 		
@@ -55,7 +55,7 @@ public class AppRunner implements Runnable {
 		}
 		
 		System.out.println("second call");
-		test.t10();
+		test.testChangeIndexValue();
 		
 		System.out.println(new Entity().getName());
 

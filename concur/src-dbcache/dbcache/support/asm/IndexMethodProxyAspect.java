@@ -1,9 +1,7 @@
 package dbcache.support.asm;
 
-import dbcache.IEntity;
+import dbcache.EnhancedEntity;
 import dbcache.index.DbIndexService;
-import utils.enhance.asm.AsmAccessHelper;
-import utils.enhance.asm.util.AsmUtils;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
@@ -11,6 +9,8 @@ import org.objectweb.asm.Type;
 import org.springframework.stereotype.Component;
 import org.springframework.util.ReflectionUtils;
 import org.springframework.util.ReflectionUtils.FieldCallback;
+import utils.enhance.asm.AsmAccessHelper;
+import utils.enhance.asm.util.AsmUtils;
 
 import java.beans.IntrospectionException;
 import java.beans.PropertyDescriptor;
@@ -298,13 +298,13 @@ public class IndexMethodProxyAspect extends AbstractAsmMethodProxyAspect {
 					EntityClassProxyAdapter.HANDLER_OBJECT,
 					Type.getDescriptor(this.getAspectHandleClass()));
 
-			//获取this.obj
+			//获取this
 			mWriter.visitVarInsn(Opcodes.ALOAD, 0);
-			mWriter.visitFieldInsn(
-					Opcodes.GETFIELD,
-					AsmUtils.toAsmCls(classIndexesMetaData.enhancedClassName),
-					EntityClassProxyAdapter.REAL_OBJECT,
-					Type.getDescriptor(entityClass));
+//			mWriter.visitFieldInsn(
+//					Opcodes.GETFIELD,
+//					AsmUtils.toAsmCls(classIndexesMetaData.enhancedClassName),
+//					EntityClassProxyAdapter.REAL_OBJECT,
+//					Type.getDescriptor(entityClass));
 
 			//load indexName
 			mWriter.visitLdcInsn(methodMetaData.indexName);
@@ -320,7 +320,7 @@ public class IndexMethodProxyAspect extends AbstractAsmMethodProxyAspect {
 					INVOKEINTERFACE,
 					AsmUtils.toAsmCls(getAspectHandleClass().getName()),
 					"update",
-					"(" + Type.getDescriptor(IEntity.class) + "Ljava/lang/String;Ljava/lang/Object;Ljava/lang/Object;)V");
+					"(" + Type.getDescriptor(EnhancedEntity.class) + "Ljava/lang/String;Ljava/lang/Object;Ljava/lang/Object;)V");
 
 		}
 

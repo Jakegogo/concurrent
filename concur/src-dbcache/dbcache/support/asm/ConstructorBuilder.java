@@ -38,6 +38,9 @@ public class ConstructorBuilder implements Opcodes {
     }
 
 
+    /**
+     * 构造方法参数初始化接口定义
+     */
     public static abstract class ParameterInit implements Comparable<ParameterInit> {
         abstract Class<?> parameterType();
         abstract int parameterIndexOfgetProxyEntity();

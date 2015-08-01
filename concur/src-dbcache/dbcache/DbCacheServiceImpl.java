@@ -179,7 +179,7 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 			// 更新索引 需要外层加锁
 			if (cacheConfig.isEnableIndex()) {
 				for (Entry<String, ValueGetter<T>> entry : cacheConfig.getIndexes().entrySet()) {
-					this.indexService.create(
+					this.indexService.create((EnhancedEntity) cacheObject.getProxyEntity(),
 					IndexValue.valueOf(entry.getKey(), entry.getValue().get(entity), key));
 				}
 			}
@@ -300,7 +300,7 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 		// 更新索引
 		if (cacheConfig.isEnableIndex()) {
 			for (Entry<String, ValueGetter<T>> entry : cacheConfig.getIndexes().entrySet()) {
-				this.indexService.create(
+				this.indexService.create((EnhancedEntity) newCacheObject.getProxyEntity(),
 				IndexValue.valueOf(entry.getKey(), entry.getValue().get(entity), entity.getId()));
 			}
 		}
@@ -381,7 +381,7 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 		if (cacheConfig.isEnableIndex()) {
 			T entity = cacheObject.getEntity();
 			for (Entry<String, ValueGetter<T>> entry : cacheConfig.getIndexes().entrySet()) {
-				this.indexService.remove(
+				this.indexService.remove((EnhancedEntity) cacheObject.getProxyEntity(),
 				IndexValue.valueOf(entry.getKey(), entry.getValue().get(entity), entity.getId()));
 			}
 		}

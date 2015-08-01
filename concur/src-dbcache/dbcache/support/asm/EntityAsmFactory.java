@@ -164,7 +164,37 @@ public class EntityAsmFactory implements Opcodes {
 
 		// 增加WeakRefHolder属性
 		constructorBuilder.appendField(EntityClassProxyAdapter.REF_HOLD_CLS, EntityClassProxyAdapter.REF_HOLD_NAME);
+		// 初始化RefHolder
+		constructorBuilder.appendParameter(new ConstructorBuilder.ParameterInit () {
 
+			@Override
+			public int parameterIndexOfgetProxyEntity() {
+				return -1;
+			}
+
+			@Override
+			Class<?> parameterType() {
+				return void.class;
+			}
+
+			@Override
+			public void onConstruct(
+					ClassWriter classWriter,
+					MethodVisitor mvInit,
+					Class<?> originalClass,
+					String enhancedClassName,
+					int localIndex) {
+				mvInit.visitVarInsn(Opcodes.ALOAD, 0);
+
+				mvInit.visitTypeInsn(NEW, AsmUtils.toAsmCls(EntityClassProxyAdapter.REF_HOLD_CLS.getName()));
+				mvInit.visitInsn(DUP);
+				mvInit.visitMethodInsn(INVOKESPECIAL, AsmUtils.toAsmCls(EntityClassProxyAdapter.REF_HOLD_CLS.getName()), "<init>", "()V", false);
+
+				mvInit.visitFieldInsn(Opcodes.PUTFIELD,
+						AsmUtils.toAsmCls(enhancedClassName), EntityClassProxyAdapter.REF_HOLDER,
+						Type.getDescriptor(EntityClassProxyAdapter.REF_HOLD_CLS));
+			}
+		});
 
 
 		// 调用methodAspect初始化构造方法

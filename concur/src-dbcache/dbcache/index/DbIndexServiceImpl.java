@@ -1,6 +1,7 @@
 package dbcache.index;
 
 import dbcache.DbCacheInitError;
+import dbcache.EnhancedEntity;
 import dbcache.IEntity;
 import dbcache.anno.ThreadSafe;
 import dbcache.cache.CacheUnit;
@@ -156,12 +157,14 @@ public class DbIndexServiceImpl<PK extends Comparable<PK> & Serializable>
 
 
 	@Override
-	public void create(IndexValue<PK> indexValue) {
+	public void create(EnhancedEntity enhancedEntity, IndexValue<PK> indexValue) {
 
 		IndexObject<PK> indexObject = this.getPersist(
 				indexValue.getName(),
 				indexValue.getValue())
 				.put(indexValue.getId(), Boolean.valueOf(true));
+
+		enhancedEntity.getRefHolder().addIndexObject(indexObject);
 
 		// 索引变化监听
 		if (cacheConfig.isHasIndexListeners()) {
@@ -174,12 +177,14 @@ public class DbIndexServiceImpl<PK extends Comparable<PK> & Serializable>
 
 
 	@Override
-	public void remove(IndexValue<PK> indexValue) {
+	public void remove(EnhancedEntity enhancedEntity, IndexValue<PK> indexValue) {
 
 		final Object key = CacheRule.getIndexIdKey(indexValue.getName(), indexValue.getValue());
 		IndexObject<PK> indexObject = this.getPersist(
 				indexValue.getName(),
 				indexValue.getValue()).remove(key);
+
+		enhancedEntity.getRefHolder().removeIndexObject(indexObject);
 
 		// 索引变化监听
 		if (cacheConfig.isHasIndexListeners()) {
@@ -192,16 +197,28 @@ public class DbIndexServiceImpl<PK extends Comparable<PK> & Serializable>
 
 
 	@Override
-	public void update(IEntity<PK> entity, String indexName, Object oldValue, Object newValue) {
+	public void update(EnhancedEntity enhancedEntity, String indexName, Object oldValue, Object newValue) {
 		if (oldValue != null && oldValue.equals(newValue)) {
 			return;
 		}
+
+		IEntity<PK> entity = (IEntity<PK>) enhancedEntity.getEntity();
+
+
 		// 从旧的索引队列中移除
 		final Object key = CacheRule.getIndexIdKey(indexName, oldValue);
-		this.getPersist(indexName, oldValue).remove(key);
+		IndexObject<PK> oldIndexObject = this.getPersist(indexName, oldValue).remove(key);
+
+		enhancedEntity.getRefHolder().removeIndexObject(oldIndexObject);
+
+
 
 		// 添加到新的索引队列
-		this.getPersist(indexName, newValue).put(entity.getId(), Boolean.valueOf(true));
+		IndexObject<PK> newIndexObject = this.getPersist(indexName, newValue)
+				.put(entity.getId(), Boolean.valueOf(true));
+
+		enhancedEntity.getRefHolder().addIndexObject(newIndexObject);
+
 
 		// 索引变化监听
 		if (cacheConfig.isHasIndexListeners()) {

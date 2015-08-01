@@ -1,7 +1,7 @@
 package dbcache.index;
 
+import dbcache.EnhancedEntity;
 import dbcache.cache.CacheUnit;
-import dbcache.IEntity;
 
 import java.io.Serializable;
 import java.util.Collection;
@@ -29,24 +29,24 @@ public interface DbIndexService<PK extends Comparable<PK> & Serializable> {
 	 * 创建实体索引
 	 * @param indexValue 索引值
 	 */
-	public void create(IndexValue<PK> indexValue);
+	public void create(EnhancedEntity enhancedEntity, IndexValue<PK> indexValue);
 
 
 	/**
 	 * 更新索引
-	 * @param entity 实体
+	 * @param enhancedEntity 实体
 	 * @param indexName 索引名
 	 * @param oldValue 旧字段值
 	 * @param newValue 新字段值
 	 */
-	public void update(IEntity<PK> entity, String indexName, Object oldValue, Object newValue);
+	public void update(EnhancedEntity enhancedEntity, String indexName, Object oldValue, Object newValue);
 
 
 	/**
 	 * 移除索引值
 	 * @param indexValue 索引值
 	 */
-	public void remove(IndexValue<PK> indexValue);
+	public void remove(EnhancedEntity enhancedEntity, IndexValue<PK> indexValue);
 
 
 	/**

@@ -30,17 +30,23 @@ public class EntityClassProxyAdapter extends ClassVisitor implements Opcodes {
 	/** 处理类对象的属性名 */
 	public static final String HANDLER_OBJECT = "handler";
 
+	/** 引用持有者的属性名 */
+	public static final String REF_HOLDER = "refHolder";
+
 	/** equals方法名 */
 	public static final String EQUALS_METHOD = "equals";
 	
 	/** EnhancedEntity.getEntity()方法方法名 */
 	public static final String GET_ENTITY_METHOD = "getEntity";
 
+	/** EnhancedEntity.getRefHolder()方法方法名 */
+	public static final String GET_REF_HOLDER_METHOD = "getRefHolder";
+
 	/** 引用持有者类型 */
 	public static final Class<?> REF_HOLD_CLS = WeakRefHolder.class;
 
 	/** 引用持有者属性名 */
-	public static final String REF_HOLD_NAME = "weakRefHolder";
+	public static final String REF_HOLD_NAME = "refHolder";
 
 	/**
 	 * 切面方法重写器
@@ -160,6 +166,9 @@ public class EntityClassProxyAdapter extends ClassVisitor implements Opcodes {
 
 		// 实现dbcache.model.EnhancedEntity.getEntity()方法
 		this.buildRealObjectGetterMethod();
+
+		// 实现dbcache.model.EnhancedEntity.getRefHolder()方法
+		this.buildRefHolderGetterMethod();
 		
 		// 获取所有方法，并重写(main方法 和 Object的方法除外)
 		Method[] methods = originalClass.getMethods();
@@ -372,6 +381,51 @@ public class EntityClassProxyAdapter extends ClassVisitor implements Opcodes {
 		mWriter.visitEnd();
 	}
 
+
+
+
+	// 实现dbcache.model.EnhancedEntity.getRefHolder()方法
+	private void buildRefHolderGetterMethod() {
+
+		// 获取接口方法EnhancedEntity.getEntity()
+		Method getRefHolderMethod = null;
+		try {
+			getRefHolderMethod = enhanceInterface.getMethod(GET_REF_HOLDER_METHOD);
+		} catch (SecurityException e) {
+			e.printStackTrace();
+		} catch (NoSuchMethodException e) {
+			e.printStackTrace();
+		}
+
+		if(getRefHolderMethod == null) {
+			return;
+		}
+
+		Type mt = Type.getType(getRefHolderMethod);
+		// 方法 description
+		MethodVisitor mWriter = classWriter.visitMethod(
+				ACC_PUBLIC,
+				getRefHolderMethod.getName(),
+				mt.toString(),
+				null,
+				null);
+
+		// 处理返回值类型
+		Type rt = Type.getReturnType(getRefHolderMethod);
+		int returnCode = AsmUtils.rtCode(rt);
+
+		mWriter.visitVarInsn(ALOAD, 0);
+		mWriter.visitFieldInsn(
+				GETFIELD,
+				AsmUtils.toAsmCls(enhancedClassName),
+				REF_HOLDER,
+				Type.getDescriptor(REF_HOLD_CLS));
+
+		mWriter.visitInsn(returnCode);
+
+		mWriter.visitMaxs(1, 1);
+		mWriter.visitEnd();
+	}
 
 
 

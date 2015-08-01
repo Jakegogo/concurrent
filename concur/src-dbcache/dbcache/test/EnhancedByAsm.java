@@ -3,13 +3,14 @@ package dbcache.test;
 import dbcache.EnhancedEntity;
 import dbcache.EntityInitializer;
 import dbcache.IEntity;
+import dbcache.WeakRefHolder;
 import dbcache.index.DbIndexService;
 import org.apache.mina.util.ConcurrentHashSet;
 
 import java.util.concurrent.atomic.AtomicIntegerArray;
 
 public class EnhancedByAsm
-  implements EntityInitializer, IEntity<Long>
+  implements EntityInitializer, IEntity<Long>, EnhancedEntity
 {
   protected Entity obj;
   protected AtomicIntegerArray changeFields;
@@ -18,6 +19,11 @@ public class EnhancedByAsm
   public IEntity getEntity()
   {
     return this.obj;
+  }
+
+  @Override
+  public WeakRefHolder getRefHolder() {
+    return null;
   }
 
   public boolean equals(Object paramObject)
@@ -77,7 +83,7 @@ public class EnhancedByAsm
     Integer localInteger1 = Integer.valueOf(this.obj.getNum());
     int i = this.obj.addNum(paramInt);
     Integer localInteger2 = Integer.valueOf(this.obj.getNum());
-    this.handler.update(this.obj, "num_idx", localInteger1, localInteger2);
+    this.handler.update(this, "num_idx", localInteger1, localInteger2);
     return i;
   }
 
@@ -98,7 +104,7 @@ public class EnhancedByAsm
     Integer localInteger1 = Integer.valueOf(this.obj.getNum());
     this.obj.setNum(paramInt);
     Integer localInteger2 = Integer.valueOf(this.obj.getNum());
-    this.handler.update(this.obj, "num_idx", localInteger1, localInteger2);
+    this.handler.update(this, "num_idx", localInteger1, localInteger2);
   }
 
   public int getNum()
