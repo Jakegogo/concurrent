@@ -2,10 +2,10 @@ package transfer.test;
 
 import com.baidu.bjf.remoting.protobuf.Codec;
 import com.baidu.bjf.remoting.protobuf.ProtobufProxy;
-import utils.JsonUtils;
 import transfer.ByteArray;
 import transfer.Transfer;
 import transfer.def.TransferConfig;
+import utils.JsonUtils;
 import utils.ProtostuffUtils;
 
 import java.io.IOException;
@@ -54,7 +54,17 @@ public class TestEncodePerform {
         }
 
 
+        t1 = System.currentTimeMillis();
+        ByteArray byteArray = Transfer.encode(entity, Entity.class);
+        System.out.println(byteArray.toBytes().length);
+        for (int i = 0; i < 10000000;i++) {
+            byteArray = Transfer.encode(entity, Entity.class);
+        }
+        System.out.println("the transfer : " + (System.currentTimeMillis() - t1));
 
+
+        byte[] bytes0 = ProtostuffUtils.object2Bytes(entity);
+        System.out.println(bytes0.length);
         t1 = System.currentTimeMillis();
         for (int i = 0; i < 10000000;i++) {
             byte[] bytes = ProtostuffUtils.object2Bytes(entity);
@@ -79,15 +89,6 @@ public class TestEncodePerform {
 
 
 
-        t1 = System.currentTimeMillis();
-        ByteArray byteArray = Transfer.encode(entity, Entity.class);
-        System.out.println(byteArray.toBytes().length);
-        for (int i = 0; i < 10000000;i++) {
-            byteArray = Transfer.encode(entity, Entity.class);
-        }
-        System.out.println("the transfer : " + (System.currentTimeMillis() - t1));
-        
-        
         
         t1 = System.currentTimeMillis();
         for (int i = 0; i < 10000000;i++) {

@@ -57,7 +57,7 @@ public class Entity implements EntityInitializer, IEntity<Long>, Serializable {
 	private Boolean bool;
 	
 	private Map<String,Object> map;
-	
+
 	private Object obj;
 
 	private AcountStatus[] statusHis;

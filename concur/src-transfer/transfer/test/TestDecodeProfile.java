@@ -19,7 +19,6 @@ public class TestDecodeProfile {
         entity.setId(System.currentTimeMillis());
         entity.setUid(-101);
         entity.setFval(2.34f);
-        entity.setStatus(AcountStatus.OPEN);
         entity.setDate(new Date());
         entity.setStr("jake");
         entity.setBool(true);

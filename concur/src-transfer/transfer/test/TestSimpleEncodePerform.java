@@ -6,6 +6,7 @@ import transfer.ByteArray;
 import transfer.Transfer;
 import transfer.def.TransferConfig;
 import utils.JsonUtils;
+import utils.ProtostuffUtils;
 
 import java.io.IOException;
 
@@ -33,10 +34,10 @@ public class TestSimpleEncodePerform {
         t1 = System.currentTimeMillis();
         ByteArray byteArray = Transfer.encode(entity);
         System.out.println(byteArray.toBytes().length);
-        for (int i = 0; i < 10000000;i++) {
+        for (int i = 0; i < 50000000;i++) {
             byteArray = Transfer.encode(entity, SimpleEntity.class);
         }
-        System.out.println(System.currentTimeMillis() - t1);
+        System.out.println("the transfer : " + (System.currentTimeMillis() - t1));
 
 
 
@@ -49,18 +50,26 @@ public class TestSimpleEncodePerform {
             System.out.println(bb0.length);
 
             t1 = System.currentTimeMillis();
-            for (int i = 0; i < 10000000;i++) {
+            for (int i = 0; i < 50000000;i++) {
 
                 // 序列化
                 byte[] bb = simpleTypeCodec.encode(entity);
                 // 反序列化
     //            SimpleTypeTest newStt = simpleTypeCodec.decode(bb);
             }
-            System.out.println(System.currentTimeMillis() - t1);
+            System.out.println("protobuff : " + (System.currentTimeMillis() - t1));
         } catch (IOException e) {
             e.printStackTrace();
         }
 
+
+        byte[] bytes0 = ProtostuffUtils.object2Bytes(entity);
+        System.out.println(bytes0.length);
+        t1 = System.currentTimeMillis();
+        for (int i = 0; i < 50000000;i++) {
+            byte[] bytes = ProtostuffUtils.object2Bytes(entity);
+        }
+        System.out.println("protostuff : " + (System.currentTimeMillis() - t1));
 
 //        t1 = System.currentTimeMillis();
 //        for (int i = 0; i < 10000000;i++) {

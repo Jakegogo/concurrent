@@ -40,7 +40,7 @@ public class TestTransfer {
         entity.getFriends().add(3l);
         entity.setA(null);
         entity.setIArr(new int[]{4,5,6});
-        
+
         List<Integer> obj = new ArrayList<Integer>();
         obj.add(123);
         obj.add(456);
