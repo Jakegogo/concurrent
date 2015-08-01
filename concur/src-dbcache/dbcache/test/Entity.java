@@ -20,7 +20,7 @@ import javax.persistence.Transient;
 import java.lang.reflect.Method;
 import java.util.concurrent.atomic.AtomicInteger;
 
-@Cached(persistType=PersistType.INTIME, enableIndex = true, cacheType=CacheType.LRU, entitySize = 1000)
+@Cached(persistType=PersistType.INTIME, enableIndex = true, cacheType=CacheType.LRU, entitySize = 2)
 @javax.persistence.Entity
 @DynamicUpdate
 //@MappedSuperclass
