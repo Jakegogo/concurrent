@@ -279,7 +279,7 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 		
 		if (wrapper == null) {										 	 // 缓存还不存在
 			wrapper = cacheUnit.putIfAbsent(key, newCacheObject);
-		} else if (oldCacheObject == null){								 // 缓存为NULL或已经删除
+		} else {								 // 缓存为NULL或已经删除
 			wrapper = cacheUnit.replace(key, null, newCacheObject);
 		}
 
