@@ -5,7 +5,7 @@ import dbcache.cache.ValueWrapper;
 import java.io.Serializable;
 
 /**
- * 控制占位
+ * 空值占位
  */
 @SuppressWarnings("serial") 
 public class NullHolder implements ValueWrapper, Serializable {
