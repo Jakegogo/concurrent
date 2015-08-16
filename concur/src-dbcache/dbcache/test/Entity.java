@@ -1,14 +1,10 @@
 package dbcache.test;
 
-import dbcache.anno.Cached;
-import dbcache.anno.ChangeFields;
-import dbcache.anno.DynamicUpdate;
-import dbcache.anno.JsonType;
-import dbcache.conf.CacheType;
-import dbcache.conf.PersistType;
 import dbcache.EntityInitializer;
 import dbcache.IEntity;
-
+import dbcache.anno.*;
+import dbcache.conf.CacheType;
+import dbcache.conf.PersistType;
 import org.apache.mina.util.ConcurrentHashSet;
 import org.hibernate.annotations.Index;
 import transfer.anno.Transferable;
@@ -16,7 +12,6 @@ import transfer.anno.Transferable;
 import javax.persistence.Column;
 import javax.persistence.Id;
 import javax.persistence.Transient;
-
 import java.lang.reflect.Method;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -25,6 +20,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 @DynamicUpdate
 //@MappedSuperclass
 @Transferable(id = 2)
+@Query("select name, id, from  #{TABLE} where num = #{params.num}")
 public class Entity implements EntityInitializer, IEntity<Long> {
 
 	public static final String NUM_INDEX = "num_idx";

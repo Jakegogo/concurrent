@@ -4,7 +4,7 @@ import dbcache.DbCacheService;
 import dbcache.DbService;
 import dbcache.EnhancedEntity;
 import dbcache.cache.CacheUnit;
-import dbcache.cache.common.CacheQuerier;
+import dbcache.cache.common.CacheLoader;
 import dbcache.cache.common.CommonCache;
 import dbcache.conf.DbRuleService;
 import dbcache.support.asm.EntityAsmFactory;
@@ -63,10 +63,10 @@ public class Test {
 	private DbRuleService dbRuleService;
 	
 	// 用户名 - ID 缓存
-	private CommonCache<ConcurrentHashSet<Integer>> userNameCache = CacheUtils.cacheBuilder(new CacheQuerier<ConcurrentHashSet<Integer>>() {
+	private CommonCache<ConcurrentHashSet<Integer>> userNameCache = CacheUtils.cacheBuilder(new CacheLoader<ConcurrentHashSet<Integer>>() {
 		@SuppressWarnings("unchecked")
 		@Override
-		public ConcurrentHashSet<Integer> query(Object... keys) {
+		public ConcurrentHashSet<Integer> load(Object... keys) {
 			List list = JdbcUtil.listIdByAttr(Entity.class, "name", keys[0]);
 			if (list != null && list.size() > 0) {
 				return new ConcurrentHashSet<Integer>(list);

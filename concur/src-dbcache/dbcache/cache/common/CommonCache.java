@@ -17,9 +17,9 @@ import java.util.concurrent.locks.ReentrantLock;
 public class CommonCache<R> {
 
     /**
-     * 默认缓存
+     * 默认共享缓存
      */
-    private static CacheUnit defaultCacheUnit = new ConcurrentLruHashMapCache() {{
+    private static CacheUnit shareCacheUnit = new ConcurrentLruHashMapCache() {{
         this.init("DEFAULT_COMMON_CACHE", 10000, Runtime.getRuntime().availableProcessors());
     }};
 
@@ -46,13 +46,13 @@ public class CommonCache<R> {
     /**
      * 缓存查询器
      */
-    private CacheQuerier<R> cacheQuery;
+    private CacheLoader<R> cacheQuery;
 
 
     protected CommonCache() {
     }
 
-    public CommonCache(CacheQuerier<R> cacheQuery) {
+    public CommonCache(CacheLoader<R> cacheQuery) {
         this.cacheQuery = cacheQuery;
     }
 
@@ -79,7 +79,7 @@ public class CommonCache<R> {
                 return (R) cacheWrapper.get();
             }
 
-            R value = this.cacheQuery.query(key);
+            R value = this.cacheQuery.load(key);
 
             cacheWrapper = getCacheUnit().putIfAbsent(cachedKey, value);
             if(cacheWrapper != null) {
@@ -180,7 +180,7 @@ public class CommonCache<R> {
             this.cacheUnit = this.dbCacheService.getCacheUnit();
             return this.cacheUnit;
         }
-        this.cacheUnit = defaultCacheUnit;
+        this.cacheUnit = shareCacheUnit;
         return this.cacheUnit;
     }
 

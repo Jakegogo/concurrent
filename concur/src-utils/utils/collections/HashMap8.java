@@ -2521,7 +2521,7 @@ interface Consumer<T> {
  * when the spliterator <em>binds</em> to the element source; and detection of
  * structural interference of the element source detected after binding.</a>  A
  * <em>late-binding</em> Spliterator binds to the source of elements at the
- * point of first traversal, first split, or first query for estimated size,
+ * point of first traversal, first split, or first load for estimated size,
  * rather than at the time the Spliterator is created.  A Spliterator that is
  * not <em>late-binding</em> binds to the source of elements at the point of
  * construction or first invocation of any method.  Modifications made to the

@@ -1,16 +1,16 @@
 package dbcache.cache.common;
 
 /**
- * 缓存初始化查询接口
+ * 缓存加载接口
  * Created by Jake on 2014/12/28.
  */
-public interface CacheQuerier<R> {
+public interface CacheLoader<R> {
 
     /**
-     * 查询方法
+     * 加载方法
      * @param keys 键参数列表
      * @return
      */
-    public R query(Object... keys);
+    public R load(Object... keys);
 
 }

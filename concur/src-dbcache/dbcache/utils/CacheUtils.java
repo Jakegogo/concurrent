@@ -1,6 +1,6 @@
 package dbcache.utils;
 
-import dbcache.cache.common.CacheQuerier;
+import dbcache.cache.common.CacheLoader;
 import dbcache.cache.CacheUnit;
 import dbcache.DbCacheService;
 import dbcache.cache.common.CommonCache;
@@ -76,7 +76,7 @@ public class CacheUtils {
      * @param cacheQuery 缓存初始化
      * @return CacheBuilder
      */
-    public static <R> CacheBuilder<R> cacheBuilder(CacheQuerier<R> cacheQuery) {
+    public static <R> CacheBuilder<R> cacheBuilder(CacheLoader<R> cacheQuery) {
         return new CacheBuilder<R>(cacheQuery);
     }
 
@@ -109,7 +109,7 @@ public class CacheUtils {
          * 构造方法
          * @param cacheQuery 缓存初始化查询
          */
-        public CacheBuilder(CacheQuerier<R> cacheQuery) {
+        public CacheBuilder(CacheLoader<R> cacheQuery) {
             this.commonCache = new CommonCache<R>(cacheQuery);
         }
 
