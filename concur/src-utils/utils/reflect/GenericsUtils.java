@@ -52,6 +52,46 @@ public class GenericsUtils {
 
 
 	/**
+	 * 获取接口的泛型类型
+	 * @param clazz 目标类
+	 * @param interface1 指定接口
+	 * @param index 指定泛型index
+	 * @return
+	 */
+	public static Class getInterfaceGenricType(Class clazz, Class interface1, int index) {
+		if (clazz == null || interface1 == null) {
+			return null;
+		}
+
+		Type foundInteface = null;
+		Type[] interfaces = clazz.getGenericInterfaces();
+		for (Type iType : interfaces) {
+			if (!(iType instanceof ParameterizedType)) {
+				continue;
+			}
+
+			if (((ParameterizedType) iType).getRawType() == interface1) {
+				foundInteface = iType;
+			}
+		}
+
+		if (foundInteface == null) {
+			return null;
+		}
+
+
+		Type[] params = ((ParameterizedType) foundInteface).getActualTypeArguments();
+		if (params != null && index >= 0 && index < params.length ) {
+			if (params[index] instanceof Class) {
+				return (Class) params[index];
+			}
+		}
+
+		return Object.class;
+	}
+
+
+	/**
 	 * 获取实际类参数
 	 * @param actual 最终类
 	 * @param generic 泛型声明类

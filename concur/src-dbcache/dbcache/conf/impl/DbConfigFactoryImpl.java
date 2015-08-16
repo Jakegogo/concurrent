@@ -2,7 +2,10 @@ package dbcache.conf.impl;
 
 import dbcache.*;
 import dbcache.cache.CacheUnit;
-import dbcache.conf.*;
+import dbcache.conf.CacheType;
+import dbcache.conf.DbConfigFactory;
+import dbcache.conf.DbRuleService;
+import dbcache.conf.PersistType;
 import dbcache.index.DbIndexService;
 import dbcache.persist.service.DbPersistService;
 import dbcache.pkey.IdGenerator;
@@ -106,6 +109,7 @@ public class DbConfigFactoryImpl implements DbConfigFactory, DbCacheMBean {
 	 * 持久化服务
 	 */
 	private ConcurrentMap<PersistType, DbPersistService> persistServiceMap = new ConcurrentHashMapV8<PersistType, DbPersistService>();
+
 
 
 	@SuppressWarnings({ "rawtypes" })
@@ -494,6 +498,12 @@ public class DbConfigFactoryImpl implements DbConfigFactory, DbCacheMBean {
 			e.printStackTrace();
 		}
 		return null;
+	}
+
+
+	private void clear() {
+		dbCacheServiceBeanMap.clear();
+		cacheConfigMap.clear();
 	}
 
 

@@ -4,8 +4,8 @@ import dbcache.DbCacheInitError;
 import dbcache.DbCacheService;
 import dbcache.EntityLoadListener;
 import dbcache.IEntity;
-import dbcache.conf.impl.CacheConfig;
 import dbcache.conf.DbConfigFactory;
+import dbcache.conf.impl.CacheConfig;
 import dbcache.index.IndexChangeListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,7 +35,6 @@ public class DbCacheInjectProcessor extends InstantiationAwareBeanPostProcessorA
 	 * logger
 	 */
 	private static final Logger logger = LoggerFactory.getLogger(DbCacheInjectProcessor.class);
-
 
 	@Autowired
 	private DbConfigFactory configFactory;
@@ -83,12 +82,15 @@ public class DbCacheInjectProcessor extends InstantiationAwareBeanPostProcessorA
 			Type type = field.getGenericType();
 			Type[] types = ((ParameterizedType) type).getActualTypeArguments();
 			clz = (Class<? extends IEntity>) types[0];
-			serviceBean = this.configFactory.createCacheService(clz);
+
+			serviceBean = this.configFactory.getDbCacheServiceBean(clz);
+
 		} catch (Exception e) {
 			FormattingTuple message = MessageFormatter.arrayFormat("Bean[{}]的注入属性[{}<{}, ?>]类型声明错误", new Object[]{beanName, field.getName(), clz != null ?clz.getSimpleName() : null});
 			logger.error(message.getMessage());
 			throw new IllegalStateException(message.getMessage(), e);
 		}
+
 		if (serviceBean == null) {
 			FormattingTuple message = MessageFormatter.format("实体[{}]缓存服务对象不存在", clz.getName());
 			logger.debug(message.getMessage());
@@ -139,7 +141,7 @@ public class DbCacheInjectProcessor extends InstantiationAwareBeanPostProcessorA
 
 		IndexChangeListener indexChangeListenerBean = (IndexChangeListener) bean;
 
-		Class<?> listenClass = GenericsUtils.getSuperClassGenricType(indexChangeListenerBean.getClass(), 0);
+		Class<?> listenClass = GenericsUtils.getInterfaceGenricType(indexChangeListenerBean.getClass(), IndexChangeListener.class, 0);
 		if (listenClass == null) {
 			return;
 		}

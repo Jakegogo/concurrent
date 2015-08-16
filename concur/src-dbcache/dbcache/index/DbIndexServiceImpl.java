@@ -36,7 +36,6 @@ import java.util.concurrent.locks.ReentrantLock;
 public class DbIndexServiceImpl<PK extends Comparable<PK> & Serializable>
 		implements DbIndexService<PK> {
 
-
 	/**
 	 * 实体缓存配置
 	 */
@@ -169,7 +168,7 @@ public class DbIndexServiceImpl<PK extends Comparable<PK> & Serializable>
 		// 索引变化监听
 		if (cacheConfig.isHasIndexListeners()) {
 			for (IndexChangeListener listener : cacheConfig.getIndexChangeListener()) {
-				listener.onCreate(indexValue.getName(), indexValue.getValue(), indexValue.getId());
+				listener.onIndexCreate(indexValue.getName(), indexValue.getValue(), indexValue.getId());
 			}
 		}
 
@@ -189,7 +188,7 @@ public class DbIndexServiceImpl<PK extends Comparable<PK> & Serializable>
 		// 索引变化监听
 		if (cacheConfig.isHasIndexListeners()) {
 			for (IndexChangeListener listener : cacheConfig.getIndexChangeListener()) {
-				listener.onRemove(indexValue.getName(), indexValue.getValue(), indexValue.getId());
+				listener.onIndexRemove(indexValue.getName(), indexValue.getValue(), indexValue.getId());
 			}
 		}
 
@@ -223,7 +222,7 @@ public class DbIndexServiceImpl<PK extends Comparable<PK> & Serializable>
 		// 索引变化监听
 		if (cacheConfig.isHasIndexListeners()) {
 			for (IndexChangeListener listener : cacheConfig.getIndexChangeListener()) {
-				listener.onChange(indexName, oldValue, newValue, entity.getId());
+				listener.onIndexChange(indexName, oldValue, newValue, entity.getId());
 			}
 		}
 	}
