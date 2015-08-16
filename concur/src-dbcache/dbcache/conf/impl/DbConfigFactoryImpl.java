@@ -463,7 +463,7 @@ public class DbConfigFactoryImpl implements DbConfigFactory, DbCacheMBean {
 
 		// 设置引用持有对象
 		if (proxyEntity instanceof EnhancedEntity) {
-			((EnhancedEntity)proxyEntity).getRefHolder().setCacheObject(result);
+			((EnhancedEntity)proxyEntity).getRefHolder().rlinkCacheObject(result);
 		}
 		
 		return result;

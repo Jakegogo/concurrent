@@ -1,10 +1,13 @@
 package dbcache;
 
 import dbcache.conf.impl.CacheConfig;
+import dbcache.index.IndexObject;
 import dbcache.persist.PersistStatus;
 import utils.thread.SimpleLinkingRunnable;
 import org.apache.commons.lang.builder.EqualsBuilder;
 
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicIntegerArray;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -43,6 +46,11 @@ public class CacheObject<T extends IEntity<?>> {
 	 * 是否在更新处理中
 	 */
 	private volatile boolean updateProcessing = false;
+
+	/**
+	 * 索引对象引用持有
+	 */
+	private Set<IndexObject<?>> indexObjects = new TreeSet<IndexObject<?>>();
 
 	//-----执行链-----
 	/**
@@ -181,4 +189,21 @@ public class CacheObject<T extends IEntity<?>> {
 	public AtomicIntegerArray getModifiedFields() {
 		return modifiedFields;
 	}
+
+	/**
+	 * 移除索引对象引用
+	 * @param indexObject IndexObject<?>
+	 */
+	public void removeIndexObject(IndexObject<?> indexObject) {
+		this.indexObjects.remove(indexObject);
+	}
+
+	/**
+	 * 添加索引对象引用
+	 * @param indexObject IndexObject<?>
+	 */
+	public void addIndexObject(IndexObject<?> indexObject) {
+		this.indexObjects.add(indexObject);
+	}
+
 }
