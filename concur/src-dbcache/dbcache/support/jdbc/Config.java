@@ -26,6 +26,8 @@ public class Config {
 
 	private final ThreadLocal<Connection> threadLocal = new ThreadLocal<Connection>();
 
+	Config(){}
+
 	/**
 	 * Constructor with DataSource
 	 * @param dataSource the dataSource, can not be null
