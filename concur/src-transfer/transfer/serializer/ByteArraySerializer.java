@@ -79,7 +79,7 @@ public class ByteArraySerializer implements Serializer, Opcodes {
 
 	}
 
-	private static ByteArraySerializer instance = new ByteArraySerializer();
+	private static final ByteArraySerializer instance = new ByteArraySerializer();
 
 	public static ByteArraySerializer getInstance() {
 		return instance;

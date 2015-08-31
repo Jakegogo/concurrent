@@ -13,12 +13,12 @@ public interface EnhancedEntity {
 	 * 获取实体
 	 * @return
 	 */
-	public IEntity<?> getEntity();
+	IEntity<?> getEntity();
 
 	/**
 	 * 获取引用持有者
 	 * @return
 	 */
-	public WeakRefHolder getRefHolder();
+	WeakRefHolder getRefHolder();
 
 }

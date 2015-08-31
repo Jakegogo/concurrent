@@ -29,7 +29,7 @@ public class AsmSerializerFactory implements Opcodes {
     /**
      * 预编译编码器的自增ID
      */
-    private static AtomicInteger SERIALIZER_ID_GENERATOR = new AtomicInteger(0);
+    private static final AtomicInteger SERIALIZER_ID_GENERATOR = new AtomicInteger(0);
 
 
     /**
@@ -48,7 +48,7 @@ public class AsmSerializerFactory implements Opcodes {
         
         Class<?> serializerClass;
         try {
-        	serializerClass = (Class<?>) classLoader.defineClass(
+        	serializerClass = classLoader.defineClass(
                     asmClassName, bytes);
             return (Serializer) serializerClass.newInstance();
         } catch (Exception e) {
@@ -57,7 +57,7 @@ public class AsmSerializerFactory implements Opcodes {
             	asmClassName = TypeUtils.getRawClass(type).getSimpleName() + "_Serializer_" + SERIALIZER_ID_GENERATOR.incrementAndGet();
             	bytes = createSerializerClassBytes(asmClassName, type, outerSerializer);
             	
-            	serializerClass = (Class<?>) classLoader.defineClass(
+            	serializerClass = classLoader.defineClass(
                         asmClassName, bytes);
             	 return (Serializer) serializerClass.newInstance();
             } catch (Exception e1) {

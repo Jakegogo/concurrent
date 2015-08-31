@@ -164,7 +164,7 @@ public class ConcurrentLinkedHashMapCache implements CacheUnit {
 	 * @param storeValue the store value
 	 * @return the value to return to the user
 	 */
-	protected Object fromStoreValue(Object storeValue) {
+	private Object fromStoreValue(Object storeValue) {
 		return storeValue;
 	}
 
@@ -174,7 +174,7 @@ public class ConcurrentLinkedHashMapCache implements CacheUnit {
 	 * @param userValue the given user value
 	 * @return the value to store
 	 */
-	protected ValueWrapper toStoreValue(Object userValue) {
+	private ValueWrapper toStoreValue(Object userValue) {
 		if (userValue == null) {
 			return NULL_HOLDER;
 		}

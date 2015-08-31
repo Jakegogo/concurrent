@@ -36,17 +36,17 @@ public class Entity$EnhancedByCc1
 
   public void addNum(int paramInt)
   {
-    Integer localInteger1 = Integer.valueOf(this.obj.getNum());
+    Integer localInteger1 = this.obj.getNum();
     this.obj.addNum(paramInt);
-    Integer localInteger2 = Integer.valueOf(this.obj.getNum());
+    Integer localInteger2 = this.obj.getNum();
 //    DefaultMethodAspect.changeIndex(this.obj, "uid_idx", localInteger1, localInteger2);
   }
 
   public void setNum(int paramInt)
   {
-    Integer localInteger1 = Integer.valueOf(this.obj.getNum());
+    Integer localInteger1 = this.obj.getNum();
     this.obj.setNum(paramInt);
-    Integer localInteger2 = Integer.valueOf(this.obj.getNum());
+    Integer localInteger2 = this.obj.getNum();
 //    DefaultMethodAspect.changeIndex(this.obj, "uid_idx", localInteger1, localInteger2);
   }
 

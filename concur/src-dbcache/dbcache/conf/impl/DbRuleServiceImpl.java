@@ -141,7 +141,7 @@ public class DbRuleServiceImpl implements DbRuleService {
 	/**
 	 * 自增部分的ID最小值补齐字符串
 	 */
-	public final String STR_VALUE_OF_AUTOINCR_ID_MIN_VALUE =
+	private final String STR_VALUE_OF_AUTOINCR_ID_MIN_VALUE =
 			String.format("%0" + INCREMENT_PART + "d", ID_MIN_VALUE_OF_AUTOINCR);
 
 	/**
@@ -231,7 +231,7 @@ public class DbRuleServiceImpl implements DbRuleService {
         }
 
 		String[] serverIdArray = serverIdSet.trim().split(SPLIT);
-		if (serverIdArray == null || serverIdArray.length == 0) {
+		if (serverIdArray.length == 0) {
 			return;
 		}
 
@@ -290,7 +290,7 @@ public class DbRuleServiceImpl implements DbRuleService {
 		if (idType == null || idType != Long.class) {
 			Field[] fields = ReflectionUtility.getDeclaredFieldsWith(clz, javax.persistence.Id.class);
 
-			if(fields == null || fields.length == 0) {
+			if(fields.length == 0) {
 				return;
 			}
 			ReflectionUtils.makeAccessible(fields[0]);
@@ -397,9 +397,8 @@ public class DbRuleServiceImpl implements DbRuleService {
 	 */
 	public long getMaxValueOfEntityId(int serverId) {
 		int valueOfServer = ID_BASE_VALUE_OF_SERVER + serverId;
-		String valueStr = new StringBuffer().append(valueOfServer)
-											.append(ID_MAX_VALUE_OF_AUTOINCR)
-											.toString();
+		String valueStr = String.valueOf(valueOfServer) +
+				ID_MAX_VALUE_OF_AUTOINCR;
 		return Long.parseLong(valueStr);
 	}
 
@@ -410,9 +409,8 @@ public class DbRuleServiceImpl implements DbRuleService {
 	 */
 	public long getMinValueOfEntityId(int serverId) {
 		int valueOfServer = ID_BASE_VALUE_OF_SERVER + serverId;
-		String valueStr = new StringBuffer().append(valueOfServer)
-											.append(STR_VALUE_OF_AUTOINCR_ID_MIN_VALUE)
-											.toString();
+		String valueStr = String.valueOf(valueOfServer) +
+				STR_VALUE_OF_AUTOINCR_ID_MIN_VALUE;
 		return Long.parseLong(valueStr);
 	}
 
@@ -449,7 +447,7 @@ public class DbRuleServiceImpl implements DbRuleService {
 	@Override
 	public List<Integer> getServerIdList() {
 		if (this.serverIdList == null) {
-			return Arrays.asList(Integer.valueOf(1));
+			return Collections.singletonList(1);
 		}
 		return Collections.unmodifiableList(serverIdList);
 	}
@@ -458,7 +456,7 @@ public class DbRuleServiceImpl implements DbRuleService {
 	@Override
 	public Integer getDefaultServerId() {
 		if (this.serverIdList == null || this.serverIdList.size() == 0) {
-			return Integer.valueOf(1);
+			return 1;
 		}
 		return this.serverIdList.get(0);
 	}

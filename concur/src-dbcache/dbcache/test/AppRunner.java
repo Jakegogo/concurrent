@@ -29,7 +29,7 @@ public class AppRunner implements Runnable {
 //		}
 		
 		System.out.println(new Entity().toString());
-		Object c1 = new Entity().getClass().getClassLoader();
+		Object c1 = Entity.class.getClassLoader();
 		System.out.println(c1);
 		
 		Object c2 = this.getClass().getClassLoader();

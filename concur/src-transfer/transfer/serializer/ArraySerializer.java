@@ -186,7 +186,7 @@ public class ArraySerializer implements Serializer, Opcodes {
 
 	}
 
-	private static ArraySerializer instance = new ArraySerializer();
+	private static final ArraySerializer instance = new ArraySerializer();
 
 	public static ArraySerializer getInstance() {
 		return instance;

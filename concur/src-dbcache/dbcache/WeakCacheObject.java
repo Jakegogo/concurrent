@@ -1,6 +1,5 @@
 package dbcache;
 
-import java.lang.ref.WeakReference;
 import java.util.concurrent.atomic.AtomicIntegerArray;
 
 
@@ -17,25 +16,6 @@ public class WeakCacheObject<T extends IEntity<?>, R extends WeakCacheEntity<T,?
 	 */
 	private int hashCode;
 
-
-	/**
-	 * 默认构造方法
-	 */
-	protected WeakCacheObject() {
-	}
-
-
-	/**
-	 * 构造方法
-	 *
-	 * @param entity 实体
-	 * @param clazz  类型
-	 * @param proxyEntity WeakCacheEntity
-	 */
-	@SuppressWarnings("unchecked")
-	public WeakCacheObject(T entity, Class<T> clazz, WeakReference<?> proxyEntity) {
-		super(entity, clazz, (T) proxyEntity);
-	}
 
 	/**
 	 * 构造方法

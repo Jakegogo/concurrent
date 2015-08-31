@@ -115,9 +115,9 @@ public class MapSerializer implements Serializer, Opcodes {
 
 		int localNumAppend = 0;
 
-		if ((keyClass == null || keyClass == Object.class
+		if (keyClass == null || keyClass == Object.class
 				|| keyClass.isInterface()
-				|| Modifier.isAbstract(keyClass.getModifiers())) && !keyClass.isArray()) {
+				|| (Modifier.isAbstract(keyClass.getModifiers()) && !keyClass.isArray())) {
 
 			mv.visitVarInsn(ALOAD, 5);
 			mv.visitMethodInsn(INVOKEVIRTUAL, "java/lang/Object", "getClass",
@@ -166,7 +166,7 @@ public class MapSerializer implements Serializer, Opcodes {
 
 		if (valueClass == null || valueClass == Object.class
 				|| valueClass.isInterface()
-				|| Modifier.isAbstract(valueClass.getModifiers()) && !valueClass.isArray()) {
+				|| (Modifier.isAbstract(valueClass.getModifiers()) && !valueClass.isArray())) {
 
 			mv.visitVarInsn(ALOAD, 6);
 			mv.visitMethodInsn(INVOKEVIRTUAL, "java/lang/Object", "getClass",
@@ -206,7 +206,6 @@ public class MapSerializer implements Serializer, Opcodes {
 
 			fieldSerializer.compile(valueType, methodVisitor, context);
 
-			localNumAppend -= 1;
 		}
 
 		mv.visitLabel(l7);
@@ -222,7 +221,7 @@ public class MapSerializer implements Serializer, Opcodes {
 
 	}
 
-	private static MapSerializer instance = new MapSerializer();
+	private static final MapSerializer instance = new MapSerializer();
 
 	public static MapSerializer getInstance() {
 		return instance;

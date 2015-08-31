@@ -58,7 +58,7 @@ public class TagObjectSerializer implements Serializer {
 
 	}
 
-	private static TagObjectSerializer instance = new TagObjectSerializer();
+	private static final TagObjectSerializer instance = new TagObjectSerializer();
 
 	public static TagObjectSerializer getInstance() {
 		return instance;

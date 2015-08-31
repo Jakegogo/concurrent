@@ -10,6 +10,6 @@ public interface ProgressMonitorable {
      * 更新进度显示
      * @param progress
      */
-    public void updateProgress(double progress);
+    void updateProgress(double progress);
 
 }

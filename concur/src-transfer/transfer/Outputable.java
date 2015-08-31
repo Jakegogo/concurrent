@@ -11,20 +11,20 @@ public interface Outputable {
      * 写入字节
      * @param byte1
      */
-    public void putByte(byte byte1);
+    void putByte(byte byte1);
 
 
     /**
      * 写入字节数组
      * @param bytes
      */
-    public void putBytes(byte[] bytes);
+    void putBytes(byte[] bytes);
 
 
     /**
      * 写入字节数组
      * @param bytes
      */
-    public void putBytes(byte[] bytes, int start, int length);
+    void putBytes(byte[] bytes, int start, int length);
 
 }

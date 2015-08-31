@@ -308,7 +308,7 @@ public class DelayBatchDbPersistService implements DbPersistService {
 			
 			try {
 				
-				long timeDiff = 0l;
+				long timeDiff;
 				long lastFlush = System.currentTimeMillis();
 				do {
 
@@ -421,18 +421,18 @@ public class DelayBatchDbPersistService implements DbPersistService {
 
 	@Override
 	public void logHadNotPersistEntity() {
-		PersistAction updateAction = null;
-		for (Iterator<PersistAction> it = this.updateQueue.iterator(); it.hasNext();) {
-			updateAction = it.next();
+		PersistAction updateAction;
+		for (PersistAction anUpdateQueue : this.updateQueue) {
+			updateAction = anUpdateQueue;
 			String persistInfo = updateAction.getPersistInfo();
-			if(!StringUtils.isBlank(persistInfo)) {
+			if (!StringUtils.isBlank(persistInfo)) {
 				logger.error("检测到可能未入库对象! " + persistInfo);
 			}
 		}
-		for (Iterator<PersistAction> it = this.swapQueue.iterator(); it.hasNext();) {
-			updateAction = it.next();
+		for (PersistAction aSwapQueue : this.swapQueue) {
+			updateAction = aSwapQueue;
 			String persistInfo = updateAction.getPersistInfo();
-			if(!StringUtils.isBlank(persistInfo)) {
+			if (!StringUtils.isBlank(persistInfo)) {
 				logger.error("检测到可能未入库对象! " + persistInfo);
 			}
 		}

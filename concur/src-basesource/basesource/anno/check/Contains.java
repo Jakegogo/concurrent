@@ -13,24 +13,24 @@ public @interface Contains {
 	 * 错误提示信息
 	 * @return
 	 */
-	public String msg() default "";
+	String msg() default "";
 	
 	/**
 	 * 按字段分组
 	 * @return
 	 */
-	public String[] groupBy() default {};
+	String[] groupBy() default {};
 	
 	/**
 	 * 外键的类
 	 * @return
 	 */
-	public Class<?>[] foreignClass() default {};
+	Class<?>[] foreignClass() default {};
 	
 	/**
 	 * 外键的类
 	 * @return
 	 */
-	public String[] foreignKey() default {};
+	String[] foreignKey() default {};
 	
 }

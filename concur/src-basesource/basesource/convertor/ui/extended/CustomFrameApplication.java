@@ -166,13 +166,12 @@ public abstract class CustomFrameApplication extends Application {
         try {
             getWindowsM = Window.class.getMethod("getWindows", new Class[0]);
         } catch (Exception var9) {
-            ;
         }
 
         int len$;
         int i$;
         if(getWindowsM != null) {
-            Window[] frames = null;
+            Window[] frames;
 
             try {
                 frames = (Window[])((Window[])getWindowsM.invoke((Object)null, new Object[0]));

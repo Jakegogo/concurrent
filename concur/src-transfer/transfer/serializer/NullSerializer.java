@@ -37,7 +37,7 @@ public class NullSerializer implements Serializer, Opcodes {
 
 	}
 
-	private static NullSerializer instance = new NullSerializer();
+	private static final NullSerializer instance = new NullSerializer();
 
 	public static NullSerializer getInstance() {
 		return instance;

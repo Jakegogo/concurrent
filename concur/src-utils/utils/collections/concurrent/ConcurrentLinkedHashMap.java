@@ -379,7 +379,7 @@ public class ConcurrentLinkedHashMap<K, V> extends AbstractMap<K, V> implements 
             throw new IllegalArgumentException();
         }
         Node<K, V> node = data.get(key);
-        return (node == null) ? false : node.casValue(oldValue, newValue);
+        return node != null && node.casValue(oldValue, newValue);
     }
 
     /**

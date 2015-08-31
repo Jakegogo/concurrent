@@ -50,7 +50,7 @@ public class CacheObject<T extends IEntity<?>> {
 	/**
 	 * 索引对象引用持有
 	 */
-	private Set<IndexObject<?>> indexObjects = new TreeSet<IndexObject<?>>();
+	private final Set<IndexObject<?>> indexObjects = new TreeSet<IndexObject<?>>();
 
 	//-----执行链-----
 	/**
@@ -58,26 +58,6 @@ public class CacheObject<T extends IEntity<?>> {
 	 */
 	private volatile AtomicReference<SimpleLinkingRunnable> lastLinkingRunnable;
 	
-	/**
-	 * 默认构造方法
-	 */
-	protected CacheObject() {
-		this.entity = null;
-		this.proxyEntity = null;
-	}
-
-	/**
-	 * 构造方法
-	 *
-	 * @param entity
-	 *            实体
-	 * @param clazz
-	 *            类型
-	 */
-	public CacheObject(T entity, Class<T> clazz, T proxyEntity) {
-		this(entity, clazz, proxyEntity, null);
-	}
-
 	/**
 	 * 构造方法
 	 *

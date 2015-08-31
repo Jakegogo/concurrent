@@ -12,23 +12,23 @@ public class ClassInfo {
     /**
      * 传输类唯一标识
      */
-	protected int classId;
+    int classId;
 
     /**
      * 类
      */
-    protected Class<?> clazz;
+    Class<?> clazz;
 
     /**
      * 属性列表
      */
     @SuppressWarnings("rawtypes")
-    protected List<FieldInfo> fieldInfos;
+    private List<FieldInfo> fieldInfos;
 
     /**
      * 属性Map
      */
-    protected Map<String, FieldInfo> fieldInfoMap;
+    private Map<String, FieldInfo> fieldInfoMap;
 
     /**
      * 获取实例

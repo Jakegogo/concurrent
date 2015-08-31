@@ -99,7 +99,7 @@ public class ProgressTableModel extends AbstractTableModel {
         if (files == null) {
             return false;
         }
-        return files.equals(this.files);
+        return Arrays.equals(files, this.files);
     }
 
     /**
@@ -205,8 +205,7 @@ public class ProgressTableModel extends AbstractTableModel {
             return null;
         }
 
-        TaskInfo taskInfo = this.taskInfo[row];
-        return taskInfo;
+        return this.taskInfo[row];
     }
 
 
@@ -221,10 +220,7 @@ public class ProgressTableModel extends AbstractTableModel {
         }
 
         Double progress = progresses.get(row);
-        if (progress != null && progress < 0) {
-            return true;
-        }
-        return false;
+        return progress != null && progress < 0;
     }
 
     /**
@@ -271,8 +267,7 @@ public class ProgressTableModel extends AbstractTableModel {
     }
 
     private Object getFileIcon(File file) {
-        Icon icon = fileSystemView.getSystemIcon(file);
-        return icon;
+        return fileSystemView.getSystemIcon(file);
     }
 
 

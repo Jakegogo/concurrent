@@ -102,7 +102,7 @@ public class CacheUtils {
         /**
          * 通用缓存单元
          */
-        private CommonCache commonCache;
+        private final CommonCache commonCache;
 
 
         /**

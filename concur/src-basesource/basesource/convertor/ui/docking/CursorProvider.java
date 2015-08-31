@@ -32,36 +32,36 @@ public interface CursorProvider {
 	 * Returns a Image for the center docking region
 	 * @return a Image instance
 	 */
-	public Image getCenterImage();
+	Image getCenterImage();
 	
 	/**
 	 * Returns a Image indicating that docking is now allowed at the current mouse location
 	 * @return a Image instance
 	 */
-	public Image getDisallowedImage();
+	Image getDisallowedImage();
 	
 	/**
 	 * Returns a Image for the eastern docking region
 	 * @return a Image instance
 	 */
-	public Image getEastImage();
+	Image getEastImage();
 
 	
 	/**
 	 * Returns a Image for the northern docking region
 	 * @return a Image instance
 	 */
-	public Image getNorthImage();
+	Image getNorthImage();
 	
 	/**
 	 * Returns a Image for the southern docking region
 	 * @return a Image instance
 	 */
-	public Image getSouthImage();
+	Image getSouthImage();
 	
 	/**
 	 * Returns a Image for the western docking region
 	 * @return a Image instance
 	 */
-	public Image getWestImage();
+	Image getWestImage();
 }

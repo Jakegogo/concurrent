@@ -76,7 +76,7 @@ public class TagEnumDeserializer implements Deserializer {
     	
 	}
 
-    private static TagEnumDeserializer instance = new TagEnumDeserializer();
+    private static final TagEnumDeserializer instance = new TagEnumDeserializer();
 
     public static TagEnumDeserializer getInstance() {
         return instance;

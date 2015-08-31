@@ -20,7 +20,7 @@ public class IndexValue<PK extends Comparable<PK> & Serializable> extends IndexK
 	 * @param value 索引值
 	 * @param id 实体Id
 	 */
-	public IndexValue(String name, Object value, PK id) {
+	private IndexValue(String name, Object value, PK id) {
 		super(name, value);
 		this.id = id;
 	}

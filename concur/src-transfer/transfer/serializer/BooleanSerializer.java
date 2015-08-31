@@ -27,7 +27,7 @@ public class BooleanSerializer implements Serializer, Opcodes {
 
 		Boolean bool = (Boolean) object;
 		byte booleanVal;
-		if (bool.booleanValue()) {
+		if (bool) {
 			booleanVal = (byte) 0x01;
 		} else {
 			booleanVal = (byte) 0x00;
@@ -93,7 +93,7 @@ public class BooleanSerializer implements Serializer, Opcodes {
 
 	}
 
-	private static BooleanSerializer instance = new BooleanSerializer();
+	private static final BooleanSerializer instance = new BooleanSerializer();
 
 	public static BooleanSerializer getInstance() {
 		return instance;

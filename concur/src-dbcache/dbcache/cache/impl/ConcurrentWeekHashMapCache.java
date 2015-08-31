@@ -79,8 +79,8 @@ public class ConcurrentWeekHashMapCache implements CacheUnit {
 					long waitTimmer = TimeUnit.SECONDS.toMillis(1);
 					while (!Thread.interrupted()) {
 						try {
-							for (Iterator<FinalizableReferenceQueue> it = referenceQueues.iterator(); it.hasNext(); ) {
-								it.next().cleanUp(waitTimmer);
+							for (FinalizableReferenceQueue referenceQueue1 : referenceQueues) {
+								referenceQueue1.cleanUp(waitTimmer);
 							}
 						} catch (Exception e) {
 							e.printStackTrace();
@@ -200,7 +200,7 @@ public class ConcurrentWeekHashMapCache implements CacheUnit {
 		@SuppressWarnings("rawtypes")
 		void cleanUp(long waitTimmer) {
 			try {
-				Reference<? extends T> reference = null;
+				Reference<? extends T> reference;
 				do {
 					reference = remove(waitTimmer);
 					if(reference != null) {

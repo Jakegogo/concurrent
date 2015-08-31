@@ -12,14 +12,14 @@ public interface ShardStrategy<PK> {
 	 * @param key 实体Key
 	 * @return
 	 */
-	public String getTableNameSuffix(PK key);
+	String getTableNameSuffix(PK key);
 	
 	/**
 	 * 是否自动建表
 	 * @see ShardStrategy#createTableSqlTemplate()
 	 * @return
 	 */
-	public boolean autoCreateTable();
+	boolean autoCreateTable();
 	
 	/**
 	 * 建表语句模版
@@ -27,6 +27,6 @@ public interface ShardStrategy<PK> {
 	 * @see ShardStrategy#autoCreateTable()
 	 * @return
 	 */
-	public String createTableSqlTemplate();
+	String createTableSqlTemplate();
 	
 }

@@ -18,6 +18,6 @@ public @interface Negative {
 	 * 错误提示信息
 	 * @return
 	 */
-	public String msg() default "";
+	String msg() default "";
 	
 }

@@ -13,20 +13,20 @@ public interface DbCacheMBean {
 	 * 获取DbCacheServiceBean信息
 	 * @return
 	 */
-	public Map<String, String> getDbCacheServiceBeanInfo();
+	Map<String, String> getDbCacheServiceBeanInfo();
 
 
 	/**
 	 * 获取缓存实体类配置
 	 * @return
 	 */
-	public Map<String, String> getCacheConfigInfo();
+	Map<String, String> getCacheConfigInfo();
 
 
 	/**
 	 * 获取入库处理服务信息
 	 * @return
 	 */
-	public Map<String, Object> getDbPersistInfo();
+	Map<String, Object> getDbPersistInfo();
 
 }

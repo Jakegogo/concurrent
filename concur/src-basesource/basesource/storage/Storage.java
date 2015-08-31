@@ -187,8 +187,7 @@ public class Storage<K, V> extends Observable implements ApplicationContextAware
 			if (indexList == null) {
 				return Collections.EMPTY_LIST;
 			}
-			ArrayList<V> result = new ArrayList<V>(indexList);
-			return result;
+			return new ArrayList<V>(indexList);
 		} finally {
 			readLock.unlock();
 		}

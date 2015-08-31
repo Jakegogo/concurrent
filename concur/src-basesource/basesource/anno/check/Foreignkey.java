@@ -18,19 +18,19 @@ public @interface Foreignkey {
 	 * 关联类
 	 * @return
 	 */
-	public Class<?> cls();
+	Class<?> cls();
 	
 	/**
 	 * 关联类属性
 	 * @return
 	 */
-	public String key();
+	String key();
 	
 	/**
 	 * 错误提示信息
 	 * @return
 	 */
-	public String msg() default "";
+	String msg() default "";
 	
 
 	

@@ -55,7 +55,7 @@ public class CleanupThread extends Thread
 
         while (!Thread.interrupted())
         {
-        	ConcurrentLRUCache c = null;
+        	ConcurrentLRUCache c;
         	if (cleanQueue.peek() == null) {
 	            synchronized (this)
 	            {

@@ -14,12 +14,12 @@ public @interface ValueType {
      * 值(json格式的值使用:{value}.xxx.xx)
      * @return
      */
-    public String[] value() default basesource.contants.ValueType.VALUE;
+    String[] value() default basesource.contants.ValueType.VALUE;
 
     /**
      * 获取值的类
      * @return
      */
-    public Class<? extends ValueGetter> valueGetter() default ValueGetter.class;
+    Class<? extends ValueGetter> valueGetter() default ValueGetter.class;
 
 }

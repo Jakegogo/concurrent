@@ -19,9 +19,6 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 package basesource.convertor.ui.docking;
 
 import java.awt.Component;
-import java.awt.Point;
-import java.awt.event.MouseMotionListener;
-import java.util.EventListener;
 
 
 /**
@@ -36,13 +33,13 @@ public interface Dockable {
 	 * Callback method invoked from the <code>DockingManager</code> upon unsuccessful completion of 
 	 * a docking operation,
 	 */
-	public void dockingCanceled();
+	void dockingCanceled();
 	
 	/**
 	 * Callback method invoked from the <code>DockingManager</code> upon successful completion of 
 	 * a docking operation,
 	 */
-	public void dockingCompleted();
+	void dockingCompleted();
 
 	/**
 	 * Returns the <code>CursorProvider</code> instance associated with drag operations on this 
@@ -50,59 +47,59 @@ public interface Dockable {
 	 * 
 	 * @return a <code>CursorProvider</code> instance.
 	 */
-	public CursorProvider getCursorProvider();
+	CursorProvider getCursorProvider();
 
 	/**
 	 * Returns the Component that is to be dragged and docked.  This may or may not be the same as the 
 	 * Component returned by <code>getInitiator()</code>.
 	 */
-	public Component getDockable();
+	Component getDockable();
 	
 	/**
 	 * Returns the docking description that will be used in conjunction with the current docking component.
 	 * Docking description is used as the tab-title when docking into a tabbed pane. 
-	 */	
-	public String getDockableDesc();
+	 */
+	String getDockableDesc();
 	
 	/**
 	 * Returns the Component that is the event source of drag operations.  This may or may not be the same 
 	 * as the Component returned by <code>getDockable()</code>.
 	 */
-	public Component getInitiator();
+	Component getInitiator();
 	
 	/**
 	 * Indicates the resizing policy that will used when docking in a <code>DockingPort</code>.  
 	 * <code>DockingPort</code> will have the capability of splitting real-estate betweeen more than one
 	 * Component.  The resizing policy determines whether that layout can be altered in a split-pane fashion. 
 	 */
-	public boolean isDockedLayoutResizable();
+	boolean isDockedLayoutResizable();
 	
 	/**
 	 *  Indicates whether or not this <code>Dockable</code> instance will respond to drag events.
 	 */
-	public boolean isDockingEnabled();
+	boolean isDockingEnabled();
 	
 	/**
 	 * Indicates whether or not <code>MouseMotionListeners</code> that are currently 
 	 * attached to the <code>getInitiator()</code> component will be processed during drag operations. 
 	 */
-	public boolean mouseMotionListenersBlockedWhileDragging();
+	boolean mouseMotionListenersBlockedWhileDragging();
 	
 	/**
 	 * Sets the resizing policy that will used when docking in a <code>DockingPort</code>.  
 	 * <code>DockingPort</code> will have the capability of splitting real-estate betweeen more than one
 	 * Component.  The resizing policy determines whether that layout can be altered in a split-pane fashion. 
 	 */
-	public void setDockedLayoutResizable(boolean b);
+	void setDockedLayoutResizable(boolean b);
 	
 	/**
 	 *  Determines whether or not this <code>Dockable</code> instance will respond to drag events.
 	 */
-	public void setDockingEnabled(boolean b);
+	void setDockingEnabled(boolean b);
 	
 	/**
 	 * Sets the docking description that will be used in conjunction with the current docking component.
 	 * Docking description is used as the tab-title when docking into a tabbed pane. 
-	 */	
-	public void setDockableDesc(String desc);
+	 */
+	void setDockableDesc(String desc);
 }

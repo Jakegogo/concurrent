@@ -15,23 +15,16 @@ public class Config {
 
 	Dialect dialect = Dialect.getDefaultDialect();
 
-	String name;
+	private String name;
 
 	@Autowired
 	DataSource dataSource;
 
-	int transactionLevel = Connection.TRANSACTION_READ_COMMITTED;
-	boolean showSql = true;
-	boolean devMode = false;
+	private int transactionLevel = Connection.TRANSACTION_READ_COMMITTED;
+	private boolean showSql = true;
+	private boolean devMode = false;
 
 	private final ThreadLocal<Connection> threadLocal = new ThreadLocal<Connection>();
-
-	/**
-	 * For DbKit.brokenConfig = new Config();
-	 */
-	Config() {
-
-	}
 
 	/**
 	 * Constructor with DataSource
@@ -179,7 +172,7 @@ public class Config {
 		}
 	}
 
-	public final boolean checkConnection(Connection conn) {
+	public final void checkConnection(Connection conn) {
 		boolean isConnection = false;
 		
 		try {
@@ -193,7 +186,6 @@ public class Config {
 		if (!isConnection) {
 			threadLocal.set(null);
 		}
-		return isConnection;
 	}
 
 	public final void close(Connection conn) {

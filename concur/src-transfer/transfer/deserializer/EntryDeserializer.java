@@ -79,7 +79,7 @@ public class EntryDeserializer implements Deserializer, Opcodes {
         mv.visitVarInsn(ISTORE, 5);
         
         //解析KEY
-        int keyLocal = 5;
+        int keyLocal;
         Class<?> keyRawClass = TypeUtils.getRawClass(keyType);
         if (keyType == null || keyType == Object.class
 				|| keyRawClass.isInterface()
@@ -117,7 +117,7 @@ public class EntryDeserializer implements Deserializer, Opcodes {
         
         
         // 解析VALUE
-        int valueLocal = keyLocal + 1;
+        int valueLocal;
         Class<?> valueRawClass = TypeUtils.getRawClass(valueType);
         if (valueType == null || valueType == Object.class
 				|| valueRawClass.isInterface()
@@ -187,9 +187,9 @@ public class EntryDeserializer implements Deserializer, Opcodes {
      */
     public static class UnmodificationEntry<K, V> implements Map.Entry<K, V> {
 
-        private K key;
+        private final K key;
 
-        private V value;
+        private final V value;
 
         public UnmodificationEntry(K key, V value) {
             this.key = key;
@@ -233,7 +233,7 @@ public class EntryDeserializer implements Deserializer, Opcodes {
     }
 
 
-    private static EntryDeserializer instance = new EntryDeserializer();
+    private static final EntryDeserializer instance = new EntryDeserializer();
 
     public static EntryDeserializer getInstance() {
         return instance;

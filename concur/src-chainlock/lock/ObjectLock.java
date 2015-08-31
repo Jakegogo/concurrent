@@ -53,7 +53,7 @@ public class ObjectLock extends ReentrantLock implements Comparable<ObjectLock> 
 		if (object instanceof IEntity) {
 			value = ((IEntity) object).getIdentity();
 		} else {
-			value = Integer.valueOf(System.identityHashCode(object));
+			value = System.identityHashCode(object);
 		}
 		isEntity = IENTITY_CLASS.isAssignableFrom(clz);
 	}
@@ -64,10 +64,7 @@ public class ObjectLock extends ReentrantLock implements Comparable<ObjectLock> 
 	 * @return 当返回 true，表示这两个锁的进入次序无法预知
 	 */
 	public boolean isTie(ObjectLock other) {
-		if (this.clz != other.clz) {
-			return false;
-		}
-		return this.value.compareTo(other.value) == 0;
+		return this.clz == other.clz && this.value.compareTo(other.value) == 0;
 	}
 
 	// Getter ...

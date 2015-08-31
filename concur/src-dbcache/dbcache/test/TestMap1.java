@@ -42,10 +42,8 @@ public class TestMap1 {
 						}
 						map.remove(i);
 						for(Integer key : map.keySet()) {
-							;
 						}
 						for(Map.Entry<Integer, Integer> key : map.entrySet()) {
-							;
 						}
 					}
 					
@@ -91,10 +89,8 @@ public class TestMap1 {
 						}
 						map1.remove(i);
 						for(Integer key : map1.keySet()) {
-							;
 						}
 						for(Map.Entry<Integer, Integer> key : map1.entrySet()) {
-							;
 						}
 					}
 				
@@ -141,10 +137,8 @@ public class TestMap1 {
 						}
 						map2.remove(i);
 						for(Integer key : map2.keySet()) {
-							;
 						}
 						for(Map.Entry<Integer, Integer> key : map2.entrySet()) {
-							;
 						}
 					}
 

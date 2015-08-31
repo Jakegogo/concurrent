@@ -1,6 +1,7 @@
 package utils.typesafe.extended;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -67,9 +68,7 @@ public abstract class MultiSafeActor implements Runnable {
 		}
 
 		List<MultiSafeType> safeTypesList = new ArrayList<MultiSafeType>();
-		for (MultiSafeType safeType : safeTypes) {
-			safeTypesList.add(safeType);
-		}
+		Collections.addAll(safeTypesList, safeTypes);
 		this.safeTypes = safeTypesList;
 
 		this.count = safeTypes.length;
@@ -82,8 +81,8 @@ public abstract class MultiSafeActor implements Runnable {
 	// 初始化MultiSafeRunable
 	private void initSafeRunnables(MultiSafeType[] safeTypes, ExecutorService executorService) {
 		List<MultiSafeRunable> safeRunables = new ArrayList<MultiSafeRunable>();
-		for (int i = 0;i < safeTypes.length;i++) {
-			safeRunables.add(new MultiSafeRunable(safeTypes[i], this, executorService));
+		for (MultiSafeType safeType : safeTypes) {
+			safeRunables.add(new MultiSafeRunable(safeType, this, executorService));
 		}
 		this.safeRunables = safeRunables;
 	}
@@ -100,8 +99,7 @@ public abstract class MultiSafeActor implements Runnable {
 			throw new IllegalArgumentException("promiseables must more than one arguments");
 		}
 
-		for (int i = 0;i < promiseables.length;i++) {
-			Promiseable<?> promiseable = promiseables[i];
+		for (Promiseable<?> promiseable : promiseables) {
 			for (MultiSafeType safeType : promiseable.promiseTypes()) {
 				safeTypes.add(safeType);
 				safeRunables.add(new MultiSafeRunable(safeType, this, executorService));

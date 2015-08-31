@@ -28,13 +28,13 @@ public @interface Cached {
 	 * 缓存类型,默认CacheType.LRU
 	 * @return
 	 */
-	public CacheType cacheType() default CacheType.LRU;
+	CacheType cacheType() default CacheType.LRU;
 
 	/**
 	 * 持久化处理方式,默认PersistType.INTIME
 	 * @return
 	 */
-	public PersistType persistType() default PersistType.INTIME;
+	PersistType persistType() default PersistType.INTIME;
 
 	/**
 	 * 实体缓存大小上限,默认值10000
@@ -45,39 +45,39 @@ public @interface Cached {
 	 * 4,实际运行的大小限制收全局实体大小设置影响
 	 * @return
 	 */
-	public int entitySize() default 10000;
+	int entitySize() default 10000;
 
 	/**
 	 * 实体数量阀值,默认20000
 	 * 如果超过阀值,则进行立即回收到entitySize的大小
 	 * @return
 	 */
-	public int threshold() default 20000;
+	int threshold() default 20000;
 
 	/**
 	 * 索引缓存大小,不设置则共用entityCache缓存(大小为entitySize)
 	 * @return
 	 */
-	public int indexSize() default 0;
+	int indexSize() default 0;
 
 	/**
 	 * 并发线程数,默认为运行时CPU核数(Runtime.getRuntime().availableProcessors())
 	 * @return
 	 */
-	public int concurrencyLevel() default 16;
+	int concurrencyLevel() default 16;
 
 	/**
 	 * 是否启用索引服务
 	 * <br/>未开启索引服务时,dbcache.anno.Index将不会生效
 	 * @return
 	 */
-	public boolean enableIndex() default false;
+	boolean enableIndex() default false;
 
 	/**
 	 * 删除后是否从缓存移除
 	 * <br/>比如当一次性使用的实体需要删除时,使用次选项
 	 * @return
 	 */
-	public boolean evictWhenDelete() default false;
+	boolean evictWhenDelete() default false;
 
 }

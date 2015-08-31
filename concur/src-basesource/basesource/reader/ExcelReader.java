@@ -270,7 +270,7 @@ public class ExcelReader implements ResourceReader {
 				}
 			}
 			if (result.size() > 0) {
-				return result.toArray(new Sheet[0]);
+				return result.toArray(new Sheet[result.size()]);
 			}
 			
 			// 没有需要多Sheet合并的情况

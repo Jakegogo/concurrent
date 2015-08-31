@@ -39,7 +39,7 @@ public interface SubComponentProvider {
 	 * 
 	 * @return a <code>DockingPort</code> instance.
 	 */
-	public DockingPort createChildPort();
+	DockingPort createChildPort();
 	
 	/**
 	 * Supplies the <code>DefaultDockingPort</code> with the <code>JTabbedPane</code> to be used when
@@ -47,7 +47,7 @@ public interface SubComponentProvider {
 	 * 
 	 * @return a <code>JTabbedPane</code> instance.
 	 */
-	public JTabbedPane createTabbedPane();
+	JTabbedPane createTabbedPane();
 	
 	/**
 	 * Supplies the <code>DefaultDockingPort</code> with the <code>JSplitPane</code> to be used when
@@ -55,7 +55,7 @@ public interface SubComponentProvider {
 	 * 
 	 * @return a <code>JSplitPane</code> instance.
 	 */
-	public JSplitPane createSplitPane();
+	JSplitPane createSplitPane();
 	
 	/**
 	 * Supplies the <code>DefaultDockingPort</code> with the initial proportional <code>JSplitPane</code> 
@@ -65,6 +65,6 @@ public interface SubComponentProvider {
 	 * 
 	 * @return the desired initial divider location.
 	 */
-	public double getInitialDividerLocation();
+	double getInitialDividerLocation();
 
 }

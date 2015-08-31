@@ -106,7 +106,7 @@ public class NumberSerializer implements Serializer, Opcodes {
 	}
 
 
-	private static NumberSerializer instance = new NumberSerializer();
+	private static final NumberSerializer instance = new NumberSerializer();
 
 	public static NumberSerializer getInstance() {
 		return instance;

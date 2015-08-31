@@ -241,7 +241,7 @@ public class ObjectDeSerializer implements Deserializer, Opcodes {
             }
             
             // 设置属性
-            PropertyDescriptor propertyDescriptor = null;
+            PropertyDescriptor propertyDescriptor;
 			try {
 				propertyDescriptor = new PropertyDescriptor(fieldInfo.getFieldName(), rawClass);
 			} catch (IntrospectionException e) {
@@ -282,7 +282,7 @@ public class ObjectDeSerializer implements Deserializer, Opcodes {
 	}
     
 
-    private static ObjectDeSerializer instance = new ObjectDeSerializer();
+    private static final ObjectDeSerializer instance = new ObjectDeSerializer();
 
     public static ObjectDeSerializer getInstance() {
         return instance;

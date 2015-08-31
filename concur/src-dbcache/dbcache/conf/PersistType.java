@@ -32,7 +32,7 @@ public enum PersistType {
 
 
 	/** 持久化类 */
-	private Class<?> dbPersistServiceClass;
+	private final Class<?> dbPersistServiceClass;
 
 	/** bean名称 */
 	private String beanName;

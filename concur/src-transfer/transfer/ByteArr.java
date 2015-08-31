@@ -5,20 +5,20 @@ package transfer;
  */
 class ByteArr {
 
-    byte[] byteArray;
+    final byte[] byteArray;
 
     int offset;
 
     ByteArr next;
 
-    int length;
+    private final int length;
 
     public ByteArr(int initLen) {
         this.byteArray = new byte[initLen];
         this.length = initLen;
     }
 
-    public ByteArr expandNext(int length) {
+    private ByteArr expandNext(int length) {
         this.next = new ByteArr(length);
         return this.next;
     }
@@ -38,7 +38,7 @@ class ByteArr {
     }
 
 
-    protected ByteArr checkBounds(ByteBuffer byteBuffer) {
+    ByteArr checkBounds(ByteBuffer byteBuffer) {
         if (this.offset == this.length) {
             ByteArr newByteArr = this.expandNext(ByteBuffer.EXPAND_STEP_SIZE);
             byteBuffer.curByteArray = newByteArr;
@@ -47,7 +47,7 @@ class ByteArr {
         return this;
     }
 
-    protected ByteArr checkBounds(int expandLength, ByteBuffer byteBuffer) {
+    ByteArr checkBounds(int expandLength, ByteBuffer byteBuffer) {
         if (this.offset + expandLength > this.length) {
             if (expandLength < ByteBuffer.EXPAND_STEP_SIZE) {
                 expandLength = ByteBuffer.EXPAND_STEP_SIZE;

@@ -16,7 +16,7 @@ public class WeakCacheEntity<T extends IEntity<PK>, PK extends Comparable<PK> & 
 	/**
 	 * 弱引用实体Key
 	 */
-	private Object key;
+	private final Object key;
 
 	/**
 	 * @param referent 实体

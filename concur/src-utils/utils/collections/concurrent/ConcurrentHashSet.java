@@ -90,10 +90,8 @@ public class ConcurrentHashSet<E> implements Set<E> {
      * @return <tt>true</tt> if this set contains the specified element.
      */
     public boolean contains(Object o) {
-        if (o == null)
-            return false;
+        return o != null && map.containsKey(o);
 
-        return map.containsKey(o);
     }
 
     /**
@@ -105,10 +103,8 @@ public class ConcurrentHashSet<E> implements Set<E> {
      *         element.
      */
     public boolean add(E o) {
-        if (o == null)
-            return false;
+        return o != null && map.put(o, PRESENT) == null;
 
-        return map.put(o, PRESENT) == null;
     }
 
     /**
@@ -118,10 +114,8 @@ public class ConcurrentHashSet<E> implements Set<E> {
      * @return <tt>true</tt> if the set contained the specified element.
      */
     public boolean remove(Object o) {
-        if (o == null)
-            return false;
+        return o != null && map.remove(o) == PRESENT;
 
-        return map.remove(o) == PRESENT;
     }
 
     /**

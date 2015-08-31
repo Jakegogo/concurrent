@@ -46,7 +46,7 @@ public class JdbcSupport {
     private Config config;
 
     /** 实体信息缓存 */
-    private IdentityHashMap<Class<?>, ModelInfo> modelInfoCache = new IdentityHashMap<Class<?>, ModelInfo>();
+    private final IdentityHashMap<Class<?>, ModelInfo> modelInfoCache = new IdentityHashMap<Class<?>, ModelInfo>();
 
 
     /**
@@ -76,7 +76,7 @@ public class JdbcSupport {
 		} catch (Exception e) {
 			handleException(conn, e);
 		} finally {
-			config.close(rs, pst, conn);
+			handleClose(conn, pst, rs);
 		}
     	return null;
     }
@@ -106,7 +106,7 @@ public class JdbcSupport {
 		} catch (Exception e) {
 			handleException(conn, e);
 		} finally {
-			config.close(pst, conn);
+			handleClose(conn, pst);
 		}
     	return false;
     }
@@ -131,9 +131,8 @@ public class JdbcSupport {
 		    String updateSql = modelInfo.getOrCreateSaveSql(config.dialect);
 		    	
 			pst = conn.prepareStatement(updateSql);
-			
-			for (Iterator<Object> it = entitys.iterator(); it.hasNext();) {
-				Object entity = it.next();
+
+			for (Object entity : entitys) {
 				Object[] params = modelInfo.getSaveParams(entity);
 				config.dialect.fillStatement(pst, params);
 				pst.addBatch();
@@ -142,27 +141,9 @@ public class JdbcSupport {
 			return pst.executeBatch();
 			
     	} catch (Exception e) {
-			try {
-				// 若出现异常，对数据库中所有已完成的操作全部撤销，则回滚到事务开始状态
-				if (conn != null && !conn.isClosed()) {
-					conn.rollback();// 4,当异常发生执行catch中SQLException时，记得要rollback(回滚)；
-				}
-			} catch (SQLException e1) {
-				e1.printStackTrace();
-				throw new JdbcExecuteException(e1);
-			}
-			handleException(conn, e);
+			rollbackAndClose(conn, e);
     	} finally {
-    		try {
-				if (conn != null && !conn.isClosed()) {
-					conn.setAutoCommit(true);
-				}
-			} catch (SQLException e2) {
-				e2.printStackTrace();
-				throw new JdbcExecuteException(e2);
-			}
-    		
-    		config.close(pst, conn);
+			commitAndClose(conn, pst);
     	}
     	return new int[0];
     }
@@ -173,28 +154,7 @@ public class JdbcSupport {
      * @param entity 实体对象
      */
     public boolean saveWithAutoId(Object entity) {
-    	ModelInfo modelInfo = getOrCreateModelInfo(entity.getClass());
-    	String saveSql = modelInfo.getOrCreateSaveSql(config.dialect);
-
-    	Connection conn = null;
-    	PreparedStatement pst = null;
-    	try {
-	    	conn = config.getConnection();
-
-			pst = conn.prepareStatement(saveSql);
-
-			Object[] params = modelInfo.getAutoIdSaveParams(entity);
-			config.dialect.fillStatement(pst, params);
-
-			int result = pst.executeUpdate();
-
-			return result > 0;
-		} catch (Exception e) {
-			handleException(conn, e);
-		} finally {
-			config.close(pst, conn);
-		}
-    	return false;
+    	return this.saveWithAutoId(entity, 0);
     }
 
 
@@ -223,7 +183,7 @@ public class JdbcSupport {
 		} catch (Exception e) {
 			handleException(conn, e);
 		} finally {
-			config.close(pst, conn);
+			handleClose(conn, pst);
 		}
     	return false;
     }
@@ -254,49 +214,12 @@ public class JdbcSupport {
 		} catch (Exception e) {
 			handleException(conn, e);
 		} finally {
-			config.close(pst, conn);
+			handleClose(conn, pst);
 		}
     	return false;
     }
     
-    
-    /**
-     * 更新实体
-     * @param entity 实体对象
-     * @param modifiedFields 修改过的属性集合
-     * @return
-     */
-    public boolean update(Object entity, Collection<String> modifiedFields) {
-    	ModelInfo modelInfo = getOrCreateModelInfo(entity.getClass());
-    	
-    	List<String> modifiedFieldList = new ArrayList<String>();
-    	for (String field : modifiedFields) {
-    		modifiedFieldList.add(field);
-    	}
-    	
-    	String updateSql = modelInfo.getOrCreateUpdateSql(config.dialect, modifiedFieldList);
 
-    	Connection conn = null;
-    	PreparedStatement pst = null;
-    	try {
-	    	conn = config.getConnection();
-
-			pst = conn.prepareStatement(updateSql);
-
-			Object[] params = modelInfo.getUpdateParams(entity, modifiedFieldList);
-			config.dialect.fillStatement(pst, params);
-
-			int result = pst.executeUpdate();
-
-			return result > 0;
-		} catch (Exception e) {
-			handleException(conn, e);
-		} finally {
-			config.close(pst, conn);
-		}
-    	return false;
-    }
-    
     
     /**
      * 更新实体
@@ -312,7 +235,7 @@ public class JdbcSupport {
     	for (int i = 0;i < length;i ++) {
     		if (modifiedFields.get(i) == 1) {
     			modifiedFields.set(i, 0);
-    			modifiedFieldList.add(Integer.valueOf(i));
+    			modifiedFieldList.add(i);
     		}
     	}
     	
@@ -334,13 +257,14 @@ public class JdbcSupport {
 		} catch (Exception e) {
 			handleException(conn, e);
 		} finally {
-			config.close(pst, conn);
+			handleClose(conn, pst);
 		}
     	return false;
     }
-    
-    
-    /**
+
+
+
+	/**
      * 批量更新实体
      * @param entitys 实体对象
      */
@@ -360,7 +284,7 @@ public class JdbcSupport {
     	Connection conn = null;
     	try {
     		
-    		PreparedStatement pst = null;
+    		PreparedStatement pst;
 		    conn = config.getConnection();
 		    conn.setAutoCommit(false);
 		    
@@ -369,9 +293,8 @@ public class JdbcSupport {
 		    	String updateSql = modelInfo.getOrCreateUpdateSql(config.dialect);
 		    	
 				pst = conn.prepareStatement(updateSql);
-				
-				for (Iterator<Object> it = entry.getValue().iterator(); it.hasNext();) {
-					Object entity = it.next();
+
+				for (Object entity : entry.getValue()) {
 					Object[] params = modelInfo.getUpdateParams(entity);
 					config.dialect.fillStatement(pst, params);
 					pst.addBatch();
@@ -418,9 +341,8 @@ public class JdbcSupport {
 		    String updateSql = modelInfo.getOrCreateUpdateSql(config.dialect);
 		    	
 			pst = conn.prepareStatement(updateSql);
-			
-			for (Iterator<Object> it = entitys.iterator(); it.hasNext();) {
-				Object entity = it.next();
+
+			for (Object entity : entitys) {
 				Object[] params = modelInfo.getUpdateParams(entity);
 				config.dialect.fillStatement(pst, params);
 				pst.addBatch();
@@ -429,34 +351,28 @@ public class JdbcSupport {
 			return pst.executeBatch();
 			
     	} catch (Exception e) {
-			try {
-				// 若出现异常，对数据库中所有已完成的操作全部撤销，则回滚到事务开始状态
-				if (conn != null && !conn.isClosed()) {
-					conn.rollback();// 4,当异常发生执行catch中SQLException时，记得要rollback(回滚)；
-				}
-			} catch (SQLException e1) {
-				e1.printStackTrace();
-				throw new JdbcExecuteException(e1);
-			}
-			handleException(conn, e);
+			rollbackAndClose(conn, e);
     	} finally {
-    		try {
-				if (conn != null && !conn.isClosed()) {
-					conn.setAutoCommit(true);
-				}
-			} catch (SQLException e2) {
-				e2.printStackTrace();
-				throw new JdbcExecuteException(e2);
-			}
-    		
-    		config.close(pst, conn);
+			commitAndClose(conn, pst);
     	}
     	return new int[0];
     }
-    
-    
 
-    /**
+	private void commitAndClose(Connection conn, PreparedStatement pst) {
+		try {
+            if (conn != null && !conn.isClosed()) {
+                conn.setAutoCommit(true);
+            }
+        } catch (SQLException e2) {
+            e2.printStackTrace();
+            throw new JdbcExecuteException(e2);
+        }
+
+		handleClose(conn, pst);
+	}
+
+
+	/**
      * 删除实体
      * @param entity 实体
      * @return
@@ -481,7 +397,7 @@ public class JdbcSupport {
 		} catch (Exception e) {
 			handleException(conn, e);
 		} finally {
-			config.close(pst, conn);
+			handleClose(conn, pst);
 		}
     	return false;
     }
@@ -506,9 +422,8 @@ public class JdbcSupport {
 		    String updateSql = modelInfo.getOrCreateDeleteSql(config.dialect);
 		    	
 			pst = conn.prepareStatement(updateSql);
-			
-			for (Iterator<Object> it = entitys.iterator(); it.hasNext();) {
-				Object entity = it.next();
+
+			for (Object entity : entitys) {
 				Object params = modelInfo.getDeleteParam(entity);
 				config.dialect.fillStatement(pst, params);
 				pst.addBatch();
@@ -517,33 +432,28 @@ public class JdbcSupport {
 			return pst.executeBatch();
 			
     	} catch (Exception e) {
-			try {
-				// 若出现异常，对数据库中所有已完成的操作全部撤销，则回滚到事务开始状态
-				if (conn != null && !conn.isClosed()) {
-					conn.rollback();// 4,当异常发生执行catch中SQLException时，记得要rollback(回滚)；
-				}
-			} catch (SQLException e1) {
-				e1.printStackTrace();
-				throw new JdbcExecuteException(e1);
-			}
-			handleException(conn, e);
+			rollbackAndClose(conn, e);
     	} finally {
-    		try {
-				if (conn != null && !conn.isClosed()) {
-					conn.setAutoCommit(true);
-				}
-			} catch (SQLException e2) {
-				e2.printStackTrace();
-				throw new JdbcExecuteException(e2);
-			}
-    		
-    		config.close(pst, conn);
+			commitAndClose(conn, pst);
     	}
     	return new int[0];
     }
 
+	private void rollbackAndClose(Connection conn, Exception e) {
+		try {
+            // 若出现异常，对数据库中所有已完成的操作全部撤销，则回滚到事务开始状态
+            if (conn != null && !conn.isClosed()) {
+                conn.rollback();// 4,当异常发生执行catch中SQLException时，记得要rollback(回滚)；
+            }
+        } catch (SQLException e1) {
+            e1.printStackTrace();
+            throw new JdbcExecuteException(e1);
+        }
+		handleException(conn, e);
+	}
 
-    /**
+
+	/**
      * 根据属性查询实体列表
      * @param clzz 实体类
      * @param attrName 属性名
@@ -570,13 +480,13 @@ public class JdbcSupport {
 		} catch (Exception e) {
 			handleException(conn, e);
 		} finally {
-			config.close(rs, pst, conn);
+			handleClose(conn, pst, rs);
 		}
     	return null;
     }
 
 
-    /**
+	/**
      * 根据属性查询实体Id列表
      * @param clzz 实体类
      * @param attrName 属性名
@@ -602,7 +512,7 @@ public class JdbcSupport {
 		} catch (Exception e) {
 			handleException(conn, e);
 		} finally {
-			config.close(rs, pst, conn);
+			handleClose(conn, pst, rs);
 		}
     	return null;
     }
@@ -634,7 +544,7 @@ public class JdbcSupport {
 		} catch (Exception e) {
 			handleException(conn, e);
 		} finally {
-			config.close(rs, pst, conn);
+			handleClose(conn, pst, rs);
 		}
     	return null;
     }
@@ -667,7 +577,7 @@ public class JdbcSupport {
 		} catch (Exception e) {
 			handleException(conn, e);
 		} finally {
-			config.close(rs, pst, conn);
+			handleClose(conn, pst, rs);
 		}
     	return null;
     }
@@ -694,11 +604,11 @@ public class JdbcSupport {
 
 			rs = pst.executeQuery();
 
-			return (List<T>) this.generateObjectList(rs, clzz);
+			return this.generateObjectList(rs, clzz);
 		} catch (Exception e) {
 			handleException(conn, e);
 		} finally {
-			config.close(rs, pst, conn);
+			handleClose(conn, pst, rs);
 		}
     	return null;
     }
@@ -729,7 +639,7 @@ public class JdbcSupport {
 		} catch (Exception e) {
 			handleException(conn, e);
 		} finally {
-			config.close(rs, pst, conn);
+			handleClose(conn, pst, rs);
 		}
     	return null;
     }
@@ -758,7 +668,7 @@ public class JdbcSupport {
 		} catch (Exception e) {
 			handleException(conn, e);
 		} finally {
-			config.close(pst, conn);
+			handleClose(conn, pst);
 		}
 		return false;
 	}
@@ -828,6 +738,15 @@ public class JdbcSupport {
 		throw new JdbcExecuteException(e);
 	}
 
+	// 处理关闭连接
+	private void handleClose(Connection conn, PreparedStatement pst) {
+		config.close(pst, conn);
+	}
+
+	// 处理关闭语句和连接
+	private void handleClose(Connection conn, PreparedStatement pst, ResultSet rs) {
+		config.close(rs, pst, conn);
+	}
     
 	/**
      * 获取或创建实体信息
@@ -997,7 +916,7 @@ public class JdbcSupport {
 		ModelInfo modelInfo = getOrCreateModelInfo(cls);
 		if (isDefault) {
 			Map<Integer, IdGenerator<?>> idGenerators = modelInfo.getIdGenerators();
-			idGenerators.put(Integer.valueOf(category), idGenerator);
+			idGenerators.put(category, idGenerator);
 		} else {
 			modelInfo.setDefaultIdGenerator(idGenerator);
 		}
@@ -1030,7 +949,7 @@ public class JdbcSupport {
 		} catch (Exception e) {
 			handleException(conn, e);
 		} finally {
-			config.close(rs, pst, conn);
+			handleClose(conn, pst, rs);
 		}
 	}
 

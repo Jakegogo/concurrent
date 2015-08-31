@@ -12,8 +12,6 @@ import dbcache.pkey.IdGenerator;
 import dbcache.support.asm.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.slf4j.helpers.FormattingTuple;
-import org.slf4j.helpers.MessageFormatter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ApplicationContext;
@@ -23,6 +21,7 @@ import org.springframework.util.ReflectionUtils.FieldCallback;
 import utils.collections.concurrent.ConcurrentHashMapV8;
 import utils.enhance.asm.AsmAccessHelper;
 import utils.enhance.asm.ValueGetter;
+import utils.reflect.ReflectionUtility;
 import utils.thread.SimpleLinkingRunnable;
 import utils.thread.ThreadUtils;
 
@@ -98,17 +97,17 @@ public class DbConfigFactoryImpl implements DbConfigFactory, DbCacheMBean {
 	 * DbCacheService实例映射
 	 */
 	@SuppressWarnings("rawtypes")
-	private ConcurrentMap<Class<? extends IEntity>, DbCacheService> dbCacheServiceBeanMap = new ConcurrentHashMapV8<Class<? extends IEntity>, DbCacheService>();
+	private final ConcurrentMap<Class<? extends IEntity>, DbCacheService> dbCacheServiceBeanMap = new ConcurrentHashMapV8<Class<? extends IEntity>, DbCacheService>();
 
 	/**
 	 * 配置映射
 	 */
-	private ConcurrentMap<Class<?>, CacheConfig<?>> cacheConfigMap = new ConcurrentHashMapV8<Class<?>, CacheConfig<?>>();
+	private final ConcurrentMap<Class<?>, CacheConfig<?>> cacheConfigMap = new ConcurrentHashMapV8<Class<?>, CacheConfig<?>>();
 
 	/**
 	 * 持久化服务
 	 */
-	private ConcurrentMap<PersistType, DbPersistService> persistServiceMap = new ConcurrentHashMapV8<PersistType, DbPersistService>();
+	private final ConcurrentMap<PersistType, DbPersistService> persistServiceMap = new ConcurrentHashMapV8<PersistType, DbPersistService>();
 
 
 
@@ -146,7 +145,7 @@ public class DbConfigFactoryImpl implements DbConfigFactory, DbCacheMBean {
 
 			//设置实体类
 			Field clazzField = DbCacheServiceImpl.class.getDeclaredField(entityClassProperty);
-			inject(service, clazzField, clz);
+			ReflectionUtility.inject(service, clazzField, clz);
 
 
 
@@ -158,7 +157,7 @@ public class DbConfigFactoryImpl implements DbConfigFactory, DbCacheMBean {
 			cacheConfig.setConstructorBuilder(classInfo.getConstructorBuilder());
 
 			Field cacheConfigField = DbCacheServiceImpl.class.getDeclaredField(proxyCacheConfigProperty);
-			inject(service, cacheConfigField, cacheConfig);
+			ReflectionUtility.inject(service, cacheConfigField, cacheConfig);
 
 
 
@@ -171,7 +170,7 @@ public class DbConfigFactoryImpl implements DbConfigFactory, DbCacheMBean {
 			int concurrencyLevel = cacheConfig.getConcurrencyLevel() == 0?
 					Runtime.getRuntime().availableProcessors() : cacheConfig.getConcurrencyLevel();
 			cacheUnit.init("ENTITY_CACHE_" + cacheClass.getSimpleName(), cacheConfig.getEntitySize(), concurrencyLevel);
-			inject(service, cacheField, cacheUnit);
+			ReflectionUtility.inject(service, cacheField, cacheUnit);
 
 
 
@@ -192,7 +191,7 @@ public class DbConfigFactoryImpl implements DbConfigFactory, DbCacheMBean {
 				persistServiceMap.putIfAbsent(persistType, dbPersistService);
 				dbPersistService = persistServiceMap.get(persistType);
 			}
-			inject(service, dbPersistServiceField, dbPersistService);
+			ReflectionUtility.inject(service, dbPersistServiceField, dbPersistService);
 
 
 
@@ -203,7 +202,7 @@ public class DbConfigFactoryImpl implements DbConfigFactory, DbCacheMBean {
 
 			DbIndexService indexService = (DbIndexService) applicationContext.getAutowireCapableBeanFactory()
 					.createBean(indexServiceClass);
-			inject(service, indexServiceField, indexService);
+			ReflectionUtility.inject(service, indexServiceField, indexService);
 
 
 
@@ -217,13 +216,13 @@ public class DbConfigFactoryImpl implements DbConfigFactory, DbCacheMBean {
 
 			Field cacheField1 = indexService.getClass().getDeclaredField(cacheProperty);
 			ReflectionUtils.makeAccessible(cacheField1);
-			inject(indexService, cacheField1, indexCacheUnit);
+			ReflectionUtility.inject(indexService, cacheField1, indexCacheUnit);
 
 
 
 			//修改IndexService的cacheConfig
 			Field cacheConfigField1 = indexService.getClass().getDeclaredField(proxyCacheConfigProperty);
-			inject(indexService, cacheConfigField1, cacheConfig);
+			ReflectionUtility.inject(indexService, cacheConfigField1, cacheConfig);
 
 
 
@@ -347,26 +346,6 @@ public class DbConfigFactoryImpl implements DbConfigFactory, DbCacheMBean {
 		cacheConfig.setFieldCount(clz.getDeclaredFields().length);
 		return cacheConfig;
 	}
-
-
-	/**
-	 * 注入属性
-	 * @param bean bean
-	 * @param field 属性
-	 * @param val 值
-	 */
-	private void inject(Object bean, Field field, Object val) {
-		ReflectionUtils.makeAccessible(field);
-		try {
-			field.set(bean, val);
-		} catch (Exception e) {
-			FormattingTuple message = MessageFormatter.format("属性[{}]注入失败", field);
-			logger.debug(message.getMessage());
-			throw new IllegalStateException(message.getMessage(), e);
-		}
-	}
-
-
 
 
 	@SuppressWarnings({ "rawtypes", "unchecked" })

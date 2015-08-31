@@ -1,6 +1,7 @@
 package utils.typesafe.extended;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -32,11 +33,8 @@ public abstract class PromiseActor<T> implements Promiseable<T> {
             throw new IllegalArgumentException("promiseables must more than one arguments");
         }
 
-        for (int i = 0;i < promiseables.length;i++) {
-            Promiseable<?> promiseable = promiseables[i];
-            for (MultiSafeType safeType : promiseable.promiseTypes()) {
-                safeTypes.add(safeType);
-            }
+        for (Promiseable promiseable : promiseables) {
+            Collections.addAll(safeTypes, promiseable.promiseTypes());
         }
     }
 

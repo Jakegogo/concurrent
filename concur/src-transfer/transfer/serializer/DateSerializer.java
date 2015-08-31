@@ -74,7 +74,7 @@ public class DateSerializer implements Serializer, Opcodes {
 
 	}
 
-	private static DateSerializer instance = new DateSerializer();
+	private static final DateSerializer instance = new DateSerializer();
 
 	public static DateSerializer getInstance() {
 		return instance;

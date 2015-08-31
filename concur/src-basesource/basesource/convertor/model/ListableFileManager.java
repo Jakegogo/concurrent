@@ -194,9 +194,7 @@ public class ListableFileManager {
         File[] roots = fileSystemView.getRoots();
 
         Set<File> rootSet = new HashSet<File>();
-        for (int i = 0;i < roots.length;i++) {
-            rootSet.add(roots[i]);
-        }
+        Collections.addAll(rootSet, roots);
 
         
         FileNode expandToNode = null;
@@ -206,8 +204,8 @@ public class ListableFileManager {
         File parent = fileSystemView.getParentDirectory(path);
         while (true) {
         	
-        	File[] files = null;
-        	FileNode parentNode = null;
+        	File[] files;
+        	FileNode parentNode;
         	
         	if (parent == null) {
         		parentNode = root;
@@ -280,7 +278,7 @@ public class ListableFileManager {
     	File realFile = this.parseDirectory(file);
     	folderInfo.setPath(realFile.getPath());
     	folderInfo.setHasChildDirectorys(hasChildFolders(realFile));
-    	folderInfo.setFileCache(realFile);;
+    	folderInfo.setFileCache(realFile);
     	
 		return folderInfo;
 	}

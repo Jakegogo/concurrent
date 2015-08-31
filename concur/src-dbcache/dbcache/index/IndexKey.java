@@ -17,7 +17,7 @@ public class IndexKey implements Comparable<IndexKey> {
 
 
 	/** 构造方法 */
-	protected IndexKey(String name, Object value) {
+	IndexKey(String name, Object value) {
 		this.name = name;
 		this.value = value;
 	}

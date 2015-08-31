@@ -11,9 +11,6 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
  */
 public class MainApp {
 
-    /** 主面板 */
-    private MainPanel mainPanel;
-
     /** spring ApplicationContext  */
     private static ApplicationContext applicationContext;
 
@@ -32,7 +29,8 @@ public class MainApp {
     private void init(String[] args) {
         applicationContext = new ClassPathXmlApplicationContext("applicationContext-basesource.xml");
 
-        mainPanel = new MainPanel(args);
+        /* 主面板 */
+        MainPanel mainPanel = new MainPanel(args);
     }
 
     /**

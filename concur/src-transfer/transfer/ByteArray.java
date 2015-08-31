@@ -12,17 +12,17 @@ public class ByteArray implements Inputable {
     /**
      * 原始字节数组
      */
-    private byte[] byteArr;
+    private final byte[] byteArr;
 
     /**
      * 起始位置
      */
-    private int startIndex;
+    private final int startIndex;
 
     /**
      * 结束位置
      */
-    private int endIndex;
+    private final int endIndex;
 
     /**
      * 当前读取位置

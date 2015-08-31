@@ -23,10 +23,7 @@ public class ResourceDefinition {
 	private final static FieldFilter INJECT_FILTER = new FieldFilter() {
 		@Override
 		public boolean matches(Field field) {
-			if (field.isAnnotationPresent(InjectBean.class)) {
-				return true;
-			}
-			return false;
+			return field.isAnnotationPresent(InjectBean.class);
 		}
 	};
 

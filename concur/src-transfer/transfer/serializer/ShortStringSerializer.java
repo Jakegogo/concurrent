@@ -91,7 +91,7 @@ public class ShortStringSerializer implements Serializer, Opcodes {
 
 	}
 
-	private static ShortStringSerializer instance = new ShortStringSerializer();
+	private static final ShortStringSerializer instance = new ShortStringSerializer();
 
 	public static ShortStringSerializer getInstance() {
 		return instance;

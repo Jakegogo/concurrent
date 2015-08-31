@@ -19,9 +19,6 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. */
 package basesource.convertor.ui.docking;
 
 import java.awt.Component;
-import java.awt.Point;
-import java.awt.event.MouseMotionListener;
-import java.util.EventListener;
 
 /**
  * This class models a <code>Dockable</code> implementation for wrapping a <code>Component</code>.  It is 

@@ -517,8 +517,8 @@ public class DateUtils {
 		String t1 = startYearStr + "-" + startMonthStr + "-" + startDayStr;
 		String t2 = endYearStr + "-" + endMonthStr + "-" + endDayStr;
 		int betweenDays = 0;
-		Date d1 = null;
-		Date d2 = null;
+		Date d1;
+		Date d2;
 		try {
 			d1 = parse(t1, DATE_FORMAT_YYYY_MM_DD);
 			d2 = parse(t2, DATE_FORMAT_YYYY_MM_DD);
@@ -547,7 +547,7 @@ public class DateUtils {
 	 * @return
 	 */
 	public static int betweenTwoDays(Date d1, Date d2) {
-		int betweenDays = 0;
+		int betweenDays;
 		Calendar c1 = Calendar.getInstance();
 		Calendar c2 = Calendar.getInstance();
 		c1.setTime(d1);
@@ -594,7 +594,7 @@ public class DateUtils {
 	 * @return
 	 */
 	public static String getDayBefore(String day, int beforeDay) {
-		String resultDay = null;
+		String resultDay;
 		String YearStr = day.substring(0, 4);
 		String MonthStr = day.substring(4, 6);
 		String DayStr = day.substring(6, 8);

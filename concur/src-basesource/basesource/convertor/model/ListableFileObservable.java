@@ -121,7 +121,7 @@ public class ListableFileObservable {
             return;
         }
 
-        if (path.equals(this.curDirectory)) {
+        if (path.equals(this.curDirectory.getFileCache())) {
             return;
         }
 

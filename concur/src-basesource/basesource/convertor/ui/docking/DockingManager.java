@@ -415,9 +415,9 @@ public class DockingManager extends JPanel {
 		if (listeners == null || listeners.length == 0)
 			return null;
 
-		for (int i = 0; i < listeners.length; i++) {
-			if (listeners[i] instanceof DragInitiationListener)
-				return (DragInitiationListener) listeners[i];
+		for (EventListener listener : listeners) {
+			if (listener instanceof DragInitiationListener)
+				return (DragInitiationListener) listener;
 		}
 		return null;
 	}
@@ -586,8 +586,8 @@ public class DockingManager extends JPanel {
 		Component initiator = dockableImpl.getInitiator();
 		cachedListeners = initiator.getListeners(MouseMotionListener.class);
 		if (cachedListeners != null) {
-			for (int i = 0; i < cachedListeners.length; i++)
-				initiator.removeMouseMotionListener((MouseMotionListener) cachedListeners[i]);
+			for (EventListener cachedListener : cachedListeners)
+				initiator.removeMouseMotionListener((MouseMotionListener) cachedListener);
 		}
 	}
 
@@ -596,8 +596,8 @@ public class DockingManager extends JPanel {
 			return;
 
 		Component initiator = dockableImpl.getInitiator();
-		for (int i = 0; i < cachedListeners.length; i++)
-			initiator.addMouseMotionListener((MouseMotionListener) cachedListeners[i]);
+		for (EventListener cachedListener : cachedListeners)
+			initiator.addMouseMotionListener((MouseMotionListener) cachedListener);
 		cachedListeners = null;
 	}
 

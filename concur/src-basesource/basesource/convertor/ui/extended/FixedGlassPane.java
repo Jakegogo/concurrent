@@ -97,10 +97,10 @@ public class FixedGlassPane extends JPanel implements MouseListener,
   }
 
   private void redispatchMouseEvent(MouseEvent e) {
-    boolean inButton = false;
+    boolean inButton;
     boolean inMenuBar = false;
     Point glassPanePoint = e.getPoint();
-    Component component = null;
+    Component component;
     Container container = contentPane;
     Point containerPoint = SwingUtilities.convertPoint(this,
         glassPanePoint, contentPane);

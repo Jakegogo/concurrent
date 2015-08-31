@@ -28,7 +28,7 @@ public interface DbConfigFactory {
 	 * @return
 	 */
 	@SuppressWarnings("rawtypes")
-	public <T extends IEntity<PK>, PK extends Comparable<PK> & Serializable> T createProxyEntity(T entity, Class<? extends IEntity> proxyClass, DbIndexService indexService, CacheConfig<T> cacheConfig, AtomicIntegerArray modifiedFields);
+	<T extends IEntity<PK>, PK extends Comparable<PK> & Serializable> T createProxyEntity(T entity, Class<? extends IEntity> proxyClass, DbIndexService indexService, CacheConfig<T> cacheConfig, AtomicIntegerArray modifiedFields);
 
 
 	/**
@@ -41,7 +41,7 @@ public interface DbConfigFactory {
 	 * @return
 	 */
 	@SuppressWarnings("rawtypes")
-	public <T extends IEntity<PK>, PK extends Comparable<PK> & Serializable> CacheObject<T> createCacheObject(T entity, Class<T> class1, DbIndexService<?> indexService, Object key, CacheUnit cacheUnit, CacheConfig<T> cacheConfig);
+	<T extends IEntity<PK>, PK extends Comparable<PK> & Serializable> CacheObject<T> createCacheObject(T entity, Class<T> class1, DbIndexService<?> indexService, Object key, CacheUnit cacheUnit, CacheConfig<T> cacheConfig);
 
 
 	/**
@@ -50,7 +50,7 @@ public interface DbConfigFactory {
 	 * @return
 	 */
 	@SuppressWarnings("rawtypes")
-	public <T extends IEntity<PK>, PK extends Comparable<PK> & Serializable> DbCacheService<T, PK> getDbCacheServiceBean(Class<T> clz);
+	<T extends IEntity<PK>, PK extends Comparable<PK> & Serializable> DbCacheService<T, PK> getDbCacheServiceBean(Class<T> clz);
 
 
 	/**
@@ -69,7 +69,7 @@ public interface DbConfigFactory {
 	 * @param dbCacheService DbCacheServiceBean
 	 */
 	@SuppressWarnings("rawtypes")
-	public void registerDbCacheServiceBean(Class<? extends IEntity> clz, DbCacheService dbCacheService);
+	void registerDbCacheServiceBean(Class<? extends IEntity> clz, DbCacheService dbCacheService);
 
 
 	/**
@@ -77,7 +77,7 @@ public interface DbConfigFactory {
 	 * @param clazz  实体类型
 	 * @param idGenerator 主键id生成器接口
 	 */
-	public void registerEntityIdGenerator(Class<?> clazz, IdGenerator<?> idGenerator);
+	void registerEntityIdGenerator(Class<?> clazz, IdGenerator<?> idGenerator);
 
 
 	/**
@@ -86,7 +86,7 @@ public interface DbConfigFactory {
 	 * @param clazz  实体类型
 	 * @param idGenerator 主键id生成器接口
 	 */
-	public void registerEntityIdGenerator(int serverId, Class<?> clazz, IdGenerator<?> idGenerator);
+	void registerEntityIdGenerator(int serverId, Class<?> clazz, IdGenerator<?> idGenerator);
 
 
 	/**
@@ -94,7 +94,7 @@ public interface DbConfigFactory {
 	 * @param clz 缓存实体类
 	 * @return
 	 */
-	public CacheConfig<?> getCacheConfig(Class<?> clz);
+	CacheConfig<?> getCacheConfig(Class<?> clz);
 
 
 }

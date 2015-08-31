@@ -49,11 +49,6 @@ public class InTimeDbPersistService implements DbPersistService {
 	private ExecutorService DB_POOL_SERVICE;
 
 	/**
-	 * 线程池大小
-	 */
-	private int dbPoolSize;
-	
-	/**
 	 * 重试实体队列
 	 */
 	private final ConcurrentLinkedQueue<OrderedPersistAction> retryQueue = new ConcurrentLinkedQueue<OrderedPersistAction>();
@@ -94,8 +89,6 @@ public class InTimeDbPersistService implements DbPersistService {
 			}
 		};
 		checkRetryThread.start();
-
-		this.dbPoolSize = dbPoolSize;
 	}
 
 

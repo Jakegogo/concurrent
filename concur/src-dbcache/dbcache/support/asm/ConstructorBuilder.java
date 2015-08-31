@@ -15,15 +15,15 @@ import java.util.*;
  */
 public class ConstructorBuilder implements Opcodes {
 
-    private List<ParameterInit> initParams = new ArrayList<ParameterInit>();
+    private final List<ParameterInit> initParams = new ArrayList<ParameterInit>();
 
-    private Map<Class<?>, String> fields = new LinkedHashMap<Class<?>, String>();
+    private final Map<Class<?>, String> fields = new LinkedHashMap<Class<?>, String>();
 
-    private ClassWriter classWriter;
+    private final ClassWriter classWriter;
 
-    private Class<?> originalClass;
+    private final Class<?> originalClass;
 
-    private String enhancedClassName;
+    private final String enhancedClassName;
 
     //Constructor
     private Constructor constructor;
@@ -202,11 +202,4 @@ public class ConstructorBuilder implements Opcodes {
         return originalClass;
     }
 
-    public ClassWriter getClassWriter() {
-        return classWriter;
-    }
-
-    public String getEnhancedClassName() {
-        return enhancedClassName;
-    }
 }

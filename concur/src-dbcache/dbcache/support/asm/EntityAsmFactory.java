@@ -59,7 +59,7 @@ public class EntityAsmFactory implements Opcodes {
 			return (Class<T>) classLoader.loadClass(enhancedClassName);
 		} catch (ClassNotFoundException classNotFoundException) {
 
-			ClassReader reader = null;
+			ClassReader reader;
 			try {
 				reader = new ClassReader(clazz.getName());
 			} catch (IOException ioexception) {

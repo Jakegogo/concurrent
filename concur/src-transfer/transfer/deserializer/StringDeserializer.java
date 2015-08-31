@@ -21,7 +21,7 @@ import java.nio.charset.Charset;
 public class StringDeserializer implements Deserializer, Opcodes {
 
 	// 默认编码
-    protected static final String CHARSET = "UTF-8";
+    private static final String CHARSET = "UTF-8";
 
 	@Override
     public <T> T deserialze(Inputable inputable, Type type, byte flag, DeserialContext context) {
@@ -101,7 +101,7 @@ public class StringDeserializer implements Deserializer, Opcodes {
     	
 	}
 
-    private static StringDeserializer instance = new StringDeserializer();
+    private static final StringDeserializer instance = new StringDeserializer();
 
     public static StringDeserializer getInstance() {
         return instance;

@@ -20,18 +20,18 @@ public @interface Validate {
 	 * 自定义验证器
 	 * @return
 	 */
-	public Class<? extends Validator> cls();
+	Class<? extends Validator> cls();
 	
 	/**
 	 * 参数
 	 * @return
 	 */
-	public String params();
+	String params();
 	
 	/**
 	 * 错误提示信息
 	 * @return
 	 */
-	public String msg() default "";
+	String msg() default "";
 	
 }

@@ -94,9 +94,9 @@ public class Utilities {
                 color.getBlue(), null);
         System.out.println(key + ": RGB=" +
                 color.getRed() + "," + color.getGreen() + "," + color.getBlue() + "  " +
-                "HSB=" + String.format("%.0f%n", new Object[]{Float.valueOf(hsb[0] * 360.0F)}) + "," +
-                String.format("%.3f%n", new Object[]{Float.valueOf(hsb[1])}) + "," +
-                String.format("%.3f%n", new Object[]{Float.valueOf(hsb[2])}));
+                "HSB=" + String.format("%.0f%n", new Object[]{hsb[0] * 360.0F}) + "," +
+                String.format("%.3f%n", new Object[]{hsb[1]}) + "," +
+                String.format("%.3f%n", new Object[]{hsb[2]}));
     }
 
 

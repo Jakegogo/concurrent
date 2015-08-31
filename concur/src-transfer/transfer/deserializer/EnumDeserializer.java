@@ -221,7 +221,7 @@ public class EnumDeserializer implements Deserializer, Opcodes {
 	}
     
 
-    private static EnumDeserializer instance = new EnumDeserializer();
+    private static final EnumDeserializer instance = new EnumDeserializer();
 
     public static EnumDeserializer getInstance() {
         return instance;

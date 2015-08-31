@@ -14,7 +14,7 @@ public interface Validator {
 	 * @param msg 错误提示
 	 * @return
 	 */
-	public ValidateResult validate(Object object, String msg);
+	ValidateResult validate(Object object, String msg);
 	
 	
 }

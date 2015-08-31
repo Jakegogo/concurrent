@@ -8,9 +8,9 @@ public class ProxyEntity extends Entity {
 
 	@Override
 	public void setNum(int num) {
-		Object oldValue = Integer.valueOf(this.obj.getNum());
+		Object oldValue = this.obj.getNum();
 		this.obj.setNum(num);
-		Object newValue = Integer.valueOf(this.obj.getNum());
+		Object newValue = this.obj.getNum();
 	}
 
 

@@ -26,13 +26,13 @@ import java.util.jar.Manifest;
  * security context.
  */
 public class MyClassLoader extends URLClassLoader {
-	public URLClassPath ucp;
-	private Map<String, Class<?>> cache = new HashMap();
+	public final URLClassPath ucp;
+	private final Map<String, Class<?>> cache = new HashMap();
 	private static final Method defineClassNoVerifyMethod;
 
-	static String[] paths = System.getProperty("java.class.path").split(";");
+	static final String[] paths = System.getProperty("java.class.path").split(";");
 
-	static URL[] urls = new URL[paths.length];
+	static final URL[] urls = new URL[paths.length];
 
 	static {
 		System.out.println(Arrays.toString(paths));
@@ -74,7 +74,7 @@ public class MyClassLoader extends URLClassLoader {
 	}
 
 	public Class<?> loadClass(String name) throws ClassNotFoundException {
-		Class c = null;
+		Class c;
 
 		if (name.contains("hadoop")) {
 			c = (Class) this.cache.get(name);

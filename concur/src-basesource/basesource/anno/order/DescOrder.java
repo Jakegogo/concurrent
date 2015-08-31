@@ -18,6 +18,6 @@ public @interface DescOrder {
 	 * 排序名称
 	 * @return
 	 */
-	public String name();
+	String name();
 		
 }

@@ -19,7 +19,7 @@ public class CommonCache<R> {
     /**
      * 默认共享缓存
      */
-    private static CacheUnit shareCacheUnit = new ConcurrentLruHashMapCache() {{
+    private static final CacheUnit shareCacheUnit = new ConcurrentLruHashMapCache() {{
         this.init("DEFAULT_COMMON_CACHE", 10000, Runtime.getRuntime().availableProcessors());
     }};
 

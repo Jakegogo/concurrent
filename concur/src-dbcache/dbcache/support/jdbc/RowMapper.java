@@ -34,7 +34,7 @@ public interface RowMapper<T> {
 	 * @return
 	 * @throws SQLException
 	 */
-	T mapRow(ResultSet rs, int rowNum) throws SQLException; 
+	T mapRow(ResultSet rs, int rowNum);
 
 }
  

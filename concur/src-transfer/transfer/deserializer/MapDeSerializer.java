@@ -176,7 +176,7 @@ public class MapDeSerializer implements Deserializer, Opcodes {
          }
          
          //解析KEY
-         int keyLocal = 9;
+         int keyLocal;
          Class<?> keyRawClass = TypeUtils.getRawClass(keyType);
          if (keyType == null || keyType == Object.class
  				|| keyRawClass.isInterface()
@@ -222,7 +222,7 @@ public class MapDeSerializer implements Deserializer, Opcodes {
          
          
          // 解析VALUE
-         int valueLocal = keyLocal + 1;
+         int valueLocal;
          Class<?> valueRawClass = TypeUtils.getRawClass(valueType);
          if (valueType == null || valueType == Object.class
  				|| valueRawClass.isInterface()
@@ -322,7 +322,7 @@ public class MapDeSerializer implements Deserializer, Opcodes {
     }
 
 
-    protected Map<Object, Object> createMap(Type type) {
+    private Map<Object, Object> createMap(Type type) {
 
         if (type == null || type == Map.class || type == Object.class) {
             return new HashMap<Object, Object>();
@@ -395,7 +395,7 @@ public class MapDeSerializer implements Deserializer, Opcodes {
     }
 
 
-    private static MapDeSerializer instance = new MapDeSerializer();
+    private static final MapDeSerializer instance = new MapDeSerializer();
 
     public static MapDeSerializer getInstance() {
         return instance;

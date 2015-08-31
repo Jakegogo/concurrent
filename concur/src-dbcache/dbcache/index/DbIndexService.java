@@ -22,14 +22,14 @@ public interface DbIndexService<PK extends Comparable<PK> & Serializable> {
 	 * @param indexValue 索引值
 	 * @return Map.Entry<PK, Boolean>> 主键Id - 是否持久态(false:已删除)
 	 */
-	public Collection<PK> get(String indexName, Object indexValue);
+	Collection<PK> get(String indexName, Object indexValue);
 
 
 	/**
 	 * 创建实体索引
 	 * @param indexValue 索引值
 	 */
-	public void create(EnhancedEntity enhancedEntity, IndexValue<PK> indexValue);
+	void create(EnhancedEntity enhancedEntity, IndexValue<PK> indexValue);
 
 
 	/**
@@ -39,21 +39,21 @@ public interface DbIndexService<PK extends Comparable<PK> & Serializable> {
 	 * @param oldValue 旧字段值
 	 * @param newValue 新字段值
 	 */
-	public void update(EnhancedEntity enhancedEntity, String indexName, Object oldValue, Object newValue);
+	void update(EnhancedEntity enhancedEntity, String indexName, Object oldValue, Object newValue);
 
 
 	/**
 	 * 移除索引值
 	 * @param indexValue 索引值
 	 */
-	public void remove(EnhancedEntity enhancedEntity, IndexValue<PK> indexValue);
+	void remove(EnhancedEntity enhancedEntity, IndexValue<PK> indexValue);
 
 
 	/**
 	 * 获取缓存
 	 * @return
 	 */
-	public CacheUnit getCacheUnit();
+	CacheUnit getCacheUnit();
 
 
 }

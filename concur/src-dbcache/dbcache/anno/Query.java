@@ -10,6 +10,6 @@ public @interface Query {
      * SQL语句
      * @return
      */
-    public String value();
+    String value();
 
 }

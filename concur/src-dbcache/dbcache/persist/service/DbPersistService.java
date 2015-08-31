@@ -21,7 +21,7 @@ public interface DbPersistService {
 	 * @param dbAccessService 数据库存取服务
 	 * @param cacheConfig TODO
 	 */
-	public <T extends IEntity<?>> void handleSave(
+	<T extends IEntity<?>> void handleSave(
 			CacheObject<T> cacheObject,
 			DbAccessService dbAccessService,
 			CacheConfig<T> cacheConfig);
@@ -31,7 +31,7 @@ public interface DbPersistService {
 	 * @param cacheObject 实体缓存对象
 	 * @param dbAccessService 数据库存取服务
 	 */
-	public <T extends IEntity<?>> void handleUpdate(
+	<T extends IEntity<?>> void handleUpdate(
 			CacheObject<T> cacheObject,
 			DbAccessService dbAccessService,
 			CacheConfig<T> cacheConfig);
@@ -43,7 +43,7 @@ public interface DbPersistService {
 	 * @param key 缓存key
 	 * @param cacheUnit 缓存容器
 	 */
-	public void handleDelete(
+	void handleDelete(
 			CacheObject<?> cacheObject,
 			DbAccessService dbAccessService,
 			Object key,
@@ -52,7 +52,7 @@ public interface DbPersistService {
 	/**
 	 * 释放并且等待处理完毕
 	 */
-	public void destroy();
+	void destroy();
 
 	/**
 	 * 打印出未入库对象

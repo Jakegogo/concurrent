@@ -8,9 +8,9 @@ public class ByteBuffer implements Outputable {
 
     static final int EXPAND_STEP_SIZE = 256;
 
-    protected ByteArr rootByteArray;
+    private final ByteArr rootByteArray;
 
-    protected ByteArr curByteArray;
+    ByteArr curByteArray;
 
     private int offset;
 

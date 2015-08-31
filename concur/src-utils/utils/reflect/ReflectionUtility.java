@@ -6,6 +6,8 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.slf4j.helpers.FormattingTuple;
+import org.slf4j.helpers.MessageFormatter;
 import org.springframework.util.ReflectionUtils;
 
 /**
@@ -106,7 +108,7 @@ public abstract class ReflectionUtility extends ReflectionUtils {
 			}
 		});
 
-		return fields.toArray(new Field[0]);
+		return fields.toArray(new Field[fields.size()]);
 	}
 
 	/**
@@ -137,7 +139,7 @@ public abstract class ReflectionUtility extends ReflectionUtils {
 				methods.add(method);
 			}
 		}
-		return methods.toArray(new Method[0]);
+		return methods.toArray(new Method[methods.size()]);
 	}
 
 	/**
@@ -160,7 +162,22 @@ public abstract class ReflectionUtility extends ReflectionUtils {
 			}
 			methods.add(method);
 		}
-		return methods.toArray(new Method[0]);
+		return methods.toArray(new Method[methods.size()]);
 	}
 
+	/**
+	 * 注入属性
+	 * @param bean bean
+	 * @param field 属性
+	 * @param val 值
+	 */
+	public static void inject(Object bean, Field field, Object val) {
+		makeAccessible(field);
+		try {
+			field.set(bean, val);
+		} catch (Exception e) {
+			FormattingTuple message = MessageFormatter.format("属性[{}]注入失败", field);
+			throw new IllegalStateException(message.getMessage(), e);
+		}
+	}
 }

@@ -95,7 +95,7 @@ public class DbIndexServiceImpl<PK extends Comparable<PK> & Serializable>
 		}
 
 		final Object key = CacheRule.getIndexIdKey(indexName, indexValue);
-		ValueWrapper wrapper = (ValueWrapper) cacheUnit.get(key);
+		ValueWrapper wrapper = cacheUnit.get(key);
 
 		if (wrapper != null) {												// 已经缓存
 			return (IndexObject<PK>) wrapper.get();
@@ -111,7 +111,7 @@ public class DbIndexServiceImpl<PK extends Comparable<PK> & Serializable>
 		try {
 			lock.lock();
 
-			wrapper = (ValueWrapper) cacheUnit.get(key);
+			wrapper = cacheUnit.get(key);
 			if (wrapper != null) {												// 已经缓存
 				return (IndexObject<PK>) wrapper.get();
 			}
@@ -161,7 +161,7 @@ public class DbIndexServiceImpl<PK extends Comparable<PK> & Serializable>
 		IndexObject<PK> indexObject = this.getPersist(
 				indexValue.getName(),
 				indexValue.getValue())
-				.put(indexValue.getId(), Boolean.valueOf(true));
+				.put(indexValue.getId(), true);
 
 		enhancedEntity.getRefHolder().addIndexObject(indexObject);
 
@@ -214,7 +214,7 @@ public class DbIndexServiceImpl<PK extends Comparable<PK> & Serializable>
 
 		// 添加到新的索引队列
 		IndexObject<PK> newIndexObject = this.getPersist(indexName, newValue)
-				.put(entity.getId(), Boolean.valueOf(true));
+				.put(entity.getId(), true);
 
 		enhancedEntity.getRefHolder().addIndexObject(newIndexObject);
 
@@ -258,7 +258,7 @@ public class DbIndexServiceImpl<PK extends Comparable<PK> & Serializable>
 
 		public boolean contains(Object o) {
 			Boolean val = c.get(o);
-			return val != null && val.booleanValue();
+			return val != null && val;
 		}
 
 		public String toString() {
@@ -269,15 +269,15 @@ public class DbIndexServiceImpl<PK extends Comparable<PK> & Serializable>
 			return new Iterator<E>() {
 				Map.Entry<E, Boolean> next = null;
 				
-				Iterator<Map.Entry<E, Boolean>> i = c.entrySet().iterator();
+				final Iterator<Map.Entry<E, Boolean>> i = c.entrySet().iterator();
 
 				public boolean hasNext() {
 					Map.Entry<E, Boolean> next = null;
 					while (i.hasNext() && 
 							((next = i.next()) == null
-									|| !next.getValue().booleanValue()));
+									|| !next.getValue()));
 					this.next = next;
-					return next != null && next.getValue().booleanValue();
+					return next != null && next.getValue();
 				}
 
 				public E next() {

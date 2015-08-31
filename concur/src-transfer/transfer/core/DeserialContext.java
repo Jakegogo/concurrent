@@ -10,9 +10,9 @@ import java.lang.reflect.Type;
  */
 public class DeserialContext {
 
-    IntegerMap referenceMap;
+    private IntegerMap referenceMap;
 
-    ParseStackTrace stackTrace;
+    private ParseStackTrace stackTrace;
 
     public IntegerMap getReferenceMap() {
         return referenceMap;

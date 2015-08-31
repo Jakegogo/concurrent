@@ -99,7 +99,7 @@ public class ObjectAsmProxySerializer implements Serializer, Opcodes {
 					|| Modifier.isAbstract(fieldRawClass.getModifiers()) && !fieldRawClass.isArray()) {
 
 				//  getFieldValue
-				PropertyDescriptor propertyDescriptor = null;
+				PropertyDescriptor propertyDescriptor;
 				try {
 					propertyDescriptor = new PropertyDescriptor(
 							fieldInfo.getFieldName(), clazz);
@@ -168,7 +168,7 @@ public class ObjectAsmProxySerializer implements Serializer, Opcodes {
 
 				mv.visitVarInsn(ALOAD, 1);
 
-				PropertyDescriptor propertyDescriptor = null;
+				PropertyDescriptor propertyDescriptor;
 				try {
 					propertyDescriptor = new PropertyDescriptor(
 							fieldInfo.getFieldName(), clazz);
@@ -212,7 +212,7 @@ public class ObjectAsmProxySerializer implements Serializer, Opcodes {
 
 	}
 
-	private static ObjectAsmProxySerializer instance = new ObjectAsmProxySerializer();
+	private static final ObjectAsmProxySerializer instance = new ObjectAsmProxySerializer();
 
 	public static ObjectAsmProxySerializer getInstance() {
 		return instance;

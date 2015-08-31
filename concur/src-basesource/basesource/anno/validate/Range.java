@@ -18,18 +18,18 @@ public @interface Range {
 	 * 最小值
 	 * @return
 	 */
-	public long min();
+	long min();
 	
 	/**
 	 * 最大值
 	 * @return
 	 */
-	public long max();
+	long max();
 	
 	/**
 	 * 错误提示信息
 	 * @return
 	 */
-	public String msg() default "";
+	String msg() default "";
 	
 }

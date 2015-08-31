@@ -2350,7 +2350,7 @@ public class HashMap8<K,V> extends AbstractMap<K,V>
                                     null : xp.right;
                             }
                             if (xpr != null) {
-                                xpr.red = (xp == null) ? false : xp.red;
+                                xpr.red = xp != null && xp.red;
                                 if ((sr = xpr.right) != null)
                                     sr.red = false;
                             }
@@ -2388,7 +2388,7 @@ public class HashMap8<K,V> extends AbstractMap<K,V>
                                     null : xp.left;
                             }
                             if (xpl != null) {
-                                xpl.red = (xp == null) ? false : xp.red;
+                                xpl.red = xp != null && xp.red;
                                 if ((sl = xpl.left) != null)
                                     sl.red = false;
                             }
@@ -2423,9 +2423,7 @@ public class HashMap8<K,V> extends AbstractMap<K,V>
                 return false;
             if (tl != null && !checkInvariants(tl))
                 return false;
-            if (tr != null && !checkInvariants(tr))
-                return false;
-            return true;
+            return !(tr != null && !checkInvariants(tr));
         }
     }
 

@@ -43,28 +43,28 @@ public class PersistConfig {
     /** 传输类自增ID */
     private static final AtomicInteger CLASS_ID_GENERTOR = new AtomicInteger(1);
     
-    public static final NullDeserializer NULL_DESERIALIZER = NullDeserializer.getInstance();
+    private static final NullDeserializer NULL_DESERIALIZER = NullDeserializer.getInstance();
 
-    static final ByteMap<Deserializer> deserializers = new ByteMap<Deserializer>();
+    private static final ByteMap<Deserializer> deserializers = new ByteMap<Deserializer>();
 
-    static final IdentityHashMap<Type, Deserializer> typedDeserializers = new IdentityHashMap<Type, Deserializer>();
+    private static final IdentityHashMap<Type, Deserializer> typedDeserializers = new IdentityHashMap<Type, Deserializer>();
     
-    static final IdentityHashMap<Type, Deserializer> compiledDeserializers = new IdentityHashMap<Type, Deserializer>();
+    private static final IdentityHashMap<Type, Deserializer> compiledDeserializers = new IdentityHashMap<Type, Deserializer>();
 
-    static final IdentityHashMap<Type, Serializer> serializers = new IdentityHashMap<Type, Serializer>();
+    private static final IdentityHashMap<Type, Serializer> serializers = new IdentityHashMap<Type, Serializer>();
 
-    static final IdentityHashMap<Class, ClassInfo> classInfoMap = new IdentityHashMap<Class, ClassInfo>();
+    private static final IdentityHashMap<Class, ClassInfo> classInfoMap = new IdentityHashMap<Class, ClassInfo>();
 
-    static final IntegerMap<Class> classIdMap = new IntegerMap<Class>();
+    private static final IntegerMap<Class> classIdMap = new IntegerMap<Class>();
 
-    static final IdentityHashMap<Class, Integer> idClassMap = new IdentityHashMap<Class, Integer>();
+    private static final IdentityHashMap<Class, Integer> idClassMap = new IdentityHashMap<Class, Integer>();
 
 
     // 1111 0000 类型
-    public static final byte TYPE_MASK = (byte) 0xF0;
+    private static final byte TYPE_MASK = (byte) 0xF0;
 
     // 0000 1111 额外信息
-    public static final byte EXTRA_MASK = (byte) 0x0F;
+    private static final byte EXTRA_MASK = (byte) 0x0F;
 
 
     // Number类型标记
@@ -76,9 +76,9 @@ public class PersistConfig {
     public static final byte DOUBLE = 0x01;// double 8字节
 
     // 0000 1000
-    public static final byte FLAG_NEGATIVE = (byte) 0x08;
+    private static final byte FLAG_NEGATIVE = (byte) 0x08;
     // 0000 0000
-    public static final byte FLAG_NOT_NEGATIVE = (byte) 0x00;
+    private static final byte FLAG_NOT_NEGATIVE = (byte) 0x00;
 
 
     /**
@@ -389,7 +389,7 @@ public class PersistConfig {
 	        }
 	        
 	        
-        	Serializer serializer = null;
+        	Serializer serializer;
         	try {
         		serializer = AsmSerializerFactory.compileSerializer(clazz, ObjectSerializer.getInstance());// 自定义传输类
         		serializers.put(clazz, serializer);
@@ -439,7 +439,7 @@ public class PersistConfig {
 	        }
 	        
 	        
-	        Deserializer deserializer = null;
+	        Deserializer deserializer;
         	try {
         		deserializer = AsmDeserializerFactory.compileDeserializer(clazz, ObjectDeSerializer.getInstance());// 自定义传输类
         		compiledDeserializers.put(clazz, deserializer);
@@ -582,7 +582,7 @@ public class PersistConfig {
         if (classId == null) {
             throw new UnsupportClassException(clazz);
         }
-        return classId.intValue();
+        return classId;
     }
 
     /**

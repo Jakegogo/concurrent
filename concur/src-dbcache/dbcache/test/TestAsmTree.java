@@ -6,6 +6,7 @@ import org.objectweb.asm.*;
 import org.objectweb.asm.tree.*;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
@@ -36,7 +37,7 @@ public class TestAsmTree {
 	                final Type[] arguments = Type.getArgumentTypes(md.desc);
 	        		for (Type argType : arguments) {
 	        			try {
-							System.out.println(argType.getClassName() + " : " + ReflectUtils.parseTypes(md.desc));
+							System.out.println(argType.getClassName() + " : " + Arrays.toString(ReflectUtils.parseTypes(md.desc)));
 						} catch (ClassNotFoundException e) {
 							e.printStackTrace();
 						}

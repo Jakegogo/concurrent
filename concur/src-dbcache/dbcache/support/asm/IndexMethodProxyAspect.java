@@ -32,7 +32,7 @@ public class IndexMethodProxyAspect extends AbstractAsmMethodProxyAspect {
 	 * 索引信息缓存
 	 * 实体类 - 索引信息
 	 */
-	private ConcurrentHashMap<Class<?>, ClassIndexesMetaData> CLASS_INDEX_INFO = new ConcurrentHashMap<Class<?>, ClassIndexesMetaData>();
+	private final ConcurrentHashMap<Class<?>, ClassIndexesMetaData> CLASS_INDEX_INFO = new ConcurrentHashMap<Class<?>, ClassIndexesMetaData>();
 
 
 
@@ -193,7 +193,7 @@ public class IndexMethodProxyAspect extends AbstractAsmMethodProxyAspect {
 					EntityClassProxyAdapter.REAL_OBJECT,
 					Type.getDescriptor(entityClass));
 
-			PropertyDescriptor propertyDescriptor = null;
+			PropertyDescriptor propertyDescriptor;
 			try {
 				propertyDescriptor = new PropertyDescriptor(field.getName(), entityClass);
 			} catch (IntrospectionException e) {
@@ -356,10 +356,10 @@ public class IndexMethodProxyAspect extends AbstractAsmMethodProxyAspect {
 		String enhancedClassName;
 
 		/** 索引属性表  索引名 - 属性 */
-		Map<String, Field> indexFields = new HashMap<String, Field>();
+		final Map<String, Field> indexFields = new HashMap<String, Field>();
 
 		/** 更改索引值的方法列表 方法 - 索引名 */
-		Map<Method, Set<MethodMetaData>> changeIndexValueMethods = new HashMap<Method, Set<MethodMetaData>>();
+		final Map<Method, Set<MethodMetaData>> changeIndexValueMethods = new HashMap<Method, Set<MethodMetaData>>();
 
 	}
 

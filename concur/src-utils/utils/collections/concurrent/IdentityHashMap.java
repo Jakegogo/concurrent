@@ -43,7 +43,7 @@ public class IdentityHashMap<K, V> {
 
         for (Entry<K, V> entry = buckets[bucket]; entry != null; entry = entry.next) {
             if (key == entry.key) {
-                return (V) entry.value;
+                return entry.value;
             }
         }
 

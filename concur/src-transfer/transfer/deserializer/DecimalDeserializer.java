@@ -54,6 +54,13 @@ public class DecimalDeserializer implements Deserializer, Opcodes {
             return (T) number;
         }
 
+        if (number == null) {
+            if (TypeUtils.getRawClass(type).isPrimitive()) {
+                return (T) Integer.valueOf(0);
+            }
+            return null;
+        }
+
         if (type == float.class || type == Float.class) {
             return (T) Float.valueOf(number.floatValue());
         } else if (type == double.class || type == Double.class) {
@@ -154,6 +161,14 @@ public class DecimalDeserializer implements Deserializer, Opcodes {
         	mv.visitInsn(ARETURN);
         	return;
         }
+
+        //TODO
+//        if (number == null) {
+//            if (TypeUtils.getRawClass(type).isPrimitive()) {
+//                return (T) Integer.valueOf(0);
+//            }
+//            return null;
+//        }
     	
     	if (type == float.class || type == Float.class) {
     		mv.visitVarInsn(ALOAD, 7);
@@ -223,7 +238,7 @@ public class DecimalDeserializer implements Deserializer, Opcodes {
     	mv.visitEnd();
 	}
 
-    private static DecimalDeserializer instance = new DecimalDeserializer();
+    private static final DecimalDeserializer instance = new DecimalDeserializer();
 
     public static DecimalDeserializer getInstance() {
         return instance;

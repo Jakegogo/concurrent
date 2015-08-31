@@ -313,7 +313,7 @@ public class DefaultDockingPort extends JPanel implements DockingPort {
 	
 	private boolean dockInCenterRegion(Component comp) {
 		Component docked = getDockedComponent();
-		JTabbedPane tabs = null;
+		JTabbedPane tabs;
 		
 		if(docked instanceof JTabbedPane) {
 			tabs = (JTabbedPane)docked;
@@ -426,7 +426,7 @@ public class DefaultDockingPort extends JPanel implements DockingPort {
 		int tc = tabs.getTabCount();
 		int occurrances = 0;
 		HashSet titles = new HashSet();
-		String tmp = null;
+		String tmp;
 		for(int i=0; i<tc; i++) {
 			tmp = tabs.getTitleAt(i).toLowerCase();
 			titles.add(tmp);
@@ -483,7 +483,7 @@ public class DefaultDockingPort extends JPanel implements DockingPort {
 	 */
 	public boolean isLayoutResizable() {
 		JSplitPane wrapper = getDockedSplitPane();
-		return wrapper==null? false: wrapper.getDividerSize()!=0;
+		return wrapper != null && wrapper.getDividerSize() != 0;
 	}
 
 	private boolean isValidDockingRegion(String region) {
@@ -658,8 +658,7 @@ public class DefaultDockingPort extends JPanel implements DockingPort {
 			removeAll();
 			
 		dockedComponent = c;
-		Component ret = super.add(dockedComponent);
-		return ret;
+		return super.add(dockedComponent);
 	}
 
 	/**

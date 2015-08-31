@@ -106,13 +106,10 @@ public class AsmUtils implements Opcodes {
 			return false;
 		}
 		// "main" 方法不做重写
-		if (Modifier.isPublic(m.getModifiers())
+		return !(Modifier.isPublic(m.getModifiers())
 				&& Modifier.isStatic(m.getModifiers())
 				&& m.getReturnType().getName().equals("void")
-				&& m.getName().equals("main")) {
-			return false;
-		}
-		return true;
+				&& m.getName().equals("main"));
 	}
 
 
@@ -540,7 +537,7 @@ public class AsmUtils implements Opcodes {
 		final Map<String, Class<?>> paramMap = new LinkedHashMap<String, Class<?>>(parameterTypes.length);
 
 		final String n = m.getDeclaringClass().getName();
-		ClassReader cr = null;
+		ClassReader cr;
 
 		try {
 			cr = new ClassReader(n);

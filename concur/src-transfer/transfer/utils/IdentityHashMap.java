@@ -23,7 +23,7 @@ package transfer.utils;
 @SuppressWarnings("unchecked")
 public class IdentityHashMap<K, V> {
 
-    public static final int     DEFAULT_TABLE_SIZE = 1024;
+    private static final int     DEFAULT_TABLE_SIZE = 1024;
 
     private final Entry<K, V>[] buckets;
     private final int           indexMask;
@@ -43,7 +43,7 @@ public class IdentityHashMap<K, V> {
 
         for (Entry<K, V> entry = buckets[bucket]; entry != null; entry = entry.next) {
             if (key == entry.key) {
-                return (V) entry.value;
+                return entry.value;
             }
         }
 
@@ -70,8 +70,8 @@ public class IdentityHashMap<K, V> {
 
     public int size() {
         int size = 0;
-        for (int i = 0; i < buckets.length; ++i) {
-            for (Entry<K, V> entry = buckets[i]; entry != null; entry = entry.next) {
+        for (Entry<K, V> bucket : buckets) {
+            for (Entry<K, V> entry = bucket; entry != null; entry = entry.next) {
                 size++;
             }
         }

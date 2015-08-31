@@ -38,7 +38,7 @@ public class GetterBuilder {
 		
 		@Override
 		public Object getValue(Object object) {
-			Object value = null;
+			Object value;
 			try {
 				value = field.get(object);
 			} catch (Exception e) {
@@ -62,7 +62,7 @@ public class GetterBuilder {
 		
 		@Override
 		public Object getValue(Object object) {
-			Object value = null;
+			Object value;
 			try {
 				value = method.invoke(object);
 			} catch (Exception e) {
@@ -112,10 +112,7 @@ public class GetterBuilder {
 		}
 		
 		public boolean isField() {
-			if (field != null) {
-				return true;
-			}
-			return false;
+			return field != null;
 		}
 	}
 
@@ -126,7 +123,7 @@ public class GetterBuilder {
 	 */
 	public static Getter createIdGetter(Class<?> clz) {
 		IdentityInfo info = new IdentityInfo(clz);
-		Getter identifier = null;
+		Getter identifier;
 		if (info.isField()) {
 			identifier = new FieldGetter(info.field);
 		} else {
@@ -181,10 +178,7 @@ public class GetterBuilder {
 
 		@Override
 		public boolean hasComparator() {
-			if (comparator != null) {
-				return true;
-			}
-			return false;
+			return comparator != null;
 		}
 	}
 	
@@ -234,10 +228,7 @@ public class GetterBuilder {
 
 		@Override
 		public boolean hasComparator() {
-			if (comparator != null) {
-				return true;
-			}
-			return false;
+			return comparator != null;
 		}
 	}
 

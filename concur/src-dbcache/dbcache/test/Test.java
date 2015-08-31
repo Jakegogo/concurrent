@@ -78,9 +78,9 @@ public class Test {
 
 
 	public static String getEntityIdKey(Serializable id, Class<?> entityClazz) {
-		return new StringBuilder().append(entityClazz.getName())
-									.append("_")
-									.append(id).toString();
+		return entityClazz.getName() +
+				"_" +
+				id;
 	}
 
 
@@ -129,8 +129,7 @@ public class Test {
 					Thread.sleep(10);
 				}
 
-				entity = null;
-//			System.gc();
+				//			System.gc();
 			}
 		}
 //		System.out.println(entity.num);
@@ -256,7 +255,7 @@ public class Test {
 	@org.junit.Test
 	public void t9() {
 
-		Entity entity = null;
+		Entity entity;
 
 		boolean enter = false;
 		for(int i = 0;i < 10000000;i ++) {
@@ -351,7 +350,7 @@ public class Test {
 
 	@org.junit.Test
 	public void t11() {
-		new String().getBytes();
+		"".getBytes();
 	}
 
 
@@ -361,11 +360,10 @@ public class Test {
 
 		for(int i = 0;i < 100000;i++) {
 			Entity entity = new Entity();
-			entity.setId(Long.valueOf(i));
+			entity.setId((long) i);
 
 			map.putIfAbsent(entity, i);
 
-			Assert.assertEquals(entity, Integer.valueOf(i));
 		}
 
 	}
@@ -375,7 +373,7 @@ public class Test {
 	public void t13() {
 
 //		for(int i = 0;i < 100;i++) {
-			Long id = Long.valueOf(104);
+			Long id = (long) 104;
 			Entity entity = new Entity();
 			entity.setId(id);
 
@@ -391,7 +389,7 @@ public class Test {
 	public void t14() {
 
 		for(int i = 101;i < 200;i++) {
-			Long id = Long.valueOf(i + 100);
+			Long id = (long) (i + 100);
 			Entity entity = new Entity();
 			entity.setId(id);
 
@@ -467,7 +465,7 @@ public class Test {
 
 
 		for(int j = 1;j < 100;j++) {
-			Long id = Long.valueOf(j);
+			Long id = (long) j;
 			Entity entity = new Entity();
 			entity.doAfterLoad();
 			entity.setId(id);
@@ -540,7 +538,6 @@ public class Test {
 //				if (i % 10000 == 0) {
 //					Thread.sleep(100);
 //				}
-				entity = null;
 			}
 
 //			Thread.sleep(500);
@@ -641,7 +638,7 @@ public class Test {
 
 	@org.junit.Test
 	public void testHibernateLoad() {
-		Entity entity = (Entity) JdbcUtil.get(Entity.class, 15l);
+		Entity entity = JdbcUtil.get(Entity.class, 15l);
 		byte[] bytes = ProtostuffUtils.object2Bytes(entity);
 		System.out.println(bytes.length);
 

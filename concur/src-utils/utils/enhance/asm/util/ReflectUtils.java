@@ -172,7 +172,7 @@ public class ReflectUtils {
         while ((index = className.indexOf("[]", index) + 1) > 0) {
             dimensions++;
         }
-        StringBuffer brackets = new StringBuffer(className.length() - dimensions);
+        StringBuilder brackets = new StringBuilder(className.length() - dimensions);
         for (int i = 0; i < dimensions; i++) {
             brackets.append('[');
         }
@@ -183,10 +183,11 @@ public class ReflectUtils {
         try {
             return Class.forName(prefix + className + suffix, false, loader);
         } catch (ClassNotFoundException ignore) { }
-        for (int i = 0; i < packages.length; i++) {
+        for (String aPackage : packages) {
             try {
-                return Class.forName(prefix + packages[i] + '.' + className + suffix, false, loader);
-            } catch (ClassNotFoundException ignore) { }
+                return Class.forName(prefix + aPackage + '.' + className + suffix, false, loader);
+            } catch (ClassNotFoundException ignore) {
+            }
         }
         if (dimensions == 0) {
             Class c = (Class)primitives.get(className);
@@ -270,8 +271,7 @@ public class ReflectUtils {
 
     public static Method[] getPropertyMethods(PropertyDescriptor[] properties, boolean read, boolean write) {
         Set methods = new HashSet();
-        for (int i = 0; i < properties.length; i++) {
-            PropertyDescriptor pd = properties[i];
+        for (PropertyDescriptor pd : properties) {
             if (read) {
                 methods.add(pd.getReadMethod());
             }
@@ -303,10 +303,9 @@ public class ReflectUtils {
                 return all;
             }
             List properties = new ArrayList(all.length);
-            for (int i = 0; i < all.length; i++) {
-                PropertyDescriptor pd = all[i];
+            for (PropertyDescriptor pd : all) {
                 if ((read && pd.getReadMethod() != null) ||
-                    (write && pd.getWriteMethod() != null)) {
+                        (write && pd.getWriteMethod() != null)) {
                     properties.add(pd);
                 }
             }
@@ -343,8 +342,8 @@ public class ReflectUtils {
             addAllMethods(superclass, list);
         }
         Class[] interfaces = type.getInterfaces();
-        for (int i = 0; i < interfaces.length; i++) {
-            addAllMethods(interfaces[i], list);
+        for (Class anInterface : interfaces) {
+            addAllMethods(anInterface, list);
         }
             
         return list;
@@ -372,7 +371,7 @@ public class ReflectUtils {
     }
         
     public static Class defineClass(String className, byte[] b, ClassLoader loader) throws Exception {
-        Object[] args = new Object[]{className, b, Integer.valueOf(0), Integer.valueOf(b.length), PROTECTION_DOMAIN };
+        Object[] args = new Object[]{className, b, 0, b.length, PROTECTION_DOMAIN };
         Class c = (Class)DEFINE_CLASS.invoke(loader, args);
         // Force static initializers to run.
         Class.forName(className, true, loader);
@@ -393,8 +392,7 @@ public class ReflectUtils {
     public static Method[] findMethods(String[] namesAndDescriptors, Method[] methods)
     {
         Map map = new HashMap();
-        for (int i = 0; i < methods.length; i++) {
-            Method method = methods[i];
+        for (Method method : methods) {
             map.put(method.getName() + Type.getMethodDescriptor(method), method);
         }
         Method[] result = new Method[namesAndDescriptors.length / 2];

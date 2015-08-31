@@ -90,7 +90,7 @@ public class ByteArrayWrappDeSerializer implements Deserializer, Opcodes {
     	
 	}
 
-    private static ByteArrayWrappDeSerializer instance = new ByteArrayWrappDeSerializer();
+    private static final ByteArrayWrappDeSerializer instance = new ByteArrayWrappDeSerializer();
 
     public static ByteArrayWrappDeSerializer getInstance() {
         return instance;

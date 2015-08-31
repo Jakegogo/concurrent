@@ -35,7 +35,7 @@ public class NullDeserializer implements Deserializer, Opcodes {
     	
 	}
 
-    private static NullDeserializer instance = new NullDeserializer();
+    private static final NullDeserializer instance = new NullDeserializer();
 
     public static NullDeserializer getInstance() {
         return instance;

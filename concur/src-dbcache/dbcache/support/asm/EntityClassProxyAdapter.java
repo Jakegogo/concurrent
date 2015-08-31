@@ -51,32 +51,32 @@ public class EntityClassProxyAdapter extends ClassVisitor implements Opcodes {
 	/**
 	 * 切面方法重写器
 	 */
-	private AbstractAsmMethodProxyAspect methodAspect;
+	private final AbstractAsmMethodProxyAspect methodAspect;
 	
 	/**
 	 * 方法信息Map
 	 */
-	private Map<String, MethodInfo> methodInfoMap = new HashMap<String, MethodInfo>();
+	private final Map<String, MethodInfo> methodInfoMap = new HashMap<String, MethodInfo>();
 
 	/**
 	 * ClassWriter
 	 */
-	private ClassWriter classWriter;
+	private final ClassWriter classWriter;
 
 	/**
 	 * 原始类
 	 */
-	private Class<?> originalClass;
+	private final Class<?> originalClass;
 
 	/**
 	 * 代理类名
 	 */
-	private String enhancedClassName;
+	private final String enhancedClassName;
 	
 	/**
 	 * 代理增强接口类
 	 */
-	private Class<?> enhanceInterface = EnhancedEntity.class;
+	private final Class<?> enhanceInterface = EnhancedEntity.class;
 
 	/**
 	 * 构造方法
@@ -286,7 +286,7 @@ public class EntityClassProxyAdapter extends ClassVisitor implements Opcodes {
 			Type rt = Type.getReturnType(m);
 			// 需要重写
 			if (this.methodAspect.needOverride(originalClass, m)) {
-				int aspectAfterLocalNum = 0;
+				int aspectAfterLocalNum;
 
 				// 没有返回值
 				if (rt.toString().equals("V")) {

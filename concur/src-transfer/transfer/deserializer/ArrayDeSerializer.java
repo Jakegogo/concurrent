@@ -190,9 +190,7 @@ public class ArrayDeSerializer implements Deserializer, Opcodes {
         
         
         Deserializer defaultComponentDeserializer = null;
-        if (itemType != null && itemType != Object.class
-        		&& !componentClass.isInterface()
-				&& (componentClass.isPrimitive() || componentClass.isArray() || !Modifier.isAbstract(componentClass.getModifiers()))) {
+        if (itemType != Object.class && !componentClass.isInterface() && (componentClass.isPrimitive() || componentClass.isArray() || !Modifier.isAbstract(componentClass.getModifiers()))) {
             defaultComponentDeserializer = TransferConfig.getDeserializer(itemType);// 元素解析器
         }
 
@@ -310,7 +308,7 @@ public class ArrayDeSerializer implements Deserializer, Opcodes {
 	}
 
 
-    private static ArrayDeSerializer instance = new ArrayDeSerializer();
+    private static final ArrayDeSerializer instance = new ArrayDeSerializer();
 
     public static ArrayDeSerializer getInstance() {
         return instance;

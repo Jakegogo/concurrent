@@ -88,7 +88,7 @@ public class StorageManager implements ApplicationContextAware {
 		for (Storage<?, ?> storage : this.storages.values()) {
 			storages.add(storage);
 		}
-		return storages.toArray(new Storage[0]);
+		return storages.toArray(new Storage[storages.size()]);
 	}
 
 	/**

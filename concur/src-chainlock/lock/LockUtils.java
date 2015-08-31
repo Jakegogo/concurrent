@@ -14,7 +14,7 @@ import java.util.concurrent.locks.Lock;
 public class LockUtils {
 	
 	/** 锁持有者，用于避免重复的锁创建 */
-	private static ObjectLockHolder holder = new ObjectLockHolder();
+	private static final ObjectLockHolder holder = new ObjectLockHolder();
 	
 	/**
 	 * 获取多个对象的同步锁
@@ -32,7 +32,7 @@ public class LockUtils {
 	 * @param objects 要获得锁的对象或实体实例数组
 	 * @return
 	 */
-	public static List<? extends Lock> loadLocks(Object...objects) {
+	private static List<? extends Lock> loadLocks(Object... objects) {
 
 		if (objects == null) {
 			throw new IllegalArgumentException("objects不能为NULL.");

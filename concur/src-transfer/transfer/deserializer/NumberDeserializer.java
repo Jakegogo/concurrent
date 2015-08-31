@@ -23,10 +23,10 @@ import java.util.concurrent.atomic.AtomicLong;
 public class NumberDeserializer implements Deserializer, Opcodes {
 
     // 0000 0111 数字类型
-    public static final byte NUMBER_MASK = (byte) 0x07;
+    private static final byte NUMBER_MASK = (byte) 0x07;
 
     // 0000 1000
-    public static final byte FLAG_NEGATIVE = (byte) 0x08;
+    private static final byte FLAG_NEGATIVE = (byte) 0x08;
 
 
     @Override
@@ -62,6 +62,13 @@ public class NumberDeserializer implements Deserializer, Opcodes {
 
         if (type == null || type == Number.class) {
             return (T) number;
+        }
+
+        if (number == null) {
+            if (TypeUtils.getRawClass(type).isPrimitive()) {
+                return (T) Integer.valueOf(0);
+            }
+            return null;
         }
 
         if (type == short.class || type == Short.class) {
@@ -188,6 +195,15 @@ public class NumberDeserializer implements Deserializer, Opcodes {
 //    	if (type == long.class || type == Long.class) {
 //            return (T) number;
 //        }
+
+        //TODO
+//        if (number == null) {
+//            if (TypeUtils.getRawClass(type).isPrimitive()) {
+//                return (T) Integer.valueOf(0);
+//            }
+//            return null;
+//        }
+
     	mv.visitFrame(Opcodes.F_SAME, 0, null, 0, null);
     	mv.visitVarInsn(ALOAD, 1);
     	mv.visitMethodInsn(INVOKESTATIC, "transfer/utils/BitUtils", "getLong", "(Ltransfer/Inputable;)J", false);
@@ -292,7 +308,7 @@ public class NumberDeserializer implements Deserializer, Opcodes {
 	}
     
 
-    private static NumberDeserializer instance = new NumberDeserializer();
+    private static final NumberDeserializer instance = new NumberDeserializer();
 
     public static NumberDeserializer getInstance() {
         return instance;

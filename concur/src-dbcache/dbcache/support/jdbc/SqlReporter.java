@@ -14,7 +14,7 @@ import org.slf4j.LoggerFactory;
  */
 public class SqlReporter implements InvocationHandler {
 	
-	private Connection conn;
+	private final Connection conn;
 	private static boolean loggerOn = false;
 	private static final Logger log = LoggerFactory.getLogger(SqlReporter.class);
 	

@@ -33,7 +33,7 @@ public class ModifiedFieldMethodAspect extends AbstractAsmMethodProxyAspect {
 	private static final String CHANGE_FIELDS_ARRAY = "changeFields";
 	
 	/** 索引信息缓存 实体类 - 索引信息 */
-	private ConcurrentHashMap<Class<?>, ClassIndexesMetaData> CLASS_INDEX_INFO = new ConcurrentHashMap<Class<?>, ClassIndexesMetaData>();
+	private final ConcurrentHashMap<Class<?>, ClassIndexesMetaData> CLASS_INDEX_INFO = new ConcurrentHashMap<Class<?>, ClassIndexesMetaData>();
 
 
 
@@ -104,8 +104,8 @@ public class ModifiedFieldMethodAspect extends AbstractAsmMethodProxyAspect {
 
 
 					FieldMetaData fieldMetaData = new FieldMetaData();
-					fieldMetaData.fieldIndex = fieldIndexCounter.getAndIncrement();;
-					
+					fieldMetaData.fieldIndex = fieldIndexCounter.getAndIncrement();
+
 					fieldsMap.put(field.getName(), fieldMetaData);
 
 				} catch (IntrospectionException e) {
@@ -204,7 +204,8 @@ public class ModifiedFieldMethodAspect extends AbstractAsmMethodProxyAspect {
 			} catch (NoSuchMethodException e) {
 				e.printStackTrace();
 			}
-			
+
+			assert setMethod != null;
 			Type mt = Type.getType(setMethod);
 			mWriter.visitMethodInsn(INVOKEVIRTUAL,
 					AsmUtils.toAsmCls(AtomicIntegerArray.class.getName()), "set",
@@ -245,13 +246,13 @@ public class ModifiedFieldMethodAspect extends AbstractAsmMethodProxyAspect {
 		 * 索引属性表
 		 * 索引名 - 属性
 		 */
-		Map<String, FieldMetaData> fields = new LinkedHashMap<String, FieldMetaData>();
+		final Map<String, FieldMetaData> fields = new LinkedHashMap<String, FieldMetaData>();
 
 		/**
 		 * 更改索引值的方法列表
 		 * 方法 - 索引名
 		 */
-		Map<Method, Set<MethodMetaData>> changeIndexValueMethods = new LinkedHashMap<Method, Set<MethodMetaData>>();
+		final Map<Method, Set<MethodMetaData>> changeIndexValueMethods = new LinkedHashMap<Method, Set<MethodMetaData>>();
 
 	}
 

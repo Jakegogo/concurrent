@@ -182,12 +182,12 @@ public class Transfer {
     /**
      * 解码
      * @param inputable 输入接口
-     * @param <T>
+     * @param <T> 解码后的类型
      * @return
      */
     public static <T> T decode(Inputable inputable) {
         byte flag = inputable.getByte();
-        Deserializer deserializer = TransferConfig.getDeserializer((Type) Object.class, flag);
+        Deserializer deserializer = TransferConfig.getDeserializer(Object.class, flag);
         return deserializer.deserialze(inputable, Object.class, flag, new DeserialContext());
     }
     
@@ -196,7 +196,7 @@ public class Transfer {
      * 解码
      * @param inputable 输入接口
      * @param clazz 类型
-     * @param <T>
+     * @param <T> 解码后的类型
      * @return
      */
     public static <T> T decode(Inputable inputable, Class<T> clazz) {
@@ -217,7 +217,7 @@ public class Transfer {
      * 解码
      * @param bytes 输入字节数组
      * @param clazz 类 型
-     * @param <T>
+     * @param <T> 解码后的类型
      * @return
      */
     public static <T> T decode(byte[] bytes, Class<T> clazz) {
@@ -229,7 +229,7 @@ public class Transfer {
      * 解码
      * @param inputable 输入接口
      * @param typeReference 类型定义
-     * @param <T>
+     * @param <T> 解码后的类型
      * @return
      */
     public static <T> T decode(Inputable inputable, TypeReference<T> typeReference) {
@@ -250,7 +250,7 @@ public class Transfer {
      * 解码
      * @param bytes 输入字节数组
      * @param typeReference 类型定义
-     * @param <T>
+     * @param <T> 解码后的类型
      * @return
      */
     public static <T> T decode(byte[] bytes, TypeReference<T> typeReference) {
@@ -261,7 +261,7 @@ public class Transfer {
     /**
      * 获取预编译大热解码器
      * @param type 类型
-     * @param <T>
+     * @param <T> 解码后的类型
      * @return
      */
     private static <T> Deserializer getCompiledDeserializer(Type type) {
@@ -303,7 +303,7 @@ public class Transfer {
         final DeserialContext context = new DeserialContext();
         return new Iterator<E>() {
             private int curIndex = 0;
-            private int size = byteDataMeta.getComponentSize();
+            private final int size = byteDataMeta.getComponentSize();
 
             @Override
             public boolean hasNext() {
@@ -363,7 +363,7 @@ public class Transfer {
         final DeserialContext context = new DeserialContext();
         return new Iterator<Map.Entry<K, V>>() {
             private int curIndex = 0;
-            private int size = byteDataMeta.getComponentSize();
+            private final int size = byteDataMeta.getComponentSize();
 
             @Override
             public boolean hasNext() {

@@ -60,16 +60,16 @@ public class ModelInfo {
     private String selectMaxIdSql;
 
 	// 按字段查询Id语句
-    private Map<String, String> findIdByColumnSqlMap = new HashMap<String, String>();
+    private final Map<String, String> findIdByColumnSqlMap = new HashMap<String, String>();
 
     // 按字段查询语句
     private Map<String, String> findByColumnSqlMap = new HashMap<String, String>();
     
     // 按字段更新语句
-    private Map<Integer, String> updateByColumnSqlMap = new HashMap<Integer, String>();
+    private final Map<Integer, String> updateByColumnSqlMap = new HashMap<Integer, String>();
 
 	// 按字段更新语句
-    private Map<String, String> updateByFieldSqlMap = new HashMap<String, String>();
+    private final Map<String, String> updateByFieldSqlMap = new HashMap<String, String>();
     
     /**
      * 生成插入语句
@@ -133,54 +133,9 @@ public class ModelInfo {
     	this.updateSql = sqlBuilder.toString();
     	return this.updateSql;
     }
-    
-    
-    /**
-     * 生成更新语句
-     * @param dialect Dialect
-     * @param modifiedFields 修改过的属性集合
-     * @return
-     */
-    public String getOrCreateUpdateSql(Dialect dialect, List<String> modifiedFields) {
-    	
-    	if (modifiedFields.size() == 0) {
-    		return this.getOrCreateUpdateSql(dialect);
-    	}
-    	
-    	String sql = null, key = null;
-    	if (modifiedFields.size() == 1) {
-    		key = modifiedFields.get(0);
-    		
-    		sql = this.updateByFieldSqlMap.get(key);
-    		if (sql != null) {
-    			return sql;
-    		}
-    	}
-    	
-    	List<String> modifiedColumns = new ArrayList<String>();
-		for (String fieldName : modifiedFields) {
-			AttributeInfo attributeInfo = this.attrTypeMap.get(fieldName);
-			if (attributeInfo == null) {
-				throw new IllegalArgumentException("不存在的属性:" + fieldName + " [" + this.clzz + "]");
-			}
-			if (!attributeInfo.isPrimaryKey()) {
-				modifiedColumns.add(attributeInfo.getColumnName());
-			}
-		}
-		
-		StringBuilder sqlBuilder = new StringBuilder();
-    	dialect.forDbUpdate(tableInfo, modifiedColumns, sqlBuilder);
 
-    	sql = sqlBuilder.toString();
-    	if (modifiedFields.size() == 1) {
-    		this.updateByFieldSqlMap.put(key, sql);
-    	}
-    	
-    	return sql;
-    }
 
-    
-    /**
+	/**
      * 生成更新语句
      * @param dialect Dialect
      * @param modifiedFields 修改过的属性集合
@@ -192,7 +147,7 @@ public class ModelInfo {
     		return this.getOrCreateUpdateSql(dialect);
     	}
     	
-    	String sql = null; int key = 1;
+    	String sql; int key = 1;
     	if (modifiedFields.size() <= 3) {
     		for (Integer fieldIndex : modifiedFields) {
     			key = key * 31 + fieldIndex;
@@ -345,7 +300,7 @@ public class ModelInfo {
      * @throws SQLException
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })
-	public List generateIdList(ResultSet rs) throws InstantiationException, IllegalAccessException, SQLException {
+	public List generateIdList(ResultSet rs) throws SQLException {
     	List list = new ArrayList();
 
     	while (rs.next()) {
@@ -360,7 +315,7 @@ public class ModelInfo {
      * @param rs 查询结果集
      * @return
      */
-    public Object generateUniqueResult(ResultSet rs) throws InstantiationException, IllegalAccessException, SQLException {
+    public Object generateUniqueResult(ResultSet rs) throws SQLException {
     	if (rs.next()) {
     		return rs.getObject(1);
     	}
@@ -383,31 +338,8 @@ public class ModelInfo {
 		return sqlParams;
 	}
 
-    /**
-     * 获取保存的sql参数
-     * @param entity 实体
-     * @return
-     */
-    @SuppressWarnings("unchecked")
-	public Object[] getAutoIdSaveParams(Object entity) {
-    	Object[] sqlParams = new Object[this.columnInfos.size()];
-		int i = 0;Object columnVal;
-		for (AttributeInfo<Object> columnInfo : this.columnInfos) {
-			columnVal = columnInfo.getPersistValue(entity);
-			if (columnInfo.isPrimaryKey() && columnVal == null) {
-				if (this.defaultIdGenerator != null) {
-					sqlParams[i] = this.defaultIdGenerator.generateId();
-				}
-			} else {
-				sqlParams[i] = columnVal;
-			}
-			i++;
-		}
-		return sqlParams;
-	}
 
-
-    /**
+	/**
      * 获取保存的sql参数
      * @param entity 实体
      * @param category 分段类别
@@ -421,7 +353,7 @@ public class ModelInfo {
 			columnVal = columnInfo.getPersistValue(entity);
 			if (columnInfo.isPrimaryKey() && columnVal == null) {
 				// 获取Id生成器
-				IdGenerator<?> idGenerator = this.idGenerators.get(Integer.valueOf(category));
+				IdGenerator<?> idGenerator = this.idGenerators.get(category);
 				if (idGenerator != null) {
 					sqlParams[i] = idGenerator.generateId();
 				}
@@ -453,33 +385,8 @@ public class ModelInfo {
 		return sqlParams;
 	}
 
-    
-   /**
-    * 获取更新的sql参数
-    * @param entity 实体
-    * @param modifiedFields 修改过的属性集合
-    * @return
-    */
-   @SuppressWarnings("unchecked")
-	public Object[] getUpdateParams(Object entity, List<String> modifiedFields) {
-		if (modifiedFields.size() == 0) {
-			return this.getUpdateParams(entity);
-		}
-   		Object[] sqlParams = new Object[this.columnInfos.size()];
-		int i = 0;
-		for (String fieldName : modifiedFields) {
-			AttributeInfo<Object> columnInfo = this.attrTypeMap.get(fieldName);
-			if (columnInfo != null && !columnInfo.isPrimaryKey()) {
-				sqlParams[i] = columnInfo.getPersistValue(entity);
-				i++;
-			}
-		}
-		sqlParams[this.columnInfos.size() - 1] = primaryKeyInfo.getPersistValue(entity);
-		return sqlParams;
-	}
-    
 
-   /**
+	/**
     * 获取更新的sql参数
     * @param entity 实体
     * @param modifiedFields 修改过的属性数组(线程安全)
@@ -577,14 +484,6 @@ public class ModelInfo {
 		return primaryKeyInfo.getPersistValue(entity);
 	}
 
-	public TableInfo getTableInfo() {
-		return tableInfo;
-	}
-
-	public Class<?> getClzz() {
-		return clzz;
-	}
-
 	/**
 	 * 设置实体类
 	 *
@@ -592,10 +491,6 @@ public class ModelInfo {
 	 */
 	public void setClzz(Class<?> clzz) {
 		this.clzz = clzz;
-	}
-
-	public Class<?> getProxyClzz() {
-		return proxyClzz;
 	}
 
 	public void setProxyClzz(Class<?> proxyClzz) {
@@ -615,64 +510,11 @@ public class ModelInfo {
 	}
 
 	@SuppressWarnings("rawtypes")
-	public Map<String, AttributeInfo> getAttrTypeMap() {
-		return attrTypeMap;
-	}
-
-	@SuppressWarnings("rawtypes")
 	public void setAttrTypeMap(Map<String, AttributeInfo> attrTypeMap) {
 		this.attrTypeMap = attrTypeMap;
 		this.findByColumnSqlMap = new HashMap<String, String>(
 				attrTypeMap.size());
 		this.columnInfos = new ArrayList<AttributeInfo>(attrTypeMap.values());
-	}
-
-	public String getSelectSql() {
-		return selectSql;
-	}
-
-	public void setSelectSql(String selectSql) {
-		this.selectSql = selectSql;
-	}
-
-	public String getInsertSql() {
-		return insertSql;
-	}
-
-	public void setInsertSql(String insertSql) {
-		this.insertSql = insertSql;
-	}
-
-	public String getDeleteSql() {
-		return deleteSql;
-	}
-
-	public void setDeleteSql(String deleteSql) {
-		this.deleteSql = deleteSql;
-	}
-
-	public String getUpdateSql() {
-		return updateSql;
-	}
-
-	public void setUpdateSql(String updateSql) {
-		this.updateSql = updateSql;
-	}
-
-	public String getSelectMaxIdSql() {
-		return selectMaxIdSql;
-	}
-
-	public void setSelectMaxIdSql(String selectMaxIdSql) {
-		this.selectMaxIdSql = selectMaxIdSql;
-	}
-
-	public Map<String, String> getFindByColumnSqlMap() {
-		return findByColumnSqlMap;
-	}
-
-	public void setFindByColumnSqlMap(Map<String, String> findByColumnSqlMap) {
-		this.findByColumnSqlMap = findByColumnSqlMap;
 	}
 
 	public Map<Integer, IdGenerator<?>> getIdGenerators() {
@@ -683,12 +525,13 @@ public class ModelInfo {
 		this.idGenerators = idGenerators;
 	}
 
-	public IdGenerator<?> getDefaultIdGenerator() {
-		return defaultIdGenerator;
-	}
-
+	/**
+	 * 设置默认的Id生成器
+	 * @param defaultIdGenerator IdGenerator<?>
+     */
 	public void setDefaultIdGenerator(IdGenerator<?> defaultIdGenerator) {
 		this.defaultIdGenerator = defaultIdGenerator;
+		this.idGenerators.put(0, defaultIdGenerator);
 	}
 
 

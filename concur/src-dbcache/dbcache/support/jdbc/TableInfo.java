@@ -56,26 +56,11 @@ public class TableInfo {
 		this.setPrimaryKey(primaryKey.trim());	// this.primaryKey = primaryKey.trim();
 		this.modelClass = modelClass;
 	}
-	
-	public String getTableName(Object key) {
-		if (shardStrategy == null) {
-			return tableName;
-		}
-		return tableName + shardStrategy.getTableNameSuffix(key);
-	}
-	
+
 	public String getTableName() {
 		return tableName;
 	}
-	
-	public void addInfo(String columnLabel, Class<?> columnType) {
-		columnTypeMap.put(columnLabel, columnType);
-	}
-	
-	public Class<?> getColType(String columnLabel) {
-		return columnTypeMap.get(columnLabel);
-	}
-	
+
 	/**
 	 * Model.save() need know what columns belongs to himself that he can saving to db.
 	 * Think about auto saving the related table's column in the future.
@@ -122,14 +107,6 @@ public class TableInfo {
 	
 	public void setColumnTypeMap(Map<String, Class<?>> columnTypeMap) {
 		this.columnTypeMap = columnTypeMap;
-	}
-
-	public Class<?> getModelClass() {
-		return modelClass;
-	}
-
-	public ShardStrategy getShardStrategy() {
-		return shardStrategy;
 	}
 
 	public void setShardStrategy(ShardStrategy shardStrategy) {

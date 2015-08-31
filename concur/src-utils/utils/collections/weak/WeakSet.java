@@ -67,8 +67,8 @@ public class WeakSet
          Object elements[] = set.toArray();
          set.clear();
 
-         for (int i=0; i<elements.length; i++) {
-            add(elements[i]);
+         for (Object element : elements) {
+            add(element);
          }
       }
 

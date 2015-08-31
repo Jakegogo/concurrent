@@ -134,7 +134,7 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 	private ValueWrapper getCacheWrapper(PK key) {
 
 		// 从共用缓存获取
-		ValueWrapper wrapper = (ValueWrapper) cacheUnit.get(key);
+		ValueWrapper wrapper = cacheUnit.get(key);
 		if (wrapper != null) {	// 已经缓存
 			return wrapper;
 		}
@@ -148,7 +148,7 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 		try {
 			lock.lock();
 			
-			wrapper = (ValueWrapper) cacheUnit.get(key);
+			wrapper = cacheUnit.get(key);
 			if (wrapper != null) {
 				return wrapper;
 			}
@@ -373,7 +373,7 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 
 		// 标记为已经删除
 		wrapper = cacheUnit.replace(id, cacheObject, null);
-		if (cacheObject == (CacheObject<T>) wrapper.get()) {// 替换失败
+		if (cacheObject == wrapper.get()) {// 替换失败
 			return;
 		}
 		

@@ -11,7 +11,7 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class HotSwapClassLoader extends ClassLoader {
 
-	private Map<String, ClassLoader> dynaclazns = new ConcurrentHashMap<String, ClassLoader>(); // 需要由该类加载器直接加载的类名
+	private final Map<String, ClassLoader> dynaclazns = new ConcurrentHashMap<String, ClassLoader>(); // 需要由该类加载器直接加载的类名
 
     public HotSwapClassLoader() {
         super(null); // 指定父类加载器为 null
@@ -73,7 +73,7 @@ public class HotSwapClassLoader extends ClassLoader {
 
     protected Class loadClass(String name, boolean resolve)
             throws ClassNotFoundException {
-        Class<?> cls = null;
+        Class<?> cls;
         if(dynaclazns.containsKey(name)) {
         	ClassLoader cl = dynaclazns.get(name);
         	if(cl instanceof InstanceClassLoader) {

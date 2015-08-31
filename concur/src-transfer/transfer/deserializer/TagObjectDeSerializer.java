@@ -90,7 +90,7 @@ public class TagObjectDeSerializer implements Deserializer {
             fieldName = STRING_DESERIALIZER.deserialze(inputable, String.class, inputable.getByte(), context);
             fieldInfo = classInfo.getFieldInfo(fieldName);
 
-            context.next(stack, "field [" + fieldInfo.getName() + "]");
+            context.next(stack, "field [" + fieldInfo != null?fieldInfo.getName():"" + "]");
 
             byte fieldFlag = inputable.getByte();
             fieldType = fieldInfo != null ? fieldInfo.getType() : Object.class;
@@ -116,7 +116,7 @@ public class TagObjectDeSerializer implements Deserializer {
     	
 	}
 
-    private static TagObjectDeSerializer instance = new TagObjectDeSerializer();
+    private static final TagObjectDeSerializer instance = new TagObjectDeSerializer();
 
     public static TagObjectDeSerializer getInstance() {
         return instance;

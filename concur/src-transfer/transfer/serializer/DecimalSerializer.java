@@ -105,7 +105,7 @@ public class DecimalSerializer implements Serializer, Opcodes {
 
 	}
 
-	private static DecimalSerializer instance = new DecimalSerializer();
+	private static final DecimalSerializer instance = new DecimalSerializer();
 
 	public static DecimalSerializer getInstance() {
 		return instance;

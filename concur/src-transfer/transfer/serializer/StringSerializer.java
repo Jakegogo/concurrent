@@ -92,7 +92,7 @@ public class StringSerializer implements Serializer, Opcodes {
 
 	}
 
-	private static StringSerializer instance = new StringSerializer();
+	private static final StringSerializer instance = new StringSerializer();
 
 	public static StringSerializer getInstance() {
 		return instance;

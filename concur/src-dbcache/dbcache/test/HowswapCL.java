@@ -12,8 +12,8 @@ import java.util.HashSet;
  */  
 class HowswapCL extends ClassLoader {  
   
-    private String basedir; // 需要该类加载器直接加载的类文件的基目录  
-    private HashSet dynaclazns; // 需要由该类加载器直接加载的类名  
+    private final String basedir; // 需要该类加载器直接加载的类文件的基目录
+    private final HashSet dynaclazns; // 需要由该类加载器直接加载的类名
   
     public HowswapCL(String basedir, String[] clazns) {  
         super(null); // 指定父类加载器为 null  
@@ -31,9 +31,9 @@ class HowswapCL extends ClassLoader {
   
     private Class loadDirectly(String name) {  
         Class cls = null;  
-        StringBuffer sb = new StringBuffer(basedir);  
+        StringBuilder sb = new StringBuilder(basedir);
         String classname = name.replace('.', File.separatorChar) + ".class";  
-        sb.append(File.separator + classname);  
+        sb.append(File.separator).append(classname);
         File classF = new File(sb.toString());  
         try {  
             cls = instantiateClass(name, new FileInputStream(classF),  
@@ -60,7 +60,7 @@ class HowswapCL extends ClassLoader {
   
     protected Class loadClass(String name, boolean resolve)  
             throws ClassNotFoundException {  
-        Class cls = null;  
+        Class cls;
         cls = findLoadedClass(name);  
         if (!this.dynaclazns.contains(name) && cls == null)  
             cls = getSystemClassLoader().loadClass(name);  

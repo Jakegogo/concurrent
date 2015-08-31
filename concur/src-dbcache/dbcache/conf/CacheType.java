@@ -29,7 +29,7 @@ public enum CacheType {
 	WEEKMAP(ConcurrentWeekHashMapCache.class);
 
 	/** 缓存类 */
-	private Class<?> cacheClass;
+	private final Class<?> cacheClass;
 
 	CacheType(Class<?> cacheClass) {
 		this.cacheClass = cacheClass;

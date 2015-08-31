@@ -26,7 +26,7 @@ public interface Serializer {
 	/**
 	 * 预编译编码方法
 	 * 
-	 * @param type
+	 * @param type Type
 	 * @param mw
 	 *            serialze方法MethodVisitor
 	 * @param context

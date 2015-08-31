@@ -7,7 +7,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 public class IntGenerator implements IdGenerator<Integer> {
 	
-	private AtomicInteger idGenerator;
+	private final AtomicInteger idGenerator;
 	
 	
 	public IntGenerator() {

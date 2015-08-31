@@ -29,7 +29,7 @@ public class AlternateDeadlockDetectingLock extends ObjectLock {
   // This array is not thread safe, and must be externally synchronized
   //    by the class lock. Hence, it should only be called by static
   //    methods.
-  private static List deadlockLocksRegistry = new ArrayList();
+  private static final List deadlockLocksRegistry = new ArrayList();
 
   private static synchronized void registerLock(
       AlternateDeadlockDetectingLock ddl) {
@@ -47,7 +47,7 @@ public class AlternateDeadlockDetectingLock extends ObjectLock {
   // This array is not thread safe, and must be externally synchronized
   //    by the class lock. Hence, it should only be called by static
   //    methods.
-  private List hardwaitingThreads = new ArrayList();
+  private final List hardwaitingThreads = new ArrayList();
 
   private static synchronized void markAsHardwait(List l, Thread t) {
     if (!l.contains(t))
@@ -68,9 +68,8 @@ public class AlternateDeadlockDetectingLock extends ObjectLock {
     AlternateDeadlockDetectingLock current;
     ArrayList results = new ArrayList();
 
-    Iterator itr = deadlockLocksRegistry.iterator();
-    while (itr.hasNext()) {
-      current = (AlternateDeadlockDetectingLock) itr.next();
+    for (Object aDeadlockLocksRegistry : deadlockLocksRegistry) {
+      current = (AlternateDeadlockDetectingLock) aDeadlockLocksRegistry;
       if (current.getOwner() == t)
         results.add(current);
     }
@@ -134,11 +133,11 @@ public class AlternateDeadlockDetectingLock extends ObjectLock {
   //    HWSWTime: # of seconds before a Softwait is to be considered as a
   // hardwait.
   //              Default is 60 seconds.
-  private static boolean DDLFastFail = false;
+  private static final boolean DDLFastFail = false;
 
-  private static boolean DDLCleanUp = false;
+  private static final boolean DDLCleanUp = false;
 
-  private static int DDLHWSWTime = 60;
+  private static final int DDLHWSWTime = 60;
 
   // Core Constructors
   //
@@ -308,7 +307,7 @@ public class AlternateDeadlockDetectingLock extends ObjectLock {
   //      first. It is not possible to create a new deadlock just by releasing
   //      locks.
   public class DeadlockDetectingCondition implements Condition {
-    Condition embedded;
+    final Condition embedded;
 
     protected DeadlockDetectingCondition(ReentrantLock lock,
         Condition embedded) {

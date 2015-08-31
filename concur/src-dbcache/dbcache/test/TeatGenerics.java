@@ -18,7 +18,7 @@ public class TeatGenerics {
 
 
 interface A <PK> {
-	public void filter(PK pk);
+	void filter(PK pk);
 }
 
 class B implements A<C> {

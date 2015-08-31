@@ -86,7 +86,7 @@ public class DateDeserializer implements Deserializer, Opcodes {
     	
 	}
 
-    private static DateDeserializer instance = new DateDeserializer();
+    private static final DateDeserializer instance = new DateDeserializer();
 
     public static DateDeserializer getInstance() {
         return instance;

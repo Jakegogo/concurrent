@@ -99,7 +99,7 @@ public class BooleanDeserializer implements Deserializer, Opcodes {
     	
 	}
 
-    private static BooleanDeserializer instance = new BooleanDeserializer();
+    private static final BooleanDeserializer instance = new BooleanDeserializer();
 
     public static BooleanDeserializer getInstance() {
         return instance;

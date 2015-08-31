@@ -46,7 +46,7 @@ public class TagEnumSerializer implements Serializer {
 
 	}
 
-	private static TagEnumSerializer instance = new TagEnumSerializer();
+	private static final TagEnumSerializer instance = new TagEnumSerializer();
 
 	public static TagEnumSerializer getInstance() {
 		return instance;

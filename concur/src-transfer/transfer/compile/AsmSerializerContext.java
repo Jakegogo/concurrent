@@ -15,12 +15,12 @@ public class AsmSerializerContext implements Opcodes {
     /**
      * 类名
      */
-    private String className;
+    private final String className;
 
     /**
      * ClassWriter
      */
-    private ClassWriter classWriter;
+    private final ClassWriter classWriter;
 
     /**
      * 自增的方法Id

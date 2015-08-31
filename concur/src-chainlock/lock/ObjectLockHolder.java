@@ -18,7 +18,7 @@ import java.util.concurrent.locks.ReentrantLock;
  * @author frank
  */
 @SuppressWarnings("rawtypes")
-public class ObjectLockHolder {
+class ObjectLockHolder {
 
 	private static final Logger log = LoggerFactory.getLogger(ObjectLockHolder.class);
 	
@@ -96,7 +96,7 @@ public class ObjectLockHolder {
 	}
 
 	/** 持有者集合 */
-	private ConcurrentHashMap<Class, Holder> holders = new ConcurrentHashMap<Class, Holder>();
+	private final ConcurrentHashMap<Class, Holder> holders = new ConcurrentHashMap<Class, Holder>();
 
 	/**
 	 * 获取指定对象实例的对象锁

@@ -32,7 +32,7 @@ class ClassMetaVisitor implements ClassVisitor, ClassMeta {
 	@Override
 	public void visit(int version, int access, String name, String signature,
 			String superName, String[] interfaces) {
-		this.className = name.replaceAll("\\/", "\\.");
+		this.className = name.replaceAll("/", "\\.");
 		this.version = version;
 		this.access = access;
 		this.superName = superName;

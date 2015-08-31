@@ -85,7 +85,7 @@ public class RowProgressTableUI extends BETableUI
         int modelIndex = startModelIndex;
         
         int height = 0;
-        Rectangle firstCellRectangle = null;
+        Rectangle firstCellRectangle;
         int viewIndex = table.convertRowIndexToView(modelIndex++);
         if (viewIndex < 0) {
         	return;

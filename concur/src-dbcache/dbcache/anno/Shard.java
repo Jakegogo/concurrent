@@ -19,6 +19,6 @@ public @interface Shard {
 	 * 分表策略类
 	 * @return
 	 */
-	public Class<? extends ShardStrategy> value();
+	Class<? extends ShardStrategy> value();
 	
 }

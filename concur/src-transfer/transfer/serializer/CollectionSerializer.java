@@ -176,7 +176,7 @@ public class CollectionSerializer implements Serializer, Opcodes {
 
 	}
 
-	private static CollectionSerializer instance = new CollectionSerializer();
+	private static final CollectionSerializer instance = new CollectionSerializer();
 
 	public static CollectionSerializer getInstance() {
 		return instance;

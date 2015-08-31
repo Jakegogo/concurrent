@@ -84,7 +84,7 @@ public class AsmAccessHelper implements Opcodes {
 		try {
 			enhancedClass = (Class<T>) classLoader.loadClass(enhancedClassName);
 		} catch (ClassNotFoundException classNotFoundException) {
-			ClassReader reader = null;
+			ClassReader reader;
 			try {
 				reader = new ClassReader(AbstractFieldGetter.class.getName());
 			} catch (IOException ioexception) {
@@ -92,7 +92,7 @@ public class AsmAccessHelper implements Opcodes {
 			}
 
 
-			PropertyDescriptor propertyDescriptor = null;
+			PropertyDescriptor propertyDescriptor;
 			try {
 				propertyDescriptor = new PropertyDescriptor(field.getName(), clazz);
 			} catch (IntrospectionException e) {
@@ -195,8 +195,7 @@ public class AsmAccessHelper implements Opcodes {
 		}
 
 		try {
-			ValueGetter<T> valueGetter = (ValueGetter<T>) enhancedClass.newInstance();
-			return valueGetter;
+			return (ValueGetter<T>) enhancedClass.newInstance();
 		} catch (Exception e) {
 			logger.error("无法创建代理类对象:" + enhancedClassName);
 			throw e;
@@ -223,7 +222,7 @@ public class AsmAccessHelper implements Opcodes {
 		try {
 			enhancedClass = (Class<T>) classLoader.loadClass(enhancedClassName);
 		} catch (ClassNotFoundException classNotFoundException) {
-			ClassReader reader = null;
+			ClassReader reader;
 			try {
 				reader = new ClassReader(AbstractFieldSetter.class.getName());
 			} catch (IOException ioexception) {
@@ -231,7 +230,7 @@ public class AsmAccessHelper implements Opcodes {
 			}
 
 
-			PropertyDescriptor propertyDescriptor = null;
+			PropertyDescriptor propertyDescriptor;
 			try {
 				propertyDescriptor = new PropertyDescriptor(field.getName(), clazz);
 			} catch (IntrospectionException e) {
@@ -350,8 +349,7 @@ public class AsmAccessHelper implements Opcodes {
 		}
 
 		try {
-			ValueSetter<T> valueSetter = (ValueSetter<T>) enhancedClass.newInstance();
-			return valueSetter;
+			return (ValueSetter<T>) enhancedClass.newInstance();
 		} catch (Exception e) {
 			logger.error("无法创建代理类对象:" + enhancedClassName);
 			throw e;
@@ -371,7 +369,7 @@ public class AsmAccessHelper implements Opcodes {
 			return putFieldsMthodMapCache.get(clazz);
 		}
 		
-		ClassReader reader = null;
+		ClassReader reader;
 		
 		try {
 			reader = new ClassReader(clazz.getName());
@@ -428,7 +426,7 @@ public class AsmAccessHelper implements Opcodes {
 			return putFieldsMthodMapCache.get(clazz);
 		}
 
-		ClassReader reader = null;
+		ClassReader reader;
 
 		try {
 			reader = new ClassReader(clazz.getName());

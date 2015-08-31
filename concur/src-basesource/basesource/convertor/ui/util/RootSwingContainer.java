@@ -42,7 +42,7 @@ import javax.swing.JWindow;
  * @author Chris Butler
  */
 public class RootSwingContainer {
-	public static final Integer DEFAULT_MAXED_LAYER = new Integer(JLayeredPane.PALETTE_LAYER.intValue() - 10);
+	public static final Integer DEFAULT_MAXED_LAYER = JLayeredPane.PALETTE_LAYER.intValue() - 10;
 	private static final HashMap MAP_BY_ROOT_CONTAINER = new HashMap();
 	private LayoutManager maxedLayout;	
 	private Integer maximizationLayer;

@@ -40,10 +40,8 @@ public class TestMap3 {
 //			map.remove(i);
 			for(int l = 0;l < 1;l++) {
 				for(Integer key : map.keySet()) {
-					;
 				}
 				for(Map.Entry<Integer, Integer> key : map.entrySet()) {
-					;
 				}
 			}
 		}
@@ -64,10 +62,8 @@ public class TestMap3 {
 //			map1.remove(i);
 			for(int l = 0;l < 1;l++) {
 				for(Integer key : map1.keySet()) {
-					;
 				}
 				for(Map.Entry<Integer, Integer> key : map1.entrySet()) {
-					;
 				}
 			}
 		}
@@ -89,10 +85,8 @@ public class TestMap3 {
 //			map2.remove(i);
 			for(int l = 0;l < 1;l++) {
 				for(Integer key : map2.keySet()) {
-					;
 				}
 				for(Map.Entry<Integer, Integer> key : map2.entrySet()) {
-					;
 				}
 
 			}

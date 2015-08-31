@@ -31,7 +31,7 @@ public interface BorderManager {
 	 * Callback method allowing for customized behavior when the <code>DefaultDockingPort's</code>
 	 * docked component state has changed and there is no longer a component docked within the port. 
 	 */
-	public void managePortNullChild(DockingPort port);
+	void managePortNullChild(DockingPort port);
 	
 	/**
 	 * Callback method allowing for customized behavior when the <code>DefaultDockingPort's</code>
@@ -39,14 +39,14 @@ public interface BorderManager {
 	 * the port. The <code>Component</code> may be retrieved by calling 
 	 * <code>port.getDockedComponent()</code>.
 	 */
-	public void managePortSimpleChild(DockingPort port);
+	void managePortSimpleChild(DockingPort port);
 	
 	/**
 	 * Callback method allowing for customized behavior when the <code>DefaultDockingPort's</code>
 	 * docked component state has changed and the port has been split between two components. The 
 	 * <code>JSPlitPane</code> may be retrieved by calling <code>port.getDockedComponent()</code>.
 	 */
-	public void managePortSplitChild(DockingPort port);
+	void managePortSplitChild(DockingPort port);
 	
 	/**
 	 * Callback method allowing for customized behavior when the <code>DefaultDockingPort's</code>
@@ -54,5 +54,5 @@ public interface BorderManager {
 	 * region are layed-out within a <code>JTabbedPane</code>.  The <code>JTabbedPane</code> may
 	 * be retrieved by calling <code>port.getDockedComponent()</code>.
 	 */
-	public void managePortTabbedChild(DockingPort port);
+	void managePortTabbedChild(DockingPort port);
 }

@@ -22,6 +22,6 @@ public @interface Index {
 	 * 索引名
 	 * @return
 	 */
-	public String name();
+	String name();
 
 }

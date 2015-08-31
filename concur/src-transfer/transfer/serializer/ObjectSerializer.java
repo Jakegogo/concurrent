@@ -110,7 +110,7 @@ public class ObjectSerializer implements Serializer, Opcodes {
 					|| Modifier.isAbstract(fieldRawClass.getModifiers()) && !fieldRawClass.isArray() && !fieldRawClass.isPrimitive()) {
 
 				//  getFieldValue
-				PropertyDescriptor propertyDescriptor = null;
+				PropertyDescriptor propertyDescriptor;
 				try {
 					propertyDescriptor = new PropertyDescriptor(
 							fieldInfo.getFieldName(), clazz);
@@ -178,7 +178,7 @@ public class ObjectSerializer implements Serializer, Opcodes {
 
 				mv.visitVarInsn(ALOAD, 1);
 
-				PropertyDescriptor propertyDescriptor = null;
+				PropertyDescriptor propertyDescriptor;
 				try {
 					propertyDescriptor = new PropertyDescriptor(
 							fieldInfo.getFieldName(), clazz);
@@ -222,7 +222,7 @@ public class ObjectSerializer implements Serializer, Opcodes {
 
 	}
 
-	private static ObjectSerializer instance = new ObjectSerializer();
+	private static final ObjectSerializer instance = new ObjectSerializer();
 
 	public static ObjectSerializer getInstance() {
 		return instance;

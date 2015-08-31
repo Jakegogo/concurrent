@@ -479,7 +479,7 @@ public class ConcurrentLRUHashMap<K, V> extends AbstractMap<K, V> implements
 				while (e != null && (e.hash != hash || !key.equals(e.key)))
 					e = e.next;
 
-				V oldValue = null;
+				V oldValue;
 				if (e != null) {
 					oldValue = e.value;
 					if (!onlyIfAbsent) {
@@ -954,9 +954,7 @@ public class ConcurrentLRUHashMap<K, V> extends AbstractMap<K, V> implements
 	 */
 	public boolean remove(Object key, Object value) {
 		int hash = hash(key.hashCode());
-		if (value == null)
-			return false;
-		return segmentFor(hash).remove(key, hash, value) != null;
+		return value != null && segmentFor(hash).remove(key, hash, value) != null;
 	}
 
 	/**

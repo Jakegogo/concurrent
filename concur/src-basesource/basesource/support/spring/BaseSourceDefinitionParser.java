@@ -105,7 +105,7 @@ public class BaseSourceDefinitionParser implements ApplicationListener<ContextRe
                 result.add(clzMeta.getClassName());
             }
 
-            return result.toArray(new String[0]);
+            return result.toArray(new String[result.size()]);
         } catch (IOException e) {
             String message = "无法读取资源信息";
             logger.error(message, e);

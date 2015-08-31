@@ -10,14 +10,14 @@ public interface Inputable {
      * 获取下一个字节
      * @return
      */
-    public byte getByte();
+    byte getByte();
 
 
     /**
      * 获取字节到数组,lenth为bytes的长度
      * @param bytes
      */
-    public void getBytes(byte[] bytes);
+    void getBytes(byte[] bytes);
 
 
     /**
@@ -25,6 +25,6 @@ public interface Inputable {
      * @param length
      * @return
      */
-    public ByteArray getByteArray(int length);
+    ByteArray getByteArray(int length);
 
 }

@@ -8,7 +8,7 @@ import transfer.utils.IdentityHashMap;
  */
 public class SerialContext {
 
-    IdentityHashMap referenceMap;
+    private IdentityHashMap referenceMap;
 
     public IdentityHashMap getReferenceMap() {
         return referenceMap;

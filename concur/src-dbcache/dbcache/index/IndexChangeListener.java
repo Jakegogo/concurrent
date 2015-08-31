@@ -16,7 +16,7 @@ public interface IndexChangeListener<T extends IEntity<PK>, PK extends Comparabl
      * @param value 索引值
      * @param key 实体KEY
      */
-    public void onIndexCreate(String name, Object value, PK key);
+    void onIndexCreate(String name, Object value, PK key);
 
     /**
      * 索引值被移除时回调
@@ -24,7 +24,7 @@ public interface IndexChangeListener<T extends IEntity<PK>, PK extends Comparabl
      * @param value 索引值
      * @param key 实体KEY
      */
-    public void onIndexRemove(String name, Object value, PK key);
+    void onIndexRemove(String name, Object value, PK key);
 
     /**
      * 索引值修改时回调
@@ -33,6 +33,6 @@ public interface IndexChangeListener<T extends IEntity<PK>, PK extends Comparabl
      * @param newValue 索引新值
      * @param key 实体KEY
      */
-    public void onIndexChange(String name, Object oldValue, Object newValue, PK key);
+    void onIndexChange(String name, Object oldValue, Object newValue, PK key);
 
 }

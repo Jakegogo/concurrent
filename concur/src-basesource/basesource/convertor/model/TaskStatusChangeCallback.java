@@ -9,11 +9,11 @@ public interface TaskStatusChangeCallback {
     /**
      * 任务开始回调
      */
-    public void onStart();
+    void onStart();
 
     /**
      * 任务完成回调方法
      */
-    public void onComplete();
+    void onComplete();
 
 }

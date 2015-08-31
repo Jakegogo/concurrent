@@ -11,6 +11,6 @@ public interface CacheLoader<R> {
      * @param keys 键参数列表
      * @return
      */
-    public R load(Object... keys);
+    R load(Object... keys);
 
 }

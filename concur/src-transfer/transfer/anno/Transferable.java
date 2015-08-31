@@ -13,8 +13,8 @@ public @interface Transferable {
 
     /**
      * 传输类唯一ID
-     * @return
+     * @return int 唯一Id
      */
-    public int id();
+    int id();
 
 }

@@ -85,7 +85,7 @@ public class Persister {
      * @param bytesLength 编码字节长度(估算)
      * @See transfer.Transfer.encodePreCompile(Type)
      */
-    public static ByteArray encode(Object object, Type type, int bytesLength) {
+    private static ByteArray encode(Object object, Type type, int bytesLength) {
         if (object == null) {
             ByteBuffer buffer = new ByteBuffer(1);
             Serializer.NULL_SERIALIZER.serialze(buffer, null, null);
@@ -103,7 +103,7 @@ public class Persister {
      * @param outputable 输出接口
      * @param object 目标对象
      */
-    public static void encode(Outputable outputable, Object object) {
+    private static void encode(Outputable outputable, Object object) {
         if (object == null) {
             Serializer.NULL_SERIALIZER.serialze(outputable, null, null);
             return;
@@ -120,7 +120,7 @@ public class Persister {
      * @param object 目标对象
      * @param type 指定预编译目标对象的类型
      */
-    public static <T> void encode(Outputable outputable, T object, Type type) {
+    private static <T> void encode(Outputable outputable, T object, Type type) {
         if (object == null) {
             Serializer.NULL_SERIALIZER.serialze(outputable, null, null);
             return;
@@ -189,7 +189,7 @@ public class Persister {
      */
     public static <T> T decode(Inputable inputable) {
         byte flag = inputable.getByte();
-        Deserializer deserializer = PersistConfig.getDeserializer((Type) Object.class, flag);
+        Deserializer deserializer = PersistConfig.getDeserializer(Object.class, flag);
         return deserializer.deserialze(inputable, Object.class, flag, new DeserialContext());
     }
 
@@ -201,7 +201,7 @@ public class Persister {
      * @param <T>
      * @return
      */
-    public static <T> T decode(Inputable inputable, Class<T> clazz) {
+    private static <T> T decode(Inputable inputable, Class<T> clazz) {
         Deserializer deserializer;
         if (logger.isDebugEnabled()) {
             deserializer = PersistConfig.getDeserializer(clazz);
@@ -234,7 +234,7 @@ public class Persister {
      * @param <T>
      * @return
      */
-    public static <T> T decode(Inputable inputable, TypeReference<T> typeReference) {
+    private static <T> T decode(Inputable inputable, TypeReference<T> typeReference) {
         Deserializer deserializer;
         if (logger.isDebugEnabled()) {
             deserializer = PersistConfig.getDeserializer(typeReference.getType());
@@ -282,7 +282,7 @@ public class Persister {
      * @param <T> 集合类型类型
      * @return
      */
-    public static <T extends Collection<E>, E> Iterator<E> iterator(final Inputable inputable, TypeReference<T> typeReference) {
+    private static <T extends Collection<E>, E> Iterator<E> iterator(final Inputable inputable, TypeReference<T> typeReference) {
 
         // 读取消息头
         final ByteMeta byteDataMeta = CollectionDeSerializer.getInstance().readMeta(inputable);
@@ -305,7 +305,7 @@ public class Persister {
         final DeserialContext context = new DeserialContext();
         return new Iterator<E>() {
             private int curIndex = 0;
-            private int size = byteDataMeta.getComponentSize();
+            private final int size = byteDataMeta.getComponentSize();
 
             @Override
             public boolean hasNext() {
@@ -351,7 +351,7 @@ public class Persister {
      * @param <T> Map类型
      * @return
      */
-    public static <T extends Map<K, V>, K, V> Iterator<Map.Entry<K, V>> iteratorMap(final Inputable inputable, TypeReference<T> typeReference) {
+    private static <T extends Map<K, V>, K, V> Iterator<Map.Entry<K, V>> iteratorMap(final Inputable inputable, TypeReference<T> typeReference) {
         // 读取消息头
         final ByteMeta byteDataMeta = MapDeSerializer.getInstance().readMeta(inputable);
         // 不可以迭代
@@ -365,7 +365,7 @@ public class Persister {
         final DeserialContext context = new DeserialContext();
         return new Iterator<Map.Entry<K, V>>() {
             private int curIndex = 0;
-            private int size = byteDataMeta.getComponentSize();
+            private final int size = byteDataMeta.getComponentSize();
 
             @Override
             public boolean hasNext() {

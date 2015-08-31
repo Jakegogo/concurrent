@@ -41,7 +41,7 @@ public class FieldGetterTest<T> {
 
 	public Object get(T paramT)
 	  {
-	    return Integer.valueOf(((Entity)paramT).getNum());
+	    return ((Entity) paramT).getNum();
 	  }
 
 	public String getName() {

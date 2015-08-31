@@ -13,15 +13,15 @@ public class AlternateDeadlockDetectingLockTest {
     // Testing routines here
     //
     // These are very simple tests -- more tests will have to be written
-    private static Lock a = new AlternateDeadlockDetectingLock(false, true);
+    private static final Lock a = new AlternateDeadlockDetectingLock(false, true);
 
-    private static Lock b = new AlternateDeadlockDetectingLock(false, true);
+    private static final Lock b = new AlternateDeadlockDetectingLock(false, true);
 
-    private static Lock c = new AlternateDeadlockDetectingLock(false, true);
+    private static final Lock c = new AlternateDeadlockDetectingLock(false, true);
 
     private static Condition wa = a.newCondition();
 
-    private static Condition wb = b.newCondition();
+    private static final Condition wb = b.newCondition();
 
     private static Condition wc = c.newCondition();
 

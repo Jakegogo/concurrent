@@ -16,6 +16,6 @@ public interface EntityLoadListener<T extends IEntity<?>> {
      * 返回之前
      * @param entity
      */
-    public void onEntityLoad(T entity);
+    void onEntityLoad(T entity);
 
 }

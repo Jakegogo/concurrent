@@ -109,7 +109,6 @@ public class ResourceManager {
 	 */
 	public static Cursor createCursor(String url, Point hotPoint, String name) {
 		Image image = createImage(url);
-		Cursor c = Toolkit.getDefaultToolkit().createCustomCursor(image, hotPoint, name);
-		return c;
+		return Toolkit.getDefaultToolkit().createCustomCursor(image, hotPoint, name);
 	}
 }

@@ -96,7 +96,7 @@ public class ByteArrayDeSerializer implements Deserializer, Opcodes {
     	
 	}
 
-    private static ByteArrayDeSerializer instance = new ByteArrayDeSerializer();
+    private static final ByteArrayDeSerializer instance = new ByteArrayDeSerializer();
 
     public static ByteArrayDeSerializer getInstance() {
         return instance;

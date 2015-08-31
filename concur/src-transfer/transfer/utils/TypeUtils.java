@@ -120,7 +120,7 @@ public class TypeUtils {
 
     /**
      * 获取泛型参数
-     * @param type
+     * @param type ParameterizedType
      * @return
      */
     public static Type getParameterizedType(ParameterizedType type, int index) {
@@ -130,7 +130,7 @@ public class TypeUtils {
 
     /**
      * 获取泛型参数类
-     * @param type
+     * @param type Type
      * @return
      */
     public static Class<?> getParameterizedClass(Type type, int index) {

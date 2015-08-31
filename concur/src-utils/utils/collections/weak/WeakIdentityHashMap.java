@@ -444,8 +444,8 @@ public class WeakIdentityHashMap /*extends AbstractMap*/ implements Map {
             resize(capacity);
         }
 
-        for (Iterator i = t.entrySet().iterator(); i.hasNext(); ) {
-            Map.Entry e = (Map.Entry) i.next();
+        for (Object o : t.entrySet()) {
+            Map.Entry e = (Map.Entry) o;
             put(e.getKey(), e.getValue());
         }
     }
@@ -768,15 +768,13 @@ public class WeakIdentityHashMap /*extends AbstractMap*/ implements Map {
 
         public Object[] toArray() {
             Collection c = new ArrayList(size());
-            for (Iterator i = iterator(); i.hasNext(); )
-                c.add(i.next());
+            for (Object o : this) c.add(o);
             return c.toArray();
         }
 
         public Object[] toArray(Object a[]) {
             Collection c = new ArrayList(size());
-            for (Iterator i = iterator(); i.hasNext(); )
-                c.add(i.next());
+            for (Object o : this) c.add(o);
             return c.toArray(a);
         }
     }
@@ -816,15 +814,13 @@ public class WeakIdentityHashMap /*extends AbstractMap*/ implements Map {
 
         public Object[] toArray() {
             Collection c = new ArrayList(size());
-            for (Iterator i = iterator(); i.hasNext(); )
-                c.add(i.next());
+            for (Object o : this) c.add(o);
             return c.toArray();
         }
 
         public Object[] toArray(Object a[]) {
             Collection c = new ArrayList(size());
-            for (Iterator i = iterator(); i.hasNext(); )
-                c.add(i.next());
+            for (Object o : this) c.add(o);
             return c.toArray(a);
         }
     }
@@ -874,15 +870,13 @@ public class WeakIdentityHashMap /*extends AbstractMap*/ implements Map {
 
         public Object[] toArray() {
             Collection c = new ArrayList(size());
-            for (Iterator i = iterator(); i.hasNext(); )
-                c.add(new SimpleEntry((Map.Entry) i.next()));
+            for (Object o : this) c.add(new SimpleEntry((Map.Entry) o));
             return c.toArray();
         }
 
         public Object[] toArray(Object a[]) {
             Collection c = new ArrayList(size());
-            for (Iterator i = iterator(); i.hasNext(); )
-                c.add(new SimpleEntry((Map.Entry) i.next()));
+            for (Object o : this) c.add(new SimpleEntry((Map.Entry) o));
             return c.toArray(a);
         }
     }

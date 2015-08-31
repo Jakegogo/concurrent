@@ -70,14 +70,13 @@ public final class WeakObject
       if (obj == this) return true;
 
       if (obj != null && obj.getClass() == getClass()) {
-         WeakObject soft = (WeakObject)obj;
+         WeakObject soft = (WeakObject) obj;
 
          Object a = this.get();
          Object b = soft.get();
          if (a == null || b == null) return false;
-         if (a == b) return true;
+         return a == b || a.equals(b);
 
-         return a.equals(b);
       }
 
       return false;

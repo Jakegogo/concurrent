@@ -18,6 +18,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.ReflectionUtils;
 import org.springframework.util.ReflectionUtils.FieldCallback;
 import utils.reflect.GenericsUtils;
+import utils.reflect.ReflectionUtility;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
@@ -68,8 +69,8 @@ public class DbCacheInjectProcessor extends InstantiationAwareBeanPostProcessorA
 	 * @param field field
 	 */
 	@SuppressWarnings({ "unchecked", "rawtypes" })
-	protected void processDbCacheService(Object bean, String beanName,
-			Field field) {
+	private void processDbCacheService(Object bean, String beanName,
+									   Field field) {
 
 		if (!field.getType().equals(DbCacheService.class)) {
 			return;
@@ -98,7 +99,7 @@ public class DbCacheInjectProcessor extends InstantiationAwareBeanPostProcessorA
 		}
 
 		// 注入DbCacheService
-		inject(bean, field, serviceBean);
+		ReflectionUtility.inject(bean, field, serviceBean);
 
 		// 注册DbCacheServiceBean
 		this.configFactory.registerDbCacheServiceBean(clz, serviceBean);
@@ -109,7 +110,7 @@ public class DbCacheInjectProcessor extends InstantiationAwareBeanPostProcessorA
 	 * 收集EntityLoadEventListener bean
 	 * @param bean
 	 */
-	protected void processEntityLoadEventListener(Object bean) {
+	private void processEntityLoadEventListener(Object bean) {
 
 		if (!(bean instanceof EntityLoadListener)) {
 			return;
@@ -152,24 +153,6 @@ public class DbCacheInjectProcessor extends InstantiationAwareBeanPostProcessorA
 		}
 		cacheConfig.setHasIndexListeners(true);
 		cacheConfig.getIndexChangeListener().add(indexChangeListenerBean);
-	}
-
-
-	/**
-	 * 注入属性
-	 * @param bean bean
-	 * @param field 属性
-	 * @param val 值
-	 */
-	private void inject(Object bean, Field field, Object val) {
-		ReflectionUtils.makeAccessible(field);
-		try {
-			field.set(bean, val);
-		} catch (Exception e) {
-			FormattingTuple message = MessageFormatter.format("属性[{}]注入失败", field);
-			logger.debug(message.getMessage());
-			throw new IllegalStateException(message.getMessage(), e);
-		}
 	}
 
 

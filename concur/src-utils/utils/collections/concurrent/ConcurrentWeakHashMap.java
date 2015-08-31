@@ -1049,9 +1049,7 @@ public class ConcurrentWeakHashMap<K, V> extends AbstractMap<K, V>
      */
     public boolean remove(Object key, Object value) {
         int hash = hash(getKeyHashCode(key));
-        if (value == null)
-            return false;
-        return segmentFor(hash).remove(key, hash, value, false) != null;
+        return value != null && segmentFor(hash).remove(key, hash, value, false) != null;
     }
 
     /**

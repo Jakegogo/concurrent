@@ -10,6 +10,6 @@ public enum InjectType {
 	CLASS,
 
 	/** 按标识 */
-	NAME;
-	
+	NAME
+
 }

@@ -3,8 +3,8 @@ package dbcache.test;
 public class TestHashCode {
 	
 	public static void main(String[] args) {
-		System.out.println(System.identityHashCode(new Long(1)));
-		System.out.println(System.identityHashCode(new Long(1)));
+		System.out.println(System.identityHashCode((long) 1));
+		System.out.println(System.identityHashCode((long) 1));
 		
 		System.out.println(System.identityHashCode(1));
 		System.out.println(System.identityHashCode(1));

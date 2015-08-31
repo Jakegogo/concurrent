@@ -31,8 +31,8 @@ public class AnimatingSplitPane extends JSplitPane {
             Animator animator = new Animator(500,
                     new PropertySetter(this, "dividerLocation",
                             new Integer[]{
-                                    Integer.valueOf(getDividerLocation()),
-                                    Integer.valueOf(expanded ? getHeight() : this.lastDividerLocation)
+                                    getDividerLocation(),
+                                    expanded ? getHeight() : this.lastDividerLocation
                             }));
 
             animator.setStartDelay(10);

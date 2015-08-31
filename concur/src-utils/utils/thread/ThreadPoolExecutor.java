@@ -1579,7 +1579,6 @@ public class ThreadPoolExecutor extends AbstractExecutorService {
             }
         }
         catch (ConcurrentModificationException ex) {
-            return;
         }
     }
 

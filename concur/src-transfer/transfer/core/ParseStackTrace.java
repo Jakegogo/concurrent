@@ -16,7 +16,7 @@ public class ParseStackTrace {
 
     private ParseStackTrace parent;
 
-    ParseStackTrace(){
+    private ParseStackTrace(){
 
     }
 

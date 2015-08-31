@@ -67,9 +67,8 @@ public class ServerEntityIdRule {
 	 */
 	public static long getMaxValueOfEntityId(int serverId) {
 		int valueOfServer = ID_BASE_VALUE_OF_SERVER + serverId;
-		String valueStr = new StringBuffer().append(valueOfServer)
-											.append(ID_MAX_VALUE_OF_AUTOINCR)
-											.toString();
+		String valueStr = String.valueOf(valueOfServer) +
+				ID_MAX_VALUE_OF_AUTOINCR;
 		return Long.parseLong(valueStr);
 	}
 	
@@ -80,9 +79,8 @@ public class ServerEntityIdRule {
 	 */
 	public static long getMinValueOfEntityId(int serverId) {
 		int valueOfServer = ID_BASE_VALUE_OF_SERVER + serverId;
-		String valueStr = new StringBuffer().append(valueOfServer)
-											.append(STR_VALUE_OF_AUTOINCR_ID_MIN_VALUE)
-											.toString();
+		String valueStr = String.valueOf(valueOfServer) +
+				STR_VALUE_OF_AUTOINCR_ID_MIN_VALUE;
 		return Long.parseLong(valueStr);
 	}
 	

@@ -23,7 +23,7 @@ package transfer.utils;
 @SuppressWarnings("unchecked")
 public class IntegerMap<V> {
 
-    public static final int     DEFAULT_TABLE_SIZE = 1024;
+    private static final int     DEFAULT_TABLE_SIZE = 1024;
 
     private final Entry<V>[] buckets;
     private final int           indexMask;
@@ -42,7 +42,7 @@ public class IntegerMap<V> {
 
         for (Entry<V> entry = buckets[bucket]; entry != null; entry = entry.next) {
             if (key == entry.key) {
-                return (V) entry.value;
+                return entry.value;
             }
         }
 
@@ -67,8 +67,8 @@ public class IntegerMap<V> {
 
     public int size() {
         int size = 0;
-        for (int i = 0; i < buckets.length; ++i) {
-            for (Entry<V> entry = buckets[i]; entry != null; entry = entry.next) {
+        for (Entry<V> bucket : buckets) {
+            for (Entry<V> entry = bucket; entry != null; entry = entry.next) {
                 size++;
             }
         }

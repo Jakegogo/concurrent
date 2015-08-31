@@ -122,7 +122,7 @@ public class EnumSerializer implements Serializer, Opcodes {
 
 	}
 
-	private static EnumSerializer instance = new EnumSerializer();
+	private static final EnumSerializer instance = new EnumSerializer();
 
 	public static EnumSerializer getInstance() {
 		return instance;

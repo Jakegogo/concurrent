@@ -19,6 +19,6 @@ public @interface ChangeFields {
 	 * 属性名数组
 	 * @return
 	 */
-	public String[] value() default {};
+	String[] value() default {};
 
 }

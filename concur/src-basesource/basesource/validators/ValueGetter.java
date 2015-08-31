@@ -11,6 +11,6 @@ public interface ValueGetter {
 	 * 获取字段值
 	 * @return
 	 */
-	public Object[] get();
+	Object[] get();
 	
 }

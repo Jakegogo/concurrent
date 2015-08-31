@@ -80,13 +80,13 @@ public class CacheConfig<T> {
 	private ShardStrategy shardStrategy;
 
 	/** 实体加载监听器集合 */
-	private List<EntityLoadListener> entityLoadEventListeners = new ArrayList<EntityLoadListener>();
+	private final List<EntityLoadListener> entityLoadEventListeners = new ArrayList<EntityLoadListener>();
 
 	/** 是否存在实体加载监听类 */
 	private boolean hasLoadListeners = false;
 
 	/** 监听索引变化监听器集合 */
-	private List<IndexChangeListener> indexChangeListener = new ArrayList<IndexChangeListener>();
+	private final List<IndexChangeListener> indexChangeListener = new ArrayList<IndexChangeListener>();
 
 	/** 是否存在索引变化监听类 */
 	private boolean hasIndexListeners = false;
@@ -104,7 +104,7 @@ public class CacheConfig<T> {
 	public static <T> CacheConfig<T> valueOf(Class<T> entityClass) {
 		Cached cachedAnno = entityClass.getAnnotation(Cached.class);
 		
-		CacheConfig<T> cacheConfig = null;
+		CacheConfig<T> cacheConfig;
 		if(cachedAnno != null) {
 			cacheConfig = (CacheConfig<T>) valueOf(cachedAnno);
 		} else {
@@ -199,10 +199,6 @@ public class CacheConfig<T> {
 	@Override
 	public String toString() {
 		return JsonUtils.object2JsonString(this);
-	}
-
-	public static CacheConfig<?> getDefaultConfig() {
-		return defaultConfig;
 	}
 
 	public Class<T> getClazz() {

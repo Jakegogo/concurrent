@@ -63,11 +63,10 @@ public class MysqlDialect extends Dialect {
 	
 	public String forModelDeleteById(TableInfo tInfo) {
 		String primaryKey = tInfo.getPrimaryKey();
-		StringBuilder sql = new StringBuilder(45);
-		sql.append("delete from `");
-		sql.append(tInfo.getTableName());
-		sql.append("` where `").append(primaryKey).append("` = ?");
-		return sql.toString();
+		String sql = "delete from `" +
+				tInfo.getTableName() +
+				"` where `" + primaryKey + "` = ?";
+		return sql;
 	}
 	
 	public void forModelUpdate(TableInfo tableInfo, StringBuilder sql) {
@@ -147,12 +146,11 @@ public class MysqlDialect extends Dialect {
 		if(!tInfo.hasColumnLabel(columnName)) {
 			throw new IllegalArgumentException("column [" + columnName + "] not found in " + tInfo.getTableName());
 		}
-		StringBuilder sql = new StringBuilder("select ");
-		sql.append("`").append(tInfo.getPrimaryKey().trim()).append("`");
-		sql.append(" from `");
-		sql.append(tInfo.getTableName());
-		sql.append("` where `").append(columnName).append("` = ?");
-		return sql.toString();
+		String sql = "select " + "`" + tInfo.getPrimaryKey().trim() + "`" +
+				" from `" +
+				tInfo.getTableName() +
+				"` where `" + columnName + "` = ?";
+		return sql;
 	}
 	
 
@@ -168,12 +166,11 @@ public class MysqlDialect extends Dialect {
 		if(!tInfo.hasColumnLabel(columnName)) {
 			throw new IllegalArgumentException("column [" + columnName + "] not found in " + tInfo.getTableName());
 		}
-		StringBuilder sql = new StringBuilder("select ");
-		sql.append("max(`").append(columnName.trim()).append("`)");
-		sql.append(" from `");
-		sql.append(tInfo.getTableName());
-		sql.append("` where `").append(columnName).append("` >= ? and `").append(columnName).append("` < ?");
-		return sql.toString();
+		String sql = "select " + "max(`" + columnName.trim() + "`)" +
+				" from `" +
+				tInfo.getTableName() +
+				"` where `" + columnName + "` >= ? and `" + columnName + "` < ?";
+		return sql;
 	}
 
 

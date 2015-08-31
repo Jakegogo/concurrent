@@ -9,9 +9,9 @@ import java.util.Map;
  */
 public class EnumInfo extends ClassInfo {
 
-    Enum<?>[] values;
+    private Enum<?>[] values;
 
-    Map<String, Enum<?>> enumMap;
+    private Map<String, Enum<?>> enumMap;
 
     public static EnumInfo valueOf(Class<? extends Enum> enumClass, int classId) {
 

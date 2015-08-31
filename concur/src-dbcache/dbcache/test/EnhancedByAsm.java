@@ -80,9 +80,9 @@ public class EnhancedByAsm
   public int addNum(int paramInt)
   {
     this.changeFields.set(2, 1);
-    Integer localInteger1 = Integer.valueOf(this.obj.getNum());
+    Integer localInteger1 = this.obj.getNum();
     int i = this.obj.addNum(paramInt);
-    Integer localInteger2 = Integer.valueOf(this.obj.getNum());
+    Integer localInteger2 = this.obj.getNum();
     this.handler.update(this, "num_idx", localInteger1, localInteger2);
     return i;
   }
@@ -101,9 +101,9 @@ public class EnhancedByAsm
   public void setNum(int paramInt)
   {
     this.changeFields.set(2, 1);
-    Integer localInteger1 = Integer.valueOf(this.obj.getNum());
+    Integer localInteger1 = this.obj.getNum();
     this.obj.setNum(paramInt);
-    Integer localInteger2 = Integer.valueOf(this.obj.getNum());
+    Integer localInteger2 = this.obj.getNum();
     this.handler.update(this, "num_idx", localInteger1, localInteger2);
   }
 

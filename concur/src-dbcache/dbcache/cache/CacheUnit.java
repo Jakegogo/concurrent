@@ -72,7 +72,7 @@ public interface CacheUnit {
 	 * 获取缓存单元名称
 	 * @return
 	 */
-	public String getName();
+	String getName();
 
 	/**
 	 * 初始化

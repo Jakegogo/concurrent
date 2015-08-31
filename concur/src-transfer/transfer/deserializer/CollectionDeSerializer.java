@@ -87,7 +87,7 @@ public class CollectionDeSerializer implements Deserializer, Opcodes {
     }
 
 
-    protected Collection createCollection(Type type) {
+    private Collection createCollection(Type type) {
 
         if (type == null || type == Collection.class || type == Object.class) {
             return new ArrayList();
@@ -367,7 +367,7 @@ public class CollectionDeSerializer implements Deserializer, Opcodes {
     }
 
 
-    private static CollectionDeSerializer instance = new CollectionDeSerializer();
+    private static final CollectionDeSerializer instance = new CollectionDeSerializer();
 
     public static CollectionDeSerializer getInstance() {
         return instance;

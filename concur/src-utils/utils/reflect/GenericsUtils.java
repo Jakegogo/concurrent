@@ -3,10 +3,7 @@ package utils.reflect;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 
 /**
@@ -110,18 +107,14 @@ public class GenericsUtils {
 			if (t instanceof Class<?>)
 				continue;
 			if (((ParameterizedType) t).getRawType().equals(generic)) {
-				for (Type tt : ((ParameterizedType) t).getActualTypeArguments()) {
-					values.add(tt);
-				}
+				Collections.addAll(values, ((ParameterizedType) t).getActualTypeArguments());
 				break;
 			}
 		}
 		if (values.size() == 0) {
 			ParameterizedType type = (ParameterizedType) actual.getGenericSuperclass();
 			if (type.getRawType().equals(generic)) {
-				for (Type tt : ((ParameterizedType) type).getActualTypeArguments()) {
-					values.add(tt);
-				}
+				Collections.addAll(values, ((ParameterizedType) type).getActualTypeArguments());
 			}
 		}
 

@@ -8,7 +8,7 @@ import java.util.concurrent.atomic.AtomicLong;
  */
 public class LongGenerator implements IdGenerator<Long> {
 	
-	private AtomicLong idGenerator;
+	private final AtomicLong idGenerator;
 	
 	
 	public LongGenerator() {

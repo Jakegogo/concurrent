@@ -233,7 +233,7 @@ public class DelayDbPersistService implements DbPersistService {
 		while (!Thread.interrupted()) {
 			try {
 
-				long timeDiff = 0l;
+				long timeDiff;
 				do {
 
 					if (updateAction == null) {
@@ -330,11 +330,11 @@ public class DelayDbPersistService implements DbPersistService {
 
 	@Override
 	public void logHadNotPersistEntity() {
-		QueuedAction updateAction = null;
-		for (Iterator<QueuedAction> it = this.updateQueue.iterator(); it.hasNext();) {
-			updateAction = it.next();
+		QueuedAction updateAction;
+		for (QueuedAction anUpdateQueue : this.updateQueue) {
+			updateAction = anUpdateQueue;
 			String persistInfo = updateAction.persistAction.getPersistInfo();
-			if(!StringUtils.isBlank(persistInfo)) {
+			if (!StringUtils.isBlank(persistInfo)) {
 				logger.error("检测到可能未入库对象! " + persistInfo);
 			}
 		}
@@ -354,9 +354,9 @@ public class DelayDbPersistService implements DbPersistService {
 	 */
 	static class QueuedAction {
 
-		PersistAction persistAction;
+		final PersistAction persistAction;
 
-		long createTime = System.currentTimeMillis();
+		final long createTime = System.currentTimeMillis();
 
 		public QueuedAction(PersistAction persistAction) {
 			this.persistAction = persistAction;
