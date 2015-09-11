@@ -11,13 +11,10 @@ public abstract class SafeActor implements Runnable {
 	
 	private final SafeRunable safeRunable;
 	
-	private final SafeType safeType;
-	
 	public SafeActor(SafeType safeType) {
 		if (safeType == null) {
 			throw new IllegalArgumentException("safeType");
 		}
-		this.safeType = safeType;
 		this.safeRunable = new SafeRunable(safeType, this);
 	}
 	
