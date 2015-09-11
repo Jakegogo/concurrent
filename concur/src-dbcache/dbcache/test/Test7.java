@@ -1,26 +1,21 @@
 package dbcache.test;
 
 
+import utils.typesafe.SafeActor;
+import utils.typesafe.SafeType;
+
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Queue;
-import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
-
-import utils.typesafe.SafeActor;
-import utils.typesafe.SafeType;
 
 /**
  * @author LiangZengLe
  */
-public class Test6 {
+public class Test7 {
     static ExecutorService service = Executors.newFixedThreadPool(8);
 
     static class Map extends SafeType {
@@ -49,6 +44,10 @@ public class Test6 {
                     }
                 }
             });
+        }
+
+        void addTask3(final Task task) {
+            task.start();
         }
 
         Runnable nextTask() {
@@ -90,10 +89,10 @@ public class Test6 {
 
     public static void main(String[] args) throws InterruptedException {
     	
-    	Thread.sleep(10000);
-    	System.out.println("start");
+//    	Thread.sleep(10000);
+//    	System.out.println("start");
     	
-        int count = 500000;
+        final int count = 500000;
         
         final List<Map> maps = new ArrayList<Map>();
         for (int i = 0; i < 10; i++) {
@@ -102,67 +101,75 @@ public class Test6 {
 
         
         CountDownLatch cdh = new CountDownLatch(10 * count);
-//        for (int i = 0; i < 4; i++) {
-//            service.submit(new Runnable() {
-//            	public void run() {
-//	                Iterator<Map> it = maps.iterator();
-//	                boolean sleep = true;
-//	                while (it.hasNext()) {
-//	                    Map map = it.next();
-//	                    Runnable task = map.nextTask();
-//	                    if (task != null) {
-//	                        task.run();
-//	                        sleep = false;
-//	                    }
-//	
-//	                    if (it.hasNext()) {
-//	                        continue;
-//	                    }
-//	                    it = maps.iterator();
-//	                    if (sleep) {
-//	                        try {
-//	                            TimeUnit.MILLISECONDS.sleep(5);
-//	                        } catch (InterruptedException e) {
-//	
-//	                        }
-//	                    }
-//	                    sleep = true;
-//	                    if (stop) {
-//	                        break;
-//	                    }
-//	                }
-//            	}
-//            });
-//        }
-//        long s2 = System.currentTimeMillis();
-//        for (Map map : maps) {
-//            for (int j = 0; j < count; j++) {
-//                map.addTask2(new Task(cdh, map.holder, map));
-//            }
-//        }
-//        cdh.await(10, TimeUnit.SECONDS);
-//        System.out.println("queue: " + (System.currentTimeMillis() - s2));
-//        for (Map map : maps) {
-//            if (map.holder.getValue() != count) {
-//                System.err.println("queue 结果错误");
-//            }
-//        }
-//        
-//
-//        for (Map map : maps) {
-//            map.holder.setValue(0);
-//        }
-        
-        
-        cdh = new CountDownLatch(10 * count);
-        
-        long s1 = System.currentTimeMillis();
+        for (int i = 0; i < 4; i++) {
+            service.submit(new Runnable() {
+            	public void run() {
+	                Iterator<Map> it = maps.iterator();
+	                boolean sleep = true;
+	                while (it.hasNext()) {
+	                    Map map = it.next();
+	                    Runnable task = map.nextTask();
+	                    if (task != null) {
+	                        task.run();
+	                        sleep = false;
+	                    }
+	
+	                    if (it.hasNext()) {
+	                        continue;
+	                    }
+	                    it = maps.iterator();
+	                    if (sleep) {
+	                        try {
+	                            TimeUnit.MILLISECONDS.sleep(5);
+	                        } catch (InterruptedException e) {
+	
+	                        }
+	                    }
+	                    sleep = true;
+	                    if (stop) {
+	                        break;
+	                    }
+	                }
+            	}
+            });
+        }
+        long s2 = System.currentTimeMillis();
         for (Map map : maps) {
             for (int j = 0; j < count; j++) {
-                map.addTask(new Task(cdh, map.holder, map));
+                map.addTask2(new Task(cdh, map.holder, map));
             }
         }
-        if (!cdh.await(10, TimeUnit.SECONDS)) {
+        cdh.await(10, TimeUnit.SECONDS);
+        System.out.println("queue: " + (System.currentTimeMillis() - s2));
+        for (Map map : maps) {
+            if (map.holder.getValue() != count) {
+                System.err.println("queue 结果错误");
+            }
+        }
+        
+
+        for (Map map : maps) {
+            map.holder.setValue(0);
+        }
+        
+        
+        final CountDownLatch cdh1 = new CountDownLatch(10 * count);
+        
+        long s1 = System.currentTimeMillis();
+        for (int k = 0; k < 10; k++) {
+            new Thread() {
+                @Override
+                public void run() {
+                    for (int i = 0;i < maps.size();i++) {
+                        final Map map = maps.get(i);
+                        for (int j = 0; j < count / 10; j++) {
+                            map.addTask3(new Task(cdh1, map.holder, map));
+                        }
+                    }
+                }
+            }.start();
+        }
+        if (!cdh1.await(10, TimeUnit.SECONDS)) {
             System.err.println("actor 执行超时");
         }
         System.out.println("safe actor: " + (System.currentTimeMillis() - s1));
@@ -176,7 +183,7 @@ public class Test6 {
         System.out.println("count " + Task.counter.get());
         stop = true;
         
-        Thread.sleep(100000);
+//        Thread.sleep(100000);
         
         service.shutdown();
         service.awaitTermination(10, TimeUnit.SECONDS);
