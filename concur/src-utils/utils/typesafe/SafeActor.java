@@ -11,10 +11,13 @@ public abstract class SafeActor implements Runnable {
 	
 	private final SafeRunable safeRunable;
 	
+	private final SafeType safeType;
+	
 	public SafeActor(SafeType safeType) {
 		if (safeType == null) {
 			throw new IllegalArgumentException("safeType");
 		}
+		this.safeType = safeType;
 		this.safeRunable = new SafeRunable(safeType, this);
 	}
 	
@@ -31,7 +34,7 @@ public abstract class SafeActor implements Runnable {
      */
     public void start() {
     	// 执行SafeRunable序列
-    	safeRunable.execute();
+    	safeRunable.execute(safeType);
     }
 
 	@Override

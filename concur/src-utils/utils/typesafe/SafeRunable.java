@@ -1,7 +1,5 @@
 package utils.typesafe;
 
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * 线程安全的SafeRunable
@@ -9,12 +7,8 @@ import java.util.concurrent.atomic.AtomicReference;
  */
 public class SafeRunable implements Runnable {
 	
-//	static AtomicInteger gen = new AtomicInteger();
-//	
-//	int id = gen.incrementAndGet();
-	
 	/** 后继节点 */
-	private final AtomicReference<SafeRunable> next = new AtomicReference<SafeRunable>();
+	private volatile SafeRunable next;
 	
 	/** 当前对象 */
 	private final SafeType safeType;
@@ -40,34 +34,36 @@ public class SafeRunable implements Runnable {
 		} while ((next = next.fetchNext()) != null);// 获取下一个任务
 	}
 
+	
 	/**
 	 * 执行
 	 */
 	public void execute() {
+		
+		// CAS loop
+		for (SafeRunable tail = safeType.getTail(); ; ) {
 
-		// messages from the same client are handled orderly
-		if (safeType.casTail(null, this)) { // No previous job
-//			System.out.println("f " + Thread.currentThread().getId() + " " + id);
-			this.run();
-		} else {
-			// CAS loop
-			for (; ; ) {
-				SafeRunable tail = safeType.getTail();
-
-				if (isHead(tail) && safeType.casTail(tail, this)) {
-					// previous message is handled, order is
-					// guaranteed.
-//					System.out.println("r " + Thread.currentThread().getId() + " " + id);
+			// messages from the same client are handled orderly
+			if (tail == null) { // No previous job
+				if (safeType.casTail(null, this)) {
 					this.run();
 					return;
-				} else if (tail.casNext(this)) {
-					safeType.casTail(tail, this);// fail is OK
-					// successfully append to previous task
-//					System.out.println("a " + Thread.currentThread().getId() + " " + id);
-					return;
 				}
+				tail = safeType.getTail();
+			} else if (tail.isHead() && safeType.casTail(tail, this)) {
+				// previous message is handled, order is
+				// guaranteed.
+				this.run();
+				return;
+			} else if (tail.casNext(this)) {
+				safeType.casTail(tail, this);// fail is OK
+				// successfully append to previous task
+				return;
+			} else {
+				tail = safeType.getTail();
 			}
 		}
+
 	}
 
 
@@ -75,16 +71,15 @@ public class SafeRunable implements Runnable {
 	 * 获取下一个任务
 	 */
 	protected SafeRunable fetchNext() {
-		if (!next.compareAndSet(null, this)) { // has more job to run
-//			System.out.println("e " + Thread.currentThread().getId() + " " + id + " " + (next.get().next.get() != null));
-			return next.get();
+		if (!UNSAFE.compareAndSwapObject(this, nextOffset, null, this)) { // has more job to run
+			return next;
 		}
 		return null;
 	}
 	
 	
-	private boolean casNext(SafeRunable safeRunable) {
-		return next.compareAndSet(null, safeRunable);
+	boolean casNext(SafeRunable safeRunable) {
+		return UNSAFE.compareAndSwapObject(this, nextOffset, null, safeRunable);
 	}
 	
 
@@ -93,20 +88,95 @@ public class SafeRunable implements Runnable {
 	 * @param safeRunable 节点
 	 * @return
 	 */
-	public boolean isHead(SafeRunable safeRunable) {
-		return safeRunable.next.get() == safeRunable;
+	public boolean isHead() {
+		return this.next == this;
 	}
 	
 	
 	public SafeType getSafeType() {
 		return safeType;
 	}
+	
+	// Unsafe mechanics
+    private static final sun.misc.Unsafe UNSAFE;
+    private static final long nextOffset;
+    static {
+        try {
+            UNSAFE = getUnsafe();
+            Class<?> sk = SafeRunable.class;
+            nextOffset = UNSAFE.objectFieldOffset
+                (sk.getDeclaredField("next"));
+        } catch (Exception e) {
+            throw new Error(e);
+        }
+    }
+
+    /**
+     * Returns a sun.misc.Unsafe.  Suitable for use in a 3rd party package.
+     * Replace with a simple call to Unsafe.getUnsafe when integrating
+     * into a jdk.
+     *
+     * @return a sun.misc.Unsafe
+     */
+    private static sun.misc.Unsafe getUnsafe() {
+        try {
+            return sun.misc.Unsafe.getUnsafe();
+        } catch (SecurityException se) {
+            try {
+                return java.security.AccessController.doPrivileged
+                    (new java.security
+                        .PrivilegedExceptionAction<sun.misc.Unsafe>() {
+                        public sun.misc.Unsafe run() throws Exception {
+                            java.lang.reflect.Field f = sun.misc
+                                .Unsafe.class.getDeclaredField("theUnsafe");
+                            f.setAccessible(true);
+                            return (sun.misc.Unsafe) f.get(null);
+                        }});
+            } catch (java.security.PrivilegedActionException e) {
+                throw new RuntimeException("Could not initialize intrinsics",
+                    e.getCause());
+            }
+        }
+    }
 
 
 	@Override
 	public String toString() {
 		return "SafeRunable [next=" + next + ", safeType="
 				+ safeType + ", safeActor=" + safeActor + "]";
+	}
+
+
+	/**
+	 * 执行
+	 * @param safeType TODO
+	 */
+	public void execute(SafeType safeType) {
+		
+		// CAS loop
+		for (SafeRunable tail = safeType.getTail(); ; ) {
+	
+			// messages from the same client are handled orderly
+			if (tail == null) { // No previous job
+				if (safeType.casTail(null, this)) {
+					run();
+					return;
+				}
+				tail = safeType.getTail();
+			} else if (tail.isHead() && safeType.casTail(tail, this)) {
+				// previous message is handled, order is
+				// guaranteed.
+				run();
+				return;
+			} else if (tail.casNext(this)) {
+				safeType.casTail(tail, this);// fail is OK
+				// successfully append to previous task
+				return;
+			} else {
+				tail = safeType.getTail();
+			}
+		}
+	
 	}
 
 }

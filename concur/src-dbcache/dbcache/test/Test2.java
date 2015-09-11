@@ -59,7 +59,7 @@ public class Test2 {
     public static void main(String[] args) {
         Map m = new Map();
         
-        for (int i =0 ; i < 10000;i++) {
+        for (int i =0 ; i < 50000;i++) {
 	        m.addTask(new Task(m));
 	        m.addTask(new Task(m));
 	        m.addTask(new Task(m));
