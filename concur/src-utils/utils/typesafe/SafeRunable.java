@@ -85,7 +85,6 @@ public class SafeRunable implements Runnable {
 
 	/**
 	 * 判断节点是否为头节点
-	 * @param safeRunable 节点
 	 * @return
 	 */
 	public boolean isHead() {
@@ -144,39 +143,6 @@ public class SafeRunable implements Runnable {
 	public String toString() {
 		return "SafeRunable [next=" + next + ", safeType="
 				+ safeType + ", safeActor=" + safeActor + "]";
-	}
-
-
-	/**
-	 * 执行
-	 * @param safeType TODO
-	 */
-	public void execute(SafeType safeType) {
-		
-		// CAS loop
-		for (SafeRunable tail = safeType.getTail(); ; ) {
-	
-			// messages from the same client are handled orderly
-			if (tail == null) { // No previous job
-				if (safeType.casTail(null, this)) {
-					run();
-					return;
-				}
-				tail = safeType.getTail();
-			} else if (tail.isHead() && safeType.casTail(tail, this)) {
-				// previous message is handled, order is
-				// guaranteed.
-				run();
-				return;
-			} else if (tail.casNext(this)) {
-				safeType.casTail(tail, this);// fail is OK
-				// successfully append to previous task
-				return;
-			} else {
-				tail = safeType.getTail();
-			}
-		}
-	
 	}
 
 }

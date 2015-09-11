@@ -34,7 +34,7 @@ public abstract class SafeActor implements Runnable {
      */
     public void start() {
     	// 执行SafeRunable序列
-    	safeRunable.execute(safeType);
+    	safeRunable.execute();
     }
 
 	@Override
