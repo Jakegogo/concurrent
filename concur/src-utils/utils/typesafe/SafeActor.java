@@ -9,16 +9,12 @@ package utils.typesafe;
  */
 public abstract class SafeActor implements Runnable {
 
-	private SafeType safeType;
-
 	private SafeRunable safeRunable;
 	
 	public SafeActor(SafeType safeType) {
 		if (safeType == null) {
 			throw new IllegalArgumentException("safeType");
 		}
-		
-		this.safeType = safeType;
 		this.safeRunable = new SafeRunable(safeType, this);
 	}
 
@@ -33,7 +29,9 @@ public abstract class SafeActor implements Runnable {
      * 执行异常回调()
      * @param t Throwable
      */
-    public void onException(Throwable t) {}
+    public void onException(Throwable t) {
+    	t.printStackTrace();
+    }
 	
     /**
      * 开始执行Actor
@@ -48,6 +46,5 @@ public abstract class SafeActor implements Runnable {
 		return "SafeActor [" + this.hashCode() + "]";
 	}
     
-    
-
+	
 }

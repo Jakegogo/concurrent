@@ -1,5 +1,6 @@
 package utils.typesafe;
 
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
@@ -8,9 +9,13 @@ import java.util.concurrent.atomic.AtomicReference;
  */
 public class SafeRunable implements Runnable {
 	
-	AtomicReference<SafeRunable> next = new AtomicReference<SafeRunable>(null);
+	static AtomicInteger gen = new AtomicInteger();
+	
+	int id = gen.incrementAndGet();
+	
+	AtomicReference<SafeRunable> next = new AtomicReference<SafeRunable>();
 
-	private SafeType safeType;
+	SafeType safeType;
 	
 	private SafeActor safeActor;
 	
@@ -38,29 +43,24 @@ public class SafeRunable implements Runnable {
 	public void execute() {
 
 		// messages from the same client are handled orderly
-		AtomicReference<SafeRunable> lastRef = safeType.head;
-
-		if (lastRef.get() == null && lastRef.compareAndSet(null, this)) { // No previous job
+		if (safeType.casTail(null, this)) { // No previous job
+//			System.out.println("f " + Thread.currentThread().getId() + " " + id);
 			this.run();
 		} else {
 			// CAS loop
 			for (; ; ) {
+				SafeRunable tail = safeType.getTail();
 
-				SafeRunable last = lastRef.get();
-
-				AtomicReference<SafeRunable> nextRef = last.next;
-				SafeRunable next = nextRef.get();
-
-				if (next != null) {
-					if (next == last && lastRef.compareAndSet(last, this)) {
-						// previous message is handled, order is
-						// guaranteed.
-						this.run();
-						return;
-					}
-				} else if (nextRef.compareAndSet(null, this)) {
-					lastRef.compareAndSet(last, this);// fail is OK
+				if (safeType.isHead(tail) && safeType.casTail(tail, this)) {
+					// previous message is handled, order is
+					// guaranteed.
+//					System.out.println("r " + Thread.currentThread().getId() + " " + id);
+					this.run();
+					return;
+				} else if (tail.casNext(this)) {
+					safeType.casTail(tail, this);// fail is OK
 					// successfully append to previous task
+//					System.out.println("a " + Thread.currentThread().getId() + " " + id);
 					return;
 				}
 			}
@@ -72,13 +72,17 @@ public class SafeRunable implements Runnable {
 	 * 执行下一个任务
 	 */
 	protected void runNext() {
-
 		if (!next.compareAndSet(null, this)) { // has more job to run
+//			System.out.println("e " + Thread.currentThread().getId() + " " + id + " " + (next.get().next.get() != null));
 			next.get().run();
 		}
-		
 	}
-
+	
+	
+	private boolean casNext(SafeRunable safeRunable) {
+		return next.compareAndSet(null, safeRunable);
+	}
+	
 
 	public SafeType getSafeType() {
 		return safeType;

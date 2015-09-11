@@ -20,7 +20,7 @@ public class TestTypeSafe {
 		
 		final CountDownLatch ct = new CountDownLatch(1);
 		
-		for (int j = 0; j < 1000;j++) {
+		for (int j = 0; j < 10000;j++) {
 			
 			final int l = j;
 			new Thread() {
@@ -61,7 +61,7 @@ public class TestTypeSafe {
 									int j = b.j;
 									j += 1;
 									b.j = j;
-									System.out.println(Thread.currentThread().getId());
+//									System.out.println(Thread.currentThread().getId());
 								}
 								
 							}.start();
@@ -88,7 +88,7 @@ public class TestTypeSafe {
 									int k = c.k;
 									k += 1;
 									c.k = k;
-									System.out.println(Thread.currentThread().getId());
+//									System.out.println(Thread.currentThread().getId());
 								}
 								
 							}.start();
@@ -101,7 +101,7 @@ public class TestTypeSafe {
 		
 		try {
 			ct.countDown();
-			Thread.sleep(2000);
+			Thread.sleep(5000);
 			System.out.println("a.i:" + a.i);
 			System.out.println("b.j:" + b.j);
 			System.out.println("c.k:" + c.k);
