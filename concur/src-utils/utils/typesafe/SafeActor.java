@@ -8,21 +8,14 @@ package utils.typesafe;
  * @author Jake
  */
 public abstract class SafeActor implements Runnable {
-
-	private SafeRunable safeRunable;
+	
+	private final SafeRunable safeRunable;
 	
 	public SafeActor(SafeType safeType) {
 		if (safeType == null) {
 			throw new IllegalArgumentException("safeType");
 		}
 		this.safeRunable = new SafeRunable(safeType, this);
-	}
-
-	/**
-	 * 执行下一个联合序列任务
-	 */
-	void runNext() {
-		safeRunable.runNext();
 	}
 	
 	/**

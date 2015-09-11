@@ -9,15 +9,18 @@ import java.util.concurrent.atomic.AtomicReference;
  */
 public class SafeRunable implements Runnable {
 	
-	static AtomicInteger gen = new AtomicInteger();
+//	static AtomicInteger gen = new AtomicInteger();
+//	
+//	int id = gen.incrementAndGet();
 	
-	int id = gen.incrementAndGet();
+	/** 后继节点 */
+	private final AtomicReference<SafeRunable> next = new AtomicReference<SafeRunable>();
 	
-	AtomicReference<SafeRunable> next = new AtomicReference<SafeRunable>();
-
-	SafeType safeType;
+	/** 当前对象 */
+	private final SafeType safeType;
 	
-	private SafeActor safeActor;
+	/** 当前任务 */
+	private final SafeActor safeActor;
 	
 	protected SafeRunable(SafeType safeType, SafeActor safeActor) {
 		this.safeType = safeType;
@@ -27,14 +30,14 @@ public class SafeRunable implements Runnable {
 	
 	@Override
 	public void run() {
-		try {
-			safeActor.run();
-		} catch (Exception e) {
-			safeActor.onException(e);
-		} finally {
-			// 执行下一个任务
-			safeActor.runNext();
-		}
+		SafeRunable next = this;
+		do {
+			try {
+				next.safeActor.run();
+			} catch (Exception e) {
+				next.safeActor.onException(e);
+			}
+		} while ((next = next.fetchNext()) != null);// 获取下一个任务
 	}
 
 	/**
@@ -51,7 +54,7 @@ public class SafeRunable implements Runnable {
 			for (; ; ) {
 				SafeRunable tail = safeType.getTail();
 
-				if (safeType.isHead(tail) && safeType.casTail(tail, this)) {
+				if (isHead(tail) && safeType.casTail(tail, this)) {
 					// previous message is handled, order is
 					// guaranteed.
 //					System.out.println("r " + Thread.currentThread().getId() + " " + id);
@@ -69,13 +72,14 @@ public class SafeRunable implements Runnable {
 
 
 	/**
-	 * 执行下一个任务
+	 * 获取下一个任务
 	 */
-	protected void runNext() {
+	protected SafeRunable fetchNext() {
 		if (!next.compareAndSet(null, this)) { // has more job to run
 //			System.out.println("e " + Thread.currentThread().getId() + " " + id + " " + (next.get().next.get() != null));
-			next.get().run();
+			return next.get();
 		}
+		return null;
 	}
 	
 	
@@ -84,6 +88,16 @@ public class SafeRunable implements Runnable {
 	}
 	
 
+	/**
+	 * 判断节点是否为头节点
+	 * @param safeRunable 节点
+	 * @return
+	 */
+	public boolean isHead(SafeRunable safeRunable) {
+		return safeRunable.next.get() == safeRunable;
+	}
+	
+	
 	public SafeType getSafeType() {
 		return safeType;
 	}

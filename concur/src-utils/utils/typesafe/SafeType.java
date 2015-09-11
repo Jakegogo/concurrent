@@ -9,18 +9,24 @@ import java.util.concurrent.atomic.AtomicReference;
 public abstract class SafeType {
 	
 	/** 上一次执行的Actor */
-	final AtomicReference<SafeRunable> tail = new AtomicReference<SafeRunable>();
-
+	private final AtomicReference<SafeRunable> tail = new AtomicReference<SafeRunable>();
+	
+	/**
+	 * 获取尾节点
+	 * @return
+	 */
 	public SafeRunable getTail() {
 		return tail.get();
 	}
 	
-	public boolean isHead(SafeRunable tail) {
-		return tail.next.get() == tail;
-	}
-
-	boolean casTail(SafeRunable last, SafeRunable safeRunable) {
-		return tail.compareAndSet(last, safeRunable);
+	/**
+	 * 追加到尾节点
+	 * @param oldSafeRunnable
+	 * @param safeRunable
+	 * @return
+	 */
+	boolean casTail(SafeRunable oldSafeRunnable, SafeRunable safeRunable) {
+		return tail.compareAndSet(oldSafeRunnable, safeRunable);
 	}
 	
 
