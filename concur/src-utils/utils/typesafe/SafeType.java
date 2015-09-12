@@ -7,25 +7,25 @@ package utils.typesafe;
  */
 public abstract class SafeType {
 	
-	/** 上一次执行的Actor */
-	private volatile SafeRunable tail;
+	/** 最后一次执行的Actor 使用UNSAFE进行处理 */
+	private volatile SafeRunner tail;
 	
 	/**
 	 * 获取尾节点
 	 * @return
 	 */
-	public SafeRunable getTail() {
+	public SafeRunner getTail() {
 		return tail;
 	}
 	
 	/**
 	 * 追加到尾节点
 	 * @param oldSafeRunnable
-	 * @param safeRunable
+	 * @param safeRunner
 	 * @return
 	 */
-	boolean casTail(SafeRunable oldSafeRunnable, SafeRunable safeRunable) {
-		return UNSAFE.compareAndSwapObject(this, tailOffset, oldSafeRunnable, safeRunable);
+	boolean casTail(SafeRunner oldSafeRunnable, SafeRunner safeRunner) {
+		return UNSAFE.compareAndSwapObject(this, tailOffset, oldSafeRunnable, safeRunner);
 	}
 	
 	

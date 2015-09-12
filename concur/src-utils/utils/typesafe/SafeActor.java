@@ -1,21 +1,25 @@
 package utils.typesafe;
 
 /**
- * 线程安全的Actor
- * <br/>支持单个对象操作的顺序执行,可并发提交。与提交线程的关系是同步或异步
- * <br/>序列执行子类型
- * <br/>需要覆盖run方法, 方法内可以调用super.afterExecute(Object[])执行结束后会进行回调
+ * <h5>线程安全的Actor</h5>
+ * <br/>支持单个SafeType对应的SafeActor操作(run方法)的顺序执行。
+ * <p>可并发提交。与提交线程的关系可能同步或异步</p>
+ * <br/>需要有序执行的操作可继承此类，并实现run方法
  * @author Jake
  */
 public abstract class SafeActor implements Runnable {
 	
-	private final SafeRunable safeRunable;
-	
+	private final SafeRunner safeRunner;
+
+	/**
+	 * 构造方法
+	 * @param safeType 处理需要保证线程安全的数据对象
+     */
 	public SafeActor(SafeType safeType) {
 		if (safeType == null) {
-			throw new IllegalArgumentException("safeType");
+			throw new IllegalArgumentException("safeType cannot be null.");
 		}
-		this.safeRunable = new SafeRunable(safeType, this);
+		this.safeRunner = new SafeRunner(safeType, this);
 	}
 	
 	/**
@@ -30,8 +34,11 @@ public abstract class SafeActor implements Runnable {
      * 开始执行Actor
      */
     public void start() {
+		if (safeRunner == null) {
+			throw new IllegalArgumentException("safeRunner cannot be null.");
+		}
     	// 执行SafeRunable序列
-    	safeRunable.execute();
+    	safeRunner.execute();
     }
 
 	@Override

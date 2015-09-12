@@ -5,26 +5,33 @@ package utils.typesafe;
  * 线程安全的SafeRunable
  * @author Jake
  */
-public class SafeRunable implements Runnable {
+public class SafeRunner {
 	
-	/** 后继节点 */
-	private volatile SafeRunable next;
+	/** 后继节点 使用UNSAFE进行处理 */
+	private volatile SafeRunner next;
 	
 	/** 当前对象 */
 	private final SafeType safeType;
 	
 	/** 当前任务 */
 	private final SafeActor safeActor;
-	
-	protected SafeRunable(SafeType safeType, SafeActor safeActor) {
+
+	/**
+	 * 构造方法
+	 * @param safeType 当前对象
+	 * @param safeActor 当前任务
+     */
+	protected SafeRunner(SafeType safeType, SafeActor safeActor) {
 		this.safeType = safeType;
 		this.safeActor = safeActor;
 	}
-	
-	
-	@Override
+
+
+	/**
+	 * 执行串行队列
+	 */
 	public void run() {
-		SafeRunable next = this;
+		SafeRunner next = this;
 		do {
 			try {
 				next.safeActor.run();
@@ -41,7 +48,7 @@ public class SafeRunable implements Runnable {
 	public void execute() {
 		
 		// CAS loop
-		for (SafeRunable tail = safeType.getTail(); ; ) {
+		for (SafeRunner tail = safeType.getTail(); ; ) {
 
 			// messages from the same client are handled orderly
 			if (tail == null) { // No previous job
@@ -70,16 +77,21 @@ public class SafeRunable implements Runnable {
 	/**
 	 * 获取下一个任务
 	 */
-	protected SafeRunable fetchNext() {
+	protected SafeRunner fetchNext() {
 		if (!UNSAFE.compareAndSwapObject(this, nextOffset, null, this)) { // has more job to run
 			return next;
 		}
 		return null;
 	}
-	
-	
-	boolean casNext(SafeRunable safeRunable) {
-		return UNSAFE.compareAndSwapObject(this, nextOffset, null, safeRunable);
+
+
+	/**
+	 * 线程安全地追加后继节点
+	 * @param safeRunner SafeRunner
+	 * @return
+     */
+	boolean casNext(SafeRunner safeRunner) {
+		return UNSAFE.compareAndSwapObject(this, nextOffset, null, safeRunner);
 	}
 	
 
@@ -102,7 +114,7 @@ public class SafeRunable implements Runnable {
     static {
         try {
             UNSAFE = getUnsafe();
-            Class<?> sk = SafeRunable.class;
+            Class<?> sk = SafeRunner.class;
             nextOffset = UNSAFE.objectFieldOffset
                 (sk.getDeclaredField("next"));
         } catch (Exception e) {
@@ -141,7 +153,7 @@ public class SafeRunable implements Runnable {
 
 	@Override
 	public String toString() {
-		return "SafeRunable [next=" + next + ", safeType="
+		return "SafeRunner [next=" + next + ", safeType="
 				+ safeType + ", safeActor=" + safeActor + "]";
 	}
 
