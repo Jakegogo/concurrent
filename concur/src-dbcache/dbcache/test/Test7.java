@@ -30,7 +30,7 @@ public class Test7 {
             });
         }
 
-        private Queue<Runnable> tasks = new ConcurrentLinkedQueue<Runnable>();
+        private Queue<Runnable> tasks = new LinkedBlockingQueue<Runnable>();
         private AtomicBoolean running = new AtomicBoolean();
 
         void addTask2(final Runnable runnable) {
@@ -100,7 +100,7 @@ public class Test7 {
         }
 
         
-        CountDownLatch cdh = new CountDownLatch(10 * count);
+        final CountDownLatch cdh = new CountDownLatch(10 * count);
         for (int i = 0; i < 4; i++) {
             service.submit(new Runnable() {
             	public void run() {
@@ -134,10 +134,18 @@ public class Test7 {
             });
         }
         long s2 = System.currentTimeMillis();
-        for (Map map : maps) {
-            for (int j = 0; j < count; j++) {
-                map.addTask2(new Task(cdh, map.holder, map));
-            }
+        for (int k = 0; k < 10; k++) {
+            new Thread() {
+                @Override
+                public void run() {
+                    for (int i = 0;i < maps.size();i++) {
+                        final Map map = maps.get(i);
+                        for (int j = 0; j < count / 10; j++) {
+                            map.addTask2(new Task(cdh, map.holder, map));
+                        }
+                    }
+                }
+            }.start();
         }
         cdh.await(10, TimeUnit.SECONDS);
         System.out.println("queue: " + (System.currentTimeMillis() - s2));
