@@ -98,7 +98,40 @@ public class Test7 {
         for (int i = 0; i < 10; i++) {
             maps.add(new Map());
         }
+        
+        final CountDownLatch cdh1 = new CountDownLatch(10 * count);
+        
+        long s1 = System.currentTimeMillis();
+        for (int k = 0; k < 10; k++) {
+            new Thread() {
+                @Override
+                public void run() {
+                    for (int i = 0;i < maps.size();i++) {
+                        final Map map = maps.get(i);
+                        for (int j = 0; j < count / 10; j++) {
+                            map.addTask3(new Task(cdh1, map.holder, map));
+                        }
+                    }
+                }
+            }.start();
+        }
+        if (!cdh1.await(10, TimeUnit.SECONDS)) {
+            System.err.println("actor 执行超时");
+        }
+        System.out.println("safe actor: " + (System.currentTimeMillis() - s1));
+        for (Map map : maps) {
+            if (map.holder.getValue() != count) {
+                System.err.println("actor 结果错误");
+            }
+        }
 
+        System.out.println("count " + Task.counter.get());
+        
+        for (Map map : maps) {
+            map.holder.setValue(0);
+        }
+        
+        
         
         final CountDownLatch cdh = new CountDownLatch(10 * count);
         for (int i = 0; i < 4; i++) {
@@ -155,37 +188,6 @@ public class Test7 {
             }
         }
         
-
-        for (Map map : maps) {
-            map.holder.setValue(0);
-        }
-        
-        
-        final CountDownLatch cdh1 = new CountDownLatch(10 * count);
-        
-        long s1 = System.currentTimeMillis();
-        for (int k = 0; k < 10; k++) {
-            new Thread() {
-                @Override
-                public void run() {
-                    for (int i = 0;i < maps.size();i++) {
-                        final Map map = maps.get(i);
-                        for (int j = 0; j < count / 10; j++) {
-                            map.addTask3(new Task(cdh1, map.holder, map));
-                        }
-                    }
-                }
-            }.start();
-        }
-        if (!cdh1.await(10, TimeUnit.SECONDS)) {
-            System.err.println("actor 执行超时");
-        }
-        System.out.println("safe actor: " + (System.currentTimeMillis() - s1));
-        for (Map map : maps) {
-            if (map.holder.getValue() != count) {
-                System.err.println("actor 结果错误");
-            }
-        }
 
         
         System.out.println("count " + Task.counter.get());
