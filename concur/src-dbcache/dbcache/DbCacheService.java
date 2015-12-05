@@ -11,6 +11,10 @@ import java.util.concurrent.ExecutorService;
 
 /**
  * 数据库缓存接口
+ * <p>使用map缓存key-value形式的数据库存取方式,拥有较高的缓存命中率和缓存有效性。
+ * 默认采用自有封装的jdbc,懒加载查询缓存，异步延迟入库保证最终数据准确性。
+ * 集成了spring自动注入DBCache缓存服务实例，以实体类一服务，降低hash碰撞，实体缓存隔离。
+ * 使用asm字节码生成实体代理，底层实现自动维护实体索引。</p>
  * <br/>集成了Cache,调用接口将同时修改缓存并同步到数据库
  * <br/>集成了DbIndexService,支持自动维护单列索引。需要修改数据索引,需启用dbcache.anno.Cached#enableIndex(),直接调用实体更改的方法即可
  * <br/>仅采用Hibernate的自动建表工具,数据库交互使用Jdbc,@see {@link dbcache.support.jdbc.JdbcSupport}

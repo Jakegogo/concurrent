@@ -71,7 +71,7 @@ public class RingBufferQueue<E> {
         return e.e;
     }
 
-    private static class Event<E> {
+    static class Event<E> {
         private E e;
     }
 }
