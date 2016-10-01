@@ -44,7 +44,7 @@ public class TestBatchUpdate {
             new Thread() {
                 @Override
                 public void run() {
-                    for(int i = 0;i <= 100000;i++) {
+                    for(int i = 0;i <= 10000000;i++) {
                         Entity entity = cacheService.get(k);
                         entity.increseNum();
 
@@ -111,8 +111,9 @@ public class TestBatchUpdate {
                         if (i % 1000000 == 0) {
                             System.out.println(ThreadUtils.dumpThreadPool("入库线程池", cacheService.getThreadPool()));
                         }
-                        ct.countDown();
+
                     }
+                    ct.countDown();
                 }
             }.start();
         }

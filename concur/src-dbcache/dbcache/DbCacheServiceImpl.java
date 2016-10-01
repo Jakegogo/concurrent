@@ -336,7 +336,7 @@ public class DbCacheServiceImpl<T extends IEntity<PK>, PK extends Comparable<PK>
 		
 		// 验证缓存操作原子性(缓存实体必须唯一)
 		if (cacheObject.getProxyEntity() != entity) {
-			String msg = "提交的实体和缓存的实体不是同一对象(引用)[user:"
+			String msg = "提交的实体和缓存的实体不是同一对象(引用),请尝试调整缓存大小: [user:"
 					+ JsonUtils.object2JsonString(entity)
 					+ ", current:" + JsonUtils.object2JsonString(cacheObject.getProxyEntity()) 
 					+ "]";
