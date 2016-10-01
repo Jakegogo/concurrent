@@ -26,7 +26,7 @@ public class FinalCommitRunner extends SafeRunner {
     protected void runNext() {
         FinalCommitRunner current = this;
         do {
-            if (current.next == null) {
+            if (current.next == null) {// 当没有了下一个可消费的节点时,执行一次
                 try {
                     current.safeActor.run();
                 } catch (Exception e) {
