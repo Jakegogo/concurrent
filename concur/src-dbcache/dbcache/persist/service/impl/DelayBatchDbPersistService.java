@@ -6,7 +6,6 @@ import dbcache.conf.DbRuleService;
 import dbcache.dbaccess.DbAccessService;
 import dbcache.CacheObject;
 import dbcache.IEntity;
-import dbcache.persist.PersistAction;
 import dbcache.persist.PersistStatus;
 import dbcache.persist.service.DbBatchAccessService;
 import dbcache.persist.service.DbPersistService;
@@ -209,28 +208,16 @@ public class DelayBatchDbPersistService implements DbPersistService {
 			final DbAccessService dbAccessService,
 			final CacheConfig<T> cacheConfig) {
 
-		// 改变更新状态
-		if (cacheObject.isUpdateProcessing()) {
-			return;
-		}
-
-		// 改变更新状态
-		cacheObject.setUpdateProcessing(true);
-
 		this.handlePersist(new PersistAction() {
 
 			@Override
 			public void run() {
-
-				// 改变更新状态
-				cacheObject.setUpdateProcessing(false);
 
 				// 持久化前的操作
 				cacheObject.doBeforePersist(cacheConfig);
 
 				// 添加持久化任务到批量任务队列
 				batchTasks.addUpdateTask(cacheObject);
-
 			}
 
 			@Override
@@ -490,5 +477,26 @@ public class DelayBatchDbPersistService implements DbPersistService {
 
 	}
 
-
+	/**
+	 * 持久化行为接口
+	 * @author Administrator
+	 *
+	 */
+	interface PersistAction extends Runnable {
+		/**
+		 * 是否有效
+		 * @return
+		 */
+		boolean valid();
+		/**
+		 * 执行持久化操作
+		 */
+		@Override
+		void run();
+		/**
+		 * 转换成字符串
+		 * @return
+		 */
+		String getPersistInfo();
+	}
 }

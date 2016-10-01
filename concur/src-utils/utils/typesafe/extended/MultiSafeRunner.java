@@ -8,10 +8,10 @@ import java.util.concurrent.atomic.AtomicReference;
  * 线程安全的SafeRunable
  * @author Jake
  */
-public class MultiSafeRunable implements Runnable {
+public class MultiSafeRunner implements Runnable {
 
 	// 下一个将要执行的MultiSafeRunable
-	AtomicReference<MultiSafeRunable> next = new AtomicReference<MultiSafeRunable>(null);
+	AtomicReference<MultiSafeRunner> next = new AtomicReference<MultiSafeRunner>(null);
 
 	// 执行线程池
 	private ExecutorService executorService;
@@ -24,7 +24,7 @@ public class MultiSafeRunable implements Runnable {
 	private MultiSafeActor safeActor;
 
 
-	protected MultiSafeRunable(MultiSafeType safeType, MultiSafeActor safeActor, ExecutorService executorService) {
+	protected MultiSafeRunner(MultiSafeType safeType, MultiSafeActor safeActor, ExecutorService executorService) {
 		this.safeType = safeType;
 		this.safeActor = safeActor;
 		this.executorService = executorService;
@@ -33,28 +33,32 @@ public class MultiSafeRunable implements Runnable {
 	
 	@Override
 	public void run() {
-		safeExecute();
+		innerRun();
 	}
 
 	/**
 	 * safe run
 	 * @return 是否执行了当前任务
 	 */
-	private void safeExecute() {
+	private void innerRun() {
 		// 未到达最后一个SafeType
 		if (safeActor.incrementAndGet() < safeActor.getCount()) {
 			return;
 		}
 
-		try {
-			safeActor.run();
-		} catch (Exception e) {
-			safeActor.onException(e);
-			System.out.println(e);
-		} finally {
-			// 执行下一个任务
-			this.executeNext();
-		}
+		MultiSafeRunner next = this;
+		do {
+			try {
+				next.safeActor.run();
+			} catch (Exception e) {
+				next.safeActor.onException(e);
+			}
+			// 派发其他依赖实体线程
+			if (next.safeActor.getCount() > 1) {
+				next.safeActor.recoverNext(next);
+			}
+		} while ((next = next.next()) != null);// 获取下一个任务
+
 	}
 
 	/**
@@ -63,9 +67,9 @@ public class MultiSafeRunable implements Runnable {
 	public void execute() {
 
 		// messages from the same client are handled orderly
-		AtomicReference<MultiSafeRunable> lastRef = safeType.head;
+		AtomicReference<MultiSafeRunner> lastRef = safeType.head;
 
-		MultiSafeRunable last = lastRef.get();
+		MultiSafeRunner last = lastRef.get();
 		lastRef.set(this);
 
 		if (last == null) { // No previous job
@@ -83,30 +87,18 @@ public class MultiSafeRunable implements Runnable {
 
 
 	/**
-	 * 执行下一个任务
+	 * 获取下一个任务
 	 */
-	protected void executeNext() {
-
-		// 派发其他依赖实体线程
-		if (this.safeActor.getCount() > 1) {
-			this.safeActor.dispathNext(this);
-		}
-
-		runNext();
-	}
-
-	/**
-	 * run 下一个runnable
-	 */
-	public void runNext() {
+	protected MultiSafeRunner next() {
 		if (!this.next.compareAndSet(null, this)) { // has more job to run
-			this.next.get().safeExecute();
+			return next.get();
 		}
+		return null;
 	}
 
 
 	// 提交runNext到线程池
-	public void submitRunNext() {
+	public void submitNext() {
 		submitRunnable(new Runnable() {
 			@Override
 			public void run() {
@@ -115,12 +107,27 @@ public class MultiSafeRunable implements Runnable {
 		});
 	}
 
+	/**
+	 * run 下一个runnable (忽略当前Runner)
+	 */
+	public void runNext() {
+		if (!this.next.compareAndSet(null, this)) { // has more job to run
+			this.next.get().run();
+		}
+	}
 
 	// 提交任务
 	private void submitRunnable(Runnable safeRunable) {
-		executorService.execute(safeRunable);
+		try {
+			executorService.execute(safeRunable);
+		} catch(Exception e) {
+			System.out.println(e.getMessage());
+		}
 	}
 
+	public MultiSafeActor getSafeActor() {
+		return safeActor;
+	}
 
 	@Override
 	public String toString() {

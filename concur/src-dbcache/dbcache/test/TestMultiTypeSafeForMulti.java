@@ -20,11 +20,13 @@ public class TestMultiTypeSafeForMulti {
 		final B b = new B();
 		final C c = new C();
 				
-		final int TEST_LOOP = 1;
+		final int TEST_LOOP = 100000;
 		
 		final CountDownLatch ct = new CountDownLatch(1);
+
+		final CountDownLatch ct1 = new CountDownLatch(TEST_LOOP * 10);
 		
-		for (int j = 0; j < 1000;j++) {
+		for (int j = 0; j < 10;j++) {
 			
 			final int l = j;
 			new Thread() {
@@ -34,12 +36,6 @@ public class TestMultiTypeSafeForMulti {
 					
 					try {
 						ct.await();
-					} catch (InterruptedException e) {
-						e.printStackTrace();
-					}
-
-					try {
-						Thread.sleep(new Random().nextInt(10));
 					} catch (InterruptedException e) {
 						e.printStackTrace();
 					}
@@ -70,7 +66,10 @@ public class TestMultiTypeSafeForMulti {
 									k += 1;
 									c.k = k;
 
-									System.out.println(Thread.currentThread().getId());
+//									System.out.println(Thread.currentThread().getId());
+
+									ct1.countDown();
+									System.out.println(ct1.getCount());
 								}
 
 							}.start();
@@ -97,7 +96,10 @@ public class TestMultiTypeSafeForMulti {
 									int k = c.k;
 									k += 1;
 									c.k = k;
-									System.out.println(Thread.currentThread().getId());
+//									System.out.println(Thread.currentThread().getId());
+
+									ct1.countDown();
+									System.out.println(ct1.getCount());
 								}
 
 							}.start();
@@ -110,7 +112,8 @@ public class TestMultiTypeSafeForMulti {
 		
 		try {
 			ct.countDown();
-			Thread.sleep(2000);
+			ct1.await();
+			System.out.println(ct1.getCount());
 			executorService.shutdown();
 			System.out.println("a.i:" + a.i);
 			System.out.println("b.j:" + b.j);

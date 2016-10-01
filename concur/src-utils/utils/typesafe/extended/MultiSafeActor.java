@@ -37,7 +37,7 @@ public abstract class MultiSafeActor implements Runnable {
 	// actor对应的线程安全类型对象
 	private List<MultiSafeType> safeTypes;
 	// 每个线程安全对象需执行的操作
-	private List<MultiSafeRunable> safeRunables;
+	private List<MultiSafeRunner> safeRunables;
 
 
 	/**
@@ -51,7 +51,7 @@ public abstract class MultiSafeActor implements Runnable {
 		}
 
 		this.safeTypes = new ArrayList<MultiSafeType>();
-		this.safeRunables = new ArrayList<MultiSafeRunable>();
+		this.safeRunables = new ArrayList<MultiSafeRunner>();
 		this.executorService = executorService;
 
 		this.when(promiseable);
@@ -74,15 +74,15 @@ public abstract class MultiSafeActor implements Runnable {
 		this.count = safeTypes.length;
 		this.executorService = executorService;
 
-		initSafeRunnables(safeTypes, executorService);
+		initRunnables(safeTypes, executorService);
 	}
 
 
 	// 初始化MultiSafeRunable
-	private void initSafeRunnables(MultiSafeType[] safeTypes, ExecutorService executorService) {
-		List<MultiSafeRunable> safeRunables = new ArrayList<MultiSafeRunable>();
+	private void initRunnables(MultiSafeType[] safeTypes, ExecutorService executorService) {
+		List<MultiSafeRunner> safeRunables = new ArrayList<MultiSafeRunner>();
 		for (MultiSafeType safeType : safeTypes) {
-			safeRunables.add(new MultiSafeRunable(safeType, this, executorService));
+			safeRunables.add(new MultiSafeRunner(safeType, this, executorService));
 		}
 		this.safeRunables = safeRunables;
 	}
@@ -102,7 +102,7 @@ public abstract class MultiSafeActor implements Runnable {
 		for (Promiseable<?> promiseable : promiseables) {
 			for (MultiSafeType safeType : promiseable.promiseTypes()) {
 				safeTypes.add(safeType);
-				safeRunables.add(new MultiSafeRunable(safeType, this, executorService));
+				safeRunables.add(new MultiSafeRunner(safeType, this, executorService));
 			}
 		}
 
@@ -115,24 +115,24 @@ public abstract class MultiSafeActor implements Runnable {
      * 开始执行Actor
      */
     public void start() {
-		addToQueue(this);
+		push(this);
     }
 
 
 	// 追加提交任务
-	protected void addToQueue(MultiSafeActor runnable) {
+	protected void push(MultiSafeActor runnable) {
 
 		// messages from the same client are handled orderly
 		AtomicReference<MultiSafeActor> lastRef = head;
 
 		if (lastRef.get() == null && lastRef.compareAndSet(null, this)) { // No previous job
-			runnable.runQueue();
+			runnable.pop();
 		} else {
 			// CAS loop
 			int casLoop = 1;
 			for (; ; ) {
 
-				if (casAppend(runnable, lastRef))
+				if (append(runnable, lastRef))
 					return;
 
 				if (casLoop ++ > 3) {
@@ -142,7 +142,7 @@ public abstract class MultiSafeActor implements Runnable {
 
 			synchronized (head) {
 				for (; ; ) {
-					if (casAppend(runnable, lastRef))
+					if (append(runnable, lastRef))
 						return;
 				}
 			}
@@ -152,7 +152,7 @@ public abstract class MultiSafeActor implements Runnable {
 	}
 
 	// 追加到末尾
-	private boolean casAppend(MultiSafeActor runnable, AtomicReference<MultiSafeActor> lastRef) {
+	private boolean append(MultiSafeActor runnable, AtomicReference<MultiSafeActor> lastRef) {
 		MultiSafeActor last = lastRef.get();
 
 		AtomicReference<MultiSafeActor> nextRef = last.next;
@@ -162,7 +162,7 @@ public abstract class MultiSafeActor implements Runnable {
             if (next == last && lastRef.compareAndSet(last, this)) {
                 // previous message is handled, order is
                 // guaranteed.
-                runnable.runQueue();
+                runnable.pop();
 				return true;
             }
         } else if (nextRef.compareAndSet(null, this)) {
@@ -175,21 +175,30 @@ public abstract class MultiSafeActor implements Runnable {
 
 
 	// 执行提交任务
-	protected void runQueue() {
-		// 执行SafeRunable序列
-		for (final MultiSafeRunable safeRunable : safeRunables) {
-			safeRunable.execute();
-		}
+	protected void pop() {
+		MultiSafeActor next = this;
+		do {
+			// 执行SafeRunable序列
+			for (final MultiSafeRunner safeRunable : next.safeRunables) {
+				try {
+					safeRunable.execute();
+				}catch(Exception e){
+					safeRunable.getSafeActor().onException(e);
+				}
+			}
+		} while ((next = next.next()) != null);// 获取下一个任务
 
-		this.runNextElement();
 	}
 
 
-	// 执行下一个提交任务
-	protected void runNextElement() {
-		if (!next.compareAndSet(null, this)) { // has more job to run
-			next.get().runQueue();
+	/**
+	 * 获取下一个Actor
+	 */
+	protected MultiSafeActor next() {
+		if (!this.next.compareAndSet(null, this)) { // has more job to run
+			return next.get();
 		}
+		return null;
 	}
 
 
@@ -197,10 +206,10 @@ public abstract class MultiSafeActor implements Runnable {
 	 * 派发依赖实体线程
 	 * @param exclude 对后一个依赖执行的Runnable
  	 */
-	public void dispathNext(MultiSafeRunable exclude) {
-		for (MultiSafeRunable safeRunable : safeRunables) {
+	public void recoverNext(MultiSafeRunner exclude) {
+		for (MultiSafeRunner safeRunable : safeRunables) {
 			if (safeRunable != exclude) {
-				safeRunable.submitRunNext();
+				safeRunable.submitNext();
 			}
 		}
 	}

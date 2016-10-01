@@ -11,7 +11,7 @@ public abstract class MultiSafeType {
 	/**
 	 * 上一次执行的Actor
 	 */
-	AtomicReference<MultiSafeRunable> head = new AtomicReference<MultiSafeRunable>();
+	AtomicReference<MultiSafeRunner> head = new AtomicReference<MultiSafeRunner>();
 	
 
 }

@@ -22,7 +22,6 @@ import utils.collections.concurrent.ConcurrentHashMapV8;
 import utils.enhance.asm.AsmAccessHelper;
 import utils.enhance.asm.ValueGetter;
 import utils.reflect.ReflectionUtility;
-import utils.thread.SimpleLinkingRunnable;
 import utils.thread.ThreadUtils;
 
 import javax.annotation.PostConstruct;
@@ -434,11 +433,6 @@ public class DbConfigFactoryImpl implements DbConfigFactory, DbCacheMBean {
 					entityClazz,
 					proxyEntity,
 					modifiedFields);
-		}
-		
-		// 初始化执行链
-		if (cacheConfig.getPersistType() == PersistType.INTIME) {
-			result.setLastLinkingRunnable(new AtomicReference<SimpleLinkingRunnable>());
 		}
 		
 		// 持久化前回调

@@ -1,29 +1,28 @@
 package dbcache.persist.service.impl;
 
-import dbcache.conf.impl.CacheConfig;
 import dbcache.CacheObject;
 import dbcache.IEntity;
-import dbcache.persist.PersistAction;
-import dbcache.persist.PersistStatus;
 import dbcache.cache.CacheUnit;
-import dbcache.dbaccess.DbAccessService;
-import dbcache.persist.service.DbPersistService;
 import dbcache.conf.DbRuleService;
-import utils.JsonUtils;
-import utils.thread.NamedThreadFactory;
-import utils.thread.ThreadUtils;
-import utils.thread.SimpleLinkingRunnable;
-import utils.thread.SimpleOrderedThreadPoolExecutor;
+import dbcache.conf.impl.CacheConfig;
+import dbcache.dbaccess.DbAccessService;
+import dbcache.persist.PersistStatus;
+import dbcache.persist.service.DbPersistService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import utils.JsonUtils;
+import utils.thread.NamedThreadFactory;
+import utils.thread.ThreadUtils;
+import utils.typesafe.SafeType;
+import utils.typesafe.finnal.FinalCommitActor;
 
 import javax.annotation.PostConstruct;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.RejectedExecutionException;
-import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * 即时入库实现
@@ -51,7 +50,7 @@ public class InTimeDbPersistService implements DbPersistService {
 	/**
 	 * 重试实体队列
 	 */
-	private final ConcurrentLinkedQueue<OrderedPersistAction> retryQueue = new ConcurrentLinkedQueue<OrderedPersistAction>();
+	private final ConcurrentLinkedQueue<PersistAction> retryQueue = new ConcurrentLinkedQueue<PersistAction>();
 
 	/**
 	 * 定时检测重试线程
@@ -80,7 +79,7 @@ public class InTimeDbPersistService implements DbPersistService {
 		}
 
 		// 初始化线程池
-		DB_POOL_SERVICE = SimpleOrderedThreadPoolExecutor.newFixedThreadPool(dbPoolSize, threadFactory);
+		DB_POOL_SERVICE = Executors.newFixedThreadPool(dbPoolSize, threadFactory);
 		
 		// 初始化检测线程
 		checkRetryThread = new Thread() {
@@ -91,64 +90,39 @@ public class InTimeDbPersistService implements DbPersistService {
 		checkRetryThread.start();
 	}
 
-
-	abstract class OrderedPersistAction extends SimpleLinkingRunnable implements PersistAction {
-		
-	}
-
-
 	@Override
 	public <T extends IEntity<?>> void handleSave(
 			final CacheObject<T> cacheObject,
 			final DbAccessService dbAccessService,
 			final CacheConfig<T> cacheConfig) {
 
-		this.handlePersist(new OrderedPersistAction() {
-
-			@Override
-			public AtomicReference<SimpleLinkingRunnable> getLastSimpleLinkingRunnable() {
-				return cacheObject.getLastLinkingRunnable();
-			}
+		this.handlePersist(new PersistAction(cacheObject) {
 
 			@Override
 			public void run() {
-
 				// 判断是否有效
 				if (!this.valid()) {
 					return;
 				}
-
 				Object entity = cacheObject.getEntity();
-
 				// 持久化前操作
 				cacheObject.doBeforePersist(cacheConfig);
-
 				// 持久化
 				dbAccessService.save(entity);
-
 				// 设置状态为持久化
 				cacheObject.setPersistStatus(PersistStatus.PERSIST);
-
 			}
 			
 			@Override
 			public void onException(Throwable t) {
-				cacheObject.setUpdateProcessing(false);
 				retryQueue.add(this);
 			}
 
 			@Override
 			public String getPersistInfo() {
-
-				// 判断状态有效性
-				if (!this.valid()) {
-					return null;
-				}
-
 				return JsonUtils.object2JsonString(cacheObject.getEntity());
 			}
 			
-			@Override
 			public boolean valid() {
 				return cacheObject.getPersistStatus() == PersistStatus.TRANSIENT;
 			}
@@ -164,41 +138,22 @@ public class InTimeDbPersistService implements DbPersistService {
 			final DbAccessService dbAccessService,
 			final CacheConfig<T> cacheConfig) {
 
-		// 改变更新状态
-		if (cacheObject.isUpdateProcessing()) {
-			return;
-		}
-		// 改变更新状态
-		cacheObject.setUpdateProcessing(true);
-		
-		this.handlePersist(new OrderedPersistAction() {
-
-			@Override
-			public AtomicReference<SimpleLinkingRunnable> getLastSimpleLinkingRunnable() {
-				return cacheObject.getLastLinkingRunnable();
-			}
+		this.handlePersist(new PersistAction(cacheObject) {
 
 			@Override
 			public void run() {
-				
-				// 改变更新状态
-				cacheObject.setUpdateProcessing(false);
-
 				// 持久化前的操作
 				cacheObject.doBeforePersist(cacheConfig);
-
 				//持久化
 				if (cacheConfig.isEnableDynamicUpdate()) {
 					dbAccessService.update(cacheObject.getEntity(), cacheObject.getModifiedFields());
 				} else {
 					dbAccessService.update(cacheObject.getEntity());
 				}
-
 			}
 
 			@Override
 			public void onException(Throwable t) {
-				cacheObject.setUpdateProcessing(false);
 				retryQueue.add(this);
 			}
 
@@ -206,12 +161,6 @@ public class InTimeDbPersistService implements DbPersistService {
 			public String getPersistInfo() {
 				return JsonUtils.object2JsonString(cacheObject.getEntity());
 			}
-
-			@Override
-			public boolean valid() {
-				return true;
-			}
-
 		});
 
 	}
@@ -224,13 +173,7 @@ public class InTimeDbPersistService implements DbPersistService {
 			final Object key,
 			final CacheUnit cacheUnit) {
 
-		this.handlePersist(new OrderedPersistAction() {
-
-			@Override
-			public AtomicReference<SimpleLinkingRunnable> getLastSimpleLinkingRunnable() {
-				return cacheObject.getLastLinkingRunnable();
-			}
-
+		this.handlePersist(new PersistAction(cacheObject) {
 			@Override
 			public void run() {
 				// 判断是否有效
@@ -243,7 +186,6 @@ public class InTimeDbPersistService implements DbPersistService {
 			
 			@Override
 			public void onException(Throwable t) {
-				cacheObject.setUpdateProcessing(false);
 				retryQueue.add(this);
 			}
 
@@ -252,13 +194,9 @@ public class InTimeDbPersistService implements DbPersistService {
 				return JsonUtils.object2JsonString(cacheObject.getEntity());
 			}
 
-
-			@Override
 			public boolean valid() {
 				return cacheObject.getPersistStatus() == PersistStatus.PERSIST;
 			}
-
-
 		});
 
 	}
@@ -268,7 +206,7 @@ public class InTimeDbPersistService implements DbPersistService {
 	private void processRetry() {
 		// 定时检测失败操作
 		final long delayWaitTimmer = dbRuleService.getDelayWaitTimmer();//延迟入库时间(毫秒)
-		OrderedPersistAction action = null;
+		PersistAction action = null;
 		while (!Thread.interrupted()) {
 			try {
 				action = retryQueue.poll();
@@ -302,7 +240,7 @@ public class InTimeDbPersistService implements DbPersistService {
 		checkRetryThread.interrupt();
 		
 		// 清空重试队列
-		OrderedPersistAction action = retryQueue.poll();
+		PersistAction action = retryQueue.poll();
 		while (action != null) {
 			handlePersist(action);
 			action = retryQueue.poll();
@@ -333,18 +271,14 @@ public class InTimeDbPersistService implements DbPersistService {
 	 * 提交持久化任务
 	 * @param persistAction
 	 */
-	private void handlePersist(OrderedPersistAction persistAction) {
-
+	private void handlePersist(final FinalCommitActor persistAction) {
 		try {
-			DB_POOL_SERVICE.execute(persistAction);
+			persistAction.start(DB_POOL_SERVICE);
 		} catch (RejectedExecutionException ex) {
 			logger.error("提交任务到更新队列被拒绝,使用同步处理:RejectedExecutionException");
-
 			this.handleTask(persistAction);
-
 		} catch (Exception ex) {
 			persistAction.onException(ex);
-
 			logger.error("提交任务到更新队列产生异常", ex);
 		}
 	}
@@ -355,6 +289,14 @@ public class InTimeDbPersistService implements DbPersistService {
 	 */
 	private void handleTask(Runnable persistAction) {
 		persistAction.run();
+	}
+
+
+	static abstract class PersistAction extends FinalCommitActor {
+		public PersistAction(SafeType safeType) {
+			super(safeType);
+		}
+		public abstract String getPersistInfo();
 	}
 
 

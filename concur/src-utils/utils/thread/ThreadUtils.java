@@ -97,28 +97,7 @@ public abstract class ThreadUtils {
 		}
 		return queue;
 	}
-	
-	/**
-	 * 获取线程池的任务队列
-	 * @param threadPoolExecutor
-	 * @return
-	 */
-	private static BlockingQueue<?> getTaskQueue(utils.thread.ThreadPoolExecutor threadPoolExecutor){
-		BlockingQueue<?> queue = null;
-		try {
-			queue = threadPoolExecutor.getQueue();
-		} catch (Exception e1) {
-			try {
-				Field field = utils.thread.ThreadPoolExecutor.class.getDeclaredField("workQueue");
-				field.setAccessible(true);
-				queue = (BlockingQueue<?>)field.get(threadPoolExecutor);
-			} catch (Exception e2) {
-				e2.printStackTrace();
-			}
-		}
-		return queue;
-	}
-	
+
 	/**
 	 * dump出线程池情况
 	 * @param poolname
@@ -126,49 +105,28 @@ public abstract class ThreadUtils {
 	 * @return
 	 */
 	public static String dumpThreadPool(String poolname , ExecutorService threadPool){
-		
+
 		if(threadPool instanceof ThreadPoolExecutor){
 			ThreadPoolExecutor threadPoolExecutor = (ThreadPoolExecutor)threadPool;
 			Map<String, Object> map = new HashMap<String, Object>();
 			map.put("线程池名称" , poolname);
-			
+
 			map.put("当前队列上排队的任务数量", "(无法获取)");
 			BlockingQueue<?> queue = getTaskQueue(threadPoolExecutor);
 			if(queue != null){
 				map.put("当前队列上排队的任务数量", queue.size());
 			}
-			
+
 			map.put("当前池内总的线程数量", threadPoolExecutor.getPoolSize());
-			map.put("当前正在执行任务的线程数", threadPoolExecutor.getActiveCount()); 
-			map.put("历史执行过的任务数量", threadPoolExecutor.getCompletedTaskCount()); 
-			map.put("配置的核心大小", threadPoolExecutor.getCorePoolSize()); 
-			map.put("配置的最大线程数量", threadPoolExecutor.getMaximumPoolSize()); 
-			map.put("历史最大峰值线程数量", threadPoolExecutor.getLargestPoolSize()); 
-			return JsonUtils.object2JsonString(map);
-		} else if(threadPool instanceof utils.thread.ThreadPoolExecutor){
-			utils.thread.ThreadPoolExecutor threadPoolExecutor = (utils.thread.ThreadPoolExecutor)threadPool;
-			Map<String, Object> map = new HashMap<String, Object>();
-			map.put("线程池名称" , poolname);
-			
-			map.put("当前队列上排队的任务数量", "(无法获取)");
-			BlockingQueue<?> queue = getTaskQueue(threadPoolExecutor);
-			if(queue != null){
-				map.put("当前队列上排队的任务数量", queue.size());
-			}
-			
-			map.put("当前池内总的线程数量", threadPoolExecutor.getPoolSize());
-			map.put("当前正在执行任务的线程数", threadPoolExecutor.getActiveCount()); 
-			map.put("历史执行过的任务数量", threadPoolExecutor.getCompletedTaskCount()); 
-			map.put("配置的核心大小", threadPoolExecutor.getCorePoolSize()); 
-			map.put("配置的最大线程数量", threadPoolExecutor.getMaximumPoolSize()); 
-			map.put("历史最大峰值线程数量", threadPoolExecutor.getLargestPoolSize()); 
+			map.put("当前正在执行任务的线程数", threadPoolExecutor.getActiveCount());
+			map.put("历史执行过的任务数量", threadPoolExecutor.getCompletedTaskCount());
+			map.put("配置的核心大小", threadPoolExecutor.getCorePoolSize());
+			map.put("配置的最大线程数量", threadPoolExecutor.getMaximumPoolSize());
+			map.put("历史最大峰值线程数量", threadPoolExecutor.getLargestPoolSize());
 			return JsonUtils.object2JsonString(map);
 		}
-		
+
 		return "无法内省的线程池 [" + poolname + "]";
-		
+
 	}
-	
-	
-	
 }

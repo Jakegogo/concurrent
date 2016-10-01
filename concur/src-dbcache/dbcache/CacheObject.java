@@ -3,14 +3,12 @@ package dbcache;
 import dbcache.conf.impl.CacheConfig;
 import dbcache.index.IndexObject;
 import dbcache.persist.PersistStatus;
-import utils.thread.SimpleLinkingRunnable;
 import org.apache.commons.lang.builder.EqualsBuilder;
+import utils.typesafe.SafeType;
 
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicIntegerArray;
-import java.util.concurrent.atomic.AtomicReference;
-
 
 /**
  * 单个实体缓存数据结构
@@ -18,7 +16,7 @@ import java.util.concurrent.atomic.AtomicReference;
  * @author jake
  * @date 2014-7-31-下午8:18:03
  */
-public class CacheObject<T extends IEntity<?>> {
+public class CacheObject<T extends IEntity<?>> extends SafeType {
 
 	/**
 	 * 缓存对象
@@ -43,21 +41,10 @@ public class CacheObject<T extends IEntity<?>> {
 	private volatile PersistStatus persistStatus;
 
 	/**
-	 * 是否在更新处理中
-	 */
-	private volatile boolean updateProcessing = false;
-
-	/**
 	 * 索引对象引用持有
 	 */
 	private final Set<IndexObject<?>> indexObjects = new TreeSet<IndexObject<?>>();
 
-	//-----执行链-----
-	/**
-	 * 上一次执行的线程
-	 */
-	private volatile AtomicReference<SimpleLinkingRunnable> lastLinkingRunnable;
-	
 	/**
 	 * 构造方法
 	 *
@@ -147,23 +134,6 @@ public class CacheObject<T extends IEntity<?>> {
 
 	public void setPersistStatus(PersistStatus persistStatus) {
 		this.persistStatus = persistStatus;
-	}
-
-	public boolean isUpdateProcessing() {
-		return this.updateProcessing;
-	}
-
-	public void setUpdateProcessing(boolean updateProcessing) {
-		this.updateProcessing = updateProcessing;
-	}
-
-	public AtomicReference<SimpleLinkingRunnable> getLastLinkingRunnable() {
-		return lastLinkingRunnable;
-	}
-
-	public void setLastLinkingRunnable(
-			AtomicReference<SimpleLinkingRunnable> lastLinkingRunnable) {
-		this.lastLinkingRunnable = lastLinkingRunnable;
 	}
 
 	public AtomicIntegerArray getModifiedFields() {

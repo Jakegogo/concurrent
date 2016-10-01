@@ -1,20 +1,22 @@
 package utils.typesafe;
 
 
+import java.util.concurrent.ExecutorService;
+
 /**
  * 线程安全的SafeRunable
  * @author Jake
  */
-public class SafeRunner {
+public class SafeRunner implements Runnable {
 	
 	/** 后继节点 使用UNSAFE进行处理 */
-	private volatile SafeRunner next;
+	protected volatile SafeRunner next;
 	
 	/** 当前对象 */
-	private final SafeType safeType;
+	protected final SafeType safeType;
 	
 	/** 当前任务 */
-	private final SafeActor safeActor;
+	protected final SafeActor safeActor;
 
 	/**
 	 * 构造方法
@@ -30,18 +32,56 @@ public class SafeRunner {
 	/**
 	 * 执行串行队列
 	 */
+	@Override
 	public void run() {
-		SafeRunner next = this;
-		do {
-			try {
-				next.safeActor.run();
-			} catch (Exception e) {
-				next.safeActor.onException(e);
-			}
-		} while ((next = next.fetchNext()) != null);// 获取下一个任务
+		runNext();
 	}
 
-	
+	/**
+	 * 执行队列
+	 */
+	protected void runNext() {
+		SafeRunner current = this;
+		do {
+			try {
+				current.safeActor.run();
+			} catch (Exception e) {
+				current.safeActor.onException(e);
+			}
+		} while ((current = current.next()) != null);// 获取下一个任务
+	}
+
+
+	/**
+	 * 线程池执行
+	 * @return
+     */
+	public void execute(ExecutorService executorService) {
+		// CAS loop
+		for (SafeRunner tail = safeType.getTail(); ; ) {
+
+			// messages from the same client are handled orderly
+			if (tail == null) { // No previous job
+				if (safeType.casTail(null, this)) {
+					executorService.submit(this);
+					return;
+				}
+				tail = safeType.getTail();
+			} else if (tail.isHead() && safeType.casTail(tail, this)) {
+				// previous message is handled, order is
+				// guaranteed.
+				executorService.submit(this);
+				return;
+			} else if (tail.casNext(this)) {
+				safeType.casTail(tail, this);// fail is OK
+				// successfully append to previous task
+				return;
+			} else {
+				tail = safeType.getTail();
+			}
+		}
+	}
+
 	/**
 	 * 执行
 	 */
@@ -70,14 +110,13 @@ public class SafeRunner {
 				tail = safeType.getTail();
 			}
 		}
-
 	}
 
 
 	/**
 	 * 获取下一个任务
 	 */
-	protected SafeRunner fetchNext() {
+	protected SafeRunner next() {
 		if (!UNSAFE.compareAndSwapObject(this, nextOffset, null, this)) { // has more job to run
 			return next;
 		}
@@ -109,8 +148,8 @@ public class SafeRunner {
 	}
 	
 	// Unsafe mechanics
-    private static final sun.misc.Unsafe UNSAFE;
-    private static final long nextOffset;
+    protected static final sun.misc.Unsafe UNSAFE;
+	protected static final long nextOffset;
     static {
         try {
             UNSAFE = getUnsafe();

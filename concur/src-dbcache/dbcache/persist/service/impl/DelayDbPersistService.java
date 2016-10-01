@@ -1,25 +1,23 @@
 package dbcache.persist.service.impl;
 
-import dbcache.conf.impl.CacheConfig;
 import dbcache.CacheObject;
 import dbcache.IEntity;
-import dbcache.persist.PersistAction;
-import dbcache.persist.PersistStatus;
 import dbcache.cache.CacheUnit;
-import dbcache.dbaccess.DbAccessService;
-import dbcache.persist.service.DbPersistService;
 import dbcache.conf.DbRuleService;
-import utils.JsonUtils;
-import utils.thread.NamedThreadFactory;
-import utils.thread.ThreadUtils;
+import dbcache.conf.impl.CacheConfig;
+import dbcache.dbaccess.DbAccessService;
+import dbcache.persist.PersistStatus;
+import dbcache.persist.service.DbPersistService;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import utils.JsonUtils;
+import utils.thread.NamedThreadFactory;
+import utils.thread.ThreadUtils;
 
 import javax.annotation.PostConstruct;
-import java.util.Iterator;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -38,27 +36,22 @@ public class DelayDbPersistService implements DbPersistService {
 	 * logger
 	 */
 	private static final Logger logger = LoggerFactory.getLogger(DelayDbPersistService.class);
-
 	/**
 	 * 更改实体队列
 	 */
 	private final ConcurrentLinkedQueue<QueuedAction> updateQueue = new ConcurrentLinkedQueue<QueuedAction>();
-
 	/**
 	 * 当前延迟更新的动作
 	 */
 	private volatile QueuedAction currentDelayUpdateAction;
 
-
 	@Autowired
 	private DbRuleService dbRuleService;
-
 
 	/**
 	 * 入库线程池
 	 */
 	private ExecutorService DB_POOL_SERVICE;
-
 
 
 	@PostConstruct
@@ -67,7 +60,6 @@ public class DelayDbPersistService implements DbPersistService {
 		ThreadGroup threadGroup = new ThreadGroup("缓存模块");
 		NamedThreadFactory threadFactory = new NamedThreadFactory(threadGroup, "延时入库线程池");
 		DB_POOL_SERVICE = Executors.newSingleThreadExecutor(threadFactory);
-
 		// 初始化入库线程
 		DB_POOL_SERVICE.submit(new Runnable() {
 			@Override
@@ -75,7 +67,6 @@ public class DelayDbPersistService implements DbPersistService {
 				processAction();
 			}
 		});
-
 	}
 
 
@@ -86,35 +77,27 @@ public class DelayDbPersistService implements DbPersistService {
 			final CacheConfig<T> cacheConfig) {
 
 		this.handlePersist(new PersistAction() {
-
 			@Override
 			public void run() {
-
 				// 判断是否有效
 				if(!this.valid()) {
 					return;
 				}
-
 				Object entity = cacheObject.getEntity();
-
 				// 持久化前操作
 				cacheObject.doBeforePersist(cacheConfig);
-
 				// 持久化
 				dbAccessService.save(entity);
-
 				// 设置更新状态
 				cacheObject.setPersistStatus(PersistStatus.PERSIST);
 			}
 
 			@Override
 			public String getPersistInfo() {
-
 				// 判断状态有效性
 				if(!this.valid()) {
 					return null;
 				}
-
 				return JsonUtils.object2JsonString(cacheObject.getEntity());
 			}
 
@@ -122,7 +105,6 @@ public class DelayDbPersistService implements DbPersistService {
 			public boolean valid() {
 				return cacheObject.getPersistStatus() == PersistStatus.TRANSIENT;
 			}
-
 		});
 	}
 
@@ -132,32 +114,17 @@ public class DelayDbPersistService implements DbPersistService {
 			final DbAccessService dbAccessService,
 			final CacheConfig<T> cacheConfig) {
 
-		// 改变更新状态
-		if (cacheObject.isUpdateProcessing()) {
-			return;
-		}
-
-		// 改变更新状态
-		cacheObject.setUpdateProcessing(true);
-
 		this.handlePersist(new PersistAction() {
-
 			@Override
 			public void run() {
-
-				// 改变更新状态
-				cacheObject.setUpdateProcessing(false);
-
 				// 持久化前的操作
 				cacheObject.doBeforePersist(cacheConfig);
-
 				//持久化
 				if (cacheConfig.isEnableDynamicUpdate()) {
 					dbAccessService.update(cacheObject.getEntity(), cacheObject.getModifiedFields());
 				} else {
 					dbAccessService.update(cacheObject.getEntity());
 				}
-
 			}
 
 			@Override
@@ -169,7 +136,6 @@ public class DelayDbPersistService implements DbPersistService {
 			public boolean valid() {
 				return true;
 			}
-
 		});
 	}
 
@@ -181,7 +147,6 @@ public class DelayDbPersistService implements DbPersistService {
 			final CacheUnit cacheUnit) {
 
 		this.handlePersist(new PersistAction() {
-
 			@Override
 			public void run() {
 				// 判断是否有效
@@ -197,13 +162,10 @@ public class DelayDbPersistService implements DbPersistService {
 				return JsonUtils.object2JsonString(cacheObject.getEntity());
 			}
 
-
 			@Override
 			public boolean valid() {
 				return cacheObject.getPersistStatus() == PersistStatus.PERSIST;
 			}
-
-
 		});
 	}
 
@@ -219,27 +181,20 @@ public class DelayDbPersistService implements DbPersistService {
 	
 	// 处理入库任务
 	private void processAction() {
-
 		//延迟入库队列检测时间间隔(毫秒)
 		final long delayCheckTimmer = 1000;
-
 		//延迟入库时间(毫秒)
 		final long delayWaitTimmer = dbRuleService.getDelayWaitTimmer();
-
-
 		//循环定时检测入库,失败自动进入重试
 		QueuedAction updateAction = updateQueue.poll();
 
 		while (!Thread.interrupted()) {
 			try {
-
 				long timeDiff;
 				do {
-
 					if (updateAction == null) {
 						Thread.sleep(delayCheckTimmer);//等待下一个检测时间
 					} else if (updateAction.persistAction.valid()) {
-
 						timeDiff = System.currentTimeMillis() - updateAction.createTime;
 						//未到延迟入库时间
 						if (timeDiff < delayWaitTimmer) {
@@ -247,24 +202,19 @@ public class DelayDbPersistService implements DbPersistService {
 							//等待
 							Thread.sleep(delayWaitTimmer - timeDiff);
 						}
-
 						//执行入库
 						updateAction.doRunTask();
 					}
 
-
 					if (Thread.interrupted()) {
 						break;
 					}
-
-					//获取下一个有效的操作元素
+					//获取下一个有效的元素
 					updateAction = updateQueue.poll();
-
 				} while (true);
 
 			} catch (Exception e) {
 				e.printStackTrace();
-
 				// 记录日志
 				if (updateAction != null && updateAction.persistAction != null) {
 					logger.error(
@@ -274,12 +224,10 @@ public class DelayDbPersistService implements DbPersistService {
 					logger.error("执行批量入库时产生异常! 如果是主键冲突异常可忽略!", e);
 				}
 
-
 				//等待下一个检测时间重试入库
 				try {
 					Thread.sleep(delayCheckTimmer);
 				} catch (InterruptedException e1) {}
-
 
 			}
 		}
@@ -290,7 +238,6 @@ public class DelayDbPersistService implements DbPersistService {
 	public void destroy() {
 		// 关闭消费入库线程池
 		ThreadUtils.shundownThreadPool(DB_POOL_SERVICE, true);
-				
 		int failCount = 0;
 		while (failCount < 3) {
 			try {
@@ -372,6 +319,30 @@ public class DelayDbPersistService implements DbPersistService {
 			}
 		}
 
+	}
+
+
+	/**
+	 * 持久化行为接口
+	 * @author Administrator
+	 *
+	 */
+	interface PersistAction extends Runnable {
+		/**
+		 * 是否有效
+		 * @return
+		 */
+		boolean valid();
+		/**
+		 * 执行持久化操作
+		 */
+		@Override
+		void run();
+		/**
+		 * 转换成字符串
+		 * @return
+		 */
+		String getPersistInfo();
 	}
 
 }

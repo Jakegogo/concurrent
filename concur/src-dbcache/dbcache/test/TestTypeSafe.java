@@ -16,12 +16,14 @@ public class TestTypeSafe {
 		final B b = new B();
 		final C c = new C();
 				
-		final int TEST_LOOP = 1;
+		final int TEST_LOOP = 1000000;
 		
 		final CountDownLatch ct = new CountDownLatch(1);
+
+		final CountDownLatch ct1 = new CountDownLatch(TEST_LOOP * 10);
 		
-		for (int j = 0; j < 10000;j++) {
-			
+		for (int j = 0; j < 10;j++) {
+
 			final int l = j;
 			new Thread() {
 				
@@ -34,11 +36,11 @@ public class TestTypeSafe {
 						e.printStackTrace();
 					}
 
-					try {
-						Thread.sleep(new Random().nextInt(10));
-					} catch (InterruptedException e) {
-						e.printStackTrace();
-					}
+//					try {
+//						Thread.sleep(new Random().nextInt(10));
+//					} catch (InterruptedException e) {
+//						e.printStackTrace();
+//					}
 
 					if( l % 2 == 0) {
 					
@@ -62,6 +64,8 @@ public class TestTypeSafe {
 									j += 1;
 									b.j = j;
 //									System.out.println(Thread.currentThread().getId());
+
+									ct1.countDown();
 								}
 								
 							}.start();
@@ -89,6 +93,8 @@ public class TestTypeSafe {
 									k += 1;
 									c.k = k;
 //									System.out.println(Thread.currentThread().getId());
+
+									ct1.countDown();
 								}
 								
 							}.start();
@@ -101,7 +107,7 @@ public class TestTypeSafe {
 		
 		try {
 			ct.countDown();
-			Thread.sleep(5000);
+			ct1.await();
 			System.out.println("a.i:" + a.i);
 			System.out.println("b.j:" + b.j);
 			System.out.println("c.k:" + c.k);
