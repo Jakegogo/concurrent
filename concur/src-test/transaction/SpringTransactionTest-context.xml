@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:util="http://www.springframework.org/schema/util"
+	xmlns:aop="http://www.springframework.org/schema/aop"
+	xmlns:resource="http://www.my9yu.com/common/resource"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:p="http://www.springframework.org/schema/p"
+	xsi:schemaLocation="
+http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.0.xsd
+http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-3.0.xsd
+http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-3.0.xsd
+http://www.my9yu.com/common/resource http://www.my9yu.com/common/resource/resource-1.0.xsd">
+
+	<context:annotation-config />
+		
+	<context:component-scan base-package="test.com.xuanwu.dw.transaction">
+	</context:component-scan>
+	
+	<!--Configuration Repository -->
+	<bean id="propertyConfigurer"
+		class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+		<property name="locations">
+			<list>
+				<value>classpath:jdbc.properties</value>
+			</list>
+		</property>
+	</bean>
+	
+	<!-- JDBC模版 -->
+	<bean id="jdbcTemplate" class="org.springframework.jdbc.core.JdbcTemplate">
+		<property name="dataSource">
+			<ref bean="dataSource" />
+		</property>
+	</bean>
+	
+	<context:property-placeholder location="classpath:jdbc.properties"/>
+
+	<!-- BDCP Make u crazy on multi-thread-->
+	<bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource"
+		destroy-method="close" p:driverClassName="${jdbc.driver}"
+		p:url="${jdbc.url}" p:username="${jdbc.username}" p:password="${jdbc.password}"
+		p:validationQuery="select ''" p:timeBetweenEvictionRunsMillis="5000"
+		p:numTestsPerEvictionRun="10" p:testOnBorrow="false" p:testWhileIdle="false"
+		p:initialSize="2" p:maxActive="2" p:maxIdle="1" p:minIdle="1" />
+	
+	<bean id="txManager"  
+        class="org.springframework.jdbc.datasource.DataSourceTransactionManager">  
+        <property name="dataSource" ref="dataSource" />  
+    </bean>  
+
+</beans>
